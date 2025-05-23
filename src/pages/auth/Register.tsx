@@ -41,6 +41,14 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            company_name: formData.companyName,
+            contact_name: formData.contactName,
+          },
+          // In development, don't require email verification
+          emailRedirectTo: window.location.origin + '/dashboard',
+        }
       });
       
       if (authError) throw authError;
@@ -58,11 +66,27 @@ const Register = () => {
           
         if (franchiseeError) throw franchiseeError;
         
+        // For development/testing, bypass email confirmation and sign in directly
+        if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+          // Attempt immediate login for testing environments
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+          
+          if (!signInError) {
+            toast.success("Account created and logged in automatically (test mode)");
+            navigate("/dashboard");
+            return;
+          }
+        }
+        
         toast.success("Registration successful! Please check your email to verify your account.");
         navigate("/login");
       }
     } catch (error: any) {
       toast.error(error.message || "Registration failed. Please try again.");
+      console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
     }

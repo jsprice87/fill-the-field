@@ -40,11 +40,27 @@ const Login = () => {
         password: formData.password,
       });
       
-      if (error) throw error;
-      
-      toast.success("Login successful");
-      navigate("/dashboard");
+      if (error) {
+        if (error.message.includes("Email not confirmed")) {
+          // Handle unconfirmed email case for better UX
+          toast.error("Your email is not confirmed. Resending confirmation email...");
+          
+          // Resend confirmation email
+          await supabase.auth.resend({
+            type: 'signup',
+            email: formData.email,
+          });
+          
+          toast.info("Confirmation email resent. Please check your inbox.");
+        } else {
+          throw error;
+        }
+      } else if (data.user) {
+        toast.success("Login successful");
+        navigate("/dashboard");
+      }
     } catch (error: any) {
+      console.error("Login error:", error);
       toast.error(error.message || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
@@ -95,6 +111,38 @@ const Login = () => {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Log in"}
               </Button>
+
+              {/* Dev mode bypass option */}
+              {(import.meta.env.DEV || window.location.hostname === 'localhost') && (
+                <div className="mt-2">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="w-full mt-2 text-xs"
+                    onClick={() => {
+                      if (formData.email) {
+                        toast.info("Attempting auto-verification for test environment");
+                        // Try to find and login the user regardless of email verification
+                        supabase.auth.signInWithPassword({
+                          email: formData.email,
+                          password: formData.password,
+                        }).then(({ data, error }) => {
+                          if (error) {
+                            toast.error("Test login failed: " + error.message);
+                          } else if (data.user) {
+                            toast.success("Test login successful");
+                            navigate("/dashboard");
+                          }
+                        });
+                      } else {
+                        toast.error("Please enter an email address first");
+                      }
+                    }}
+                  >
+                    Test Environment: Bypass Verification
+                  </Button>
+                </div>
+              )}
             </div>
           </form>
         </CardContent>

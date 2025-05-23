@@ -2,6 +2,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -21,7 +22,25 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       }
     };
 
+    // Set up listener for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setIsAuthenticated(!!session);
+        
+        if (event === "SIGNED_IN") {
+          console.log("User signed in successfully");
+        } else if (event === "SIGNED_OUT") {
+          console.log("User signed out");
+        }
+      }
+    );
+
     checkAuth();
+
+    // Cleanup listener on unmount
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   if (isAuthenticated === null) {
