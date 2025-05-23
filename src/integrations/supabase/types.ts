@@ -159,6 +159,7 @@ export type Database = {
           id: string
           logo_url: string | null
           phone: string | null
+          slug: string | null
           state: string | null
           subscription_end_date: string | null
           subscription_start_date: string | null
@@ -178,6 +179,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          slug?: string | null
           state?: string | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null
@@ -197,6 +199,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          slug?: string | null
           state?: string | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null

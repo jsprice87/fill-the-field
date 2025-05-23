@@ -15,6 +15,8 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import SlugResolver from "./components/auth/SlugResolver";
+import MigrateUserUrls from "./components/auth/MigrateUserUrls";
 
 // Portal (Franchisee) Pages
 import PortalDashboard from "./pages/portal/Dashboard";
@@ -47,6 +49,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        {/* This component will automatically migrate UUID URLs to slug URLs */}
+        <MigrateUserUrls />
+        
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Index />} />
@@ -57,19 +62,45 @@ const App = () => (
           <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
           
           {/* Public Landing Pages - Accessible without login */}
-          <Route path="/:franchiseeId/landing-page" element={<LandingPage />} />
-          <Route path="/:franchiseeId/landing-page/find-classes" element={<FindClasses />} />
-          <Route path="/:franchiseeId/landing-page/contact-us" element={<ContactUs />} />
-          <Route path="/:franchiseeId/landing-page/book-a-class" element={<BookClass />} />
-          <Route path="/:franchiseeId/landing-page/confirmation" element={<Confirmation />} />
-          <Route path="/:franchiseeId/landing-page/spanish-speaking" element={<SpanishLanding />} />
+          <Route path="/:franchiseeId/landing-page" element={
+            <SlugResolver>
+              <LandingPage />
+            </SlugResolver>
+          } />
+          <Route path="/:franchiseeId/landing-page/find-classes" element={
+            <SlugResolver>
+              <FindClasses />
+            </SlugResolver>
+          } />
+          <Route path="/:franchiseeId/landing-page/contact-us" element={
+            <SlugResolver>
+              <ContactUs />
+            </SlugResolver>
+          } />
+          <Route path="/:franchiseeId/landing-page/book-a-class" element={
+            <SlugResolver>
+              <BookClass />
+            </SlugResolver>
+          } />
+          <Route path="/:franchiseeId/landing-page/confirmation" element={
+            <SlugResolver>
+              <Confirmation />
+            </SlugResolver>
+          } />
+          <Route path="/:franchiseeId/landing-page/spanish-speaking" element={
+            <SlugResolver>
+              <SpanishLanding />
+            </SlugResolver>
+          } />
           
           {/* Protected Franchisee Routes */}
           <Route 
             path="/:franchiseeId/portal" 
             element={
               <ProtectedRoute>
-                <DashboardLayout />
+                <SlugResolver>
+                  <DashboardLayout />
+                </SlugResolver>
               </ProtectedRoute>
             }
           >
@@ -85,7 +116,9 @@ const App = () => (
             path="/:franchiseeId/profile" 
             element={
               <ProtectedRoute>
-                <UserProfile />
+                <SlugResolver>
+                  <UserProfile />
+                </SlugResolver>
               </ProtectedRoute>
             } 
           />

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getSlugFromFranchiseeId, generateSlug, ensureUniqueSlug } from "@/utils/slugUtils";
 
 // Define dummy franchisee accounts
 const dummyFranchisees = [
@@ -93,10 +93,18 @@ const Login = () => {
           // Redirect admin users to admin dashboard
           navigate("/admin/dashboard");
         } else {
-          // For regular users, use a franchisee ID (could be stored in user metadata)
-          // For now, just use a placeholder franchisee ID
-          const franchiseeId = data.user.id || "default";
-          navigate(`/${franchiseeId}/portal/dashboard`);
+          // For regular users, get the slug from the franchisee table
+          const slug = await getSlugFromFranchiseeId(data.user.id);
+          
+          if (slug) {
+            // If slug exists, use it in the URL
+            navigate(`/${slug}/portal/dashboard`);
+          } else {
+            // If no slug exists (should be rare), create a temporary one
+            // and redirect to using the user ID with a notice
+            toast.warning("Missing profile information. Please update your profile.");
+            navigate(`/${data.user.id}/portal/dashboard`);
+          }
         }
       }
     } catch (error: any) {
@@ -164,6 +172,13 @@ const Login = () => {
           if (loginError && loginError.message.includes('Invalid login credentials')) {
             // Create franchisee account
             console.log(`Creating franchisee account for ${franchisee.name}...`);
+            
+            // Generate a URL-friendly slug from company name
+            const baseSlug = generateSlug(franchisee.name);
+            
+            // Ensure slug is unique in the database
+            const uniqueSlug = await ensureUniqueSlug(baseSlug);
+            
             const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
               email: franchisee.email,
               password: franchisee.password,
@@ -190,6 +205,7 @@ const Login = () => {
                   company_name: franchisee.name,
                   contact_name: franchisee.name,
                   email: franchisee.email,
+                  slug: uniqueSlug,
                 });
                 
               if (franchiseeError) {
@@ -202,14 +218,24 @@ const Login = () => {
               email: franchisee.email,
               password: franchisee.password,
             });
-            navigate(`/${signUpData.user?.id}/portal/dashboard`);
+            
+            // Navigate using the slug
+            navigate(`/${uniqueSlug}/portal/dashboard`);
           } else if (loginData.user) {
             toast.success(`Logged in as ${franchisee.name}`);
             setFormData({
               email: franchisee.email,
               password: franchisee.password,
             });
-            navigate(`/${loginData.user.id}/portal/dashboard`);
+            
+            // Get the slug for the user
+            const slug = await getSlugFromFranchiseeId(loginData.user.id);
+            
+            if (slug) {
+              navigate(`/${slug}/portal/dashboard`);
+            } else {
+              navigate(`/${loginData.user.id}/portal/dashboard`);
+            }
           }
         }
       }

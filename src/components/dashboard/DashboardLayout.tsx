@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -21,12 +21,32 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
   const { franchiseeId } = useParams();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
+
+  // Get the current slug for navigation
+  useEffect(() => {
+    if (!isAdminRoute && franchiseeId) {
+      // If it's not already a slug, try to get the slug
+      if (!franchiseeId.includes('-')) {
+        getSlugFromFranchiseeId(franchiseeId).then(slug => {
+          if (slug) {
+            setCurrentSlug(slug);
+          } else {
+            setCurrentSlug(franchiseeId);
+          }
+        });
+      } else {
+        setCurrentSlug(franchiseeId);
+      }
+    }
+  }, [franchiseeId, isAdminRoute]);
 
   const handleSignOut = async () => {
     try {
@@ -37,6 +57,9 @@ const DashboardLayout = () => {
       toast.error("Error signing out. Please try again.");
     }
   };
+
+  // Use the slug or ID for navigation
+  const navPrefix = isAdminRoute ? "" : `/${currentSlug || franchiseeId}`;
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -79,31 +102,31 @@ const DashboardLayout = () => {
                 ) : (
                   // Franchisee Portal Navigation
                   <>
-                    <Link to={`/${franchiseeId}/portal/dashboard`}>
+                    <Link to={`${navPrefix}/portal/dashboard`}>
                       <Button variant="ghost" className="w-full justify-start">
                         <LayoutDashboard className="mr-2 h-5 w-5" />
                         Dashboard
                       </Button>
                     </Link>
-                    <Link to={`/${franchiseeId}/portal/locations`}>
+                    <Link to={`${navPrefix}/portal/locations`}>
                       <Button variant="ghost" className="w-full justify-start">
                         <MapPin className="mr-2 h-5 w-5" />
                         Locations
                       </Button>
                     </Link>
-                    <Link to={`/${franchiseeId}/portal/classes`}>
+                    <Link to={`${navPrefix}/portal/classes`}>
                       <Button variant="ghost" className="w-full justify-start">
                         <Calendar className="mr-2 h-5 w-5" />
                         Classes
                       </Button>
                     </Link>
-                    <Link to={`/${franchiseeId}/portal/leads`}>
+                    <Link to={`${navPrefix}/portal/leads`}>
                       <Button variant="ghost" className="w-full justify-start">
                         <Users className="mr-2 h-5 w-5" />
                         Leads
                       </Button>
                     </Link>
-                    <Link to={`/${franchiseeId}/landing-page`} target="_blank">
+                    <Link to={`${navPrefix}/landing-page`} target="_blank">
                       <Button variant="ghost" className="w-full justify-start">
                         <Globe className="mr-2 h-5 w-5" />
                         Landing Page
@@ -114,7 +137,7 @@ const DashboardLayout = () => {
               </nav>
               <div className="border-t px-2 py-4">
                 {!isAdminRoute && (
-                  <Link to={`/${franchiseeId}/portal/settings`}>
+                  <Link to={`${navPrefix}/portal/settings`}>
                     <Button variant="ghost" className="w-full justify-start">
                       <Settings className="mr-2 h-5 w-5" />
                       Settings
@@ -123,7 +146,7 @@ const DashboardLayout = () => {
                 )}
                 
                 {!isAdminRoute && (
-                  <Link to={`/${franchiseeId}/profile`}>
+                  <Link to={`${navPrefix}/profile`}>
                     <Button variant="ghost" className="w-full justify-start">
                       <UserCircle className="mr-2 h-5 w-5" />
                       Profile
@@ -151,7 +174,7 @@ const DashboardLayout = () => {
                   <span className="text-xl font-bold text-indigo-600">Admin</span>
                 </Link>
               ) : (
-                <Link to={`/${franchiseeId}/portal`} className="md:hidden">
+                <Link to={`${navPrefix}/portal`} className="md:hidden">
                   <span className="text-xl font-bold text-indigo-600">SLS</span>
                 </Link>
               )}

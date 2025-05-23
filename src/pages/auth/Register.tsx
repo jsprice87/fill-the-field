@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { generateSlug, ensureUniqueSlug } from "@/utils/slugUtils";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -37,6 +38,12 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      // Generate a URL-friendly slug from company name
+      const baseSlug = generateSlug(formData.companyName);
+      
+      // Ensure slug is unique in the database
+      const uniqueSlug = await ensureUniqueSlug(baseSlug);
+      
       // 1. Register the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -54,7 +61,7 @@ const Register = () => {
       if (authError) throw authError;
       
       if (authData.user) {
-        // 2. Create franchisee record
+        // 2. Create franchisee record with slug
         const { error: franchiseeError } = await supabase
           .from("franchisees")
           .insert({
@@ -62,6 +69,7 @@ const Register = () => {
             company_name: formData.companyName,
             contact_name: formData.contactName,
             email: formData.email,
+            slug: uniqueSlug,
           });
           
         if (franchiseeError) throw franchiseeError;
@@ -76,7 +84,7 @@ const Register = () => {
           
           if (!signInError) {
             toast.success("Account created and logged in automatically (test mode)");
-            navigate("/dashboard");
+            navigate(`/${uniqueSlug}/portal/dashboard`);
             return;
           }
         }
