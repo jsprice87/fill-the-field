@@ -9,7 +9,420 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          cancellation_reason: string | null
+          class_schedule_id: string
+          created_at: string
+          id: string
+          lead_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          class_schedule_id: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancellation_reason?: string | null
+          class_schedule_id?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_class_schedule_id_fkey"
+            columns: ["class_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "class_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_schedules: {
+        Row: {
+          class_id: string
+          created_at: string
+          current_bookings: number | null
+          day_of_week: number | null
+          end_time: string
+          id: string
+          is_active: boolean | null
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          current_bookings?: number | null
+          day_of_week?: number | null
+          end_time: string
+          id?: string
+          is_active?: boolean | null
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          current_bookings?: number | null
+          day_of_week?: number | null
+          end_time?: string
+          id?: string
+          is_active?: boolean | null
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean | null
+          location_id: string
+          max_age: number | null
+          max_capacity: number
+          min_age: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes: number
+          id?: string
+          is_active?: boolean | null
+          location_id: string
+          max_age?: number | null
+          max_capacity: number
+          min_age?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          location_id?: string
+          max_age?: number | null
+          max_capacity?: number
+          min_age?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classes_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      franchisees: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_name: string
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          logo_url: string | null
+          phone: string | null
+          state: string | null
+          subscription_end_date: string | null
+          subscription_start_date: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_name: string
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          logo_url?: string | null
+          phone?: string | null
+          state?: string | null
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          logo_url?: string | null
+          phone?: string | null
+          state?: string | null
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
+          zip?: string | null
+        }
+        Relationships: []
+      }
+      landing_pages: {
+        Row: {
+          button_text: string | null
+          created_at: string
+          custom_css: string | null
+          custom_js: string | null
+          description: string | null
+          franchisee_id: string
+          hero_image_url: string | null
+          id: string
+          is_published: boolean | null
+          primary_color: string | null
+          secondary_color: string | null
+          slug: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          button_text?: string | null
+          created_at?: string
+          custom_css?: string | null
+          custom_js?: string | null
+          description?: string | null
+          franchisee_id: string
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          slug?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          button_text?: string | null
+          created_at?: string
+          custom_css?: string | null
+          custom_js?: string | null
+          description?: string | null
+          franchisee_id?: string
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          slug?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_pages_franchisee_id_fkey"
+            columns: ["franchisee_id"]
+            isOneToOne: false
+            referencedRelation: "franchisees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          franchisee_id: string
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string
+          source: string | null
+          status: string | null
+          updated_at: string
+          zip: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          franchisee_id: string
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone: string
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          zip: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          franchisee_id?: string
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          zip?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_franchisee_id_fkey"
+            columns: ["franchisee_id"]
+            isOneToOne: false
+            referencedRelation: "franchisees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locations: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          description: string | null
+          email: string | null
+          franchisee_id: string
+          id: string
+          is_active: boolean | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          phone: string | null
+          state: string
+          updated_at: string
+          website: string | null
+          zip: string
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          franchisee_id: string
+          id?: string
+          is_active?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          phone?: string | null
+          state: string
+          updated_at?: string
+          website?: string | null
+          zip: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          franchisee_id?: string
+          id?: string
+          is_active?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          phone?: string | null
+          state?: string
+          updated_at?: string
+          website?: string | null
+          zip?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_franchisee_id_fkey"
+            columns: ["franchisee_id"]
+            isOneToOne: false
+            referencedRelation: "franchisees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          age: number
+          booking_id: string
+          created_at: string
+          first_name: string
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          age: number
+          booking_id: string
+          created_at?: string
+          first_name: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age?: number
+          booking_id?: string
+          created_at?: string
+          first_name?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
