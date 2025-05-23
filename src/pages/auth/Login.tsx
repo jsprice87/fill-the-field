@@ -107,36 +107,46 @@ const Login = () => {
     }
   };
   
-  // Bypass login for quick testing
+  // Bypass login for quick testing - FIXED
   const bypassLogin = (userType: 'admin' | 'franchisee1' | 'franchisee2' | 'franchisee3') => {
     setIsLoading(true);
     
-    let email, password, redirectPath;
-    
-    if (userType === 'admin') {
-      email = adminAccount.email;
-      password = adminAccount.password;
-      redirectPath = "/admin/dashboard";
-    } else {
-      const franchiseeIndex = parseInt(userType.replace('franchisee', '')) - 1;
-      const franchisee = dummyFranchisees[franchiseeIndex];
-      email = franchisee.email;
-      password = franchisee.password;
-      redirectPath = `/${franchisee.id}/portal/dashboard`;
-    }
-    
-    // Set form data for visual feedback
-    setFormData({
-      email,
-      password
-    });
-    
-    // Attempt auto login or bypass in dev environment
-    setTimeout(() => {
-      toast.success(`Test login as ${userType}`);
+    try {
+      // Set form data for visual feedback
+      if (userType === 'admin') {
+        setFormData({
+          email: adminAccount.email,
+          password: adminAccount.password,
+        });
+        
+        setTimeout(() => {
+          toast.success(`Test login as ${userType}`);
+          setIsLoading(false);
+          navigate("/admin/dashboard");
+        }, 500);
+      } else {
+        const franchiseeIndex = parseInt(userType.replace('franchisee', '')) - 1;
+        if (franchiseeIndex >= 0 && franchiseeIndex < dummyFranchisees.length) {
+          const franchisee = dummyFranchisees[franchiseeIndex];
+          setFormData({
+            email: franchisee.email,
+            password: franchisee.password,
+          });
+          
+          setTimeout(() => {
+            toast.success(`Test login as ${franchisee.name}`);
+            setIsLoading(false);
+            
+            // Navigate to the franchisee portal with the correct ID
+            navigate(`/${franchisee.id}/portal/dashboard`);
+          }, 500);
+        }
+      }
+    } catch (error) {
+      console.error("Bypass login error:", error);
+      toast.error("Error during test login");
       setIsLoading(false);
-      navigate(redirectPath);
-    }, 500);
+    }
   };
 
   return (
