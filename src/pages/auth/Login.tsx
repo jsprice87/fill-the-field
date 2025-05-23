@@ -57,7 +57,19 @@ const Login = () => {
         }
       } else if (data.user) {
         toast.success("Login successful");
-        navigate("/dashboard");
+        
+        // Check if the user is an admin (you'll need to implement a proper role check here)
+        const isAdmin = data.user.email?.includes('admin'); // Simple check for demonstration
+        
+        if (isAdmin) {
+          // Redirect admin users to admin dashboard
+          navigate("/admin/dashboard");
+        } else {
+          // For regular users, use a franchisee ID (could be stored in user metadata)
+          // For now, just use a placeholder franchisee ID
+          const franchiseeId = data.user.id || "default";
+          navigate(`/${franchiseeId}/portal/dashboard`);
+        }
       }
     } catch (error: any) {
       console.error("Login error:", error);

@@ -53,6 +53,9 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/create-account" element={<Register />} />
           
+          {/* Redirect /dashboard to the proper route */}
+          <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+          
           {/* Public Landing Pages - Accessible without login */}
           <Route path="/:franchiseeId/landing-page" element={<LandingPage />} />
           <Route path="/:franchiseeId/landing-page/find-classes" element={<FindClasses />} />
