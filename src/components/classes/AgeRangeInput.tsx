@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 interface AgeRangeInputProps {
   minAge: number;
@@ -17,7 +16,7 @@ const AgeRangeInput: React.FC<AgeRangeInputProps> = ({
   onMaxAgeChange,
 }) => {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-2 min-w-36">
       <div className="flex-1">
         <Input
           type="number"
@@ -25,11 +24,11 @@ const AgeRangeInput: React.FC<AgeRangeInputProps> = ({
           max="18"
           value={minAge}
           onChange={(e) => onMinAgeChange(parseInt(e.target.value) || 1)}
-          className="w-full text-center"
+          className="w-full text-center min-w-16"
           title="Minimum age"
         />
       </div>
-      <span className="text-muted-foreground text-sm">to</span>
+      <span className="text-muted-foreground text-sm whitespace-nowrap">to</span>
       <div className="flex-1">
         <Input
           type="number"
@@ -37,7 +36,7 @@ const AgeRangeInput: React.FC<AgeRangeInputProps> = ({
           max="18"
           value={maxAge}
           onChange={(e) => onMaxAgeChange(parseInt(e.target.value) || 18)}
-          className="w-full text-center"
+          className="w-full text-center min-w-16"
           title="Maximum age"
         />
       </div>

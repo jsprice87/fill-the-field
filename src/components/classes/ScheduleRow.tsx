@@ -36,7 +36,18 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
 }) => {
   return (
     <TableRow>
-      <TableCell>
+      <TableCell className="w-48">
+        <Input
+          type="text"
+          placeholder="Enter class name"
+          value={row.className}
+          onChange={(e) => onRowChange(index, 'className', e.target.value)}
+          className="w-full min-w-44"
+          required
+        />
+      </TableCell>
+
+      <TableCell className="w-24">
         <Select
           value={row.dayOfWeek.toString()}
           onValueChange={(value) => onRowChange(index, 'dayOfWeek', parseInt(value))}
@@ -54,7 +65,19 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
         </Select>
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-32">
+        <Input
+          type="number"
+          min="15"
+          max="180"
+          step="15"
+          value={row.duration}
+          onChange={(e) => onRowChange(index, 'duration', parseInt(e.target.value) || 60)}
+          className="w-full"
+        />
+      </TableCell>
+
+      <TableCell className="w-32">
         <Input
           type="time"
           value={row.timeStart}
@@ -63,16 +86,17 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-32">
         <Input
           type="time"
           value={row.timeEnd}
-          onChange={(e) => onRowChange(index, 'timeEnd', e.target.value)}
-          className="w-full"
+          className="w-full bg-gray-50"
+          readOnly
+          title="Auto-calculated based on start time + duration"
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-32">
         <Input
           type="date"
           value={row.dateStart}
@@ -81,7 +105,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-32">
         <Input
           type="date"
           value={row.dateEnd}
@@ -90,14 +114,14 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-40">
         <MultiDatePicker
           selectedDates={row.overrideDates}
           onDatesChange={(dates) => onRowChange(index, 'overrideDates', dates)}
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-40">
         <AgeRangeInput
           minAge={row.minAge}
           maxAge={row.maxAge}
@@ -106,7 +130,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-24">
         <Input
           type="number"
           min="1"
@@ -117,7 +141,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
         />
       </TableCell>
 
-      <TableCell>
+      <TableCell className="w-16">
         <Button
           variant="ghost"
           size="sm"

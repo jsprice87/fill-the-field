@@ -106,6 +106,7 @@ export type Database = {
       }
       classes: {
         Row: {
+          class_name: string
           created_at: string
           description: string | null
           duration_minutes: number
@@ -119,6 +120,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          class_name: string
           created_at?: string
           description?: string | null
           duration_minutes: number
@@ -132,6 +134,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          class_name?: string
           created_at?: string
           description?: string | null
           duration_minutes?: number

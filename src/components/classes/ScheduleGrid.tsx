@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ScheduleRow from './ScheduleRow';
 import type { ScheduleRow as ScheduleRowType } from '@/pages/portal/Classes';
@@ -28,19 +26,21 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <Table>
+    <div className="border rounded-lg overflow-x-auto">
+      <Table className="min-w-[1200px]">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-24">Day</TableHead>
-            <TableHead className="w-32">Time Start</TableHead>
-            <TableHead className="w-32">Time End</TableHead>
-            <TableHead className="w-32">Date Start</TableHead>
-            <TableHead className="w-32">Date End</TableHead>
-            <TableHead className="w-40">Override Dates</TableHead>
-            <TableHead className="w-32">Age Range</TableHead>
-            <TableHead className="w-24">Capacity</TableHead>
-            <TableHead className="w-16">Actions</TableHead>
+            <TableHead className="w-48 min-w-48">Class Name</TableHead>
+            <TableHead className="w-24 min-w-24">Day</TableHead>
+            <TableHead className="w-32 min-w-32">Duration (min)</TableHead>
+            <TableHead className="w-32 min-w-32">Time Start</TableHead>
+            <TableHead className="w-32 min-w-32">Time End</TableHead>
+            <TableHead className="w-32 min-w-32">Date Start</TableHead>
+            <TableHead className="w-32 min-w-32">Date End</TableHead>
+            <TableHead className="w-40 min-w-40">Override Dates</TableHead>
+            <TableHead className="w-40 min-w-40">Age Range</TableHead>
+            <TableHead className="w-24 min-w-24">Capacity</TableHead>
+            <TableHead className="w-16 min-w-16">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

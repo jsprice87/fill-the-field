@@ -10,6 +10,8 @@ import ScheduleGrid from '@/components/classes/ScheduleGrid';
 
 export interface ScheduleRow {
   id?: string;
+  className: string;
+  duration: number;
   timeStart: string;
   timeEnd: string;
   dateStart: string;
@@ -60,12 +62,27 @@ const PortalClasses: React.FC = () => {
     getFranchiseeId();
   }, []);
 
+  const calculateEndTime = (startTime: string, duration: number): string => {
+    if (!startTime) return '';
+    
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(hours, minutes, 0, 0);
+    
+    const endDate = new Date(startDate.getTime() + duration * 60000);
+    
+    return `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+  };
+
   const handleAddRow = () => {
     const lastRow = scheduleRows[scheduleRows.length - 1];
     const newRow: ScheduleRow = lastRow ? {
       ...lastRow,
       id: undefined, // New row gets new ID
+      className: '', // Reset class name for new row
     } : {
+      className: '',
+      duration: 60,
       timeStart: '09:00',
       timeEnd: '10:00',
       dateStart: '',
@@ -83,6 +100,14 @@ const PortalClasses: React.FC = () => {
   const handleRowChange = (index: number, field: keyof ScheduleRow, value: any) => {
     const updatedRows = [...scheduleRows];
     updatedRows[index] = { ...updatedRows[index], [field]: value };
+    
+    // Auto-calculate end time when start time or duration changes
+    if (field === 'timeStart' || field === 'duration') {
+      const startTime = field === 'timeStart' ? value : updatedRows[index].timeStart;
+      const duration = field === 'duration' ? value : updatedRows[index].duration;
+      updatedRows[index].timeEnd = calculateEndTime(startTime, duration);
+    }
+    
     setScheduleRows(updatedRows);
   };
 
@@ -102,69 +127,87 @@ const PortalClasses: React.FC = () => {
       return;
     }
 
+    // Validate that all rows have class names
+    const rowsWithoutNames = scheduleRows.filter(row => !row.className.trim());
+    if (rowsWithoutNames.length > 0) {
+      toast.error("Please provide a class name for all rows");
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // First create the class
-      const { data: classData, error: classError } = await supabase
-        .from('classes')
-        .insert({
-          location_id: selectedLocationId,
-          name: 'Soccer Trial Class',
-          description: 'Free trial soccer class for kids',
-          duration_minutes: 60,
-          max_capacity: Math.max(...scheduleRows.map(row => row.capacity)),
-          min_age: Math.min(...scheduleRows.map(row => row.minAge)),
-          max_age: Math.max(...scheduleRows.map(row => row.maxAge)),
-          is_active: true
-        })
-        .select()
-        .single();
-
-      if (classError) {
-        console.error("Error creating class:", classError);
-        throw classError;
-      }
-
-      // Then create all schedules
-      const scheduleInserts = scheduleRows.map(row => ({
-        class_id: classData.id,
-        start_time: row.timeStart,
-        end_time: row.timeEnd,
-        date_start: row.dateStart || null,
-        date_end: row.dateEnd || null,
-        day_of_week: row.dayOfWeek,
-        current_bookings: 0,
-        is_active: true
-      }));
-
-      const { error: scheduleError } = await supabase
-        .from('class_schedules')
-        .insert(scheduleInserts);
-
-      if (scheduleError) {
-        console.error("Error creating schedules:", scheduleError);
-        throw scheduleError;
-      }
-
-      // Handle override dates if any
+      // Create separate classes for each row
       for (const [index, row] of scheduleRows.entries()) {
+        console.log(`Creating class ${index + 1}: ${row.className}`);
+        
+        // Create the class
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .insert({
+            location_id: selectedLocationId,
+            name: row.className,
+            class_name: row.className,
+            description: `${row.className} - Soccer class for kids`,
+            duration_minutes: row.duration,
+            max_capacity: row.capacity,
+            min_age: row.minAge,
+            max_age: row.maxAge,
+            is_active: true
+          })
+          .select()
+          .single();
+
+        if (classError) {
+          console.error(`Error creating class ${index + 1}:`, classError);
+          throw classError;
+        }
+
+        console.log(`Created class ${index + 1}:`, classData);
+
+        // Create the schedule for this class
+        const { data: scheduleData, error: scheduleError } = await supabase
+          .from('class_schedules')
+          .insert({
+            class_id: classData.id,
+            start_time: row.timeStart,
+            end_time: row.timeEnd,
+            date_start: row.dateStart || null,
+            date_end: row.dateEnd || null,
+            day_of_week: row.dayOfWeek,
+            current_bookings: 0,
+            is_active: true
+          })
+          .select()
+          .single();
+
+        if (scheduleError) {
+          console.error(`Error creating schedule for class ${index + 1}:`, scheduleError);
+          throw scheduleError;
+        }
+
+        console.log(`Created schedule for class ${index + 1}:`, scheduleData);
+
+        // Handle override dates if any
         if (row.overrideDates.length > 0) {
-          // Get the schedule ID we just created
-          const scheduleIndex = index;
           const exceptionInserts = row.overrideDates.map(date => ({
-            class_schedule_id: classData.id, // This would need to be the actual schedule ID
+            class_schedule_id: scheduleData.id,
             exception_date: date,
             is_cancelled: true
           }));
 
-          await supabase
+          const { error: exceptionError } = await supabase
             .from('schedule_exceptions')
             .insert(exceptionInserts);
+
+          if (exceptionError) {
+            console.error(`Error creating exceptions for class ${index + 1}:`, exceptionError);
+            throw exceptionError;
+          }
         }
       }
 
-      toast.success('Class schedules saved successfully!');
+      toast.success(`Successfully created ${scheduleRows.length} class schedules!`);
       
       // Reset form
       setScheduleRows([]);
