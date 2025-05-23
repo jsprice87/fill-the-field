@@ -21,7 +21,9 @@ import MigrateUserUrls from "./components/auth/MigrateUserUrls";
 // Portal (Franchisee) Pages
 import PortalDashboard from "./pages/portal/Dashboard";
 import PortalLocations from "./pages/portal/Locations";
-import PortalClasses from "./pages/portal/Classes";
+import ClassesList from "./pages/portal/ClassesList";
+import AddClasses from "./pages/portal/AddClasses";
+import EditClass from "./pages/portal/EditClass";
 import PortalLeads from "./pages/portal/Leads";
 import PortalSettings from "./pages/portal/Settings";
 import UserProfile from "./pages/portal/Profile";
@@ -108,7 +110,9 @@ const App = () => (
             <Route index element={<PortalDashboard />} />
             <Route path="dashboard" element={<PortalDashboard />} />
             <Route path="locations" element={<PortalLocations />} />
-            <Route path="classes" element={<PortalClasses />} />
+            <Route path="classes" element={<ClassesList />} />
+            <Route path="classes/add" element={<AddClasses />} />
+            <Route path="classes/edit/:classId" element={<EditClass />} />
             <Route path="leads" element={<PortalLeads />} />
             <Route path="settings" element={<PortalSettings />} />
           </Route>
