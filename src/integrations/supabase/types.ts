@@ -59,6 +59,8 @@ export type Database = {
           class_id: string
           created_at: string
           current_bookings: number | null
+          date_end: string | null
+          date_start: string | null
           day_of_week: number | null
           end_time: string
           id: string
@@ -70,6 +72,8 @@ export type Database = {
           class_id: string
           created_at?: string
           current_bookings?: number | null
+          date_end?: string | null
+          date_start?: string | null
           day_of_week?: number | null
           end_time: string
           id?: string
@@ -81,6 +85,8 @@ export type Database = {
           class_id?: string
           created_at?: string
           current_bookings?: number | null
+          date_end?: string | null
+          date_start?: string | null
           day_of_week?: number | null
           end_time?: string
           id?: string
@@ -422,6 +428,41 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_exceptions: {
+        Row: {
+          class_schedule_id: string
+          created_at: string
+          exception_date: string
+          id: string
+          is_cancelled: boolean
+          updated_at: string
+        }
+        Insert: {
+          class_schedule_id: string
+          created_at?: string
+          exception_date: string
+          id?: string
+          is_cancelled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          class_schedule_id?: string
+          created_at?: string
+          exception_date?: string
+          id?: string
+          is_cancelled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_exceptions_class_schedule_id_fkey"
+            columns: ["class_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "class_schedules"
             referencedColumns: ["id"]
           },
         ]
