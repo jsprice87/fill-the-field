@@ -28,7 +28,7 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (uuidPattern.test(franchiseeId)) {
           // It's already a UUID, but let's check if there's a slug for it
-          const { data: session } = await supabase.auth.getSession();
+          const { data: { session } } = await supabase.auth.getSession();
           
           // Only redirect if this is the currently logged in user
           if (session?.user && session.user.id === franchiseeId) {

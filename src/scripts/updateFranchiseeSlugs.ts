@@ -47,6 +47,14 @@ export const updateFranchiseeSlugs = async () => {
   }
 };
 
-// This function can be run from the console to update all existing franchisees without slugs
-window.updateSlugs = updateFranchiseeSlugs;
+// Extend the Window interface to include our custom function
+declare global {
+  interface Window {
+    updateSlugs: () => Promise<void>;
+  }
+}
 
+// This function can be run from the console to update all existing franchisees without slugs
+if (typeof window !== 'undefined') {
+  window.updateSlugs = updateFranchiseeSlugs;
+}
