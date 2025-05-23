@@ -57,6 +57,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/create-account" element={<Register />} />
+          <Route path="/register" element={<Register />} />
           
           {/* Redirect /dashboard to the proper route */}
           <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
