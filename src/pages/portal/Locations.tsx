@@ -8,30 +8,6 @@ import LocationCard, { LocationProps } from '@/components/locations/LocationCard
 import LocationForm, { LocationFormData } from '@/components/locations/LocationForm';
 import { supabase } from "@/integrations/supabase/client";
 
-// Helper function to determine if a string is a valid UUID
-const isValidUUID = (str: string): boolean => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-};
-
-// Helper function to map non-UUID franchisee IDs to valid UUIDs
-const mapFranchiseeIdToUUID = (id: string): string => {
-  // For development and testing, map specific franchisee IDs to known UUIDs
-  if (id === "franchise-001") {
-    return "d0e70b5b-0e21-4956-a2a8-62b0e3a62a8c"; // Example UUID for franchise-001
-  }
-  if (id.startsWith("franchise-")) {
-    // Generate deterministic UUID based on franchise ID
-    return `00000000-0000-0000-0000-${id.replace("franchise-", "").padStart(12, '0')}`;
-  }
-  // If it's already a valid UUID, return it
-  if (isValidUUID(id)) {
-    return id;
-  }
-  // Default fallback UUID
-  return "00000000-0000-0000-0000-000000000001";
-};
-
 const PortalLocations: React.FC = () => {
   const [locations, setLocations] = useState<LocationProps[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -39,28 +15,20 @@ const PortalLocations: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { franchiseeId } = useParams<{ franchiseeId: string }>();
 
-  // Get the current franchisee ID either from the URL or from the auth session
+  // Get the current user's ID to use as franchisee_id
   const getCurrentFranchiseeId = async (): Promise<string> => {
-    // If we have a franchiseeId in the URL, map it to a valid UUID if needed
-    if (franchiseeId) {
-      console.log("Using franchiseeId from URL:", franchiseeId);
-      return mapFranchiseeIdToUUID(franchiseeId);
-    }
-
-    // Get the user ID from Supabase auth
     try {
       const { data } = await supabase.auth.getSession();
       const userId = data.session?.user?.id;
       if (userId) {
-        console.log("Using franchiseeId from Supabase auth:", userId);
+        console.log("Using current user ID as franchisee_id:", userId);
         return userId;
       }
     } catch (error) {
       console.error("Error getting user ID:", error);
     }
 
-    // Fallback to default UUID
-    return "00000000-0000-0000-0000-000000000001";
+    throw new Error("User not authenticated. Please log in.");
   };
 
   // Load locations from Supabase
