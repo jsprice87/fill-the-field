@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +20,8 @@ export interface LocationFormData {
   city: string;
   state: string;
   zip: string;
-  phone?: string;
-  email?: string;
+  phone?: string | null;
+  email?: string | null;
   isActive: boolean;
 }
 
@@ -52,6 +53,15 @@ const LocationForm: React.FC<LocationFormProps> = ({
     initialData || defaultLocationData
   );
 
+  // Reset form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    } else {
+      setFormData(defaultLocationData);
+    }
+  }, [initialData, open]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -71,8 +81,11 @@ const LocationForm: React.FC<LocationFormProps> = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? 'Edit Location' : 'Add New Location'}
+            {initialData?.id ? 'Edit Location' : 'Add New Location'}
           </DialogTitle>
+          <DialogDescription>
+            {initialData?.id ? 'Update location details' : 'Enter details for your new location'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-2">
@@ -141,7 +154,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             <Input
               id="phone"
               name="phone"
-              value={formData.phone}
+              value={formData.phone || ''}
               onChange={handleChange}
               placeholder="(303) 555-1234"
             />
@@ -153,7 +166,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               id="email"
               name="email"
               type="email"
-              value={formData.email}
+              value={formData.email || ''}
               onChange={handleChange}
               placeholder="downtown@soccerstars.com"
             />
@@ -173,7 +186,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               Cancel
             </Button>
             <Button type="submit">
-              {initialData ? 'Update' : 'Create'} Location
+              {initialData?.id ? 'Update' : 'Create'} Location
             </Button>
           </DialogFooter>
         </form>

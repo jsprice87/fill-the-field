@@ -12,9 +12,17 @@ export interface LocationProps {
   city: string;
   state: string;
   zip: string;
-  phone?: string;
-  email?: string;
-  isActive?: boolean;
+  phone?: string | null;
+  email?: string | null;
+  is_active?: boolean;
+  franchisee_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  description?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  website?: string | null;
+  isActive?: boolean; // For backward compatibility with the form
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
@@ -28,16 +36,20 @@ const LocationCard: React.FC<LocationProps> = ({
   zip,
   phone,
   email,
-  isActive = true,
+  is_active = true,
+  isActive,
   onEdit,
   onDelete
 }) => {
+  // Use is_active from database or isActive from form, defaulting to true
+  const activeStatus = is_active !== undefined ? is_active : isActive !== undefined ? isActive : true;
+  
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">{name}</CardTitle>
-          {isActive ? (
+          {activeStatus ? (
             <Badge variant="default" className="bg-green-500">Active</Badge>
           ) : (
             <Badge variant="outline" className="text-gray-500">Inactive</Badge>
