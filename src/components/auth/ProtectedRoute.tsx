@@ -2,7 +2,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,15 +13,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check for test bypass auth token first
-        const testAuthData = localStorage.getItem('supabase.auth.token');
-        if (testAuthData && (import.meta.env.DEV || window.location.hostname === 'localhost')) {
-          console.log('Found test auth session');
-          setIsAuthenticated(true);
-          return;
-        }
-        
-        // If no test token, proceed with normal auth check
         const { data } = await supabase.auth.getSession();
         setIsAuthenticated(!!data.session);
       } catch (error) {
@@ -34,18 +24,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     // Set up listener for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Don't override test auth when in dev environment and we have a test token
-        const hasTestAuth = localStorage.getItem('supabase.auth.token') && 
-                           (import.meta.env.DEV || window.location.hostname === 'localhost');
-                           
-        if (!hasTestAuth) {
-          setIsAuthenticated(!!session);
-          
-          if (event === "SIGNED_IN") {
-            console.log("User signed in successfully");
-          } else if (event === "SIGNED_OUT") {
-            console.log("User signed out");
-          }
+        setIsAuthenticated(!!session);
+        
+        if (event === "SIGNED_IN") {
+          console.log("User signed in successfully");
+        } else if (event === "SIGNED_OUT") {
+          console.log("User signed out");
         }
       }
     );

@@ -107,84 +107,116 @@ const Login = () => {
     }
   };
   
-  // Bypass login for quick testing
-  const bypassLogin = async (userType: 'admin' | 'franchisee1' | 'franchisee2' | 'franchisee3') => {
+  // Create real test accounts and login
+  const createAndLoginTestUser = async (userType: 'admin' | 'franchisee1' | 'franchisee2' | 'franchisee3') => {
     setIsLoading(true);
     
     try {
       if (userType === 'admin') {
-        // Clear any existing auth data
-        localStorage.removeItem('supabase.auth.token');
-        
-        // Set form data for visual feedback
-        setFormData({
+        // Try to login first, if it fails, create the account
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
           email: adminAccount.email,
           password: adminAccount.password,
         });
         
-        // Store user data in localStorage to bypass authentication checks
-        const testAuthData = {
-          currentSession: {
-            access_token: 'test-admin-token',
-            user: {
-              id: 'admin-id',
-              email: adminAccount.email,
-              user_metadata: { role: 'admin' }
+        if (loginError && loginError.message.includes('Invalid login credentials')) {
+          // Create admin account
+          console.log("Creating admin account...");
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: adminAccount.email,
+            password: adminAccount.password,
+            options: {
+              data: {
+                role: 'admin'
+              }
             }
+          });
+          
+          if (signUpError) {
+            throw signUpError;
           }
-        };
-        
-        localStorage.setItem('supabase.auth.token', JSON.stringify(testAuthData));
-        
-        // Show success message and navigate
-        toast.success(`Test login as Admin`);
-        
-        // Short delay to ensure localStorage is updated
-        setTimeout(() => {
-          setIsLoading(false);
+          
+          toast.success("Admin account created and logged in");
+          setFormData({
+            email: adminAccount.email,
+            password: adminAccount.password,
+          });
           navigate("/admin/dashboard");
-        }, 100);
+        } else if (loginData.user) {
+          toast.success("Logged in as Admin");
+          setFormData({
+            email: adminAccount.email,
+            password: adminAccount.password,
+          });
+          navigate("/admin/dashboard");
+        }
       } else {
         const franchiseeIndex = parseInt(userType.replace('franchisee', '')) - 1;
         if (franchiseeIndex >= 0 && franchiseeIndex < dummyFranchisees.length) {
-          // Clear any existing auth data
-          localStorage.removeItem('supabase.auth.token');
-          
           const franchisee = dummyFranchisees[franchiseeIndex];
           
-          // Set form data for visual feedback
-          setFormData({
+          // Try to login first, if it fails, create the account
+          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
             email: franchisee.email,
             password: franchisee.password,
           });
           
-          // Store user data in localStorage to bypass authentication checks
-          const testAuthData = {
-            currentSession: {
-              access_token: `test-franchisee-token-${franchiseeIndex}`,
-              user: {
-                id: franchisee.id,
-                email: franchisee.email,
-                user_metadata: { role: 'franchisee', name: franchisee.name }
+          if (loginError && loginError.message.includes('Invalid login credentials')) {
+            // Create franchisee account
+            console.log(`Creating franchisee account for ${franchisee.name}...`);
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+              email: franchisee.email,
+              password: franchisee.password,
+              options: {
+                data: {
+                  company_name: franchisee.name,
+                  contact_name: franchisee.name,
+                  role: 'franchisee'
+                }
+              }
+            });
+            
+            if (signUpError) {
+              throw signUpError;
+            }
+            
+            // After successful signup, create franchisee record
+            if (signUpData.user) {
+              console.log(`Creating franchisee record for user ${signUpData.user.id}...`);
+              const { error: franchiseeError } = await supabase
+                .from("franchisees")
+                .insert({
+                  user_id: signUpData.user.id,
+                  company_name: franchisee.name,
+                  contact_name: franchisee.name,
+                  email: franchisee.email,
+                });
+                
+              if (franchiseeError) {
+                console.error("Error creating franchisee record:", franchiseeError);
               }
             }
-          };
-          
-          localStorage.setItem('supabase.auth.token', JSON.stringify(testAuthData));
-          
-          // Show success message and navigate
-          toast.success(`Test login as ${franchisee.name}`);
-          
-          // Short delay to ensure localStorage is updated
-          setTimeout(() => {
-            setIsLoading(false);
-            navigate(`/${franchisee.id}/portal/dashboard`);
-          }, 100);
+            
+            toast.success(`${franchisee.name} account created and logged in`);
+            setFormData({
+              email: franchisee.email,
+              password: franchisee.password,
+            });
+            navigate(`/${signUpData.user?.id}/portal/dashboard`);
+          } else if (loginData.user) {
+            toast.success(`Logged in as ${franchisee.name}`);
+            setFormData({
+              email: franchisee.email,
+              password: franchisee.password,
+            });
+            navigate(`/${loginData.user.id}/portal/dashboard`);
+          }
         }
       }
-    } catch (error) {
-      console.error("Bypass login error:", error);
-      toast.error("Error during test login");
+    } catch (error: any) {
+      console.error("Test account creation/login error:", error);
+      toast.error(`Error: ${error.message}`);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -237,15 +269,16 @@ const Login = () => {
               {/* Test Environment: Quick Access Buttons */}
               {(import.meta.env.DEV || window.location.hostname === 'localhost') && (
                 <div className="mt-4 space-y-2">
-                  <div className="text-xs text-gray-500 text-center mb-2">Test Environment: Quick Access</div>
+                  <div className="text-xs text-gray-500 text-center mb-2">Test Environment: Create/Login Test Accounts</div>
                   
                   <Button 
                     type="button" 
                     variant="outline"
                     className="w-full text-xs"
-                    onClick={() => bypassLogin('admin')}
+                    onClick={() => createAndLoginTestUser('admin')}
+                    disabled={isLoading}
                   >
-                    Login as Admin
+                    Create/Login as Admin
                   </Button>
                   
                   <div className="grid grid-cols-3 gap-2">
@@ -256,7 +289,8 @@ const Login = () => {
                         variant="outline"
                         size="sm"
                         className="text-xs"
-                        onClick={() => bypassLogin(`franchisee${index + 1}` as any)}
+                        onClick={() => createAndLoginTestUser(`franchisee${index + 1}` as any)}
+                        disabled={isLoading}
                       >
                         Franchisee {index + 1}
                       </Button>
@@ -264,7 +298,7 @@ const Login = () => {
                   </div>
                   
                   <div className="text-xs text-center text-gray-500 mt-1">
-                    <p>Franchisee accounts:</p>
+                    <p>Test accounts (will be created if they don't exist):</p>
                     {dummyFranchisees.map((f, i) => (
                       <p key={i} className="text-[10px]">{f.name}: {f.email}</p>
                     ))}
