@@ -75,6 +75,8 @@ const PortalLocations: React.FC = () => {
       setIsLoading(true);
       const currentFranchiseeId = await getCurrentFranchiseeId();
       
+      console.log("Fetching locations for franchiseeId:", currentFranchiseeId);
+      
       const { data, error } = await supabase
         .from('locations')
         .select('*')
@@ -137,6 +139,7 @@ const PortalLocations: React.FC = () => {
   const handleFormSubmit = async (data: LocationFormData) => {
     try {
       const currentFranchiseeId = await getCurrentFranchiseeId();
+      console.log("Saving location with franchiseeId:", currentFranchiseeId);
       
       if (data.id) {
         // Update existing location
@@ -155,6 +158,7 @@ const PortalLocations: React.FC = () => {
           .eq('id', data.id);
         
         if (error) {
+          console.error("Error updating location:", error);
           throw error;
         }
         
@@ -164,6 +168,11 @@ const PortalLocations: React.FC = () => {
         toast.success('Location updated successfully');
       } else {
         // Add new location
+        console.log("Creating new location with data:", {
+          ...data,
+          franchisee_id: currentFranchiseeId
+        });
+        
         const { data: newLocation, error } = await supabase
           .from('locations')
           .insert({
@@ -177,14 +186,17 @@ const PortalLocations: React.FC = () => {
             is_active: data.isActive,
             franchisee_id: currentFranchiseeId
           })
-          .select()
-          .single();
+          .select();
         
         if (error) {
+          console.error("Error inserting location:", error);
           throw error;
         }
         
-        setLocations([...locations, newLocation]);
+        console.log("New location created:", newLocation);
+        if (newLocation && newLocation.length > 0) {
+          setLocations([...locations, newLocation[0]]);
+        }
         toast.success('Location added successfully');
       }
       
