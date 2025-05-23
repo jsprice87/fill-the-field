@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,114 +44,123 @@ import AdminTransactions from "./pages/admin/Transactions";
 import AdminSettings from "./pages/admin/Settings";
 import AdminGlobalSettings from "./pages/admin/GlobalSettings";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        {/* This component will automatically migrate UUID URLs to slug URLs */}
-        <MigrateUserUrls />
-        
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/create-account" element={<Register />} />
-          <Route path="/register" element={<Register />} />
+const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          {/* This component will automatically migrate UUID URLs to slug URLs */}
+          <MigrateUserUrls />
           
-          {/* Redirect /dashboard to the proper route */}
-          <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-          
-          {/* Public Landing Pages - Accessible without login */}
-          <Route path="/:franchiseeId/landing-page" element={
-            <SlugResolver>
-              <LandingPage />
-            </SlugResolver>
-          } />
-          <Route path="/:franchiseeId/landing-page/find-classes" element={
-            <SlugResolver>
-              <FindClasses />
-            </SlugResolver>
-          } />
-          <Route path="/:franchiseeId/landing-page/contact-us" element={
-            <SlugResolver>
-              <ContactUs />
-            </SlugResolver>
-          } />
-          <Route path="/:franchiseeId/landing-page/book-a-class" element={
-            <SlugResolver>
-              <BookClass />
-            </SlugResolver>
-          } />
-          <Route path="/:franchiseeId/landing-page/confirmation" element={
-            <SlugResolver>
-              <Confirmation />
-            </SlugResolver>
-          } />
-          <Route path="/:franchiseeId/landing-page/spanish-speaking" element={
-            <SlugResolver>
-              <SpanishLanding />
-            </SlugResolver>
-          } />
-          
-          {/* Protected Franchisee Routes */}
-          <Route 
-            path="/:franchiseeId/portal" 
-            element={
-              <ProtectedRoute>
-                <SlugResolver>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/create-account" element={<Register />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Redirect /dashboard to the proper route */}
+            <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+            
+            {/* Public Landing Pages - Accessible without login */}
+            <Route path="/:franchiseeId/landing-page" element={
+              <SlugResolver>
+                <LandingPage />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/landing-page/find-classes" element={
+              <SlugResolver>
+                <FindClasses />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/landing-page/contact-us" element={
+              <SlugResolver>
+                <ContactUs />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/landing-page/book-a-class" element={
+              <SlugResolver>
+                <BookClass />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/landing-page/confirmation" element={
+              <SlugResolver>
+                <Confirmation />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/landing-page/spanish-speaking" element={
+              <SlugResolver>
+                <SpanishLanding />
+              </SlugResolver>
+            } />
+            
+            {/* Protected Franchisee Routes */}
+            <Route 
+              path="/:franchiseeId/portal" 
+              element={
+                <ProtectedRoute>
+                  <SlugResolver>
+                    <DashboardLayout />
+                  </SlugResolver>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<PortalDashboard />} />
+              <Route path="dashboard" element={<PortalDashboard />} />
+              <Route path="locations" element={<PortalLocations />} />
+              <Route path="classes" element={<ClassesList />} />
+              <Route path="classes/add" element={<AddClasses />} />
+              <Route path="classes/edit/:classId" element={<EditClass />} />
+              <Route path="leads" element={<PortalLeads />} />
+              <Route path="settings" element={<PortalSettings />} />
+            </Route>
+            
+            <Route 
+              path="/:franchiseeId/profile" 
+              element={
+                <ProtectedRoute>
+                  <SlugResolver>
+                    <UserProfile />
+                  </SlugResolver>
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Admin Routes */}
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
                   <DashboardLayout />
-                </SlugResolver>
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<PortalDashboard />} />
-            <Route path="dashboard" element={<PortalDashboard />} />
-            <Route path="locations" element={<PortalLocations />} />
-            <Route path="classes" element={<ClassesList />} />
-            <Route path="classes/add" element={<AddClasses />} />
-            <Route path="classes/edit/:classId" element={<EditClass />} />
-            <Route path="leads" element={<PortalLeads />} />
-            <Route path="settings" element={<PortalSettings />} />
-          </Route>
-          
-          <Route 
-            path="/:franchiseeId/profile" 
-            element={
-              <ProtectedRoute>
-                <SlugResolver>
-                  <UserProfile />
-                </SlugResolver>
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Admin Routes */}
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="user-management" element={<AdminUserManagement />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="transactions" element={<AdminTransactions />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="settings/global" element={<AdminGlobalSettings />} />
-          </Route>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="user-management" element={<AdminUserManagement />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="transactions" element={<AdminTransactions />} />
+              <Route path="settings" element={<AdminSettings />} />
+              <Route path="settings/global" element={<AdminGlobalSettings />} />
+            </Route>
 
-          {/* Catch-all 404 Page */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+            {/* Catch-all 404 Page */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
