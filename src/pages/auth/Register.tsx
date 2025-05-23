@@ -53,48 +53,59 @@ const Register = () => {
             company_name: formData.companyName,
             contact_name: formData.contactName,
           },
-          // In development, don't require email verification
-          emailRedirectTo: window.location.origin + '/dashboard',
         }
       });
       
       if (authError) throw authError;
       
       if (authData.user) {
-        // 2. Create franchisee record with slug
-        const { error: franchiseeError } = await supabase
-          .from("franchisees")
-          .insert({
-            user_id: authData.user.id,
-            company_name: formData.companyName,
-            contact_name: formData.contactName,
-            email: formData.email,
-            slug: uniqueSlug,
-          });
-          
-        if (franchiseeError) throw franchiseeError;
-        
-        // For development/testing, bypass email confirmation and sign in directly
+        // For development/testing, try to sign in immediately to get proper auth context
         if (import.meta.env.DEV || window.location.hostname === 'localhost') {
-          // Attempt immediate login for testing environments
-          const { error: signInError } = await supabase.auth.signInWithPassword({
+          // Sign in the user to establish proper auth context
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: formData.email,
             password: formData.password,
           });
           
-          if (!signInError) {
-            toast.success("Account created and logged in automatically (test mode)");
+          if (signInError) {
+            console.error("Sign in error after registration:", signInError);
+            toast.error("Account created but sign-in failed. Please try logging in manually.");
+            navigate("/login");
+            return;
+          }
+          
+          if (signInData.user) {
+            // Now create franchisee record with proper auth context
+            const { error: franchiseeError } = await supabase
+              .from("franchisees")
+              .insert({
+                user_id: signInData.user.id,
+                company_name: formData.companyName,
+                contact_name: formData.contactName,
+                email: formData.email,
+                slug: uniqueSlug,
+              });
+              
+            if (franchiseeError) {
+              console.error("Franchisee creation error:", franchiseeError);
+              toast.error("Account created but profile setup failed. Please contact support.");
+              navigate("/login");
+              return;
+            }
+            
+            toast.success("Account created and logged in successfully!");
             navigate(`/${uniqueSlug}/portal/dashboard`);
             return;
           }
         }
         
+        // Production flow - email confirmation required
         toast.success("Registration successful! Please check your email to verify your account.");
         navigate("/login");
       }
     } catch (error: any) {
-      toast.error(error.message || "Registration failed. Please try again.");
       console.error("Registration error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
