@@ -17,36 +17,13 @@ const PortalLocations: React.FC = () => {
 
   // Get the current franchisee ID either from the URL or from the auth session
   const getCurrentFranchiseeId = async (): Promise<string> => {
-    // If we have a franchiseeId in the URL, use that
+    // If we have a franchiseeId in the URL, that's our user ID
     if (franchiseeId) {
       console.log("Using franchiseeId from URL:", franchiseeId);
-      
-      // For test environments with non-UUID franchiseeId like "franchise-001",
-      // we'll use a fixed valid UUID instead
-      if (franchiseeId === "franchise-001" || 
-          franchiseeId.startsWith("franchise-") || 
-          !isValidUUID(franchiseeId)) {
-        return "00000000-0000-0000-0000-000000000001";
-      }
       return franchiseeId;
     }
 
-    // For test users, get the franchiseeId from localStorage
-    const testAuthData = localStorage.getItem('supabase.auth.token');
-    if (testAuthData && (import.meta.env.DEV || window.location.hostname === 'localhost')) {
-      try {
-        const parsedData = JSON.parse(testAuthData);
-        const userId = parsedData?.currentSession?.user?.id;
-        if (userId) {
-          console.log("Using franchiseeId from test auth:", userId);
-          return isValidUUID(userId) ? userId : "00000000-0000-0000-0000-000000000001";
-        }
-      } catch (error) {
-        console.error("Error parsing test auth data:", error);
-      }
-    }
-
-    // For real users, get the user ID from Supabase auth
+    // Get the user ID from Supabase auth
     try {
       const { data } = await supabase.auth.getSession();
       const userId = data.session?.user?.id;
@@ -58,15 +35,8 @@ const PortalLocations: React.FC = () => {
       console.error("Error getting user ID:", error);
     }
 
-    // Fallback to default UUID for development
-    console.warn("No franchiseeId found, using default UUID");
-    return "00000000-0000-0000-0000-000000000001";
-  };
-
-  // Helper function to validate UUID format
-  const isValidUUID = (str: string): boolean => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(str);
+    // If we still don't have a user ID, throw an error
+    throw new Error("No franchisee ID found. Please log in or use a valid franchisee ID in the URL.");
   };
 
   // Load locations from Supabase
