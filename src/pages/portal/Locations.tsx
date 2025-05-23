@@ -16,80 +16,36 @@ const PortalLocations: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { franchiseeId } = useParams<{ franchiseeId: string }>();
 
-  // Get current user and ensure franchisee record exists
+  // Get current user and load locations
   useEffect(() => {
-    const initializeUser = async () => {
+    const getCurrentUser = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setCurrentUserId(session.user.id);
           console.log("Current user ID:", session.user.id);
-          
-          // Check if franchisee record exists
-          const { data: franchisee, error: franchiseeError } = await supabase
-            .from('franchisees')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
-          
-          if (franchiseeError && franchiseeError.code === 'PGRST116') {
-            // No franchisee record exists, create one
-            console.log("Creating franchisee record for user:", session.user.id);
-            const { error: createError } = await supabase
-              .from('franchisees')
-              .insert({
-                user_id: session.user.id,
-                company_name: session.user.email?.split('@')[0] || 'Soccer Stars',
-                contact_name: session.user.email?.split('@')[0] || 'Contact',
-                email: session.user.email || '',
-              });
-            
-            if (createError) {
-              console.error("Error creating franchisee record:", createError);
-              toast.error("Failed to initialize account. Please contact support.");
-              return;
-            }
-            
-            console.log("Franchisee record created successfully");
-          } else if (franchiseeError) {
-            console.error("Error checking franchisee record:", franchiseeError);
-            toast.error("Failed to verify account. Please try again.");
-            return;
-          } else {
-            console.log("Franchisee record found:", franchisee);
-          }
+          loadLocations(session.user.id);
         }
       } catch (error) {
-        console.error("Error initializing user:", error);
-        toast.error("Failed to initialize. Please try again.");
+        console.error("Error getting current user:", error);
+        toast.error("Failed to authenticate. Please try again.");
       }
     };
 
-    initializeUser();
+    getCurrentUser();
   }, []);
 
-  // Load locations when we have a user
-  useEffect(() => {
-    if (currentUserId) {
-      loadLocations();
-    }
-  }, [currentUserId]);
-
   // Load locations from Supabase
-  const loadLocations = async () => {
-    if (!currentUserId) {
-      console.error("No user ID available for loading locations");
-      return;
-    }
-
+  const loadLocations = async (userId: string) => {
     try {
       setIsLoading(true);
-      console.log("Fetching locations for user ID:", currentUserId);
+      console.log("Fetching locations for user ID:", userId);
       
+      // Try to fetch locations using the user ID
       const { data, error } = await supabase
         .from('locations')
         .select('*')
-        .eq('franchisee_id', currentUserId);
+        .eq('franchisee_id', userId);
       
       if (error) {
         console.error("Database error loading locations:", error);
