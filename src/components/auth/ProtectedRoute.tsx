@@ -34,12 +34,18 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     // Set up listener for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setIsAuthenticated(!!session);
-        
-        if (event === "SIGNED_IN") {
-          console.log("User signed in successfully");
-        } else if (event === "SIGNED_OUT") {
-          console.log("User signed out");
+        // Don't override test auth when in dev environment and we have a test token
+        const hasTestAuth = localStorage.getItem('supabase.auth.token') && 
+                           (import.meta.env.DEV || window.location.hostname === 'localhost');
+                           
+        if (!hasTestAuth) {
+          setIsAuthenticated(!!session);
+          
+          if (event === "SIGNED_IN") {
+            console.log("User signed in successfully");
+          } else if (event === "SIGNED_OUT") {
+            console.log("User signed out");
+          }
         }
       }
     );

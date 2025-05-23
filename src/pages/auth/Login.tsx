@@ -113,6 +113,9 @@ const Login = () => {
     
     try {
       if (userType === 'admin') {
+        // Clear any existing auth data
+        localStorage.removeItem('supabase.auth.token');
+        
         // Set form data for visual feedback
         setFormData({
           email: adminAccount.email,
@@ -120,7 +123,7 @@ const Login = () => {
         });
         
         // Store user data in localStorage to bypass authentication checks
-        localStorage.setItem('supabase.auth.token', JSON.stringify({
+        const testAuthData = {
           currentSession: {
             access_token: 'test-admin-token',
             user: {
@@ -129,21 +132,24 @@ const Login = () => {
               user_metadata: { role: 'admin' }
             }
           }
-        }));
+        };
         
-        // Manually trigger an auth state change
-        await supabase.auth.onAuthStateChange((event, session) => {
-          console.log('Auth state changed:', event);
-        });
+        localStorage.setItem('supabase.auth.token', JSON.stringify(testAuthData));
         
+        // Show success message and navigate
         toast.success(`Test login as Admin`);
+        
+        // Short delay to ensure localStorage is updated
         setTimeout(() => {
           setIsLoading(false);
           navigate("/admin/dashboard");
-        }, 500);
+        }, 100);
       } else {
         const franchiseeIndex = parseInt(userType.replace('franchisee', '')) - 1;
         if (franchiseeIndex >= 0 && franchiseeIndex < dummyFranchisees.length) {
+          // Clear any existing auth data
+          localStorage.removeItem('supabase.auth.token');
+          
           const franchisee = dummyFranchisees[franchiseeIndex];
           
           // Set form data for visual feedback
@@ -153,7 +159,7 @@ const Login = () => {
           });
           
           // Store user data in localStorage to bypass authentication checks
-          localStorage.setItem('supabase.auth.token', JSON.stringify({
+          const testAuthData = {
             currentSession: {
               access_token: `test-franchisee-token-${franchiseeIndex}`,
               user: {
@@ -162,18 +168,18 @@ const Login = () => {
                 user_metadata: { role: 'franchisee', name: franchisee.name }
               }
             }
-          }));
+          };
           
-          // Manually trigger an auth state change
-          await supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth state changed:', event);
-          });
+          localStorage.setItem('supabase.auth.token', JSON.stringify(testAuthData));
           
+          // Show success message and navigate
           toast.success(`Test login as ${franchisee.name}`);
+          
+          // Short delay to ensure localStorage is updated
           setTimeout(() => {
             setIsLoading(false);
             navigate(`/${franchisee.id}/portal/dashboard`);
-          }, 500);
+          }, 100);
         }
       }
     } catch (error) {
