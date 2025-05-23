@@ -29,9 +29,16 @@ import PortalLeads from "./pages/portal/Leads";
 import PortalSettings from "./pages/portal/Settings";
 import UserProfile from "./pages/portal/Profile";
 
-// Landing Pages (Public)
+// Booking Flow Pages (Public)
+import BookingLanding from "./pages/booking/BookingLanding";
+import FindClasses from "./pages/booking/FindClasses";
+import ClassBooking from "./pages/booking/ClassBooking";
+import BookingConfirmation from "./pages/booking/BookingConfirmation";
+import ThankYou from "./pages/booking/ThankYou";
+import SpanishInfo from "./pages/booking/SpanishInfo";
+
+// Legacy Landing Pages (Public)
 import LandingPage from "./pages/landing/LandingPage";
-import FindClasses from "./pages/landing/FindClasses";
 import ContactUs from "./pages/landing/ContactUs";
 import BookClass from "./pages/landing/BookClass";
 import Confirmation from "./pages/landing/Confirmation";
@@ -73,7 +80,39 @@ const App: React.FC = () => {
             {/* Redirect /dashboard to the proper route */}
             <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
             
-            {/* Public Landing Pages - Accessible without login */}
+            {/* New Booking Flow - Public Routes */}
+            <Route path="/:franchiseeId/free-trial" element={
+              <SlugResolver>
+                <BookingLanding />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/free-trial/find-classes" element={
+              <SlugResolver>
+                <FindClasses />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/free-trial/booking" element={
+              <SlugResolver>
+                <ClassBooking />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/free-trial/confirmation" element={
+              <SlugResolver>
+                <BookingConfirmation />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/free-trial/thank-you/:bookingId" element={
+              <SlugResolver>
+                <ThankYou />
+              </SlugResolver>
+            } />
+            <Route path="/:franchiseeId/free-trial/spanish-info" element={
+              <SlugResolver>
+                <SpanishInfo />
+              </SlugResolver>
+            } />
+            
+            {/* Legacy Public Landing Pages - Accessible without login */}
             <Route path="/:franchiseeId/landing-page" element={
               <SlugResolver>
                 <LandingPage />

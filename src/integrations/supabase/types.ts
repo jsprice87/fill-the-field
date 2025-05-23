@@ -11,31 +11,43 @@ export type Database = {
     Tables: {
       bookings: {
         Row: {
+          booking_reference: string | null
           cancellation_reason: string | null
           class_schedule_id: string
+          confirmation_email_sent: boolean | null
           created_at: string
           id: string
           lead_id: string
           status: string | null
           updated_at: string
+          waiver_accepted: boolean | null
+          waiver_accepted_at: string | null
         }
         Insert: {
+          booking_reference?: string | null
           cancellation_reason?: string | null
           class_schedule_id: string
+          confirmation_email_sent?: boolean | null
           created_at?: string
           id?: string
           lead_id: string
           status?: string | null
           updated_at?: string
+          waiver_accepted?: boolean | null
+          waiver_accepted_at?: string | null
         }
         Update: {
+          booking_reference?: string | null
           cancellation_reason?: string | null
           class_schedule_id?: string
+          confirmation_email_sent?: boolean | null
           created_at?: string
           id?: string
           lead_id?: string
           status?: string | null
           updated_at?: string
+          waiver_accepted?: boolean | null
+          waiver_accepted_at?: string | null
         }
         Relationships: [
           {
@@ -316,6 +328,8 @@ export type Database = {
       }
       leads: {
         Row: {
+          booking_session_data: Json | null
+          child_speaks_english: boolean | null
           created_at: string
           email: string
           first_name: string
@@ -324,12 +338,15 @@ export type Database = {
           last_name: string
           notes: string | null
           phone: string
+          selected_location_id: string | null
           source: string | null
           status: string | null
           updated_at: string
           zip: string
         }
         Insert: {
+          booking_session_data?: Json | null
+          child_speaks_english?: boolean | null
           created_at?: string
           email: string
           first_name: string
@@ -338,12 +355,15 @@ export type Database = {
           last_name: string
           notes?: string | null
           phone: string
+          selected_location_id?: string | null
           source?: string | null
           status?: string | null
           updated_at?: string
           zip: string
         }
         Update: {
+          booking_session_data?: Json | null
+          child_speaks_english?: boolean | null
           created_at?: string
           email?: string
           first_name?: string
@@ -352,6 +372,7 @@ export type Database = {
           last_name?: string
           notes?: string | null
           phone?: string
+          selected_location_id?: string | null
           source?: string | null
           status?: string | null
           updated_at?: string
@@ -363,6 +384,13 @@ export type Database = {
             columns: ["franchisee_id"]
             isOneToOne: false
             referencedRelation: "franchisees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_selected_location_id_fkey"
+            columns: ["selected_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -435,7 +463,10 @@ export type Database = {
       participants: {
         Row: {
           age: number
+          age_override: boolean | null
+          birth_date: string | null
           booking_id: string
+          computed_age: string | null
           created_at: string
           first_name: string
           id: string
@@ -444,7 +475,10 @@ export type Database = {
         }
         Insert: {
           age: number
+          age_override?: boolean | null
+          birth_date?: string | null
           booking_id: string
+          computed_age?: string | null
           created_at?: string
           first_name: string
           id?: string
@@ -453,7 +487,10 @@ export type Database = {
         }
         Update: {
           age?: number
+          age_override?: boolean | null
+          birth_date?: string | null
           booking_id?: string
+          computed_age?: string | null
           created_at?: string
           first_name?: string
           id?: string
@@ -466,6 +503,44 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_suggestions: {
+        Row: {
+          comment: string | null
+          created_at: string
+          email: string | null
+          franchisee_id: string
+          id: string
+          updated_at: string
+          zip: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          email?: string | null
+          franchisee_id: string
+          id?: string
+          updated_at?: string
+          zip: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          email?: string | null
+          franchisee_id?: string
+          id?: string
+          updated_at?: string
+          zip?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_suggestions_franchisee_id_fkey"
+            columns: ["franchisee_id"]
+            isOneToOne: false
+            referencedRelation: "franchisees"
             referencedColumns: ["id"]
           },
         ]
