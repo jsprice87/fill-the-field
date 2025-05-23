@@ -13,39 +13,58 @@ const PortalLocations: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationFormData | undefined>();
   const [isLoading, setIsLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const { franchiseeId } = useParams<{ franchiseeId: string }>();
+  const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
+  const { franchiseeId: slugParam } = useParams<{ franchiseeId: string }>();
 
-  // Get current user and load locations
+  // Get franchisee ID and load locations
   useEffect(() => {
-    const getCurrentUser = async () => {
+    const getFranchiseeAndLoadLocations = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setCurrentUserId(session.user.id);
-          console.log("Current user ID:", session.user.id);
-          loadLocations(session.user.id);
+        if (!session?.user) {
+          toast.error("Authentication required");
+          return;
         }
+
+        console.log("Current user ID:", session.user.id);
+        
+        // Get the franchisee record for this user
+        const { data: franchisee, error: franchiseeError } = await supabase
+          .from('franchisees')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (franchiseeError || !franchisee) {
+          console.error("Error fetching franchisee:", franchiseeError);
+          toast.error("Unable to find franchisee account. Please contact support.");
+          return;
+        }
+        
+        console.log("Found franchisee ID:", franchisee.id);
+        setFranchiseeId(franchisee.id);
+        
+        // Load locations for this franchisee
+        await loadLocations(franchisee.id);
       } catch (error) {
-        console.error("Error getting current user:", error);
+        console.error("Error getting franchisee:", error);
         toast.error("Failed to authenticate. Please try again.");
       }
     };
 
-    getCurrentUser();
+    getFranchiseeAndLoadLocations();
   }, []);
 
   // Load locations from Supabase
-  const loadLocations = async (userId: string) => {
+  const loadLocations = async (franchiseeId: string) => {
     try {
       setIsLoading(true);
-      console.log("Fetching locations for user ID:", userId);
+      console.log("Fetching locations for franchisee ID:", franchiseeId);
       
-      // Try to fetch locations using the user ID
       const { data, error } = await supabase
         .from('locations')
         .select('*')
-        .eq('franchisee_id', userId);
+        .eq('franchisee_id', franchiseeId);
       
       if (error) {
         console.error("Database error loading locations:", error);
@@ -79,8 +98,8 @@ const PortalLocations: React.FC = () => {
   };
 
   const handleDeleteLocation = async (id: string) => {
-    if (!currentUserId) {
-      toast.error("Authentication required");
+    if (!franchiseeId) {
+      toast.error("Franchisee information not available");
       return;
     }
 
@@ -105,13 +124,13 @@ const PortalLocations: React.FC = () => {
   };
 
   const handleFormSubmit = async (data: LocationFormData) => {
-    if (!currentUserId) {
-      toast.error("Authentication required");
+    if (!franchiseeId) {
+      toast.error("Franchisee information not available");
       return;
     }
 
     try {
-      console.log("Saving location with user ID:", currentUserId);
+      console.log("Saving location with franchisee ID:", franchiseeId);
       
       if (data.id) {
         // Update existing location
@@ -143,7 +162,7 @@ const PortalLocations: React.FC = () => {
         // Add new location
         console.log("Creating new location with data:", {
           ...data,
-          franchisee_id: currentUserId
+          franchisee_id: franchiseeId
         });
         
         const { data: newLocation, error } = await supabase
@@ -157,7 +176,7 @@ const PortalLocations: React.FC = () => {
             phone: data.phone || null,
             email: data.email || null,
             is_active: data.isActive,
-            franchisee_id: currentUserId
+            franchisee_id: franchiseeId
           })
           .select();
         
@@ -184,7 +203,7 @@ const PortalLocations: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Locations</h1>
-        <Button onClick={handleAddLocation}>
+        <Button onClick={handleAddLocation} disabled={!franchiseeId}>
           <Plus className="h-4 w-4 mr-2" />
           Add Location
         </Button>
