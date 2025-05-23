@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import LocationCard, { LocationProps } from '@/components/locations/LocationCard';
 import LocationForm, { LocationFormData } from '@/components/locations/LocationForm';
 import { supabase } from "@/integrations/supabase/client";
@@ -13,78 +13,32 @@ const PortalLocations: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationFormData | undefined>();
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { franchiseeId } = useParams<{ franchiseeId: string }>();
-  const navigate = useNavigate();
 
-  // Initialize authentication state and handle auth changes
+  // Get current user on component mount
   useEffect(() => {
-    console.log("Setting up authentication state management...");
-    
-    // Check current session
-    const checkSession = async () => {
+    const getCurrentUser = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Current session check:", { session, error });
-        
-        if (error) {
-          console.error("Session error:", error);
-          setIsAuthenticated(false);
-          setCurrentUserId(null);
-          return;
-        }
-        
+        const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          console.log("User is authenticated:", session.user.id);
-          setIsAuthenticated(true);
           setCurrentUserId(session.user.id);
-        } else {
-          console.log("No active session found");
-          setIsAuthenticated(false);
-          setCurrentUserId(null);
+          console.log("Current user ID:", session.user.id);
         }
       } catch (error) {
-        console.error("Error checking session:", error);
-        setIsAuthenticated(false);
-        setCurrentUserId(null);
+        console.error("Error getting current user:", error);
       }
     };
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.id);
-        
-        if (session?.user) {
-          setIsAuthenticated(true);
-          setCurrentUserId(session.user.id);
-        } else {
-          setIsAuthenticated(false);
-          setCurrentUserId(null);
-        }
-      }
-    );
-
-    // Check initial session
-    checkSession();
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    getCurrentUser();
   }, []);
 
-  // Load locations when authenticated
+  // Load locations when we have a user
   useEffect(() => {
-    if (isAuthenticated && currentUserId) {
-      console.log("User is authenticated, loading locations...");
+    if (currentUserId) {
       loadLocations();
-    } else if (isAuthenticated === false) {
-      console.log("User is not authenticated, redirecting to login...");
-      // Redirect to login page
-      navigate('/login');
     }
-  }, [isAuthenticated, currentUserId, navigate]);
+  }, [currentUserId]);
 
   // Load locations from Supabase
   const loadLocations = async () => {
@@ -234,31 +188,6 @@ const PortalLocations: React.FC = () => {
       toast.error("Failed to save location. Please try again.");
     }
   };
-
-  // Show loading state while checking authentication
-  if (!isAuthenticated && isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-        <span className="ml-3">Checking authentication...</span>
-      </div>
-    );
-  }
-
-  // Show authentication required message
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-4">Please log in to access your locations.</p>
-          <Button onClick={() => navigate('/login')}>
-            Go to Login
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
