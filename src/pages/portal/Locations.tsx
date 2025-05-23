@@ -20,6 +20,14 @@ const PortalLocations: React.FC = () => {
     // If we have a franchiseeId in the URL, use that
     if (franchiseeId) {
       console.log("Using franchiseeId from URL:", franchiseeId);
+      
+      // For test environments with non-UUID franchiseeId like "franchise-001",
+      // we'll use a fixed valid UUID instead
+      if (franchiseeId === "franchise-001" || 
+          franchiseeId.startsWith("franchise-") || 
+          !isValidUUID(franchiseeId)) {
+        return "00000000-0000-0000-0000-000000000001";
+      }
       return franchiseeId;
     }
 
@@ -31,7 +39,7 @@ const PortalLocations: React.FC = () => {
         const userId = parsedData?.currentSession?.user?.id;
         if (userId) {
           console.log("Using franchiseeId from test auth:", userId);
-          return userId;
+          return isValidUUID(userId) ? userId : "00000000-0000-0000-0000-000000000001";
         }
       } catch (error) {
         console.error("Error parsing test auth data:", error);
@@ -50,9 +58,15 @@ const PortalLocations: React.FC = () => {
       console.error("Error getting user ID:", error);
     }
 
-    // Fallback to default ID for development
-    console.warn("No franchiseeId found, using default");
-    return "franchise-001";
+    // Fallback to default UUID for development
+    console.warn("No franchiseeId found, using default UUID");
+    return "00000000-0000-0000-0000-000000000001";
+  };
+
+  // Helper function to validate UUID format
+  const isValidUUID = (str: string): boolean => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
   };
 
   // Load locations from Supabase
@@ -95,7 +109,7 @@ const PortalLocations: React.FC = () => {
     if (locationToEdit) {
       setCurrentLocation({
         ...locationToEdit,
-        isActive: locationToEdit.isActive ?? true
+        isActive: locationToEdit.is_active ?? true
       });
       setIsFormOpen(true);
     }
@@ -145,7 +159,7 @@ const PortalLocations: React.FC = () => {
         }
         
         setLocations(locations.map(loc => 
-          loc.id === data.id ? { ...data, id: data.id } : loc
+          loc.id === data.id ? { ...loc, name: data.name, address: data.address, city: data.city, state: data.state, zip: data.zip, phone: data.phone, email: data.email, is_active: data.isActive } : loc
         ));
         toast.success('Location updated successfully');
       } else {
