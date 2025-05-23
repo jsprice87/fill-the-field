@@ -8,6 +8,34 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+// Define dummy franchisee accounts
+const dummyFranchisees = [
+  {
+    email: "franchisee1@example.com",
+    password: "password123",
+    id: "franchise-001",
+    name: "South Denver Soccer Stars"
+  },
+  {
+    email: "franchisee2@example.com",
+    password: "password123",
+    id: "franchise-002",
+    name: "North Seattle Soccer Club"
+  },
+  {
+    email: "franchisee3@example.com",
+    password: "password123",
+    id: "franchise-003",
+    name: "East Austin Athletics"
+  }
+];
+
+// Define admin account
+const adminAccount = {
+  email: "admin@superleadstar.com",
+  password: "admin123"
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -78,6 +106,38 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  
+  // Bypass login for quick testing
+  const bypassLogin = (userType: 'admin' | 'franchisee1' | 'franchisee2' | 'franchisee3') => {
+    setIsLoading(true);
+    
+    let email, password, redirectPath;
+    
+    if (userType === 'admin') {
+      email = adminAccount.email;
+      password = adminAccount.password;
+      redirectPath = "/admin/dashboard";
+    } else {
+      const franchiseeIndex = parseInt(userType.replace('franchisee', '')) - 1;
+      const franchisee = dummyFranchisees[franchiseeIndex];
+      email = franchisee.email;
+      password = franchisee.password;
+      redirectPath = `/${franchisee.id}/portal/dashboard`;
+    }
+    
+    // Set form data for visual feedback
+    setFormData({
+      email,
+      password
+    });
+    
+    // Attempt auto login or bypass in dev environment
+    setTimeout(() => {
+      toast.success(`Test login as ${userType}`);
+      setIsLoading(false);
+      navigate(redirectPath);
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -124,35 +184,41 @@ const Login = () => {
                 {isLoading ? "Logging in..." : "Log in"}
               </Button>
 
-              {/* Dev mode bypass option */}
+              {/* Test Environment: Quick Access Buttons */}
               {(import.meta.env.DEV || window.location.hostname === 'localhost') && (
-                <div className="mt-2">
+                <div className="mt-4 space-y-2">
+                  <div className="text-xs text-gray-500 text-center mb-2">Test Environment: Quick Access</div>
+                  
                   <Button 
                     type="button" 
                     variant="outline"
-                    className="w-full mt-2 text-xs"
-                    onClick={() => {
-                      if (formData.email) {
-                        toast.info("Attempting auto-verification for test environment");
-                        // Try to find and login the user regardless of email verification
-                        supabase.auth.signInWithPassword({
-                          email: formData.email,
-                          password: formData.password,
-                        }).then(({ data, error }) => {
-                          if (error) {
-                            toast.error("Test login failed: " + error.message);
-                          } else if (data.user) {
-                            toast.success("Test login successful");
-                            navigate("/dashboard");
-                          }
-                        });
-                      } else {
-                        toast.error("Please enter an email address first");
-                      }
-                    }}
+                    className="w-full text-xs"
+                    onClick={() => bypassLogin('admin')}
                   >
-                    Test Environment: Bypass Verification
+                    Login as Admin
                   </Button>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    {dummyFranchisees.map((franchisee, index) => (
+                      <Button 
+                        key={index}
+                        type="button" 
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => bypassLogin(`franchisee${index + 1}` as any)}
+                      >
+                        Franchisee {index + 1}
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  <div className="text-xs text-center text-gray-500 mt-1">
+                    <p>Franchisee accounts:</p>
+                    {dummyFranchisees.map((f, i) => (
+                      <p key={i} className="text-[10px]">{f.name}: {f.email}</p>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
