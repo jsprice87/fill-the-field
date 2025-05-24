@@ -46,10 +46,57 @@ export const useLeads = (franchiseeId?: string) => {
   });
 };
 
+// Separate function to fetch lead stats to avoid deep type inference
+const fetchLeadStats = async (franchiseeId: string) => {
+  const { data: leads, error } = await supabase
+    .from('leads')
+    .select('status, created_at')
+    .eq('franchisee_id', franchiseeId);
+
+  if (error) {
+    console.error('Error fetching lead stats:', error);
+    throw error;
+  }
+
+  const leadsArray = leads || [];
+  const totalLeads = leadsArray.length;
+  
+  // Use simple filter operations to avoid deep type inference
+  const newLeads = leadsArray.filter(lead => lead.status === 'new').length;
+  const convertedLeads = leadsArray.filter(lead => lead.status === 'converted').length;
+  const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+
+  // Calculate monthly growth
+  const now = new Date();
+  const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const currentMonthLeads = leadsArray.filter(lead => {
+    const leadDate = new Date(lead.created_at);
+    return leadDate >= currentMonth;
+  }).length;
+
+  const previousMonthLeads = leadsArray.filter(lead => {
+    const leadDate = new Date(lead.created_at);
+    return leadDate >= previousMonth && leadDate < currentMonth;
+  }).length;
+
+  const monthlyGrowth = previousMonthLeads > 0 
+    ? Math.round(((currentMonthLeads - previousMonthLeads) / previousMonthLeads) * 100)
+    : 0;
+
+  return {
+    totalLeads,
+    newLeads,
+    conversionRate,
+    monthlyGrowth
+  };
+};
+
 export const useLeadStats = (franchiseeId?: string) => {
   return useQuery({
     queryKey: ['lead-stats', franchiseeId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!franchiseeId) {
         return {
           totalLeads: 0,
@@ -58,46 +105,7 @@ export const useLeadStats = (franchiseeId?: string) => {
           monthlyGrowth: 0
         };
       }
-      
-      const { data: leads, error } = await supabase
-        .from('leads')
-        .select('status, created_at')
-        .eq('franchisee_id', franchiseeId);
-
-      if (error) {
-        console.error('Error fetching lead stats:', error);
-        throw error;
-      }
-
-      const totalLeads = leads?.length || 0;
-      const newLeads = leads?.filter(lead => lead.status === 'new').length || 0;
-      const convertedLeads = leads?.filter(lead => lead.status === 'converted').length || 0;
-      const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
-
-      // Calculate monthly growth (comparing current month to previous month)
-      const now = new Date();
-      const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
-      const currentMonthLeads = leads?.filter(lead => 
-        new Date(lead.created_at) >= currentMonth
-      ).length || 0;
-
-      const previousMonthLeads = leads?.filter(lead => {
-        const leadDate = new Date(lead.created_at);
-        return leadDate >= previousMonth && leadDate < currentMonth;
-      }).length || 0;
-
-      const monthlyGrowth = previousMonthLeads > 0 
-        ? Math.round(((currentMonthLeads - previousMonthLeads) / previousMonthLeads) * 100)
-        : 0;
-
-      return {
-        totalLeads,
-        newLeads,
-        conversionRate,
-        monthlyGrowth
-      };
+      return fetchLeadStats(franchiseeId);
     },
     enabled: !!franchiseeId,
   });
