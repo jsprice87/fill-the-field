@@ -18,13 +18,22 @@ interface BookingSessionData {
   participants?: Array<{
     id: string;
     firstName: string;
+    lastName: string;
     birthDate: string;
     age: number;
     classScheduleId: string;
     className: string;
     classTime: string;
+    healthConditions?: string;
     ageOverride?: boolean;
   }>;
+  parentGuardianInfo?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    relationship: string;
+  };
   waiverAccepted?: boolean;
   childSpeaksEnglish?: boolean;
 }
@@ -70,6 +79,14 @@ export const useBookingSession = () => {
     });
   };
 
+  const updateParentGuardianInfo = (info: BookingSessionData['parentGuardianInfo']) => {
+    updateSession({ parentGuardianInfo: info });
+  };
+
+  const updateWaiverAccepted = (accepted: boolean) => {
+    updateSession({ waiverAccepted: accepted });
+  };
+
   const clearSession = () => {
     setSessionData({});
     localStorage.removeItem('booking-session');
@@ -92,6 +109,8 @@ export const useBookingSession = () => {
     updateSession,
     addParticipant,
     removeParticipant,
+    updateParentGuardianInfo,
+    updateWaiverAccepted,
     clearSession,
     getLeadData,
     getLeadId,

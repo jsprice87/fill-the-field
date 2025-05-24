@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertTriangle } from 'lucide-react';
 import { calculateAge, isAgeInRange } from '@/utils/ageCalculator';
@@ -25,11 +26,13 @@ interface ParticipantModalProps {
   onClose: () => void;
   onAddParticipant: (participant: {
     firstName: string;
+    lastName: string;
     birthDate: string;
     age: number;
     classScheduleId: string;
     className: string;
     classTime: string;
+    healthConditions?: string;
     ageOverride?: boolean;
   }) => void;
   classSchedule: ClassSchedule;
@@ -44,7 +47,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   dayNames
 }) => {
   const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [healthConditions, setHealthConditions] = useState('');
   const [ageOverride, setAgeOverride] = useState(false);
   
   const calculatedAge = birthDate ? calculateAge(birthDate) : 0;
@@ -61,37 +66,43 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!firstName.trim() || !birthDate) {
+    if (!firstName.trim() || !lastName.trim() || !birthDate) {
       return;
     }
 
     onAddParticipant({
       firstName: firstName.trim(),
+      lastName: lastName.trim(),
       birthDate,
       age: calculatedAge,
       classScheduleId: classSchedule.id,
       className: classSchedule.classes.name,
       classTime: `${dayNames[classSchedule.day_of_week]} ${formatTime(classSchedule.start_time)} - ${formatTime(classSchedule.end_time)}`,
+      healthConditions: healthConditions.trim() || undefined,
       ageOverride: !isAgeValid ? ageOverride : undefined
     });
 
     // Reset form
     setFirstName('');
+    setLastName('');
     setBirthDate('');
+    setHealthConditions('');
     setAgeOverride(false);
     onClose();
   };
 
   const handleClose = () => {
     setFirstName('');
+    setLastName('');
     setBirthDate('');
+    setHealthConditions('');
     setAgeOverride(false);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-agrandir text-brand-navy">
             Add Participant
@@ -103,16 +114,29 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="firstName" className="font-poppins">Child's First Name</Label>
-            <Input
-              id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Enter first name"
-              required
-              className="font-poppins"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName" className="font-poppins">Child's First Name</Label>
+              <Input
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Enter first name"
+                required
+                className="font-poppins"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName" className="font-poppins">Child's Last Name</Label>
+              <Input
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Enter last name"
+                required
+                className="font-poppins"
+              />
+            </div>
           </div>
 
           <div>
@@ -130,6 +154,18 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                 Calculated age: {calculatedAge} years old
               </p>
             )}
+          </div>
+
+          <div>
+            <Label htmlFor="healthConditions" className="font-poppins">Health Conditions <span className="text-gray-500">(Optional)</span></Label>
+            <Textarea
+              id="healthConditions"
+              value={healthConditions}
+              onChange={(e) => setHealthConditions(e.target.value)}
+              placeholder="Any allergies, medical conditions, or special needs we should be aware of..."
+              className="font-poppins resize-none"
+              rows={3}
+            />
           </div>
 
           {birthDate && !isAgeValid && (
@@ -165,7 +201,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             </Button>
             <Button 
               type="submit" 
-              disabled={!firstName.trim() || !birthDate || (!isAgeValid && !ageOverride)}
+              disabled={!firstName.trim() || !lastName.trim() || !birthDate || (!isAgeValid && !ageOverride)}
               className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins"
             >
               Add Participant

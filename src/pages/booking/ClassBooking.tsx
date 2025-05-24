@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -107,7 +106,7 @@ const ClassBooking: React.FC = () => {
 
   const handleParticipantAdded = (participant: any) => {
     addParticipant(participant);
-    toast.success(`${participant.firstName} added to ${participant.className}`);
+    toast.success(`${participant.firstName} ${participant.lastName} added to ${participant.className}`);
   };
 
   const handleContinueToConfirmation = () => {
