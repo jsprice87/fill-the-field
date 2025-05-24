@@ -51,16 +51,62 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
   }, {} as Record<string, { className: string; classTime: string; participants: Participant[] }>);
 
   const canContinue = () => {
+    // Check if we have participants
+    if (participants.length === 0) {
+      return false;
+    }
+
+    // Check if parent/guardian info is complete
     const hasParentInfo = sessionData.parentGuardianInfo && 
       sessionData.parentGuardianInfo.firstName && 
       sessionData.parentGuardianInfo.lastName && 
       sessionData.parentGuardianInfo.email && 
       sessionData.parentGuardianInfo.phone;
     
-    return participants.length > 0 && 
-           hasParentInfo && 
-           sessionData.waiverAccepted && 
-           sessionData.communicationPermission;
+    if (!hasParentInfo) {
+      return false;
+    }
+
+    // Check if waiver is accepted (MANDATORY)
+    if (!sessionData.waiverAccepted) {
+      return false;
+    }
+
+    // Check if communication permission is granted (MANDATORY)
+    if (!sessionData.communicationPermission) {
+      return false;
+    }
+
+    // Marketing permission is optional, so we don't check it
+    return true;
+  };
+
+  const getMissingRequirements = () => {
+    const missing = [];
+    
+    if (participants.length === 0) {
+      missing.push('Add at least one participant');
+    }
+    
+    const hasParentInfo = sessionData.parentGuardianInfo && 
+      sessionData.parentGuardianInfo.firstName && 
+      sessionData.parentGuardianInfo.lastName && 
+      sessionData.parentGuardianInfo.email && 
+      sessionData.parentGuardianInfo.phone;
+    
+    if (!hasParentInfo) {
+      missing.push('Complete parent/guardian information');
+    }
+    
+    if (!sessionData.waiverAccepted) {
+      missing.push('Accept the liability waiver');
+    }
+    
+    if (!sessionData.communicationPermission) {
+      missing.push('Grant communication permission');
+    }
+    
+    return missing;
   };
 
   return (
@@ -136,9 +182,16 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
             {canContinue() ? 'Continue to Confirmation' : 'Complete Required Information'}
           </Button>
           {!canContinue() && (
-            <p className="text-center text-sm text-gray-600 mt-2 font-poppins">
-              Please add participants, complete parent/guardian info, accept the waiver, and grant communication permission
-            </p>
+            <div className="mt-3">
+              <p className="text-center text-sm text-gray-600 mb-2 font-poppins">
+                Please complete the following required items:
+              </p>
+              <ul className="text-center text-sm text-red-600 space-y-1">
+                {getMissingRequirements().map((requirement, index) => (
+                  <li key={index} className="font-poppins">• {requirement}</li>
+                ))}
+              </ul>
+            </div>
           )}
         </CardContent>
       </Card>

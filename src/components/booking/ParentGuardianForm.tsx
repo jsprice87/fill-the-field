@@ -46,18 +46,29 @@ const ParentGuardianForm: React.FC = () => {
   };
 
   const handleWaiverChange = (checked: boolean) => {
+    console.log('Waiver checkbox changed:', checked);
     updateWaiverAccepted(checked);
   };
 
   const handleCommunicationPermissionChange = (checked: boolean) => {
+    console.log('Communication permission changed:', checked);
     updateCommunicationPermission(checked);
   };
 
   const handleMarketingPermissionChange = (checked: boolean) => {
+    console.log('Marketing permission changed:', checked);
     updateMarketingPermission(checked);
   };
 
   const isFormComplete = formData.firstName && formData.lastName && formData.email && formData.phone;
+
+  // Debug log to see current session state
+  console.log('Current session data in ParentGuardianForm:', {
+    waiverAccepted: sessionData.waiverAccepted,
+    communicationPermission: sessionData.communicationPermission,
+    marketingPermission: sessionData.marketingPermission,
+    parentGuardianInfo: sessionData.parentGuardianInfo
+  });
 
   return (
     <Card className="border-l-4 border-l-brand-red">
@@ -136,7 +147,7 @@ const ParentGuardianForm: React.FC = () => {
             />
             <div className="flex-1">
               <Label htmlFor="waiver" className="font-poppins text-sm leading-relaxed">
-                I agree to the terms and conditions outlined in the{' '}
+                <span className="text-red-500">*</span> I agree to the terms and conditions outlined in the{' '}
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="link" className="p-0 h-auto text-brand-blue underline font-poppins text-sm">
