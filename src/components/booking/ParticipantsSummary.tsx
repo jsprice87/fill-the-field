@@ -51,33 +51,46 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
   }, {} as Record<string, { className: string; classTime: string; participants: Participant[] }>);
 
   const canContinue = () => {
+    console.log('Checking canContinue with sessionData:', sessionData);
+    
     // Check if we have participants
     if (participants.length === 0) {
+      console.log('No participants found');
       return false;
     }
 
-    // Check if parent/guardian info is complete
-    const hasParentInfo = sessionData.parentGuardianInfo && 
-      sessionData.parentGuardianInfo.firstName && 
-      sessionData.parentGuardianInfo.lastName && 
-      sessionData.parentGuardianInfo.email && 
-      sessionData.parentGuardianInfo.phone;
+    // Check if parent/guardian info is complete - be more thorough in checking
+    const parentInfo = sessionData.parentGuardianInfo;
+    const hasParentInfo = parentInfo && 
+      parentInfo.firstName && 
+      parentInfo.firstName.trim() !== '' &&
+      parentInfo.lastName && 
+      parentInfo.lastName.trim() !== '' &&
+      parentInfo.email && 
+      parentInfo.email.trim() !== '' &&
+      parentInfo.phone && 
+      parentInfo.phone.trim() !== '';
+    
+    console.log('Parent info check:', { parentInfo, hasParentInfo });
     
     if (!hasParentInfo) {
+      console.log('Parent info incomplete');
       return false;
     }
 
     // Check if waiver is accepted (MANDATORY)
     if (!sessionData.waiverAccepted) {
+      console.log('Waiver not accepted');
       return false;
     }
 
     // Check if communication permission is granted (MANDATORY)
     if (!sessionData.communicationPermission) {
+      console.log('Communication permission not granted');
       return false;
     }
 
-    // Marketing permission is optional, so we don't check it
+    console.log('All requirements met, can continue');
     return true;
   };
 
@@ -88,11 +101,16 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       missing.push('Add at least one participant');
     }
     
-    const hasParentInfo = sessionData.parentGuardianInfo && 
-      sessionData.parentGuardianInfo.firstName && 
-      sessionData.parentGuardianInfo.lastName && 
-      sessionData.parentGuardianInfo.email && 
-      sessionData.parentGuardianInfo.phone;
+    const parentInfo = sessionData.parentGuardianInfo;
+    const hasParentInfo = parentInfo && 
+      parentInfo.firstName && 
+      parentInfo.firstName.trim() !== '' &&
+      parentInfo.lastName && 
+      parentInfo.lastName.trim() !== '' &&
+      parentInfo.email && 
+      parentInfo.email.trim() !== '' &&
+      parentInfo.phone && 
+      parentInfo.phone.trim() !== '';
     
     if (!hasParentInfo) {
       missing.push('Complete parent/guardian information');
