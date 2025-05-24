@@ -15,16 +15,14 @@ interface BookingSessionData {
     name: string;
     address: string;
   };
-  selectedClasses?: Array<{
-    id: string;
-    name: string;
-    date: string;
-    time: string;
-  }>;
   participants?: Array<{
+    id: string;
     firstName: string;
     birthDate: string;
-    age: string;
+    age: number;
+    classScheduleId: string;
+    className: string;
+    classTime: string;
     ageOverride?: boolean;
   }>;
   waiverAccepted?: boolean;
@@ -53,6 +51,25 @@ export const useBookingSession = () => {
     localStorage.setItem('booking-session', JSON.stringify(newData));
   };
 
+  const addParticipant = (participant: Omit<BookingSessionData['participants'][0], 'id'>) => {
+    const newParticipant = {
+      ...participant,
+      id: Math.random().toString(36).substr(2, 9)
+    };
+    
+    const currentParticipants = sessionData.participants || [];
+    updateSession({
+      participants: [...currentParticipants, newParticipant]
+    });
+  };
+
+  const removeParticipant = (participantId: string) => {
+    const currentParticipants = sessionData.participants || [];
+    updateSession({
+      participants: currentParticipants.filter(p => p.id !== participantId)
+    });
+  };
+
   const clearSession = () => {
     setSessionData({});
     localStorage.removeItem('booking-session');
@@ -66,12 +83,19 @@ export const useBookingSession = () => {
     return sessionData.leadId;
   };
 
+  const getParticipantCountForClass = (classScheduleId: string) => {
+    return (sessionData.participants || []).filter(p => p.classScheduleId === classScheduleId).length;
+  };
+
   return {
     sessionData,
     updateSession,
+    addParticipant,
+    removeParticipant,
     clearSession,
     getLeadData,
     getLeadId,
+    getParticipantCountForClass,
     isLoading
   };
 };
