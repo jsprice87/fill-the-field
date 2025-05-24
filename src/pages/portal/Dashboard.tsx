@@ -6,49 +6,50 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+// Separate async functions to avoid deep type inference
+const fetchLocationCount = async (franchiseeId: string): Promise<number> => {
+  const result = await supabase
+    .from('locations')
+    .select('*', { count: 'exact', head: true })
+    .eq('franchisee_id', franchiseeId)
+    .eq('is_active', true);
+
+  if (result.error) {
+    console.error('Error fetching location count:', result.error);
+    return 0;
+  }
+
+  return result.count || 0;
+};
+
+const fetchClassCount = async (franchiseeId: string): Promise<number> => {
+  const result = await supabase
+    .from('classes')
+    .select('*', { count: 'exact', head: true })
+    .eq('franchisee_id', franchiseeId)
+    .eq('is_active', true);
+
+  if (result.error) {
+    console.error('Error fetching class count:', result.error);
+    return 0;
+  }
+
+  return result.count || 0;
+};
+
 const PortalDashboard: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
   const { data: leadStats } = useLeadStats(franchiseeData?.id);
 
   const { data: locationCount = 0 } = useQuery({
     queryKey: ['location-count', franchiseeData?.id],
-    queryFn: async (): Promise<number> => {
-      if (!franchiseeData?.id) return 0;
-      
-      const result = await supabase
-        .from('locations')
-        .select('*', { count: 'exact', head: true })
-        .eq('franchisee_id', franchiseeData.id)
-        .eq('is_active', true);
-
-      if (result.error) {
-        console.error('Error fetching location count:', result.error);
-        return 0;
-      }
-
-      return result.count || 0;
-    },
+    queryFn: () => fetchLocationCount(franchiseeData!.id),
     enabled: !!franchiseeData?.id,
   });
 
   const { data: classCount = 0 } = useQuery({
     queryKey: ['class-count', franchiseeData?.id],
-    queryFn: async (): Promise<number> => {
-      if (!franchiseeData?.id) return 0;
-      
-      const result = await supabase
-        .from('classes')
-        .select('*', { count: 'exact', head: true })
-        .eq('franchisee_id', franchiseeData.id)
-        .eq('is_active', true);
-
-      if (result.error) {
-        console.error('Error fetching class count:', result.error);
-        return 0;
-      }
-
-      return result.count || 0;
-    },
+    queryFn: () => fetchClassCount(franchiseeData!.id),
     enabled: !!franchiseeData?.id,
   });
 
