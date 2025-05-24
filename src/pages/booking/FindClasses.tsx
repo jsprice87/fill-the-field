@@ -16,6 +16,7 @@ interface Location {
   state: string;
   zip: string;
   phone?: string;
+  email?: string;
   latitude?: number;
   longitude?: number;
 }
