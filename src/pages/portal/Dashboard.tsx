@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, MapPin, Calendar, TrendingUp } from 'lucide-react';
@@ -16,18 +15,18 @@ const PortalDashboard: React.FC = () => {
     queryFn: async (): Promise<number> => {
       if (!franchiseeData?.id) return 0;
       
-      const { count, error } = await supabase
+      const result = await supabase
         .from('locations')
         .select('*', { count: 'exact', head: true })
         .eq('franchisee_id', franchiseeData.id)
         .eq('is_active', true);
 
-      if (error) {
-        console.error('Error fetching location count:', error);
+      if (result.error) {
+        console.error('Error fetching location count:', result.error);
         return 0;
       }
 
-      return count || 0;
+      return result.count || 0;
     },
     enabled: !!franchiseeData?.id,
   });
@@ -37,18 +36,18 @@ const PortalDashboard: React.FC = () => {
     queryFn: async (): Promise<number> => {
       if (!franchiseeData?.id) return 0;
       
-      const { count, error } = await supabase
+      const result = await supabase
         .from('classes')
         .select('*', { count: 'exact', head: true })
         .eq('franchisee_id', franchiseeData.id)
         .eq('is_active', true);
 
-      if (error) {
-        console.error('Error fetching class count:', error);
+      if (result.error) {
+        console.error('Error fetching class count:', result.error);
         return 0;
       }
 
-      return count || 0;
+      return result.count || 0;
     },
     enabled: !!franchiseeData?.id,
   });
