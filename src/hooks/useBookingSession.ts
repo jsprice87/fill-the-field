@@ -33,6 +33,7 @@ interface BookingSessionData {
 
 export const useBookingSession = () => {
   const [sessionData, setSessionData] = useState<BookingSessionData>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem('booking-session');
@@ -43,6 +44,7 @@ export const useBookingSession = () => {
         console.error('Error loading booking session:', error);
       }
     }
+    setIsLoading(false);
   }, []);
 
   const updateSession = (data: Partial<BookingSessionData>) => {
@@ -56,9 +58,20 @@ export const useBookingSession = () => {
     localStorage.removeItem('booking-session');
   };
 
+  const getLeadData = () => {
+    return sessionData.leadData;
+  };
+
+  const getLeadId = () => {
+    return sessionData.leadId;
+  };
+
   return {
     sessionData,
     updateSession,
-    clearSession
+    clearSession,
+    getLeadData,
+    getLeadId,
+    isLoading
   };
 };
