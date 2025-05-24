@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { X } from 'lucide-react';
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -22,21 +21,22 @@ type FormData = z.infer<typeof formSchema>;
 
 interface QuickCaptureFormProps {
   franchiseeId: string;
-  onSuccess: () => void;
-  onCancel: () => void;
+  onSuccess: (leadId: string) => void;
+  onCancel?: () => void;
+  showTitle?: boolean;
 }
 
 export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   franchiseeId,
   onSuccess,
-  onCancel
+  onCancel,
+  showTitle = false
 }) => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
 
   const formatPhoneE164 = (phone: string): string => {
-    // Simple E.164 formatting for US numbers
     const cleaned = phone.replace(/\D/g, '');
     if (cleaned.length === 10) {
       return `+1${cleaned}`;
@@ -60,8 +60,8 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         throw new Error('Franchisee not found');
       }
 
-      // Create lead with status "NEW LEAD"
-      const { error: leadError } = await supabase
+      // Create lead with status "new"
+      const { data: leadData, error: leadError } = await supabase
         .from('leads')
         .insert({
           franchisee_id: franchisee.id,
@@ -72,14 +72,16 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
           zip: data.zip,
           status: 'new',
           source: 'free_trial_form'
-        });
+        })
+        .select('id')
+        .single();
 
-      if (leadError) {
+      if (leadError || !leadData) {
         throw leadError;
       }
 
       toast.success('Information saved! Let\'s find classes near you.');
-      onSuccess();
+      onSuccess(leadData.id);
     } catch (error) {
       console.error('Error creating lead:', error);
       toast.error('Something went wrong. Please try again.');
@@ -87,17 +89,15 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="font-agrandir text-2xl text-brand-navy">Get Started</h3>
-        <Button variant="ghost" size="sm" onClick={onCancel}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-      
-      <p className="font-poppins text-brand-grey mb-6">
-        Tell us a bit about yourself to find free trial classes in your area.
-      </p>
+    <div className="w-full">
+      {showTitle && (
+        <div className="mb-6">
+          <h3 className="font-agrandir text-2xl text-brand-navy text-center">Get Started</h3>
+          <p className="font-poppins text-brand-grey text-center mt-2">
+            Tell us about yourself to find free trial classes
+          </p>
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -176,7 +176,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins font-semibold py-3"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? 'Saving...' : 'Next'}
+            {form.formState.isSubmitting ? 'Saving...' : 'Find A Class Near You'}
           </Button>
         </form>
       </Form>

@@ -1,65 +1,68 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
+import { useBookingSession } from '@/hooks/useBookingSession';
 
 const BookingLanding: React.FC = () => {
   const { franchiseeId } = useParams();
   const navigate = useNavigate();
-  const [showForm, setShowForm] = useState(false);
+  const { updateSession } = useBookingSession();
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = (leadId: string) => {
+    // Store the lead ID in the session
+    updateSession({ leadId });
     navigate(`/${franchiseeId}/free-trial/find-classes`);
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="relative h-screen flex items-center justify-center bg-gradient-to-br from-brand-navy to-brand-blue">
+      {/* Hero Section with Embedded Form */}
+      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-navy to-brand-blue">
         {/* Hero Background Image Placeholder */}
         <div className="absolute inset-0 bg-black/20" />
         
-        <div className="relative z-10 text-center text-white px-4 max-w-4xl">
-          <h1 className="font-anton text-5xl md:text-7xl lg:text-8xl mb-6 tracking-wide">
-            SOCCER STARS
-          </h1>
-          <h2 className="font-agrandir text-2xl md:text-4xl mb-8">
-            Free Trial Classes Available
-          </h2>
-          
-          {/* Value Propositions */}
-          <div className="mb-12 space-y-4">
-            <p className="font-poppins text-lg md:text-xl">✓ Professional coaching for ages 2-14</p>
-            <p className="font-poppins text-lg md:text-xl">✓ Fun, non-competitive environment</p>
-            <p className="font-poppins text-lg md:text-xl">✓ Build confidence & skills through play</p>
+        <div className="relative z-10 text-center text-white px-4 max-w-6xl w-full">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Value Propositions */}
+            <div className="text-left lg:text-center">
+              <h1 className="font-anton text-4xl md:text-6xl lg:text-7xl mb-6 tracking-wide">
+                SOCCER STARS
+              </h1>
+              <h2 className="font-agrandir text-xl md:text-3xl mb-8">
+                Free Trial Classes Available
+              </h2>
+              
+              {/* Value Propositions */}
+              <div className="space-y-4 mb-8">
+                <p className="font-poppins text-base md:text-lg flex items-center">
+                  <span className="text-green-400 text-xl mr-3">✓</span>
+                  Professional coaching for ages 2-14
+                </p>
+                <p className="font-poppins text-base md:text-lg flex items-center">
+                  <span className="text-green-400 text-xl mr-3">✓</span>
+                  Fun, non-competitive environment
+                </p>
+                <p className="font-poppins text-base md:text-lg flex items-center">
+                  <span className="text-green-400 text-xl mr-3">✓</span>
+                  Build confidence & skills through play
+                </p>
+              </div>
+            </div>
+
+            {/* Right Side - Embedded Form */}
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-auto">
+              <QuickCaptureForm 
+                franchiseeId={franchiseeId!}
+                onSuccess={handleFormSuccess}
+                showTitle={true}
+              />
+            </div>
           </div>
-          
-          {!showForm && (
-            <Button 
-              onClick={() => setShowForm(true)}
-              className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins font-semibold text-xl px-12 py-6 rounded-lg transform hover:scale-105 transition-all duration-200"
-            >
-              Find a Free Trial
-            </Button>
-          )}
         </div>
       </div>
 
-      {/* Quick Capture Form Modal/Panel */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <QuickCaptureForm 
-              franchiseeId={franchiseeId!}
-              onSuccess={handleFormSuccess}
-              onCancel={() => setShowForm(false)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Additional Sections for Mobile Scroll */}
+      {/* Additional Information Section */}
       <div className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <h3 className="font-agrandir text-3xl text-brand-navy text-center mb-12">

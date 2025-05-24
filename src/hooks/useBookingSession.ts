@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 interface BookingSessionData {
+  leadId?: string;
   leadData?: {
     firstName: string;
     lastName: string;
