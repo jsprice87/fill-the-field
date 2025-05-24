@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,14 +10,34 @@ import { User, FileText } from 'lucide-react';
 import { useBookingSession } from '@/hooks/useBookingSession';
 
 const ParentGuardianForm: React.FC = () => {
-  const { sessionData, updateParentGuardianInfo, updateWaiverAccepted } = useBookingSession();
+  const { sessionData, updateParentGuardianInfo, updateWaiverAccepted, getLeadData } = useBookingSession();
+  const leadData = getLeadData();
+  
   const [formData, setFormData] = useState({
-    firstName: sessionData.parentGuardianInfo?.firstName || '',
-    lastName: sessionData.parentGuardianInfo?.lastName || '',
-    email: sessionData.parentGuardianInfo?.email || '',
-    phone: sessionData.parentGuardianInfo?.phone || '',
-    relationship: sessionData.parentGuardianInfo?.relationship || 'Parent'
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    relationship: 'Parent'
   });
+
+  // Pre-fill form with lead data on component mount
+  useEffect(() => {
+    const initialData = {
+      firstName: sessionData.parentGuardianInfo?.firstName || leadData?.firstName || '',
+      lastName: sessionData.parentGuardianInfo?.lastName || leadData?.lastName || '',
+      email: sessionData.parentGuardianInfo?.email || leadData?.email || '',
+      phone: sessionData.parentGuardianInfo?.phone || leadData?.phone || '',
+      relationship: sessionData.parentGuardianInfo?.relationship || 'Parent'
+    };
+    
+    setFormData(initialData);
+    
+    // If we have lead data and no existing parent info, update the session immediately
+    if (leadData && !sessionData.parentGuardianInfo?.firstName) {
+      updateParentGuardianInfo(initialData);
+    }
+  }, [leadData, sessionData.parentGuardianInfo, updateParentGuardianInfo]);
 
   const handleInputChange = (field: string, value: string) => {
     const newFormData = { ...formData, [field]: value };
