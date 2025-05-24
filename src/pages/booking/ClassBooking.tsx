@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -32,18 +31,28 @@ const ClassBooking: React.FC = () => {
   const { sessionData, updateSession, getLeadData } = useBookingSession();
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasCheckedSession, setHasCheckedSession] = useState(false);
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const leadData = getLeadData();
 
   useEffect(() => {
-    if (!sessionData.selectedLocation?.id) {
-      // Redirect back to find classes if no location selected
-      window.location.href = `/${franchiseeId}/free-trial/find-classes`;
-      return;
-    }
-    loadClasses();
-  }, [sessionData.selectedLocation]);
+    // Add a small delay to ensure session data is loaded
+    const checkSession = setTimeout(() => {
+      console.log('Checking session data:', sessionData);
+      
+      if (!sessionData.selectedLocation?.id) {
+        console.log('No location selected, redirecting to find classes');
+        window.location.href = `/${franchiseeId}/free-trial/find-classes`;
+        return;
+      }
+      
+      setHasCheckedSession(true);
+      loadClasses();
+    }, 200);
+
+    return () => clearTimeout(checkSession);
+  }, [sessionData.selectedLocation, franchiseeId]);
 
   const loadClasses = async () => {
     if (!sessionData.selectedLocation?.id) {
@@ -116,7 +125,7 @@ const ClassBooking: React.FC = () => {
     return classSchedule.classes.max_capacity - classSchedule.current_bookings;
   };
 
-  if (isLoading) {
+  if (isLoading || !hasCheckedSession) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">

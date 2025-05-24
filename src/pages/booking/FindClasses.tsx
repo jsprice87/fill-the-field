@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -96,7 +95,10 @@ const FindClasses: React.FC = () => {
     }
   };
 
-  const handleLocationSelect = (location: Location) => {
+  const handleLocationSelect = async (location: Location) => {
+    console.log('Selecting location:', location.id, location.name);
+    
+    // Update session and wait for it to complete
     updateSession({
       selectedLocation: {
         id: location.id,
@@ -105,8 +107,11 @@ const FindClasses: React.FC = () => {
       }
     });
     
-    // Navigate to class booking
-    window.location.href = `/${franchiseeId}/free-trial/booking`;
+    // Add a small delay to ensure localStorage is updated
+    setTimeout(() => {
+      console.log('Navigating to booking page');
+      window.location.href = `/${franchiseeId}/free-trial/booking`;
+    }, 100);
   };
 
   const handleRequestLocation = () => {
