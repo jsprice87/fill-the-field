@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 interface BookingSessionData {
@@ -32,6 +31,7 @@ interface BookingSessionData {
     lastName: string;
     email: string;
     phone: string;
+    zip: string;
     relationship: string;
   };
   waiverAccepted?: boolean;
@@ -48,7 +48,9 @@ export const useBookingSession = () => {
     const saved = localStorage.getItem('booking-session');
     if (saved) {
       try {
-        setSessionData(JSON.parse(saved));
+        const parsedData = JSON.parse(saved);
+        console.log('Loading booking session from localStorage:', parsedData);
+        setSessionData(parsedData);
       } catch (error) {
         console.error('Error loading booking session:', error);
       }
@@ -57,9 +59,11 @@ export const useBookingSession = () => {
   }, []);
 
   const updateSession = (data: Partial<BookingSessionData>) => {
+    console.log('Updating booking session with:', data);
     const newData = { ...sessionData, ...data };
     setSessionData(newData);
     localStorage.setItem('booking-session', JSON.stringify(newData));
+    console.log('Updated session data:', newData);
   };
 
   const addParticipant = (participant: Omit<BookingSessionData['participants'][0], 'id'>) => {

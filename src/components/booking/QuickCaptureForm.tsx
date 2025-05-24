@@ -21,7 +21,7 @@ type FormData = z.infer<typeof formSchema>;
 
 interface QuickCaptureFormProps {
   franchiseeId: string;
-  onSuccess: (leadId: string) => void;
+  onSuccess: (leadId: string, leadData: any) => void;
   onCancel?: () => void;
   showTitle?: boolean;
 }
@@ -49,6 +49,8 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('Submitting form with data:', data);
+      
       // Get franchisee by slug
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
@@ -57,31 +59,41 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         .single();
 
       if (franchiseeError || !franchisee) {
+        console.error('Franchisee error:', franchiseeError);
         throw new Error('Franchisee not found');
       }
 
+      console.log('Found franchisee:', franchisee);
+
       // Create lead with status "new"
-      const { data: leadData, error: leadError } = await supabase
+      const leadData = {
+        franchisee_id: franchisee.id,
+        first_name: data.firstName,
+        last_name: data.lastName,
+        email: data.email,
+        phone: formatPhoneE164(data.phone),
+        zip: data.zip,
+        status: 'new',
+        source: 'free_trial_form'
+      };
+
+      console.log('Creating lead with data:', leadData);
+
+      const { data: createdLead, error: leadError } = await supabase
         .from('leads')
-        .insert({
-          franchisee_id: franchisee.id,
-          first_name: data.firstName,
-          last_name: data.lastName,
-          email: data.email,
-          phone: formatPhoneE164(data.phone),
-          zip: data.zip,
-          status: 'new',
-          source: 'free_trial_form'
-        })
-        .select('id')
+        .insert(leadData)
+        .select('*')
         .single();
 
-      if (leadError || !leadData) {
+      if (leadError || !createdLead) {
+        console.error('Lead creation error:', leadError);
         throw leadError;
       }
 
+      console.log('Created lead successfully:', createdLead);
+
       toast.success('Information saved! Let\'s find classes near you.');
-      onSuccess(leadData.id);
+      onSuccess(createdLead.id, createdLead);
     } catch (error) {
       console.error('Error creating lead:', error);
       toast.error('Something went wrong. Please try again.');

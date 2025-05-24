@@ -18,23 +18,29 @@ const ParentGuardianForm: React.FC = () => {
     lastName: '',
     email: '',
     phone: '',
+    zip: '',
     relationship: 'Parent'
   });
 
   // Pre-fill form with lead data on component mount
   useEffect(() => {
+    console.log('ParentGuardianForm: Setting up form data', { sessionData, leadData });
+    
     const initialData = {
       firstName: sessionData.parentGuardianInfo?.firstName || leadData?.firstName || '',
       lastName: sessionData.parentGuardianInfo?.lastName || leadData?.lastName || '',
       email: sessionData.parentGuardianInfo?.email || leadData?.email || '',
       phone: sessionData.parentGuardianInfo?.phone || leadData?.phone || '',
+      zip: sessionData.parentGuardianInfo?.zip || leadData?.zip || '',
       relationship: sessionData.parentGuardianInfo?.relationship || 'Parent'
     };
     
+    console.log('ParentGuardianForm: Initial data set to:', initialData);
     setFormData(initialData);
     
     // If we have lead data and no existing parent info, update the session immediately
-    if (leadData && !sessionData.parentGuardianInfo?.firstName) {
+    if (leadData && (!sessionData.parentGuardianInfo?.firstName || !sessionData.parentGuardianInfo?.email)) {
+      console.log('ParentGuardianForm: Updating session with lead data');
       updateParentGuardianInfo(initialData);
     }
   }, [leadData, sessionData.parentGuardianInfo, updateParentGuardianInfo]);
@@ -60,7 +66,7 @@ const ParentGuardianForm: React.FC = () => {
     updateMarketingPermission(checked);
   };
 
-  const isFormComplete = formData.firstName && formData.lastName && formData.email && formData.phone;
+  const isFormComplete = formData.firstName && formData.lastName && formData.email && formData.phone && formData.zip;
 
   // Debug log to see current session state
   console.log('Current session data in ParentGuardianForm:', {
@@ -114,16 +120,28 @@ const ParentGuardianForm: React.FC = () => {
           />
         </div>
 
-        <div>
-          <Label htmlFor="parentPhone" className="font-poppins">Phone Number</Label>
-          <Input
-            id="parentPhone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            placeholder="(555) 123-4567"
-            className="font-poppins"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="parentPhone" className="font-poppins">Phone Number</Label>
+            <Input
+              id="parentPhone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleInputChange('phone', e.target.value)}
+              placeholder="(555) 123-4567"
+              className="font-poppins"
+            />
+          </div>
+          <div>
+            <Label htmlFor="parentZip" className="font-poppins">ZIP Code</Label>
+            <Input
+              id="parentZip"
+              value={formData.zip}
+              onChange={(e) => handleInputChange('zip', e.target.value)}
+              placeholder="12345"
+              className="font-poppins"
+            />
+          </div>
         </div>
 
         <div>

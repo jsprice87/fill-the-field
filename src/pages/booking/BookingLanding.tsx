@@ -9,9 +9,21 @@ const BookingLanding: React.FC = () => {
   const navigate = useNavigate();
   const { updateSession } = useBookingSession();
 
-  const handleFormSuccess = (leadId: string) => {
-    // Store the lead ID in the session
-    updateSession({ leadId });
+  const handleFormSuccess = (leadId: string, leadData: any) => {
+    console.log('Form success - storing lead data:', { leadId, leadData });
+    
+    // Store both the lead ID and the complete lead data in the session
+    updateSession({ 
+      leadId,
+      leadData: {
+        firstName: leadData.first_name,
+        lastName: leadData.last_name,
+        email: leadData.email,
+        phone: leadData.phone,
+        zip: leadData.zip
+      }
+    });
+    
     navigate(`/${franchiseeId}/free-trial/find-classes`);
   };
 
