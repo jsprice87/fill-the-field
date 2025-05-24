@@ -1,57 +1,13 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, MapPin, Calendar, TrendingUp } from 'lucide-react';
 import { useLeadStats } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-
-// Separate async functions to avoid deep type inference
-const fetchLocationCount = async (franchiseeId: string): Promise<number> => {
-  const result = await supabase
-    .from('locations')
-    .select('*', { count: 'exact', head: true })
-    .eq('franchisee_id', franchiseeId)
-    .eq('is_active', true);
-
-  if (result.error) {
-    console.error('Error fetching location count:', result.error);
-    return 0;
-  }
-
-  return result.count || 0;
-};
-
-const fetchClassCount = async (franchiseeId: string): Promise<number> => {
-  const result = await supabase
-    .from('classes')
-    .select('*', { count: 'exact', head: true })
-    .eq('franchisee_id', franchiseeId)
-    .eq('is_active', true);
-
-  if (result.error) {
-    console.error('Error fetching class count:', result.error);
-    return 0;
-  }
-
-  return result.count || 0;
-};
 
 const PortalDashboard: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
   const { data: leadStats } = useLeadStats(franchiseeData?.id);
-
-  const { data: locationCount = 0 } = useQuery({
-    queryKey: ['location-count', franchiseeData?.id],
-    queryFn: () => fetchLocationCount(franchiseeData!.id),
-    enabled: !!franchiseeData?.id,
-  });
-
-  const { data: classCount = 0 } = useQuery({
-    queryKey: ['class-count', franchiseeData?.id],
-    queryFn: () => fetchClassCount(franchiseeData!.id),
-    enabled: !!franchiseeData?.id,
-  });
 
   return (
     <div className="space-y-6">
@@ -77,9 +33,9 @@ const PortalDashboard: React.FC = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{classCount}</div>
+            <div className="text-2xl font-bold">-</div>
             <p className="text-xs text-muted-foreground">
-              Across all locations
+              Loading...
             </p>
           </CardContent>
         </Card>
@@ -89,9 +45,9 @@ const PortalDashboard: React.FC = () => {
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{locationCount}</div>
+            <div className="text-2xl font-bold">-</div>
             <p className="text-xs text-muted-foreground">
-              Active locations
+              Loading...
             </p>
           </CardContent>
         </Card>
