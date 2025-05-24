@@ -35,6 +35,8 @@ interface BookingSessionData {
     relationship: string;
   };
   waiverAccepted?: boolean;
+  communicationPermission?: boolean;
+  marketingPermission?: boolean;
   childSpeaksEnglish?: boolean;
 }
 
@@ -87,6 +89,14 @@ export const useBookingSession = () => {
     updateSession({ waiverAccepted: accepted });
   };
 
+  const updateCommunicationPermission = (accepted: boolean) => {
+    updateSession({ communicationPermission: accepted });
+  };
+
+  const updateMarketingPermission = (accepted: boolean) => {
+    updateSession({ marketingPermission: accepted });
+  };
+
   const clearSession = () => {
     setSessionData({});
     localStorage.removeItem('booking-session');
@@ -111,6 +121,8 @@ export const useBookingSession = () => {
     removeParticipant,
     updateParentGuardianInfo,
     updateWaiverAccepted,
+    updateCommunicationPermission,
+    updateMarketingPermission,
     clearSession,
     getLeadData,
     getLeadId,

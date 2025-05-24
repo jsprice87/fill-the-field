@@ -10,7 +10,7 @@ import { User, FileText } from 'lucide-react';
 import { useBookingSession } from '@/hooks/useBookingSession';
 
 const ParentGuardianForm: React.FC = () => {
-  const { sessionData, updateParentGuardianInfo, updateWaiverAccepted, getLeadData } = useBookingSession();
+  const { sessionData, updateParentGuardianInfo, updateWaiverAccepted, updateCommunicationPermission, updateMarketingPermission, getLeadData } = useBookingSession();
   const leadData = getLeadData();
   
   const [formData, setFormData] = useState({
@@ -47,6 +47,14 @@ const ParentGuardianForm: React.FC = () => {
 
   const handleWaiverChange = (checked: boolean) => {
     updateWaiverAccepted(checked);
+  };
+
+  const handleCommunicationPermissionChange = (checked: boolean) => {
+    updateCommunicationPermission(checked);
+  };
+
+  const handleMarketingPermissionChange = (checked: boolean) => {
+    updateMarketingPermission(checked);
   };
 
   const isFormComplete = formData.firstName && formData.lastName && formData.email && formData.phone;
@@ -118,7 +126,7 @@ const ParentGuardianForm: React.FC = () => {
           />
         </div>
 
-        <div className="border-t pt-4">
+        <div className="border-t pt-4 space-y-4">
           <div className="flex items-start space-x-2">
             <Checkbox
               id="waiver"
@@ -190,6 +198,34 @@ const ParentGuardianForm: React.FC = () => {
               </Label>
             </div>
           </div>
+
+          <div className="flex items-start space-x-2">
+            <Checkbox
+              id="communication"
+              checked={sessionData.communicationPermission || false}
+              onCheckedChange={handleCommunicationPermissionChange}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <Label htmlFor="communication" className="font-poppins text-sm leading-relaxed">
+                <span className="text-red-500">*</span> I give permission to be contacted via email, SMS, and phone regarding important updates about classes such as cancellations, weather delays, and schedule changes.
+              </Label>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-2">
+            <Checkbox
+              id="marketing"
+              checked={sessionData.marketingPermission || false}
+              onCheckedChange={handleMarketingPermissionChange}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <Label htmlFor="marketing" className="font-poppins text-sm leading-relaxed">
+                I would like to receive marketing information and updates about upcoming promotions and special offers.
+              </Label>
+            </div>
+          </div>
         </div>
 
         {!isFormComplete && (
@@ -200,10 +236,10 @@ const ParentGuardianForm: React.FC = () => {
           </div>
         )}
 
-        {!sessionData.waiverAccepted && isFormComplete && (
+        {(!sessionData.waiverAccepted || !sessionData.communicationPermission) && isFormComplete && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <p className="text-sm text-yellow-800 font-poppins">
-              Please review and accept the liability waiver to continue.
+              Please accept the required agreements to continue.
             </p>
           </div>
         )}

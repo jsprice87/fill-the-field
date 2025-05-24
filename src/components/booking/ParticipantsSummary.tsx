@@ -57,7 +57,10 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       sessionData.parentGuardianInfo.email && 
       sessionData.parentGuardianInfo.phone;
     
-    return participants.length > 0 && hasParentInfo && sessionData.waiverAccepted;
+    return participants.length > 0 && 
+           hasParentInfo && 
+           sessionData.waiverAccepted && 
+           sessionData.communicationPermission;
   };
 
   return (
@@ -134,7 +137,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
           </Button>
           {!canContinue() && (
             <p className="text-center text-sm text-gray-600 mt-2 font-poppins">
-              Please add participants, complete parent/guardian info, and accept the waiver
+              Please add participants, complete parent/guardian info, accept the waiver, and grant communication permission
             </p>
           )}
         </CardContent>
