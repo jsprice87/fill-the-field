@@ -13,7 +13,7 @@ const PortalDashboard: React.FC = () => {
 
   const { data: locationCount = 0 } = useQuery({
     queryKey: ['location-count', franchiseeData?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<number> => {
       if (!franchiseeData?.id) return 0;
       
       const { count, error } = await supabase
@@ -34,7 +34,7 @@ const PortalDashboard: React.FC = () => {
 
   const { data: classCount = 0 } = useQuery({
     queryKey: ['class-count', franchiseeData?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<number> => {
       if (!franchiseeData?.id) return 0;
       
       const { count, error } = await supabase
