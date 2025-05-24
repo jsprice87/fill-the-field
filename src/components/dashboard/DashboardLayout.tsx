@@ -126,7 +126,7 @@ const DashboardLayout = () => {
                         Leads
                       </Button>
                     </Link>
-                    <Link to={`${navPrefix}/landing-page`} target="_blank">
+                    <Link to={`${navPrefix}/free-trial`} target="_blank">
                       <Button variant="ghost" className="w-full justify-start">
                         <Globe className="mr-2 h-5 w-5" />
                         Landing Page
