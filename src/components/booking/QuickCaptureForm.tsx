@@ -100,7 +100,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
-                Child's First Name *
+                First Name *
               </Label>
               <Input
                 id="firstName"
@@ -130,7 +130,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
           <div>
             <Label htmlFor="email" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
-              Parent Email *
+              Email Address *
             </Label>
             <Input
               id="email"
