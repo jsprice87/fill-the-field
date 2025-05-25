@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Clock, Users, Map, List } from 'lucide-react';
@@ -22,6 +22,7 @@ interface Location {
 
 const FindClasses: React.FC = () => {
   const { franchiseeId } = useParams();
+  const navigate = useNavigate();
   const { sessionData, updateSession, getLeadData, getLeadId } = useBookingSession();
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +99,7 @@ const FindClasses: React.FC = () => {
   const handleLocationSelect = async (location: Location) => {
     console.log('Selecting location:', location.id, location.name);
     
-    // Update session and wait for it to complete
+    // Update session with selected location
     updateSession({
       selectedLocation: {
         id: location.id,
@@ -107,11 +108,9 @@ const FindClasses: React.FC = () => {
       }
     });
     
-    // Add a small delay to ensure localStorage is updated
-    setTimeout(() => {
-      console.log('Navigating to booking page');
-      window.location.href = `/${franchiseeId}/free-trial/booking`;
-    }, 100);
+    console.log('Navigating to booking page');
+    // Use React Router navigation instead of window.location.href
+    navigate(`/${franchiseeId}/free-trial/booking`);
   };
 
   const handleRequestLocation = () => {
