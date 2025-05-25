@@ -221,6 +221,21 @@ const ClassBooking: React.FC = () => {
     return getTotalParticipants() < 5;
   };
 
+  // Convert ParticipantData to the format expected by ParticipantsSummary
+  const convertedParticipants = (sessionData.participants || []).map((p, index) => ({
+    id: p.id || `temp-${index}`,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    age: p.age,
+    className: p.className,
+    classTime: p.classTime,
+    selectedDate: p.selectedDate
+  }));
+
+  const handleRemoveParticipant = (participantId: string) => {
+    removeParticipant(participantId);
+  };
+
   if (isLoading || !hasCheckedSession) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -386,8 +401,8 @@ const ClassBooking: React.FC = () => {
           {/* Participants Summary */}
           <div className="lg:col-span-1">
             <ParticipantsSummary
-              participants={sessionData.participants || []}
-              onRemoveParticipant={removeParticipant}
+              participants={convertedParticipants}
+              onRemoveParticipant={handleRemoveParticipant}
               onContinue={handleContinueToConfirmation}
             />
           </div>

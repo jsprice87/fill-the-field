@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 const STORAGE_KEY = 'soccer_stars_booking_session';
 
 export interface ParticipantData {
+  id?: string;
   firstName: string;
   lastName: string;
   age: number;
@@ -79,16 +80,20 @@ export const useBookingSession = () => {
   }, []);
 
   const addParticipant = useCallback((participant: ParticipantData) => {
+    const participantWithId = {
+      ...participant,
+      id: participant.id || crypto.randomUUID()
+    };
     setSessionData(prev => ({
       ...prev,
-      participants: [...(prev.participants || []), participant]
+      participants: [...(prev.participants || []), participantWithId]
     }));
   }, []);
 
-  const removeParticipant = useCallback((index: number) => {
+  const removeParticipant = useCallback((participantId: string) => {
     setSessionData(prev => ({
       ...prev,
-      participants: prev.participants?.filter((_, i) => i !== index) || []
+      participants: prev.participants?.filter(p => p.id !== participantId) || []
     }));
   }, []);
 
@@ -104,6 +109,23 @@ export const useBookingSession = () => {
     return sessionData.participants?.filter(p => p.classScheduleId === classScheduleId).length || 0;
   }, [sessionData.participants]);
 
+  // Helper functions for ParentGuardianForm
+  const updateParentGuardianInfo = useCallback((info: any) => {
+    updateSession({ parentGuardianInfo: info });
+  }, [updateSession]);
+
+  const updateWaiverAccepted = useCallback((accepted: boolean) => {
+    updateSession({ waiverAccepted: accepted });
+  }, [updateSession]);
+
+  const updateCommunicationPermission = useCallback((permission: boolean) => {
+    updateSession({ communicationPermission: permission });
+  }, [updateSession]);
+
+  const updateMarketingPermission = useCallback((permission: boolean) => {
+    updateSession({ marketingPermission: permission });
+  }, [updateSession]);
+
   return {
     sessionData,
     updateSession,
@@ -112,6 +134,10 @@ export const useBookingSession = () => {
     removeParticipant,
     getLeadData,
     getLeadId,
-    getParticipantCountForClass
+    getParticipantCountForClass,
+    updateParentGuardianInfo,
+    updateWaiverAccepted,
+    updateCommunicationPermission,
+    updateMarketingPermission
   };
 };
