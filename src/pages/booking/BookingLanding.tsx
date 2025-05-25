@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { useBookingSession } from '@/hooks/useBookingSession';
@@ -7,7 +7,13 @@ import { useBookingSession } from '@/hooks/useBookingSession';
 const BookingLanding: React.FC = () => {
   const { franchiseeId } = useParams();
   const navigate = useNavigate();
-  const { updateSession } = useBookingSession();
+  const { updateSession, clearSession } = useBookingSession();
+
+  // Clear any existing session data when the page loads
+  useEffect(() => {
+    console.log('BookingLanding: Clearing existing session data for new visitor');
+    clearSession();
+  }, [clearSession]);
 
   const handleFormSuccess = (leadId: string, leadData: any) => {
     console.log('Form success - storing lead data:', { leadId, leadData });

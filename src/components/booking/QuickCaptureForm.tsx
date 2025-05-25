@@ -1,56 +1,38 @@
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  zip: z.string().min(5, "Please enter a valid ZIP code"),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
 interface QuickCaptureFormProps {
   franchiseeId: string;
-  onSuccess: (leadId: string, leadData: any) => void;
-  onCancel?: () => void;
+  onSuccess?: (leadId: string, leadData: any) => void;
   showTitle?: boolean;
 }
 
 export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   franchiseeId,
   onSuccess,
-  onCancel,
   showTitle = false
 }) => {
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    zip: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formatPhoneE164 = (phone: string): string => {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 10) {
-      return `+1${cleaned}`;
-    }
-    if (cleaned.length === 11 && cleaned.startsWith('1')) {
-      return `+${cleaned}`;
-    }
-    return `+1${cleaned}`;
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  const onSubmit = async (data: FormData) => {
     try {
-      console.log('Submitting form with data:', data);
-      
       // Get franchisee by slug
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
@@ -59,139 +41,160 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         .single();
 
       if (franchiseeError || !franchisee) {
-        console.error('Franchisee error:', franchiseeError);
         throw new Error('Franchisee not found');
       }
 
-      console.log('Found franchisee:', franchisee);
-
-      // Create lead with status "new"
-      const leadData = {
-        franchisee_id: franchisee.id,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        email: data.email,
-        phone: formatPhoneE164(data.phone),
-        zip: data.zip,
-        status: 'new',
-        source: 'free_trial_form'
-      };
-
-      console.log('Creating lead with data:', leadData);
-
-      const { data: createdLead, error: leadError } = await supabase
+      // Create lead
+      const { data: lead, error: leadError } = await supabase
         .from('leads')
-        .insert(leadData)
-        .select('*')
+        .insert({
+          franchisee_id: franchisee.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          zip: formData.zip,
+          source: 'free_trial_booking',
+          status: 'new'
+        })
+        .select()
         .single();
 
-      if (leadError || !createdLead) {
-        console.error('Lead creation error:', leadError);
+      if (leadError) {
         throw leadError;
       }
 
-      console.log('Created lead successfully:', createdLead);
-
+      console.log('Lead created successfully:', lead);
       toast.success('Information saved! Let\'s find classes near you.');
-      onSuccess(createdLead.id, createdLead);
+      
+      if (onSuccess) {
+        onSuccess(lead.id, lead);
+      }
+
     } catch (error) {
       console.error('Error creating lead:', error);
-      toast.error('Something went wrong. Please try again.');
+      toast.error('Failed to save information. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
-    <div className="w-full">
+    <Card className="w-full border-0 shadow-none">
       {showTitle && (
-        <div className="mb-6">
-          <h3 className="font-agrandir text-2xl text-brand-navy text-center">Get Started</h3>
-          <p className="font-poppins text-brand-grey text-center mt-2">
-            Tell us about yourself to find free trial classes
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="font-agrandir text-2xl text-brand-navy">
+            Get Started with Your Free Trial
+          </CardTitle>
+          <p className="font-poppins text-gray-600 text-sm">
+            Just a few details to find classes near you
           </p>
-        </div>
+        </CardHeader>
       )}
+      <CardContent className="p-0">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+                Child's First Name *
+              </Label>
+              <Input
+                id="firstName"
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                required
+                placeholder="Enter first name"
+                className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+                Last Name *
+              </Label>
+              <Input
+                id="lastName"
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                required
+                placeholder="Enter last name"
+                className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+              />
+            </div>
+          </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="firstName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-poppins font-medium">First Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your first name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <Label htmlFor="email" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+              Parent Email *
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              required
+              placeholder="your.email@example.com"
+              className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+            />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-poppins font-medium">Last Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your last name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <Label htmlFor="phone" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+              Phone Number *
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleInputChange('phone', e.target.value)}
+              required
+              placeholder="(555) 123-4567"
+              className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+            />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-poppins font-medium">Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="Enter your email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <Label htmlFor="zip" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+              ZIP Code *
+            </Label>
+            <Input
+              id="zip"
+              type="text"
+              value={formData.zip}
+              onChange={(e) => handleInputChange('zip', e.target.value)}
+              required
+              placeholder="12345"
+              maxLength={5}
+              className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+            />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-poppins font-medium">Phone</FormLabel>
-                <FormControl>
-                  <Input type="tel" placeholder="Enter your phone number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="zip"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-poppins font-medium">ZIP Code</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your ZIP code" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button 
-            type="submit" 
-            className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins font-semibold py-3"
-            disabled={form.formState.isSubmitting}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins text-lg py-6 h-auto"
           >
-            {form.formState.isSubmitting ? 'Saving...' : 'Find A Class Near You'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Finding Classes...
+              </>
+            ) : (
+              'Find Free Trial Classes'
+            )}
           </Button>
+
+          <p className="text-xs text-gray-500 text-center font-poppins leading-relaxed">
+            By submitting, you agree to receive information about Soccer Stars programs. 
+            We respect your privacy and won't spam you.
+          </p>
         </form>
-      </Form>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

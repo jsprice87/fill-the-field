@@ -22,6 +22,7 @@ export type Database = {
           participant_age: number
           participant_birth_date: string | null
           participant_name: string
+          selected_date: string | null
           status: string | null
           updated_at: string
         }
@@ -37,6 +38,7 @@ export type Database = {
           participant_age: number
           participant_birth_date?: string | null
           participant_name: string
+          selected_date?: string | null
           status?: string | null
           updated_at?: string
         }
@@ -52,6 +54,7 @@ export type Database = {
           participant_age?: number
           participant_birth_date?: string | null
           participant_name?: string
+          selected_date?: string | null
           status?: string | null
           updated_at?: string
         }

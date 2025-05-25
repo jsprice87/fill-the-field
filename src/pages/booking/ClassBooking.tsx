@@ -161,6 +161,7 @@ const ClassBooking: React.FC = () => {
             class_schedule_id: participant.classScheduleId,
             class_name: participant.className,
             class_time: participant.classTime,
+            selected_date: participant.selectedDate, // Include the selected date
             health_conditions: participant.healthConditions,
             age_override: participant.ageOverride,
             status: 'confirmed'

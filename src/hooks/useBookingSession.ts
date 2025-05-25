@@ -1,39 +1,41 @@
-import { useState, useEffect } from 'react';
 
-interface BookingSessionData {
+import { useState, useEffect, useCallback } from 'react';
+
+const STORAGE_KEY = 'soccer_stars_booking_session';
+
+export interface ParticipantData {
+  firstName: string;
+  lastName: string;
+  age: number;
+  birthDate: string;
+  classScheduleId: string;
+  className: string;
+  classTime: string;
+  selectedDate: string;
+  healthConditions?: string;
+  ageOverride?: boolean;
+}
+
+export interface LocationData {
+  id: string;
+  name: string;
+  address: string;
+}
+
+export interface LeadData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  zip: string;
+}
+
+export interface BookingSessionData {
   leadId?: string;
-  leadData?: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    zip: string;
-  };
-  selectedLocation?: {
-    id: string;
-    name: string;
-    address: string;
-  };
-  participants?: Array<{
-    id: string;
-    firstName: string;
-    lastName: string;
-    birthDate: string;
-    age: number;
-    classScheduleId: string;
-    className: string;
-    classTime: string;
-    healthConditions?: string;
-    ageOverride?: boolean;
-  }>;
-  parentGuardianInfo?: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    zip: string;
-    relationship: string;
-  };
+  leadData?: LeadData;
+  selectedLocation?: LocationData;
+  participants?: ParticipantData[];
+  parentGuardianInfo?: any;
   waiverAccepted?: boolean;
   communicationPermission?: boolean;
   marketingPermission?: boolean;
@@ -42,95 +44,74 @@ interface BookingSessionData {
 
 export const useBookingSession = () => {
   const [sessionData, setSessionData] = useState<BookingSessionData>({});
-  const [isLoading, setIsLoading] = useState(true);
 
+  // Load session data from localStorage on hook initialization
   useEffect(() => {
-    const saved = localStorage.getItem('booking-session');
-    if (saved) {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
       try {
-        const parsedData = JSON.parse(saved);
-        console.log('Loading booking session from localStorage:', parsedData);
+        const parsedData = JSON.parse(stored);
         setSessionData(parsedData);
       } catch (error) {
-        console.error('Error loading booking session:', error);
+        console.error('Failed to parse stored session data:', error);
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
-    setIsLoading(false);
   }, []);
 
-  const updateSession = (data: Partial<BookingSessionData>) => {
-    console.log('Updating booking session with:', data);
-    const newData = { ...sessionData, ...data };
-    setSessionData(newData);
-    localStorage.setItem('booking-session', JSON.stringify(newData));
-    console.log('Updated session data:', newData);
-  };
+  // Save session data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
+  }, [sessionData]);
 
-  const addParticipant = (participant: Omit<BookingSessionData['participants'][0], 'id'>) => {
-    const newParticipant = {
-      ...participant,
-      id: Math.random().toString(36).substr(2, 9)
-    };
-    
-    const currentParticipants = sessionData.participants || [];
-    updateSession({
-      participants: [...currentParticipants, newParticipant]
+  const updateSession = useCallback((updates: Partial<BookingSessionData>) => {
+    setSessionData(prev => {
+      const newData = { ...prev, ...updates };
+      console.log('Session updated:', newData);
+      return newData;
     });
-  };
+  }, []);
 
-  const removeParticipant = (participantId: string) => {
-    const currentParticipants = sessionData.participants || [];
-    updateSession({
-      participants: currentParticipants.filter(p => p.id !== participantId)
-    });
-  };
-
-  const updateParentGuardianInfo = (info: BookingSessionData['parentGuardianInfo']) => {
-    updateSession({ parentGuardianInfo: info });
-  };
-
-  const updateWaiverAccepted = (accepted: boolean) => {
-    updateSession({ waiverAccepted: accepted });
-  };
-
-  const updateCommunicationPermission = (accepted: boolean) => {
-    updateSession({ communicationPermission: accepted });
-  };
-
-  const updateMarketingPermission = (accepted: boolean) => {
-    updateSession({ marketingPermission: accepted });
-  };
-
-  const clearSession = () => {
+  const clearSession = useCallback(() => {
+    console.log('Clearing session data');
     setSessionData({});
-    localStorage.removeItem('booking-session');
-  };
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
 
-  const getLeadData = () => {
+  const addParticipant = useCallback((participant: ParticipantData) => {
+    setSessionData(prev => ({
+      ...prev,
+      participants: [...(prev.participants || []), participant]
+    }));
+  }, []);
+
+  const removeParticipant = useCallback((index: number) => {
+    setSessionData(prev => ({
+      ...prev,
+      participants: prev.participants?.filter((_, i) => i !== index) || []
+    }));
+  }, []);
+
+  const getLeadData = useCallback(() => {
     return sessionData.leadData;
-  };
+  }, [sessionData.leadData]);
 
-  const getLeadId = () => {
+  const getLeadId = useCallback(() => {
     return sessionData.leadId;
-  };
+  }, [sessionData.leadId]);
 
-  const getParticipantCountForClass = (classScheduleId: string) => {
-    return (sessionData.participants || []).filter(p => p.classScheduleId === classScheduleId).length;
-  };
+  const getParticipantCountForClass = useCallback((classScheduleId: string) => {
+    return sessionData.participants?.filter(p => p.classScheduleId === classScheduleId).length || 0;
+  }, [sessionData.participants]);
 
   return {
     sessionData,
     updateSession,
+    clearSession,
     addParticipant,
     removeParticipant,
-    updateParentGuardianInfo,
-    updateWaiverAccepted,
-    updateCommunicationPermission,
-    updateMarketingPermission,
-    clearSession,
     getLeadData,
     getLeadId,
-    getParticipantCountForClass,
-    isLoading
+    getParticipantCountForClass
   };
 };

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +21,7 @@ interface BookingData {
     participant_age: number;
     class_name: string;
     class_time: string;
+    selected_date?: string;
     health_conditions?: string;
     age_override?: boolean;
   }>;
@@ -31,11 +31,16 @@ interface BookingData {
   };
 }
 
+interface FranchiseeData {
+  company_name: string;
+}
+
 const BookingConfirmation: React.FC = () => {
   const { franchiseeId, bookingId } = useParams();
   const navigate = useNavigate();
   const { data: settings } = useFranchiseeSettings();
   const [booking, setBooking] = useState<BookingData | null>(null);
+  const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +54,19 @@ const BookingConfirmation: React.FC = () => {
 
   const loadBookingData = async () => {
     try {
+      // Get franchisee data first
+      const { data: franchisee, error: franchiseeError } = await supabase
+        .from('franchisees')
+        .select('company_name')
+        .eq('slug', franchiseeId)
+        .single();
+
+      if (franchiseeError) {
+        console.error('Error loading franchisee:', franchiseeError);
+      } else {
+        setFranchiseeData(franchisee);
+      }
+
       // Fetch booking with appointments and location data
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
@@ -99,18 +117,30 @@ const BookingConfirmation: React.FC = () => {
   };
 
   const handleShare = () => {
-    const shareText = `I just signed up my child for a free soccer trial at Soccer Stars! Check it out: ${window.location.origin}/${franchiseeId}/free-trial`;
+    const businessName = franchiseeData?.company_name || 'Soccer Stars';
+    const shareText = `I just signed up my child for a free soccer trial at ${businessName}! Check it out: ${window.location.origin}/${franchiseeId}/free-trial`;
     
     if (navigator.share) {
       navigator.share({
-        title: 'Soccer Stars Free Trial',
+        title: `${businessName} Free Trial`,
         text: shareText,
         url: `${window.location.origin}/${franchiseeId}/free-trial`
       });
     } else {
       navigator.clipboard.writeText(shareText);
-      toast.success('Share link copied to clipboard!');
+      toast.success('Share message copied to clipboard!');
     }
+  };
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long',
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
 
   if (isLoading) {
@@ -156,7 +186,9 @@ const BookingConfirmation: React.FC = () => {
     <div className="min-h-screen bg-white">
       <div className="bg-brand-navy text-white py-4">
         <div className="container mx-auto px-4">
-          <h1 className="font-anton text-2xl">SOCCER STARS - BOOKING CONFIRMED</h1>
+          <h1 className="font-anton text-2xl">
+            {franchiseeData?.company_name?.toUpperCase() || 'SOCCER STARS'} - BOOKING CONFIRMED
+          </h1>
           {booking.booking_reference && (
             <p className="font-poppins text-sm opacity-90">Booking Reference: {booking.booking_reference}</p>
           )}
@@ -207,10 +239,15 @@ const BookingConfirmation: React.FC = () => {
                     <Users className="h-4 w-4 text-brand-red" />
                     <span className="font-poppins font-medium">Participants:</span>
                   </div>
-                  <ul className="space-y-1">
+                  <ul className="space-y-2">
                     {classGroup.appointments.map((appointment) => (
                       <li key={appointment.id} className="font-poppins text-gray-700">
                         • {appointment.participant_name} ({appointment.participant_age} years old)
+                        {appointment.selected_date && (
+                          <div className="ml-4 text-sm text-brand-blue">
+                            📅 {formatDate(appointment.selected_date)}
+                          </div>
+                        )}
                         {appointment.age_override && (
                           <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
                             Age Override
@@ -257,7 +294,6 @@ const BookingConfirmation: React.FC = () => {
             <Card className="text-center">
               <CardContent className="pt-6">
                 <div className="flex justify-center gap-2 mb-3">
-                  {/* Social media icons would go here */}
                   <div className="h-8 w-8 bg-brand-red rounded-full"></div>
                   <div className="h-8 w-8 bg-brand-blue rounded-full"></div>
                 </div>
