@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, Users, MapPin, ArrowLeft } from 'lucide-react';
@@ -30,10 +30,10 @@ interface ClassSchedule {
 
 const ClassBooking: React.FC = () => {
   const { franchiseeId } = useParams();
+  const navigate = useNavigate();
   const { sessionData, addParticipant, removeParticipant, getLeadData, getParticipantCountForClass } = useBookingSession();
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSessionLoaded, setIsSessionLoaded] = useState(false);
   const [selectedClass, setSelectedClass] = useState<ClassSchedule | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -41,23 +41,25 @@ const ClassBooking: React.FC = () => {
   const leadData = getLeadData();
 
   useEffect(() => {
-    // Wait for session to load from localStorage
-    const checkSessionTimer = setTimeout(() => {
-      console.log('Session data after delay:', sessionData);
-      setIsSessionLoaded(true);
-      
-      // Only redirect if we're sure session is loaded and no location is selected
-      if (!sessionData.selectedLocation?.id) {
-        console.log('No location selected after session loaded, redirecting to find classes');
-        window.location.href = `/${franchiseeId}/free-trial/find-classes`;
-        return;
-      }
-      
+    // Load classes immediately if we have a selected location
+    if (sessionData.selectedLocation?.id) {
+      console.log('Location found in session, loading classes:', sessionData.selectedLocation);
       loadClasses();
-    }, 300); // Give more time for localStorage to load
-
-    return () => clearTimeout(checkSessionTimer);
-  }, [sessionData, franchiseeId]);
+    } else {
+      // Give session a moment to load from localStorage, then check again
+      const timer = setTimeout(() => {
+        if (!sessionData.selectedLocation?.id) {
+          console.log('No location found after waiting, redirecting to find classes');
+          navigate(`/${franchiseeId}/free-trial/find-classes`);
+        } else {
+          console.log('Location loaded from session, loading classes');
+          loadClasses();
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [sessionData.selectedLocation, franchiseeId, navigate]);
 
   const loadClasses = async () => {
     if (!sessionData.selectedLocation?.id) {
@@ -187,8 +189,8 @@ const ClassBooking: React.FC = () => {
         .update({ status: 'converted' })
         .eq('id', leadId);
 
-      // Navigate to confirmation page with booking ID
-      window.location.href = `/${franchiseeId}/free-trial/booking/${booking.id}`;
+      // Navigate to confirmation page with booking ID using React Router
+      navigate(`/${franchiseeId}/free-trial/booking/${booking.id}`);
       
     } catch (error) {
       console.error('Error creating booking:', error);
@@ -197,7 +199,7 @@ const ClassBooking: React.FC = () => {
   };
 
   const handleBackToLocations = () => {
-    window.location.href = `/${franchiseeId}/free-trial/find-classes`;
+    navigate(`/${franchiseeId}/free-trial/find-classes`);
   };
 
   const formatTime = (timeString: string) => {
@@ -241,7 +243,7 @@ const ClassBooking: React.FC = () => {
     removeParticipant(participantId);
   };
 
-  if (isLoading || !isSessionLoaded) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
