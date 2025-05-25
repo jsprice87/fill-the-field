@@ -1,42 +1,102 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Calendar, Clock, MapPin, Users, Share, ArrowLeft, ExternalLink } from 'lucide-react';
-import { useBookingSession } from '@/hooks/useBookingSession';
 import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface BookingData {
+  id: string;
+  booking_reference: string;
+  parent_first_name: string;
+  parent_last_name: string;
+  parent_email: string;
+  parent_phone: string;
+  created_at: string;
+  appointments: Array<{
+    id: string;
+    participant_name: string;
+    participant_age: number;
+    class_name: string;
+    class_time: string;
+    health_conditions?: string;
+    age_override?: boolean;
+  }>;
+  location: {
+    name: string;
+    address: string;
+  };
+}
 
 const BookingConfirmation: React.FC = () => {
-  const { franchiseeId } = useParams();
+  const { franchiseeId, bookingId } = useParams();
   const navigate = useNavigate();
-  const { sessionData } = useBookingSession();
   const { data: settings } = useFranchiseeSettings();
+  const [booking, setBooking] = useState<BookingData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Redirect if no session data
   useEffect(() => {
-    if (!sessionData.participants || sessionData.participants.length === 0) {
+    if (!bookingId) {
       navigate(`/${franchiseeId}/free-trial`);
+      return;
     }
-  }, [sessionData, franchiseeId, navigate]);
 
-  if (!sessionData.participants || sessionData.participants.length === 0) {
-    return null;
-  }
+    loadBookingData();
+  }, [bookingId, franchiseeId, navigate]);
 
-  // Group participants by class
-  const participantsByClass = sessionData.participants.reduce((acc, participant) => {
-    const key = `${participant.classScheduleId}-${participant.className}`;
-    if (!acc[key]) {
-      acc[key] = {
-        className: participant.className,
-        classTime: participant.classTime,
-        participants: []
+  const loadBookingData = async () => {
+    try {
+      // Fetch booking with appointments and location data
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          appointments(*),
+          class_schedules!inner(
+            classes!inner(
+              location_id,
+              locations!inner(name, address)
+            )
+          )
+        `)
+        .eq('id', bookingId)
+        .single();
+
+      if (bookingError) {
+        console.error('Error loading booking:', bookingError);
+        toast.error('Failed to load booking details');
+        navigate(`/${franchiseeId}/free-trial`);
+        return;
+      }
+
+      // Transform the data to match our interface
+      const transformedBooking: BookingData = {
+        id: bookingData.id,
+        booking_reference: bookingData.booking_reference,
+        parent_first_name: bookingData.parent_first_name,
+        parent_last_name: bookingData.parent_last_name,
+        parent_email: bookingData.parent_email,
+        parent_phone: bookingData.parent_phone,
+        created_at: bookingData.created_at,
+        appointments: bookingData.appointments || [],
+        location: {
+          name: bookingData.class_schedules?.classes?.locations?.name || 'Location',
+          address: bookingData.class_schedules?.classes?.locations?.address || ''
+        }
       };
+
+      setBooking(transformedBooking);
+    } catch (error) {
+      console.error('Error loading booking:', error);
+      toast.error('Failed to load booking details');
+      navigate(`/${franchiseeId}/free-trial`);
+    } finally {
+      setIsLoading(false);
     }
-    acc[key].participants.push(participant);
-    return acc;
-  }, {} as Record<string, { className: string; classTime: string; participants: any[] }>);
+  };
 
   const handleShare = () => {
     const shareText = `I just signed up my child for a free soccer trial at Soccer Stars! Check it out: ${window.location.origin}/${franchiseeId}/free-trial`;
@@ -49,15 +109,57 @@ const BookingConfirmation: React.FC = () => {
       });
     } else {
       navigator.clipboard.writeText(shareText);
-      // You could add a toast notification here
+      toast.success('Share link copied to clipboard!');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
+          <p className="font-poppins text-gray-600">Loading booking details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="font-agrandir text-2xl text-brand-navy mb-4">Booking Not Found</h2>
+          <p className="font-poppins text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
+          <Button asChild className="bg-brand-navy hover:bg-brand-navy/90 text-white font-poppins">
+            <Link to={`/${franchiseeId}/free-trial`}>Back to Home</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Group appointments by class
+  const appointmentsByClass = booking.appointments.reduce((acc, appointment) => {
+    const key = `${appointment.class_name}-${appointment.class_time}`;
+    if (!acc[key]) {
+      acc[key] = {
+        className: appointment.class_name,
+        classTime: appointment.class_time,
+        appointments: []
+      };
+    }
+    acc[key].appointments.push(appointment);
+    return acc;
+  }, {} as Record<string, { className: string; classTime: string; appointments: any[] }>);
 
   return (
     <div className="min-h-screen bg-white">
       <div className="bg-brand-navy text-white py-4">
         <div className="container mx-auto px-4">
           <h1 className="font-anton text-2xl">SOCCER STARS - BOOKING CONFIRMED</h1>
+          {booking.booking_reference && (
+            <p className="font-poppins text-sm opacity-90">Booking Reference: {booking.booking_reference}</p>
+          )}
         </div>
       </div>
       
@@ -84,18 +186,16 @@ const BookingConfirmation: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Location */}
-              {sessionData.selectedLocation && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-brand-red mt-1" />
-                  <div>
-                    <h4 className="font-poppins font-semibold text-brand-navy">{sessionData.selectedLocation.name}</h4>
-                    <p className="font-poppins text-gray-600">{sessionData.selectedLocation.address}</p>
-                  </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 text-brand-red mt-1" />
+                <div>
+                  <h4 className="font-poppins font-semibold text-brand-navy">{booking.location.name}</h4>
+                  <p className="font-poppins text-gray-600">{booking.location.address}</p>
                 </div>
-              )}
+              </div>
 
-              {/* Classes and Participants */}
-              {Object.values(participantsByClass).map((classGroup, index) => (
+              {/* Classes and Appointments */}
+              {Object.values(appointmentsByClass).map((classGroup, index) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <Clock className="h-4 w-4 text-brand-blue" />
@@ -108,9 +208,14 @@ const BookingConfirmation: React.FC = () => {
                     <span className="font-poppins font-medium">Participants:</span>
                   </div>
                   <ul className="space-y-1">
-                    {classGroup.participants.map((participant) => (
-                      <li key={participant.id} className="font-poppins text-gray-700">
-                        • {participant.firstName} {participant.lastName} ({participant.age} years old)
+                    {classGroup.appointments.map((appointment) => (
+                      <li key={appointment.id} className="font-poppins text-gray-700">
+                        • {appointment.participant_name} ({appointment.participant_age} years old)
+                        {appointment.age_override && (
+                          <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                            Age Override
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -118,56 +223,13 @@ const BookingConfirmation: React.FC = () => {
               ))}
 
               {/* Parent/Guardian Info */}
-              {sessionData.parentGuardianInfo && (
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-poppins font-semibold text-brand-navy mb-2">Parent/Guardian Contact:</h4>
-                  <p className="font-poppins text-gray-700">
-                    {sessionData.parentGuardianInfo.firstName} {sessionData.parentGuardianInfo.lastName}
-                  </p>
-                  <p className="font-poppins text-gray-600">{sessionData.parentGuardianInfo.email}</p>
-                  <p className="font-poppins text-gray-600">{sessionData.parentGuardianInfo.phone}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* What to Expect */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-agrandir text-xl text-brand-navy">What to Expect</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-poppins font-semibold text-brand-navy mb-2">What to Bring:</h4>
-                  <ul className="space-y-1 font-poppins text-gray-700">
-                    <li>• Comfortable athletic clothing</li>
-                    <li>• Soccer cleats or athletic shoes</li>
-                    <li>• Water bottle</li>
-                    <li>• Shin guards (recommended)</li>
-                    <li>• Positive attitude and ready to have fun!</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-poppins font-semibold text-brand-navy mb-2">What We Provide:</h4>
-                  <ul className="space-y-1 font-poppins text-gray-700">
-                    <li>• Professional coaching</li>
-                    <li>• Soccer balls and training equipment</li>
-                    <li>• Age-appropriate curriculum</li>
-                    <li>• Fun, supportive environment</li>
-                    <li>• Small class sizes for personalized attention</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
-                <h4 className="font-poppins font-semibold text-yellow-800 mb-2">Important Notes:</h4>
-                <ul className="space-y-1 font-poppins text-yellow-700 text-sm">
-                  <li>• Please arrive 10-15 minutes early for check-in</li>
-                  <li>• Parents are welcome to watch from the sidelines</li>
-                  <li>• If weather is questionable, we'll contact you with updates</li>
-                  <li>• Our coaches will discuss next steps and enrollment options after the trial</li>
-                </ul>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="font-poppins font-semibold text-brand-navy mb-2">Parent/Guardian Contact:</h4>
+                <p className="font-poppins text-gray-700">
+                  {booking.parent_first_name} {booking.parent_last_name}
+                </p>
+                <p className="font-poppins text-gray-600">{booking.parent_email}</p>
+                <p className="font-poppins text-gray-600">{booking.parent_phone}</p>
               </div>
             </CardContent>
           </Card>

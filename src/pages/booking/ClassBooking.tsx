@@ -109,8 +109,89 @@ const ClassBooking: React.FC = () => {
     toast.success(`${participant.firstName} ${participant.lastName} added to ${participant.className}`);
   };
 
-  const handleContinueToConfirmation = () => {
-    window.location.href = `/${franchiseeId}/free-trial/confirmation`;
+  const handleContinueToConfirmation = async () => {
+    const participants = sessionData.participants || [];
+    const parentInfo = sessionData.parentGuardianInfo;
+    const leadId = sessionData.leadId;
+
+    if (!parentInfo || !leadId || participants.length === 0) {
+      toast.error('Missing required information');
+      return;
+    }
+
+    try {
+      // Create the booking record
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .insert({
+          lead_id: leadId,
+          class_schedule_id: participants[0].classScheduleId, // Use first participant's class
+          parent_first_name: parentInfo.firstName,
+          parent_last_name: parentInfo.lastName,
+          parent_email: parentInfo.email,
+          parent_phone: parentInfo.phone,
+          parent_zip: parentInfo.zip,
+          parent_relationship: parentInfo.relationship,
+          waiver_accepted: sessionData.waiverAccepted,
+          waiver_accepted_at: sessionData.waiverAccepted ? new Date().toISOString() : null,
+          communication_permission: sessionData.communicationPermission,
+          marketing_permission: sessionData.marketingPermission,
+          child_speaks_english: sessionData.childSpeaksEnglish,
+          status: 'confirmed'
+        })
+        .select()
+        .single();
+
+      if (bookingError) {
+        console.error('Booking creation error:', bookingError);
+        throw bookingError;
+      }
+
+      console.log('Booking created:', booking);
+
+      // Create appointment records for each participant
+      const appointmentPromises = participants.map(participant => 
+        supabase
+          .from('appointments')
+          .insert({
+            booking_id: booking.id,
+            participant_name: `${participant.firstName} ${participant.lastName}`,
+            participant_age: participant.age,
+            participant_birth_date: participant.birthDate,
+            class_schedule_id: participant.classScheduleId,
+            class_name: participant.className,
+            class_time: participant.classTime,
+            health_conditions: participant.healthConditions,
+            age_override: participant.ageOverride,
+            status: 'confirmed'
+          })
+      );
+
+      const appointmentResults = await Promise.all(appointmentPromises);
+      
+      // Check for appointment creation errors
+      for (const result of appointmentResults) {
+        if (result.error) {
+          console.error('Appointment creation error:', result.error);
+          throw result.error;
+        }
+      }
+
+      console.log('All appointments created successfully');
+
+      // Update lead status to converted
+      await supabase
+        .from('leads')
+        .update({ status: 'converted' })
+        .eq('id', leadId);
+
+      // Navigate to confirmation page with booking ID
+      window.location.href = `/${franchiseeId}/free-trial/booking/${booking.id}`;
+      
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast.error('Failed to create booking. Please try again.');
+    }
   };
 
   const handleBackToLocations = () => {
@@ -133,6 +214,10 @@ const ClassBooking: React.FC = () => {
 
   const getTotalParticipants = () => {
     return sessionData.participants?.length || 0;
+  };
+
+  const canAddMoreParticipants = () => {
+    return getTotalParticipants() < 5;
   };
 
   if (isLoading || !hasCheckedSession) {
@@ -183,7 +268,16 @@ const ClassBooking: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Classes List */}
           <div className="lg:col-span-2 space-y-4">
-            <h3 className="font-agrandir text-2xl text-brand-navy mb-6">Available Classes</h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-agrandir text-2xl text-brand-navy">Available Classes</h3>
+              {getTotalParticipants() >= 5 && (
+                <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg">
+                  <span className="font-poppins text-sm">
+                    Maximum 5 participants per booking reached
+                  </span>
+                </div>
+              )}
+            </div>
             
             {classes.length > 0 ? (
               classes.map((classSchedule) => {
@@ -251,11 +345,13 @@ const ClassBooking: React.FC = () => {
                         <div className="ml-6">
                           <Button
                             onClick={() => handleAddParticipant(classSchedule)}
-                            disabled={availableSpots <= 0}
+                            disabled={availableSpots <= 0 || !canAddMoreParticipants()}
                             className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3"
                             size="lg"
                           >
-                            {availableSpots > 0 ? 'Add Participant' : 'Class Full'}
+                            {availableSpots <= 0 ? 'Class Full' : 
+                             !canAddMoreParticipants() ? 'Max Participants' : 
+                             'Add Participant'}
                           </Button>
                         </div>
                       </div>

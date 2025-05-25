@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -96,7 +95,7 @@ const App: React.FC = () => {
                 <ClassBooking />
               </SlugResolver>
             } />
-            <Route path="/:franchiseeId/free-trial/confirmation" element={
+            <Route path="/:franchiseeId/free-trial/booking/:bookingId" element={
               <SlugResolver>
                 <BookingConfirmation />
               </SlugResolver>

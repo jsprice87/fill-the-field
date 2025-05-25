@@ -9,15 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          age_override: boolean | null
+          booking_id: string
+          class_name: string
+          class_schedule_id: string
+          class_time: string
+          created_at: string
+          health_conditions: string | null
+          id: string
+          participant_age: number
+          participant_birth_date: string | null
+          participant_name: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_override?: boolean | null
+          booking_id: string
+          class_name: string
+          class_schedule_id: string
+          class_time: string
+          created_at?: string
+          health_conditions?: string | null
+          id?: string
+          participant_age: number
+          participant_birth_date?: string | null
+          participant_name: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_override?: boolean | null
+          booking_id?: string
+          class_name?: string
+          class_schedule_id?: string
+          class_time?: string
+          created_at?: string
+          health_conditions?: string | null
+          id?: string
+          participant_age?: number
+          participant_birth_date?: string | null
+          participant_name?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_class_schedule_id_fkey"
+            columns: ["class_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "class_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           booking_reference: string | null
           cancellation_reason: string | null
+          child_speaks_english: boolean | null
           class_schedule_id: string
+          communication_permission: boolean | null
           confirmation_email_sent: boolean | null
           created_at: string
           id: string
           lead_id: string
+          marketing_permission: boolean | null
+          parent_email: string | null
+          parent_first_name: string | null
+          parent_last_name: string | null
+          parent_phone: string | null
+          parent_relationship: string | null
+          parent_zip: string | null
           status: string | null
           updated_at: string
           waiver_accepted: boolean | null
@@ -26,11 +98,20 @@ export type Database = {
         Insert: {
           booking_reference?: string | null
           cancellation_reason?: string | null
+          child_speaks_english?: boolean | null
           class_schedule_id: string
+          communication_permission?: boolean | null
           confirmation_email_sent?: boolean | null
           created_at?: string
           id?: string
           lead_id: string
+          marketing_permission?: boolean | null
+          parent_email?: string | null
+          parent_first_name?: string | null
+          parent_last_name?: string | null
+          parent_phone?: string | null
+          parent_relationship?: string | null
+          parent_zip?: string | null
           status?: string | null
           updated_at?: string
           waiver_accepted?: boolean | null
@@ -39,11 +120,20 @@ export type Database = {
         Update: {
           booking_reference?: string | null
           cancellation_reason?: string | null
+          child_speaks_english?: boolean | null
           class_schedule_id?: string
+          communication_permission?: boolean | null
           confirmation_email_sent?: boolean | null
           created_at?: string
           id?: string
           lead_id?: string
+          marketing_permission?: boolean | null
+          parent_email?: string | null
+          parent_first_name?: string | null
+          parent_last_name?: string | null
+          parent_phone?: string | null
+          parent_relationship?: string | null
+          parent_zip?: string | null
           status?: string | null
           updated_at?: string
           waiver_accepted?: boolean | null
