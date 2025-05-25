@@ -36,37 +36,50 @@ const ClassBooking: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<ClassSchedule | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const leadData = getLeadData();
 
   useEffect(() => {
-    // Load classes immediately if we have a selected location
-    if (sessionData.selectedLocation?.id) {
-      console.log('Location found in session, loading classes:', sessionData.selectedLocation);
+    console.log('ClassBooking: Current session data:', sessionData);
+    
+    // If we already have a location, load classes immediately
+    if (sessionData.selectedLocation?.id && !sessionChecked) {
+      console.log('ClassBooking: Location found in session, loading classes:', sessionData.selectedLocation);
+      setSessionChecked(true);
       loadClasses();
-    } else {
-      // Give session a moment to load from localStorage, then check again
+      return;
+    }
+
+    // If we haven't checked the session yet, wait for localStorage to load
+    if (!sessionChecked) {
+      console.log('ClassBooking: Waiting for session to load from localStorage...');
       const timer = setTimeout(() => {
+        console.log('ClassBooking: Session check timeout, current session:', sessionData);
+        setSessionChecked(true);
+        
         if (!sessionData.selectedLocation?.id) {
-          console.log('No location found after waiting, redirecting to find classes');
+          console.log('ClassBooking: No location found after waiting, redirecting to find classes');
           navigate(`/${franchiseeId}/free-trial/find-classes`);
         } else {
-          console.log('Location loaded from session, loading classes');
+          console.log('ClassBooking: Location loaded from session, loading classes');
           loadClasses();
         }
-      }, 100);
+      }, 500); // Increased timeout to allow more time for localStorage sync
       
       return () => clearTimeout(timer);
     }
-  }, [sessionData.selectedLocation, franchiseeId, navigate]);
+  }, [sessionData.selectedLocation, franchiseeId, navigate, sessionChecked]);
 
   const loadClasses = async () => {
     if (!sessionData.selectedLocation?.id) {
+      console.log('ClassBooking: No location selected, cannot load classes');
       toast.error('Please select a location first');
       return;
     }
 
+    console.log('ClassBooking: Loading classes for location:', sessionData.selectedLocation.id);
     setIsLoading(true);
     try {
       const { data: classesData, error } = await supabase
@@ -93,6 +106,7 @@ const ClassBooking: React.FC = () => {
         throw error;
       }
 
+      console.log('ClassBooking: Classes loaded:', classesData?.length || 0);
       setClasses(classesData || []);
     } catch (error) {
       console.error('Error loading classes:', error);
@@ -243,12 +257,14 @@ const ClassBooking: React.FC = () => {
     removeParticipant(participantId);
   };
 
-  if (isLoading) {
+  if (isLoading || !sessionChecked) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-          <p className="font-poppins text-gray-600">Loading classes...</p>
+          <p className="font-poppins text-gray-600">
+            {!sessionChecked ? 'Loading session...' : 'Loading classes...'}
+          </p>
         </div>
       </div>
     );
