@@ -226,10 +226,14 @@ const ClassBooking: React.FC = () => {
     id: p.id || `temp-${index}`,
     firstName: p.firstName,
     lastName: p.lastName,
+    birthDate: p.birthDate,
     age: p.age,
+    classScheduleId: p.classScheduleId,
     className: p.className,
     classTime: p.classTime,
-    selectedDate: p.selectedDate
+    selectedDate: p.selectedDate,
+    healthConditions: p.healthConditions,
+    ageOverride: p.ageOverride
   }));
 
   const handleRemoveParticipant = (participantId: string) => {
