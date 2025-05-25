@@ -33,7 +33,7 @@ const ClassBooking: React.FC = () => {
   const { sessionData, addParticipant, removeParticipant, getLeadData, getParticipantCountForClass } = useBookingSession();
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasCheckedSession, setHasCheckedSession] = useState(false);
+  const [isSessionLoaded, setIsSessionLoaded] = useState(false);
   const [selectedClass, setSelectedClass] = useState<ClassSchedule | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -41,22 +41,23 @@ const ClassBooking: React.FC = () => {
   const leadData = getLeadData();
 
   useEffect(() => {
-    // Add a small delay to ensure session data is loaded
-    const checkSession = setTimeout(() => {
-      console.log('Checking session data:', sessionData);
+    // Wait for session to load from localStorage
+    const checkSessionTimer = setTimeout(() => {
+      console.log('Session data after delay:', sessionData);
+      setIsSessionLoaded(true);
       
+      // Only redirect if we're sure session is loaded and no location is selected
       if (!sessionData.selectedLocation?.id) {
-        console.log('No location selected, redirecting to find classes');
+        console.log('No location selected after session loaded, redirecting to find classes');
         window.location.href = `/${franchiseeId}/free-trial/find-classes`;
         return;
       }
       
-      setHasCheckedSession(true);
       loadClasses();
-    }, 200);
+    }, 300); // Give more time for localStorage to load
 
-    return () => clearTimeout(checkSession);
-  }, [sessionData.selectedLocation, franchiseeId]);
+    return () => clearTimeout(checkSessionTimer);
+  }, [sessionData, franchiseeId]);
 
   const loadClasses = async () => {
     if (!sessionData.selectedLocation?.id) {
@@ -240,7 +241,7 @@ const ClassBooking: React.FC = () => {
     removeParticipant(participantId);
   };
 
-  if (isLoading || !hasCheckedSession) {
+  if (isLoading || !isSessionLoaded) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
