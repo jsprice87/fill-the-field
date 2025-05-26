@@ -65,13 +65,13 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
       // Generate flow ID
       const newFlowId = crypto.randomUUID();
 
-      // Create flow record
+      // Create flow record with proper Json type casting
       const { error: flowError } = await supabase
         .from('booking_flows')
         .insert({
           flow_id: newFlowId,
           franchisee_id: franchisee.id,
-          state_data: initialData
+          state_data: initialData as any
         });
 
       if (flowError) {
@@ -106,9 +106,11 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
       }
 
       setCurrentFlowId(flowIdToLoad);
-      setFlowData(flow.state_data || {});
+      // Cast the Json type back to our BookingFlowData interface
+      const stateData = (flow.state_data as any) || {};
+      setFlowData(stateData);
       
-      return flow.state_data;
+      return stateData;
     } catch (error) {
       console.error('Error loading flow:', error);
       throw error;
@@ -129,7 +131,7 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
       const { error } = await supabase
         .from('booking_flows')
         .update({ 
-          state_data: newData,
+          state_data: newData as any,
           expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // Extend expiry by 2 hours
         })
         .eq('flow_id', currentFlowId);
