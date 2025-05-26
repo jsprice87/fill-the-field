@@ -75,6 +75,44 @@ export type Database = {
           },
         ]
       }
+      booking_flows: {
+        Row: {
+          created_at: string
+          expires_at: string
+          flow_id: string
+          franchisee_id: string
+          id: string
+          state_data: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          flow_id: string
+          franchisee_id: string
+          id?: string
+          state_data?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          flow_id?: string
+          franchisee_id?: string
+          id?: string
+          state_data?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_flows_franchisee_id_fkey"
+            columns: ["franchisee_id"]
+            isOneToOne: false
+            referencedRelation: "franchisees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           booking_reference: string | null
@@ -678,7 +716,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_booking_flows: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

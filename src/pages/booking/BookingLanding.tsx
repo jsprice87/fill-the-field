@@ -1,36 +1,45 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
-import { useBookingSession } from '@/hooks/useBookingSession';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { toast } from 'sonner';
 
 const BookingLanding: React.FC = () => {
   const { franchiseeId } = useParams();
   const navigate = useNavigate();
-  const { updateSession, clearSession } = useBookingSession();
+  const { createFlow } = useBookingFlow();
+  const [isCreatingFlow, setIsCreatingFlow] = useState(false);
 
-  // Clear any existing session data when the page loads
-  useEffect(() => {
-    console.log('BookingLanding: Clearing existing session data for new visitor');
-    clearSession();
-  }, [clearSession]);
-
-  const handleFormSuccess = (leadId: string, leadData: any) => {
-    console.log('Form success - storing lead data:', { leadId, leadData });
+  const handleFormSuccess = async (leadId: string, leadData: any) => {
+    if (!franchiseeId) return;
     
-    // Store both the lead ID and the complete lead data in the session
-    updateSession({ 
-      leadId,
-      leadData: {
-        firstName: leadData.first_name,
-        lastName: leadData.last_name,
-        email: leadData.email,
-        phone: leadData.phone,
-        zip: leadData.zip
-      }
-    });
+    console.log('Form success - creating flow with lead data:', { leadId, leadData });
     
-    navigate(`/${franchiseeId}/free-trial/find-classes`);
+    setIsCreatingFlow(true);
+    try {
+      // Create a new flow with the lead data
+      const flowId = await createFlow(franchiseeId, {
+        leadId,
+        leadData: {
+          firstName: leadData.first_name,
+          lastName: leadData.last_name,
+          email: leadData.email,
+          phone: leadData.phone,
+          zip: leadData.zip
+        }
+      });
+      
+      console.log('Flow created:', flowId);
+      
+      // Navigate to find classes with the flow ID
+      navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
+    } catch (error) {
+      console.error('Error creating flow:', error);
+      toast.error('Failed to start booking process. Please try again.');
+    } finally {
+      setIsCreatingFlow(false);
+    }
   };
 
   return (
@@ -70,11 +79,18 @@ const BookingLanding: React.FC = () => {
 
             {/* Right Side - Embedded Form */}
             <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-auto">
-              <QuickCaptureForm 
-                franchiseeId={franchiseeId!}
-                onSuccess={handleFormSuccess}
-                showTitle={true}
-              />
+              {isCreatingFlow ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
+                  <p className="font-poppins text-gray-600">Starting your booking...</p>
+                </div>
+              ) : (
+                <QuickCaptureForm 
+                  franchiseeId={franchiseeId!}
+                  onSuccess={handleFormSuccess}
+                  showTitle={true}
+                />
+              )}
             </div>
           </div>
         </div>

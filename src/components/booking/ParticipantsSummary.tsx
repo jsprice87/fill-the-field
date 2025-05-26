@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, X, Calendar, Clock } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import ParentGuardianForm from './ParentGuardianForm';
-import { useBookingSession } from '@/hooks/useBookingSession';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
 
 interface Participant {
   id: string;
@@ -15,6 +16,7 @@ interface Participant {
   classScheduleId: string;
   className: string;
   classTime: string;
+  selectedDate: string;
   healthConditions?: string;
   ageOverride?: boolean;
 }
@@ -30,7 +32,9 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
   onRemoveParticipant,
   onContinue
 }) => {
-  const { sessionData } = useBookingSession();
+  const [searchParams] = useSearchParams();
+  const flowId = searchParams.get('flow');
+  const { flowData } = useBookingFlow(flowId || undefined);
 
   if (participants.length === 0) {
     return null;
@@ -51,7 +55,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
   }, {} as Record<string, { className: string; classTime: string; participants: Participant[] }>);
 
   const canContinue = () => {
-    console.log('Checking canContinue with sessionData:', sessionData);
+    console.log('Checking canContinue with flowData:', flowData);
     
     // Check if we have participants
     if (participants.length === 0) {
@@ -59,8 +63,8 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       return false;
     }
 
-    // Check if parent/guardian info is complete - be more thorough in checking
-    const parentInfo = sessionData.parentGuardianInfo;
+    // Check if parent/guardian info is complete
+    const parentInfo = flowData.parentGuardianInfo;
     const hasParentInfo = parentInfo && 
       parentInfo.firstName && 
       parentInfo.firstName.trim() !== '' &&
@@ -79,13 +83,13 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
     }
 
     // Check if waiver is accepted (MANDATORY)
-    if (!sessionData.waiverAccepted) {
+    if (!flowData.waiverAccepted) {
       console.log('Waiver not accepted');
       return false;
     }
 
     // Check if communication permission is granted (MANDATORY)
-    if (!sessionData.communicationPermission) {
+    if (!flowData.communicationPermission) {
       console.log('Communication permission not granted');
       return false;
     }
@@ -101,7 +105,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       missing.push('Add at least one participant');
     }
     
-    const parentInfo = sessionData.parentGuardianInfo;
+    const parentInfo = flowData.parentGuardianInfo;
     const hasParentInfo = parentInfo && 
       parentInfo.firstName && 
       parentInfo.firstName.trim() !== '' &&
@@ -116,11 +120,11 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       missing.push('Complete parent/guardian information');
     }
     
-    if (!sessionData.waiverAccepted) {
+    if (!flowData.waiverAccepted) {
       missing.push('Accept the liability waiver');
     }
     
-    if (!sessionData.communicationPermission) {
+    if (!flowData.communicationPermission) {
       missing.push('Grant communication permission');
     }
     

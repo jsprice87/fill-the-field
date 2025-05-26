@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Clock, Users, Map, List } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useBookingSession } from '@/hooks/useBookingSession';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 
 interface Location {
@@ -23,24 +24,33 @@ interface Location {
 const FindClasses: React.FC = () => {
   const { franchiseeId } = useParams();
   const navigate = useNavigate();
-  const { sessionData, updateSession, getLeadData, getLeadId } = useBookingSession();
+  const [searchParams] = useSearchParams();
+  const flowId = searchParams.get('flow');
+  
+  const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeId);
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
 
-  const leadData = getLeadData();
-  const leadId = getLeadId();
-
   useEffect(() => {
+    if (!flowId) {
+      console.log('No flow ID found, redirecting to landing');
+      navigate(`/${franchiseeId}/free-trial`);
+      return;
+    }
+
     loadData();
-  }, [franchiseeId, leadId]);
+  }, [franchiseeId, flowId]);
 
   const loadData = async () => {
-    if (!franchiseeId) return;
+    if (!franchiseeId || !flowId) return;
     
     setIsLoading(true);
     try {
+      // Load flow data first
+      await loadFlow(flowId);
+
       // Get franchisee by slug
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
@@ -53,27 +63,6 @@ const FindClasses: React.FC = () => {
       }
 
       setFranchiseeData(franchisee);
-
-      // If we have a lead ID but no lead data in session, fetch it
-      if (leadId && !leadData) {
-        const { data: lead, error: leadError } = await supabase
-          .from('leads')
-          .select('*')
-          .eq('id', leadId)
-          .single();
-
-        if (!leadError && lead) {
-          updateSession({
-            leadData: {
-              firstName: lead.first_name,
-              lastName: lead.last_name,
-              email: lead.email,
-              phone: lead.phone,
-              zip: lead.zip
-            }
-          });
-        }
-      }
 
       // Load locations for this franchisee
       const { data: locationsData, error: locationsError } = await supabase
@@ -91,26 +80,34 @@ const FindClasses: React.FC = () => {
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load locations');
+      // If flow loading fails, redirect to start over
+      navigate(`/${franchiseeId}/free-trial`);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLocationSelect = async (location: Location) => {
+    if (!flowId) return;
+    
     console.log('Selecting location:', location.id, location.name);
     
-    // Update session with selected location
-    updateSession({
-      selectedLocation: {
-        id: location.id,
-        name: location.name,
-        address: `${location.address}, ${location.city}, ${location.state}`
-      }
-    });
-    
-    console.log('Navigating to booking page');
-    // Use React Router navigation instead of window.location.href
-    navigate(`/${franchiseeId}/free-trial/booking`);
+    try {
+      // Update flow with selected location
+      await updateFlow({
+        selectedLocation: {
+          id: location.id,
+          name: location.name,
+          address: `${location.address}, ${location.city}, ${location.state}`
+        }
+      });
+      
+      console.log('Navigating to booking page');
+      navigate(`/${franchiseeId}/free-trial/booking?flow=${flowId}`);
+    } catch (error) {
+      console.error('Error updating flow:', error);
+      toast.error('Failed to select location. Please try again.');
+    }
   };
 
   const handleRequestLocation = () => {
@@ -118,7 +115,7 @@ const FindClasses: React.FC = () => {
     toast.info('Location request feature coming soon');
   };
 
-  if (isLoading) {
+  if (isLoading || flowLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -129,7 +126,7 @@ const FindClasses: React.FC = () => {
     );
   }
 
-  const currentLeadData = leadData || sessionData.leadData;
+  const currentLeadData = flowData.leadData;
 
   return (
     <div className="min-h-screen bg-white">

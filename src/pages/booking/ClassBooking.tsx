@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, Users, MapPin, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useBookingSession } from '@/hooks/useBookingSession';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 import ParticipantModal from '@/components/booking/ParticipantModal';
 import ParticipantsSummary from '@/components/booking/ParticipantsSummary';
@@ -32,35 +32,59 @@ interface ClassSchedule {
 const ClassBooking: React.FC = () => {
   const { franchiseeId } = useParams();
   const navigate = useNavigate();
-  const { sessionData, addParticipant, removeParticipant, getLeadData, getParticipantCountForClass } = useBookingSession();
+  const [searchParams] = useSearchParams();
+  const flowId = searchParams.get('flow');
+  
+  const { 
+    flowData, 
+    loadFlow, 
+    updateFlow, 
+    addParticipant, 
+    removeParticipant, 
+    getParticipantCountForClass,
+    isLoading: flowLoading 
+  } = useBookingFlow(flowId || undefined, franchiseeId);
+  
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<ClassSchedule | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const leadData = getLeadData();
 
   useEffect(() => {
-    // Load classes immediately if we have a selected location
-    if (sessionData.selectedLocation?.id) {
-      loadClasses();
-    } else {
-      // Give session a moment to load from localStorage, then check again
-      const timer = setTimeout(() => {
-        if (!sessionData.selectedLocation?.id) {
-          navigate(`/${franchiseeId}/free-trial/find-classes`);
-        } else {
-          loadClasses();
-        }
-      }, 100);
-      
-      return () => clearTimeout(timer);
+    if (!flowId) {
+      console.log('No flow ID found, redirecting to landing');
+      navigate(`/${franchiseeId}/free-trial`);
+      return;
     }
-  }, [sessionData.selectedLocation, franchiseeId, navigate]);
+
+    // Load flow data first, then classes if we have a location
+    loadFlowAndClasses();
+  }, [flowId, franchiseeId]);
+
+  const loadFlowAndClasses = async () => {
+    if (!flowId) return;
+    
+    try {
+      await loadFlow(flowId);
+      
+      // Check if we have a selected location in the flow
+      if (flowData.selectedLocation?.id) {
+        await loadClasses();
+      } else {
+        // No location selected, redirect back to find classes
+        navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
+      }
+    } catch (error) {
+      console.error('Error loading flow:', error);
+      toast.error('Session expired. Please start over.');
+      navigate(`/${franchiseeId}/free-trial`);
+    }
+  };
 
   const loadClasses = async () => {
-    if (!sessionData.selectedLocation?.id) {
+    if (!flowData.selectedLocation?.id) {
       toast.error('Please select a location first');
       return;
     }
@@ -81,7 +105,7 @@ const ClassBooking: React.FC = () => {
             location_id
           )
         `)
-        .eq('classes.location_id', sessionData.selectedLocation.id)
+        .eq('classes.location_id', flowData.selectedLocation.id)
         .eq('is_active', true)
         .eq('classes.is_active', true)
         .order('day_of_week')
@@ -105,15 +129,20 @@ const ClassBooking: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleParticipantAdded = (participant: any) => {
-    addParticipant(participant);
-    toast.success(`${participant.firstName} ${participant.lastName} added to ${participant.className}`);
+  const handleParticipantAdded = async (participant: any) => {
+    try {
+      await addParticipant(participant);
+      toast.success(`${participant.firstName} ${participant.lastName} added to ${participant.className}`);
+    } catch (error) {
+      console.error('Error adding participant:', error);
+      toast.error('Failed to add participant. Please try again.');
+    }
   };
 
   const handleContinueToConfirmation = async () => {
-    const participants = sessionData.participants || [];
-    const parentInfo = sessionData.parentGuardianInfo;
-    const leadId = sessionData.leadId;
+    const participants = flowData.participants || [];
+    const parentInfo = flowData.parentGuardianInfo;
+    const leadId = flowData.leadId;
 
     if (!parentInfo || !leadId || participants.length === 0) {
       toast.error('Missing required information');
@@ -133,11 +162,11 @@ const ClassBooking: React.FC = () => {
           parent_phone: parentInfo.phone,
           parent_zip: parentInfo.zip,
           parent_relationship: parentInfo.relationship,
-          waiver_accepted: sessionData.waiverAccepted,
-          waiver_accepted_at: sessionData.waiverAccepted ? new Date().toISOString() : null,
-          communication_permission: sessionData.communicationPermission,
-          marketing_permission: sessionData.marketingPermission,
-          child_speaks_english: sessionData.childSpeaksEnglish,
+          waiver_accepted: flowData.waiverAccepted,
+          waiver_accepted_at: flowData.waiverAccepted ? new Date().toISOString() : null,
+          communication_permission: flowData.communicationPermission,
+          marketing_permission: flowData.marketingPermission,
+          child_speaks_english: flowData.childSpeaksEnglish,
           status: 'confirmed'
         })
         .select()
@@ -162,7 +191,7 @@ const ClassBooking: React.FC = () => {
             class_schedule_id: participant.classScheduleId,
             class_name: participant.className,
             class_time: participant.classTime,
-            selected_date: participant.selectedDate, // Include the selected date
+            selected_date: participant.selectedDate,
             health_conditions: participant.healthConditions,
             age_override: participant.ageOverride,
             status: 'confirmed'
@@ -187,7 +216,7 @@ const ClassBooking: React.FC = () => {
         .update({ status: 'converted' })
         .eq('id', leadId);
 
-      // Navigate to confirmation page with booking ID using React Router
+      // Navigate to confirmation page with booking ID
       navigate(`/${franchiseeId}/free-trial/booking/${booking.id}`);
       
     } catch (error) {
@@ -197,7 +226,8 @@ const ClassBooking: React.FC = () => {
   };
 
   const handleBackToLocations = () => {
-    navigate(`/${franchiseeId}/free-trial/find-classes`);
+    if (!flowId) return;
+    navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
   };
 
   const formatTime = (timeString: string) => {
@@ -215,7 +245,7 @@ const ClassBooking: React.FC = () => {
   };
 
   const getTotalParticipants = () => {
-    return sessionData.participants?.length || 0;
+    return flowData.participants?.length || 0;
   };
 
   const canAddMoreParticipants = () => {
@@ -223,7 +253,7 @@ const ClassBooking: React.FC = () => {
   };
 
   // Convert ParticipantData to the format expected by ParticipantsSummary
-  const convertedParticipants = (sessionData.participants || []).map((p, index) => ({
+  const convertedParticipants = (flowData.participants || []).map((p, index) => ({
     id: p.id || `temp-${index}`,
     firstName: p.firstName,
     lastName: p.lastName,
@@ -237,11 +267,16 @@ const ClassBooking: React.FC = () => {
     ageOverride: p.ageOverride
   }));
 
-  const handleRemoveParticipant = (participantId: string) => {
-    removeParticipant(participantId);
+  const handleRemoveParticipant = async (participantId: string) => {
+    try {
+      await removeParticipant(participantId);
+    } catch (error) {
+      console.error('Error removing participant:', error);
+      toast.error('Failed to remove participant. Please try again.');
+    }
   };
 
-  if (isLoading) {
+  if (isLoading || flowLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -269,17 +304,17 @@ const ClassBooking: React.FC = () => {
               <h2 className="font-agrandir text-xl">Select Classes & Add Participants</h2>
             </div>
           </div>
-          {sessionData.selectedLocation && (
+          {flowData.selectedLocation && (
             <div className="flex items-center mt-2 ml-12">
               <MapPin className="h-4 w-4 mr-2" />
               <span className="font-poppins text-sm opacity-90">
-                {sessionData.selectedLocation.name}
+                {flowData.selectedLocation.name}
               </span>
             </div>
           )}
-          {leadData && (
+          {flowData.leadData && (
             <p className="font-poppins text-sm opacity-75 ml-12">
-              Hello {leadData.firstName}, add participants to your free trial classes below
+              Hello {flowData.leadData.firstName}, add participants to your free trial classes below
             </p>
           )}
         </div>
