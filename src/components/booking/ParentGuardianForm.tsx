@@ -7,11 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { User, FileText } from 'lucide-react';
-import { useBookingSession } from '@/hooks/useBookingSession';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const ParentGuardianForm: React.FC = () => {
-  const { sessionData, updateParentGuardianInfo, updateWaiverAccepted, updateCommunicationPermission, updateMarketingPermission, getLeadData } = useBookingSession();
-  const leadData = getLeadData();
+  const [searchParams] = useSearchParams();
+  const flowId = searchParams.get('flow');
+  const { flowData, updateFlow } = useBookingFlow(flowId || undefined);
+  const [customWaiver, setCustomWaiver] = useState<string>('');
+  const [franchiseeData, setFranchiseeData] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -22,28 +27,102 @@ const ParentGuardianForm: React.FC = () => {
     relationship: 'Parent'
   });
 
+  // Load franchisee and custom waiver data
+  useEffect(() => {
+    const loadFranchiseeData = async () => {
+      if (!flowData.leadData?.franchiseeId) return;
+      
+      try {
+        // Get franchisee data
+        const { data: franchisee, error: franchiseeError } = await supabase
+          .from('franchisees')
+          .select('*')
+          .eq('id', flowData.leadData.franchiseeId)
+          .single();
+
+        if (franchiseeError) {
+          console.error('Error loading franchisee:', franchiseeError);
+          return;
+        }
+
+        setFranchiseeData(franchisee);
+
+        // Get custom waiver from settings
+        const { data: settings, error: settingsError } = await supabase
+          .from('franchisee_settings')
+          .select('setting_value')
+          .eq('franchisee_id', franchisee.id)
+          .eq('setting_key', 'waiver_text')
+          .single();
+
+        if (!settingsError && settings?.setting_value) {
+          setCustomWaiver(settings.setting_value);
+        }
+      } catch (error) {
+        console.error('Error loading franchisee data:', error);
+      }
+    };
+
+    loadFranchiseeData();
+  }, [flowData.leadData?.franchiseeId]);
+
   // Pre-fill form with lead data on component mount
   useEffect(() => {
-    console.log('ParentGuardianForm: Setting up form data', { sessionData, leadData });
+    console.log('ParentGuardianForm: Setting up form data', { flowData });
+    
+    const leadData = flowData.leadData;
+    const parentInfo = flowData.parentGuardianInfo;
     
     const initialData = {
-      firstName: sessionData.parentGuardianInfo?.firstName || leadData?.firstName || '',
-      lastName: sessionData.parentGuardianInfo?.lastName || leadData?.lastName || '',
-      email: sessionData.parentGuardianInfo?.email || leadData?.email || '',
-      phone: sessionData.parentGuardianInfo?.phone || leadData?.phone || '',
-      zip: sessionData.parentGuardianInfo?.zip || leadData?.zip || '',
-      relationship: sessionData.parentGuardianInfo?.relationship || 'Parent'
+      firstName: parentInfo?.firstName || leadData?.firstName || '',
+      lastName: parentInfo?.lastName || leadData?.lastName || '',
+      email: parentInfo?.email || leadData?.email || '',
+      phone: parentInfo?.phone || leadData?.phone || '',
+      zip: parentInfo?.zip || leadData?.zip || '',
+      relationship: parentInfo?.relationship || 'Parent'
     };
     
     console.log('ParentGuardianForm: Initial data set to:', initialData);
     setFormData(initialData);
     
-    // If we have lead data and no existing parent info, update the session immediately
-    if (leadData && (!sessionData.parentGuardianInfo?.firstName || !sessionData.parentGuardianInfo?.email)) {
-      console.log('ParentGuardianForm: Updating session with lead data');
+    // If we have lead data and no existing parent info, update the flow immediately
+    if (leadData && (!parentInfo?.firstName || !parentInfo?.email)) {
+      console.log('ParentGuardianForm: Updating flow with lead data');
       updateParentGuardianInfo(initialData);
     }
-  }, [leadData, sessionData.parentGuardianInfo, updateParentGuardianInfo]);
+  }, [flowData.leadData, flowData.parentGuardianInfo]);
+
+  const updateParentGuardianInfo = async (info: any) => {
+    try {
+      await updateFlow({ parentGuardianInfo: info });
+    } catch (error) {
+      console.error('Error updating parent guardian info:', error);
+    }
+  };
+
+  const updateWaiverAccepted = async (accepted: boolean) => {
+    try {
+      await updateFlow({ waiverAccepted: accepted });
+    } catch (error) {
+      console.error('Error updating waiver acceptance:', error);
+    }
+  };
+
+  const updateCommunicationPermission = async (permission: boolean) => {
+    try {
+      await updateFlow({ communicationPermission: permission });
+    } catch (error) {
+      console.error('Error updating communication permission:', error);
+    }
+  };
+
+  const updateMarketingPermission = async (permission: boolean) => {
+    try {
+      await updateFlow({ marketingPermission: permission });
+    } catch (error) {
+      console.error('Error updating marketing permission:', error);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     const newFormData = { ...formData, [field]: value };
@@ -68,12 +147,41 @@ const ParentGuardianForm: React.FC = () => {
 
   const isFormComplete = formData.firstName && formData.lastName && formData.email && formData.phone && formData.zip;
 
-  // Debug log to see current session state
-  console.log('Current session data in ParentGuardianForm:', {
-    waiverAccepted: sessionData.waiverAccepted,
-    communicationPermission: sessionData.communicationPermission,
-    marketingPermission: sessionData.marketingPermission,
-    parentGuardianInfo: sessionData.parentGuardianInfo
+  // Default waiver text if no custom waiver is found
+  const defaultWaiver = `
+    ASSUMPTION OF RISK, WAIVER OF CLAIMS & INDEMNIFICATION AGREEMENT
+
+    In consideration for being permitted to participate in soccer activities, programs, and/or use facilities 
+    owned or operated by Soccer Stars, I acknowledge, understand, and agree to the following:
+
+    1. ASSUMPTION OF RISK: I understand that participation in soccer activities involves 
+    inherent risks including but not limited to: physical injury, property damage, and other unforeseen 
+    circumstances. I voluntarily assume all risks associated with participation.
+
+    2. WAIVER OF CLAIMS: I hereby waive, release, and discharge Soccer Stars, its owners, 
+    employees, coaches, and affiliates from any and all claims, demands, or causes of action arising from 
+    participation in soccer activities.
+
+    3. INDEMNIFICATION: I agree to indemnify and hold harmless Soccer Stars from any 
+    claims brought by third parties arising from my child's participation in soccer activities.
+
+    4. MEDICAL TREATMENT: I authorize Soccer Stars staff to secure emergency medical 
+    treatment if needed and agree to be responsible for any associated costs.
+
+    5. MEDIA RELEASE: I grant permission for Soccer Stars to use photographs and videos 
+    of participants for promotional purposes.
+
+    I acknowledge that I have read this agreement, understand its contents, and sign it voluntarily.
+  `;
+
+  const waiverText = customWaiver || defaultWaiver;
+
+  // Debug log to see current flow state
+  console.log('Current flow data in ParentGuardianForm:', {
+    waiverAccepted: flowData.waiverAccepted,
+    communicationPermission: flowData.communicationPermission,
+    marketingPermission: flowData.marketingPermission,
+    parentGuardianInfo: flowData.parentGuardianInfo
   });
 
   return (
@@ -87,29 +195,31 @@ const ParentGuardianForm: React.FC = () => {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="parentFirstName" className="font-poppins">First Name</Label>
+            <Label htmlFor="parentFirstName" className="font-poppins">First Name *</Label>
             <Input
               id="parentFirstName"
               value={formData.firstName}
               onChange={(e) => handleInputChange('firstName', e.target.value)}
               placeholder="Parent/Guardian first name"
               className="font-poppins"
+              required
             />
           </div>
           <div>
-            <Label htmlFor="parentLastName" className="font-poppins">Last Name</Label>
+            <Label htmlFor="parentLastName" className="font-poppins">Last Name *</Label>
             <Input
               id="parentLastName"
               value={formData.lastName}
               onChange={(e) => handleInputChange('lastName', e.target.value)}
               placeholder="Parent/Guardian last name"
               className="font-poppins"
+              required
             />
           </div>
         </div>
 
         <div>
-          <Label htmlFor="parentEmail" className="font-poppins">Email Address</Label>
+          <Label htmlFor="parentEmail" className="font-poppins">Email Address *</Label>
           <Input
             id="parentEmail"
             type="email"
@@ -117,12 +227,13 @@ const ParentGuardianForm: React.FC = () => {
             onChange={(e) => handleInputChange('email', e.target.value)}
             placeholder="your.email@example.com"
             className="font-poppins"
+            required
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="parentPhone" className="font-poppins">Phone Number</Label>
+            <Label htmlFor="parentPhone" className="font-poppins">Phone Number *</Label>
             <Input
               id="parentPhone"
               type="tel"
@@ -130,16 +241,18 @@ const ParentGuardianForm: React.FC = () => {
               onChange={(e) => handleInputChange('phone', e.target.value)}
               placeholder="(555) 123-4567"
               className="font-poppins"
+              required
             />
           </div>
           <div>
-            <Label htmlFor="parentZip" className="font-poppins">ZIP Code</Label>
+            <Label htmlFor="parentZip" className="font-poppins">ZIP Code *</Label>
             <Input
               id="parentZip"
               value={formData.zip}
               onChange={(e) => handleInputChange('zip', e.target.value)}
               placeholder="12345"
               className="font-poppins"
+              required
             />
           </div>
         </div>
@@ -159,7 +272,7 @@ const ParentGuardianForm: React.FC = () => {
           <div className="flex items-start space-x-2">
             <Checkbox
               id="waiver"
-              checked={sessionData.waiverAccepted || false}
+              checked={flowData.waiverAccepted || false}
               onCheckedChange={handleWaiverChange}
               className="mt-1"
             />
@@ -177,50 +290,17 @@ const ParentGuardianForm: React.FC = () => {
                       <DialogTitle className="font-agrandir text-brand-navy flex items-center gap-2">
                         <FileText className="h-5 w-5" />
                         Liability Waiver and Agreement
+                        {franchiseeData && (
+                          <span className="text-sm font-poppins text-gray-600">
+                            - {franchiseeData.company_name}
+                          </span>
+                        )}
                       </DialogTitle>
                     </DialogHeader>
                     <div className="prose prose-sm max-w-none font-poppins">
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        <strong>ASSUMPTION OF RISK, WAIVER OF CLAIMS & INDEMNIFICATION AGREEMENT</strong>
-                      </p>
-                      
-                      <p className="text-sm text-gray-700 leading-relaxed mt-4">
-                        In consideration for being permitted to participate in soccer activities, programs, and/or use facilities 
-                        owned or operated by Soccer Stars, I acknowledge, understand, and agree to the following:
-                      </p>
-
-                      <div className="mt-4 space-y-3">
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          <strong>1. ASSUMPTION OF RISK:</strong> I understand that participation in soccer activities involves 
-                          inherent risks including but not limited to: physical injury, property damage, and other unforeseen 
-                          circumstances. I voluntarily assume all risks associated with participation.
-                        </p>
-
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          <strong>2. WAIVER OF CLAIMS:</strong> I hereby waive, release, and discharge Soccer Stars, its owners, 
-                          employees, coaches, and affiliates from any and all claims, demands, or causes of action arising from 
-                          participation in soccer activities.
-                        </p>
-
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          <strong>3. INDEMNIFICATION:</strong> I agree to indemnify and hold harmless Soccer Stars from any 
-                          claims brought by third parties arising from my child's participation in soccer activities.
-                        </p>
-
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          <strong>4. MEDICAL TREATMENT:</strong> I authorize Soccer Stars staff to secure emergency medical 
-                          treatment if needed and agree to be responsible for any associated costs.
-                        </p>
-
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          <strong>5. MEDIA RELEASE:</strong> I grant permission for Soccer Stars to use photographs and videos 
-                          of participants for promotional purposes.
-                        </p>
+                      <div className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
+                        {waiverText}
                       </div>
-
-                      <p className="text-sm text-gray-700 leading-relaxed mt-4">
-                        I acknowledge that I have read this agreement, understand its contents, and sign it voluntarily.
-                      </p>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -231,7 +311,7 @@ const ParentGuardianForm: React.FC = () => {
           <div className="flex items-start space-x-2">
             <Checkbox
               id="communication"
-              checked={sessionData.communicationPermission || false}
+              checked={flowData.communicationPermission || false}
               onCheckedChange={handleCommunicationPermissionChange}
               className="mt-1"
             />
@@ -245,7 +325,7 @@ const ParentGuardianForm: React.FC = () => {
           <div className="flex items-start space-x-2">
             <Checkbox
               id="marketing"
-              checked={sessionData.marketingPermission || false}
+              checked={flowData.marketingPermission || false}
               onCheckedChange={handleMarketingPermissionChange}
               className="mt-1"
             />
@@ -265,7 +345,7 @@ const ParentGuardianForm: React.FC = () => {
           </div>
         )}
 
-        {(!sessionData.waiverAccepted || !sessionData.communicationPermission) && isFormComplete && (
+        {(!flowData.waiverAccepted || !flowData.communicationPermission) && isFormComplete && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <p className="text-sm text-yellow-800 font-poppins">
               Please accept the required agreements to continue.

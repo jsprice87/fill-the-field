@@ -6,9 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Clock, Users } from 'lucide-react';
+import { Calendar, Clock, CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import DateSelector from '@/components/booking/DateSelector';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface ClassSchedule {
   id: string;
@@ -41,8 +45,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    age: '',
-    birthDate: '',
+    birthDate: undefined as Date | undefined,
     healthConditions: '',
     ageOverride: false,
     selectedDate: ''
@@ -54,6 +57,16 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const calculateAge = (birthDate: Date) => {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
   };
 
   const isAgeInRange = (age: number) => {
@@ -68,7 +81,12 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const age = parseInt(formData.age);
+    if (!formData.birthDate) {
+      toast.error('Please select a birth date');
+      return;
+    }
+
+    const age = calculateAge(formData.birthDate);
     const isValidAge = isAgeInRange(age);
     
     if (!isValidAge && !formData.ageOverride) {
@@ -97,7 +115,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       firstName: formData.firstName,
       lastName: formData.lastName,
       age: age,
-      birthDate: formData.birthDate,
+      birthDate: format(formData.birthDate, 'yyyy-MM-dd'),
       classScheduleId: classSchedule.id,
       className: classSchedule.classes.name,
       classTime: `${dayNames[classSchedule.day_of_week]} ${formatTime(classSchedule.start_time)} - ${formatTime(classSchedule.end_time)}`,
@@ -112,8 +130,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     setFormData({
       firstName: '',
       lastName: '',
-      age: '',
-      birthDate: '',
+      birthDate: undefined,
       healthConditions: '',
       ageOverride: false,
       selectedDate: ''
@@ -126,8 +143,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     setFormData(prev => ({ ...prev, selectedDate: date }));
   };
 
-  const currentAge = formData.age ? parseInt(formData.age) : 0;
-  const showAgeWarning = formData.age && !isAgeInRange(currentAge);
+  const currentAge = formData.birthDate ? calculateAge(formData.birthDate) : 0;
+  const showAgeWarning = formData.birthDate && !isAgeInRange(currentAge);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -174,30 +191,39 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="age" className="font-poppins">Age *</Label>
-              <Input
-                id="age"
-                type="number"
-                min="1"
-                max="18"
-                value={formData.age}
-                onChange={(e) => setFormData({...formData, age: e.target.value})}
-                required
-                className="font-poppins"
-              />
-            </div>
-            <div>
-              <Label htmlFor="birthDate" className="font-poppins">Birth Date</Label>
-              <Input
-                id="birthDate"
-                type="date"
-                value={formData.birthDate}
-                onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-                className="font-poppins"
-              />
-            </div>
+          <div>
+            <Label className="font-poppins">Birth Date *</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal font-poppins",
+                    !formData.birthDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.birthDate ? format(formData.birthDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={formData.birthDate}
+                  onSelect={(date) => setFormData({...formData, birthDate: date})}
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1900-01-01")
+                  }
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            {formData.birthDate && (
+              <p className="text-sm text-gray-600 mt-1 font-poppins">
+                Age: {currentAge} years old
+              </p>
+            )}
           </div>
 
           {showAgeWarning && (

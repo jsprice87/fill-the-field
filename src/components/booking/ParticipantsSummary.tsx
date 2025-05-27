@@ -65,7 +65,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
 
     // Check if parent/guardian info is complete
     const parentInfo = flowData.parentGuardianInfo;
-    const hasParentInfo = parentInfo && 
+    const hasCompleteParentInfo = parentInfo && 
       parentInfo.firstName && 
       parentInfo.firstName.trim() !== '' &&
       parentInfo.lastName && 
@@ -73,11 +73,13 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       parentInfo.email && 
       parentInfo.email.trim() !== '' &&
       parentInfo.phone && 
-      parentInfo.phone.trim() !== '';
+      parentInfo.phone.trim() !== '' &&
+      parentInfo.zip && 
+      parentInfo.zip.trim() !== '';
     
-    console.log('Parent info check:', { parentInfo, hasParentInfo });
+    console.log('Parent info check:', { parentInfo, hasCompleteParentInfo });
     
-    if (!hasParentInfo) {
+    if (!hasCompleteParentInfo) {
       console.log('Parent info incomplete');
       return false;
     }
@@ -106,7 +108,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
     }
     
     const parentInfo = flowData.parentGuardianInfo;
-    const hasParentInfo = parentInfo && 
+    const hasCompleteParentInfo = parentInfo && 
       parentInfo.firstName && 
       parentInfo.firstName.trim() !== '' &&
       parentInfo.lastName && 
@@ -114,10 +116,12 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       parentInfo.email && 
       parentInfo.email.trim() !== '' &&
       parentInfo.phone && 
-      parentInfo.phone.trim() !== '';
+      parentInfo.phone.trim() !== '' &&
+      parentInfo.zip && 
+      parentInfo.zip.trim() !== '';
     
-    if (!hasParentInfo) {
-      missing.push('Complete parent/guardian information');
+    if (!hasCompleteParentInfo) {
+      missing.push('Complete all required parent/guardian information fields');
     }
     
     if (!flowData.waiverAccepted) {
