@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -479,7 +480,7 @@ const ClassBooking: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRemoveParticipant(participant.id || `temp-${index}`)}
+                        onClick={() => removeParticipant(participant.id || `temp-${index}`)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
                       >
                         <X className="h-4 w-4" />
