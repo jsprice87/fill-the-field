@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -273,21 +272,40 @@ const ClassBooking: React.FC = () => {
     return getTotalParticipants() < 5;
   };
 
-  // Simple validation for the confirmation button
+  // Fixed validation logic for the confirmation button
   const canConfirmBooking = () => {
+    console.log('🔍 Checking if booking can be confirmed...', {
+      participants: flowData.participants?.length || 0,
+      parentInfo: flowData.parentGuardianInfo,
+      waiverAccepted: flowData.waiverAccepted,
+      communicationPermission: flowData.communicationPermission
+    });
+
+    // Check if we have at least one participant
     const hasParticipants = (flowData.participants?.length || 0) > 0;
+    console.log('✅ Has participants:', hasParticipants);
+
+    // Check parent/guardian info - more robust validation
     const parentInfo = flowData.parentGuardianInfo;
-    const hasParentInfo = !!(
+    const hasValidParentInfo = !!(
       parentInfo?.firstName?.trim() &&
       parentInfo?.lastName?.trim() &&
       parentInfo?.email?.trim() &&
       parentInfo?.phone?.trim() &&
       parentInfo?.zip?.trim()
     );
-    const hasWaiver = !!flowData.waiverAccepted;
-    const hasCommunication = !!flowData.communicationPermission;
+    console.log('✅ Has valid parent info:', hasValidParentInfo, parentInfo);
 
-    return hasParticipants && hasParentInfo && hasWaiver && hasCommunication;
+    // Check required agreements
+    const hasWaiver = !!flowData.waiverAccepted;
+    const hasCommunicationPermission = !!flowData.communicationPermission;
+    console.log('✅ Has waiver:', hasWaiver);
+    console.log('✅ Has communication permission:', hasCommunicationPermission);
+
+    const canConfirm = hasParticipants && hasValidParentInfo && hasWaiver && hasCommunicationPermission;
+    console.log('🎯 Can confirm booking:', canConfirm);
+
+    return canConfirm;
   };
 
   // Show loading state while flow is being loaded or classes are being fetched
@@ -513,6 +531,17 @@ const ClassBooking: React.FC = () => {
                     </p>
                   </div>
                 )}
+
+                {/* Enhanced Debug section for validation state */}
+                <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+                  <div className="font-semibold mb-2">Button Validation Debug:</div>
+                  <div>Can Confirm: {String(canConfirmBooking())}</div>
+                  <div>Participants: {flowData.participants?.length || 0}</div>
+                  <div>Parent Info Valid: {String(!!(flowData.parentGuardianInfo?.firstName?.trim() && flowData.parentGuardianInfo?.lastName?.trim() && flowData.parentGuardianInfo?.email?.trim() && flowData.parentGuardianInfo?.phone?.trim() && flowData.parentGuardianInfo?.zip?.trim()))}</div>
+                  <div>Waiver: {String(!!flowData.waiverAccepted)}</div>
+                  <div>Communication: {String(!!flowData.communicationPermission)}</div>
+                  <div>Parent Data: {JSON.stringify(flowData.parentGuardianInfo || {})}</div>
+                </div>
               </CardContent>
             </Card>
           </div>
