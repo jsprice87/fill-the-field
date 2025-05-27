@@ -49,33 +49,46 @@ const ClassBooking: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<ClassSchedule | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [flowLoaded, setFlowLoaded] = useState(false);
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   useEffect(() => {
+    console.log('ClassBooking: useEffect triggered', { flowId, franchiseeId, flowLoaded });
+    
     if (!flowId) {
       console.log('No flow ID found, redirecting to landing');
       navigate(`/${franchiseeId}/free-trial`);
       return;
     }
 
-    // Load flow data first, then classes if we have a location
-    loadFlowAndClasses();
+    // Load flow data first
+    loadFlowData();
   }, [flowId, franchiseeId]);
 
-  const loadFlowAndClasses = async () => {
+  // Load classes when flow data is loaded and we have a location
+  useEffect(() => {
+    console.log('ClassBooking: Flow data effect', { flowLoaded, selectedLocation: flowData.selectedLocation });
+    
+    if (flowLoaded && flowData.selectedLocation?.id) {
+      console.log('Loading classes for location:', flowData.selectedLocation.id);
+      loadClasses();
+    } else if (flowLoaded && !flowData.selectedLocation?.id) {
+      console.log('No location selected, redirecting to find classes');
+      navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
+    }
+  }, [flowLoaded, flowData.selectedLocation]);
+
+  const loadFlowData = async () => {
     if (!flowId) return;
+    
+    console.log('Loading flow data for ID:', flowId);
+    setIsLoading(true);
     
     try {
       await loadFlow(flowId);
-      
-      // Check if we have a selected location in the flow
-      if (flowData.selectedLocation?.id) {
-        await loadClasses();
-      } else {
-        // No location selected, redirect back to find classes
-        navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
-      }
+      console.log('Flow data loaded successfully');
+      setFlowLoaded(true);
     } catch (error) {
       console.error('Error loading flow:', error);
       toast.error('Session expired. Please start over.');
@@ -85,11 +98,13 @@ const ClassBooking: React.FC = () => {
 
   const loadClasses = async () => {
     if (!flowData.selectedLocation?.id) {
-      toast.error('Please select a location first');
+      console.log('Cannot load classes: no location selected');
       return;
     }
 
+    console.log('Loading classes for location:', flowData.selectedLocation.id);
     setIsLoading(true);
+    
     try {
       const { data: classesData, error } = await supabase
         .from('class_schedules')
@@ -112,9 +127,11 @@ const ClassBooking: React.FC = () => {
         .order('start_time');
 
       if (error) {
+        console.error('Error loading classes:', error);
         throw error;
       }
 
+      console.log('Classes loaded:', classesData?.length || 0, 'classes found');
       setClasses(classesData || []);
     } catch (error) {
       console.error('Error loading classes:', error);
@@ -125,12 +142,14 @@ const ClassBooking: React.FC = () => {
   };
 
   const handleAddParticipant = (classSchedule: ClassSchedule) => {
+    console.log('Adding participant to class:', classSchedule.classes.name);
     setSelectedClass(classSchedule);
     setIsModalOpen(true);
   };
 
   const handleParticipantAdded = async (participant: any) => {
     try {
+      console.log('Participant added:', participant);
       await addParticipant(participant);
       toast.success(`${participant.firstName} ${participant.lastName} added to ${participant.className}`);
     } catch (error) {
@@ -143,6 +162,8 @@ const ClassBooking: React.FC = () => {
     const participants = flowData.participants || [];
     const parentInfo = flowData.parentGuardianInfo;
     const leadId = flowData.leadId;
+
+    console.log('Continue to confirmation:', { participants: participants.length, parentInfo: !!parentInfo, leadId });
 
     if (!parentInfo || !leadId || participants.length === 0) {
       toast.error('Missing required information');
@@ -276,12 +297,15 @@ const ClassBooking: React.FC = () => {
     }
   };
 
-  if (isLoading || flowLoading) {
+  // Show loading state while flow is being loaded or classes are being fetched
+  if (isLoading || flowLoading || !flowLoaded) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-          <p className="font-poppins text-gray-600">Loading classes...</p>
+          <p className="font-poppins text-gray-600">
+            {!flowLoaded ? 'Loading booking session...' : 'Loading classes...'}
+          </p>
         </div>
       </div>
     );

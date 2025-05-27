@@ -32,8 +32,11 @@ const FindClasses: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
+  const [flowLoaded, setFlowLoaded] = useState(false);
 
   useEffect(() => {
+    console.log('FindClasses: useEffect triggered', { flowId, franchiseeId });
+    
     if (!flowId) {
       console.log('No flow ID found, redirecting to landing');
       navigate(`/${franchiseeId}/free-trial`);
@@ -46,12 +49,18 @@ const FindClasses: React.FC = () => {
   const loadData = async () => {
     if (!franchiseeId || !flowId) return;
     
+    console.log('Loading data for FindClasses', { franchiseeId, flowId });
     setIsLoading(true);
+    
     try {
       // Load flow data first
+      console.log('Loading flow data...');
       await loadFlow(flowId);
+      setFlowLoaded(true);
+      console.log('Flow data loaded');
 
       // Get franchisee by slug
+      console.log('Loading franchisee data...');
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('*')
@@ -59,12 +68,15 @@ const FindClasses: React.FC = () => {
         .single();
 
       if (franchiseeError || !franchisee) {
+        console.error('Franchisee error:', franchiseeError);
         throw new Error('Franchisee not found');
       }
 
+      console.log('Franchisee loaded:', franchisee.company_name);
       setFranchiseeData(franchisee);
 
       // Load locations for this franchisee
+      console.log('Loading locations...');
       const { data: locationsData, error: locationsError } = await supabase
         .from('locations')
         .select('*')
@@ -73,9 +85,11 @@ const FindClasses: React.FC = () => {
         .order('name');
 
       if (locationsError) {
+        console.error('Locations error:', locationsError);
         throw locationsError;
       }
 
+      console.log('Locations loaded:', locationsData?.length || 0, 'locations');
       setLocations(locationsData || []);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -88,7 +102,10 @@ const FindClasses: React.FC = () => {
   };
 
   const handleLocationSelect = async (location: Location) => {
-    if (!flowId) return;
+    if (!flowId) {
+      console.error('No flow ID available for location selection');
+      return;
+    }
     
     console.log('Selecting location:', location.id, location.name);
     
@@ -102,7 +119,7 @@ const FindClasses: React.FC = () => {
         }
       });
       
-      console.log('Navigating to booking page');
+      console.log('Location updated in flow, navigating to booking page');
       navigate(`/${franchiseeId}/free-trial/booking?flow=${flowId}`);
     } catch (error) {
       console.error('Error updating flow:', error);
@@ -115,6 +132,7 @@ const FindClasses: React.FC = () => {
     toast.info('Location request feature coming soon');
   };
 
+  // Show loading state while data is being loaded
   if (isLoading || flowLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
