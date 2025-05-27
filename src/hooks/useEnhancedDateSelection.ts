@@ -2,6 +2,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
+import { 
+  getCurrentDateInTimezone, 
+  addDaysInTimezone, 
+  getDayOfWeekInTimezone, 
+  getDateStringInTimezone,
+  DEFAULT_TIMEZONE
+} from '@/utils/timezoneUtils';
+import { parseISO } from 'date-fns';
 
 export interface ValidatedDate {
   date: string;
@@ -28,12 +36,13 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
 
   const allowFutureBookings = settings?.allow_future_bookings === 'true';
   const maxBookingDaysAhead = parseInt(settings?.max_booking_days_ahead || '7');
+  const timezone = settings?.timezone || DEFAULT_TIMEZONE;
 
   useEffect(() => {
     if (classScheduleId) {
       loadValidDates();
     }
-  }, [classScheduleId, allowFutureBookings, maxBookingDaysAhead]);
+  }, [classScheduleId, allowFutureBookings, maxBookingDaysAhead, timezone]);
 
   const loadValidDates = async () => {
     if (!classScheduleId) return;
@@ -80,7 +89,7 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
 
   const generateValidDates = (schedule: ClassScheduleData): ValidatedDate[] => {
     const dates: ValidatedDate[] = [];
-    const today = new Date();
+    const today = getCurrentDateInTimezone(timezone);
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
     // Get override dates (cancelled dates) for this class
@@ -90,31 +99,43 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
         .map(exception => exception.exception_date) || []
     );
 
-    // Parse class schedule dates
-    const classStartDate = schedule.date_start ? new Date(schedule.date_start) : null;
-    const classEndDate = schedule.date_end ? new Date(schedule.date_end) : null;
+    // Parse class schedule dates in the correct timezone
+    const classStartDate = schedule.date_start ? parseISO(schedule.date_start + 'T00:00:00') : null;
+    const classEndDate = schedule.date_end ? parseISO(schedule.date_end + 'T23:59:59') : null;
     
     // Calculate the maximum date we can book
-    const maxBookingDate = new Date(today);
-    maxBookingDate.setDate(today.getDate() + maxBookingDaysAhead);
+    const maxBookingDate = addDaysInTimezone(today, maxBookingDaysAhead, timezone);
 
     // Find the next occurrence of the class day
     let currentDate = new Date(today);
-    const daysUntilClass = (schedule.day_of_week - today.getDay() + 7) % 7;
     
-    // If it's the same day but after 6 PM, start from next week
-    if (daysUntilClass === 0 && today.getHours() >= 18) {
-      currentDate.setDate(today.getDate() + 7);
-    } else {
-      currentDate.setDate(today.getDate() + daysUntilClass);
+    // Find the next occurrence of the target day of week
+    let daysUntilClass = (schedule.day_of_week - getDayOfWeekInTimezone(currentDate, timezone) + 7) % 7;
+    
+    // If it's the same day but after 6 PM in the local timezone, start from next week
+    const currentHour = currentDate.getHours();
+    if (daysUntilClass === 0 && currentHour >= 18) {
+      daysUntilClass = 7;
     }
+    
+    currentDate = addDaysInTimezone(currentDate, daysUntilClass, timezone);
 
     let foundNextAvailable = false;
     let weeksChecked = 0;
     const maxWeeksToCheck = Math.ceil(maxBookingDaysAhead / 7) + 4; // Buffer for edge cases
 
     while (weeksChecked < maxWeeksToCheck && dates.length < 10) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const dateStr = getDateStringInTimezone(currentDate, timezone);
+      
+      // Verify the day of week is correct (double-check our calculation)
+      const dayOfWeek = getDayOfWeekInTimezone(currentDate, timezone);
+      if (dayOfWeek !== schedule.day_of_week) {
+        console.error(`Day of week mismatch: expected ${schedule.day_of_week}, got ${dayOfWeek} for date ${dateStr}`);
+        // Skip this date and try the next week
+        currentDate = addDaysInTimezone(currentDate, 7, timezone);
+        weeksChecked++;
+        continue;
+      }
       
       // Check all validation rules
       const isValidDate = isDateValid(currentDate, {
@@ -123,7 +144,8 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
         cancelledDates,
         maxBookingDate,
         allowFutureBookings,
-        isFirstDate: !foundNextAvailable
+        isFirstDate: !foundNextAvailable,
+        timezone
       });
 
       if (isValidDate) {
@@ -144,7 +166,7 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
       }
 
       // Move to next week
-      currentDate.setDate(currentDate.getDate() + 7);
+      currentDate = addDaysInTimezone(currentDate, 7, timezone);
       weeksChecked++;
     }
 
@@ -160,14 +182,14 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
       maxBookingDate: Date;
       allowFutureBookings: boolean;
       isFirstDate: boolean;
+      timezone: string;
     }
   ): boolean => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getDateStringInTimezone(date, options.timezone);
+    const today = getCurrentDateInTimezone(options.timezone);
 
     // Check if date is in the past (but allow today)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) {
+    if (date < today && !isSameDayInTimezone(date, today, options.timezone)) {
       return false;
     }
 
@@ -203,6 +225,12 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
     return true;
   };
 
+  const isSameDayInTimezone = (date1: Date, date2: Date, timezone: string): boolean => {
+    const date1Str = getDateStringInTimezone(date1, timezone);
+    const date2Str = getDateStringInTimezone(date2, timezone);
+    return date1Str === date2Str;
+  };
+
   const getValidationMessage = (): string | null => {
     if (error) return error;
     
@@ -225,6 +253,7 @@ export const useEnhancedDateSelection = (classScheduleId?: string) => {
     error,
     allowFutureBookings,
     maxBookingDaysAhead,
-    validationMessage: getValidationMessage()
+    validationMessage: getValidationMessage(),
+    timezone
   };
 };

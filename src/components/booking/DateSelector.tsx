@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Calendar, AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useEnhancedDateSelection } from '@/hooks/useEnhancedDateSelection';
+import { formatDateInTimezone } from '@/utils/timezoneUtils';
+import { parseISO } from 'date-fns';
 
 interface DateSelectorProps {
   classScheduleId: string;
@@ -23,7 +25,8 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     setSelectedDate, 
     isLoading,
     allowFutureBookings,
-    validationMessage
+    validationMessage,
+    timezone
   } = useEnhancedDateSelection(classScheduleId);
 
   const handleDateSelect = (date: string) => {
@@ -36,10 +39,15 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   const showWarning = selectedDateObj && !selectedDateObj.isNextAvailable && allowFutureBookings;
 
   const formatDate = (dateStr: string, dayName: string) => {
-    const date = new Date(dateStr);
-    const month = date.toLocaleDateString('en-US', { month: 'short' });
-    const day = date.getDate();
-    return `${dayName}, ${month} ${day}`;
+    try {
+      const date = parseISO(dateStr + 'T00:00:00');
+      const month = formatDateInTimezone(date, timezone, 'MMM');
+      const day = formatDateInTimezone(date, timezone, 'd');
+      return `${dayName}, ${month} ${day}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return `${dayName}, ${dateStr}`;
+    }
   };
 
   if (isLoading) {

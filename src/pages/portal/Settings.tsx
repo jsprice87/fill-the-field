@@ -10,6 +10,7 @@ import { Save, Globe, Share2, Calendar } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 import { toast } from 'sonner';
 import BookingRestrictionsCard from '@/components/portal/BookingRestrictionsCard';
+import TimezoneSettingsCard from '@/components/portal/TimezoneSettingsCard';
 
 const Settings: React.FC = () => {
   const { data: settings, isLoading } = useFranchiseeSettings();
@@ -41,6 +42,9 @@ const Settings: React.FC = () => {
       </div>
 
       <div className="grid gap-6">
+        {/* Timezone Settings */}
+        <TimezoneSettingsCard />
+
         {/* Website & Social Media Settings */}
         <Card>
           <CardHeader>

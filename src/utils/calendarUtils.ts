@@ -1,41 +1,52 @@
 
+import { formatInTimeZone } from 'date-fns-tz';
+import { DEFAULT_TIMEZONE } from './timezoneUtils';
+
 interface CalendarEvent {
   title: string;
   description: string;
   start: Date;
   end: Date;
   location: string;
+  timezone?: string;
 }
 
 export const generateCalendarUrls = (event: CalendarEvent) => {
-  const startTime = event.start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const endTime = event.end.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const timezone = event.timezone || DEFAULT_TIMEZONE;
+  
+  // Format times in the specified timezone
+  const startTime = formatInTimeZone(event.start, timezone, "yyyyMMdd'T'HHmmss");
+  const endTime = formatInTimeZone(event.end, timezone, "yyyyMMdd'T'HHmmss");
   
   const encodedTitle = encodeURIComponent(event.title);
   const encodedDescription = encodeURIComponent(event.description);
   const encodedLocation = encodeURIComponent(event.location);
 
   return {
-    google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodedTitle}&dates=${startTime}/${endTime}&details=${encodedDescription}&location=${encodedLocation}`,
+    google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodedTitle}&dates=${startTime}/${endTime}&details=${encodedDescription}&location=${encodedLocation}&ctz=${timezone}`,
     outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodedTitle}&startdt=${startTime}&enddt=${endTime}&body=${encodedDescription}&location=${encodedLocation}`,
     ics: generateICSFile(event)
   };
 };
 
 const generateICSFile = (event: CalendarEvent) => {
-  const startTime = event.start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const endTime = event.end.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const timezone = event.timezone || DEFAULT_TIMEZONE;
+  const startTime = formatInTimeZone(event.start, timezone, "yyyyMMdd'T'HHmmss");
+  const endTime = formatInTimeZone(event.end, timezone, "yyyyMMdd'T'HHmmss");
+  const now = formatInTimeZone(new Date(), timezone, "yyyyMMdd'T'HHmmss");
 
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Soccer Stars//EN',
+    `BEGIN:VTIMEZONE`,
+    `TZID:${timezone}`,
+    `END:VTIMEZONE`,
     'BEGIN:VEVENT',
     `UID:${now}@soccerstars.com`,
     `DTSTAMP:${now}`,
-    `DTSTART:${startTime}`,
-    `DTEND:${endTime}`,
+    `DTSTART;TZID=${timezone}:${startTime}`,
+    `DTEND;TZID=${timezone}:${endTime}`,
     `SUMMARY:${event.title}`,
     `DESCRIPTION:${event.description}`,
     `LOCATION:${event.location}`,
