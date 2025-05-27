@@ -55,16 +55,21 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
   }, {} as Record<string, { className: string; classTime: string; participants: Participant[] }>);
 
   const canContinue = () => {
-    console.log('Checking canContinue with flowData:', flowData);
+    console.log('=== DEBUGGING CONTINUE BUTTON ===');
+    console.log('flowData:', flowData);
+    console.log('participants:', participants);
     
     // Check if we have participants
     if (participants.length === 0) {
-      console.log('No participants found');
+      console.log('❌ No participants found');
       return false;
     }
+    console.log('✅ Participants found:', participants.length);
 
     // Check if parent/guardian info is complete
     const parentInfo = flowData.parentGuardianInfo;
+    console.log('parentInfo:', parentInfo);
+    
     const hasCompleteParentInfo = parentInfo && 
       parentInfo.firstName && 
       parentInfo.firstName.trim() !== '' &&
@@ -77,26 +82,38 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       parentInfo.zip && 
       parentInfo.zip.trim() !== '';
     
-    console.log('Parent info check:', { parentInfo, hasCompleteParentInfo });
+    console.log('hasCompleteParentInfo:', hasCompleteParentInfo);
+    console.log('parentInfo fields check:', {
+      firstName: parentInfo?.firstName,
+      lastName: parentInfo?.lastName,
+      email: parentInfo?.email,
+      phone: parentInfo?.phone,
+      zip: parentInfo?.zip
+    });
     
     if (!hasCompleteParentInfo) {
-      console.log('Parent info incomplete');
+      console.log('❌ Parent info incomplete');
       return false;
     }
+    console.log('✅ Parent info complete');
 
     // Check if waiver is accepted (MANDATORY)
+    console.log('waiverAccepted:', flowData.waiverAccepted);
     if (!flowData.waiverAccepted) {
-      console.log('Waiver not accepted');
+      console.log('❌ Waiver not accepted');
       return false;
     }
+    console.log('✅ Waiver accepted');
 
     // Check if communication permission is granted (MANDATORY)
+    console.log('communicationPermission:', flowData.communicationPermission);
     if (!flowData.communicationPermission) {
-      console.log('Communication permission not granted');
+      console.log('❌ Communication permission not granted');
       return false;
     }
+    console.log('✅ Communication permission granted');
 
-    console.log('All requirements met, can continue');
+    console.log('✅ All requirements met, can continue');
     return true;
   };
 
@@ -134,6 +151,11 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
     
     return missing;
   };
+
+  const buttonEnabled = canContinue();
+  const missingRequirements = getMissingRequirements();
+
+  console.log('Button render state:', { buttonEnabled, missingRequirements });
 
   return (
     <div className="space-y-6">
@@ -201,24 +223,33 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
         <CardContent className="pt-6">
           <Button
             onClick={onContinue}
-            disabled={!canContinue()}
+            disabled={!buttonEnabled}
             className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins py-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
             size="lg"
           >
-            {canContinue() ? 'Continue to Confirmation' : 'Complete Required Information'}
+            {buttonEnabled ? 'Continue to Confirmation' : 'Complete Required Information'}
           </Button>
-          {!canContinue() && (
+          {!buttonEnabled && (
             <div className="mt-3">
               <p className="text-center text-sm text-gray-600 mb-2 font-poppins">
                 Please complete the following required items:
               </p>
               <ul className="text-center text-sm text-red-600 space-y-1">
-                {getMissingRequirements().map((requirement, index) => (
+                {missingRequirements.map((requirement, index) => (
                   <li key={index} className="font-poppins">• {requirement}</li>
                 ))}
               </ul>
             </div>
           )}
+          
+          {/* Debug info - remove this after testing */}
+          <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+            <div>Debug: Button enabled = {buttonEnabled.toString()}</div>
+            <div>Missing: {missingRequirements.join(', ')}</div>
+            <div>Waiver: {flowData.waiverAccepted?.toString()}</div>
+            <div>Communication: {flowData.communicationPermission?.toString()}</div>
+            <div>Parent Info: {JSON.stringify(flowData.parentGuardianInfo)}</div>
+          </div>
         </CardContent>
       </Card>
     </div>
