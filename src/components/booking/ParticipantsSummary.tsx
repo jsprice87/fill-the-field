@@ -54,66 +54,52 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
     return acc;
   }, {} as Record<string, { className: string; classTime: string; participants: Participant[] }>);
 
-  // Use the same validation logic as ParentGuardianForm
+  // Validation logic - check if all required fields are completed
   const parentInfo = flowData.parentGuardianInfo;
-  const isFormComplete = parentInfo && 
-    parentInfo.firstName && 
-    parentInfo.firstName.trim() !== '' &&
-    parentInfo.lastName && 
-    parentInfo.lastName.trim() !== '' &&
-    parentInfo.email && 
-    parentInfo.email.trim() !== '' &&
-    parentInfo.phone && 
-    parentInfo.phone.trim() !== '' &&
-    parentInfo.zip && 
-    parentInfo.zip.trim() !== '';
+  
+  // Check if all parent info fields are filled
+  const isParentInfoComplete = !!(
+    parentInfo?.firstName?.trim() &&
+    parentInfo?.lastName?.trim() &&
+    parentInfo?.email?.trim() &&
+    parentInfo?.phone?.trim() &&
+    parentInfo?.zip?.trim()
+  );
 
-  const allRequiredAgreements = flowData.waiverAccepted && flowData.communicationPermission;
+  // Check required agreements
+  const isWaiverAccepted = !!flowData.waiverAccepted;
+  const isCommunicationPermissionGranted = !!flowData.communicationPermission;
 
+  // Overall validation
   const canContinue = () => {
-    console.log('=== DEBUGGING CONTINUE BUTTON ===');
-    console.log('flowData:', flowData);
-    console.log('participants:', participants);
+    console.log('=== VALIDATION CHECK ===');
+    console.log('Participants count:', participants.length);
+    console.log('Parent info complete:', isParentInfoComplete);
+    console.log('Waiver accepted:', isWaiverAccepted);
+    console.log('Communication permission:', isCommunicationPermissionGranted);
+    console.log('Parent info data:', parentInfo);
     
-    // Check if we have participants
     if (participants.length === 0) {
-      console.log('❌ No participants found');
+      console.log('❌ No participants');
       return false;
     }
-    console.log('✅ Participants found:', participants.length);
-
-    console.log('isFormComplete:', isFormComplete);
-    console.log('parentInfo fields:', {
-      firstName: parentInfo?.firstName,
-      lastName: parentInfo?.lastName,
-      email: parentInfo?.email,
-      phone: parentInfo?.phone,
-      zip: parentInfo?.zip
-    });
     
-    if (!isFormComplete) {
+    if (!isParentInfoComplete) {
       console.log('❌ Parent info incomplete');
       return false;
     }
-    console.log('✅ Parent info complete');
-
-    // Check if waiver is accepted (MANDATORY)
-    console.log('waiverAccepted:', flowData.waiverAccepted);
-    if (!flowData.waiverAccepted) {
+    
+    if (!isWaiverAccepted) {
       console.log('❌ Waiver not accepted');
       return false;
     }
-    console.log('✅ Waiver accepted');
-
-    // Check if communication permission is granted (MANDATORY)
-    console.log('communicationPermission:', flowData.communicationPermission);
-    if (!flowData.communicationPermission) {
+    
+    if (!isCommunicationPermissionGranted) {
       console.log('❌ Communication permission not granted');
       return false;
     }
-    console.log('✅ Communication permission granted');
-
-    console.log('✅ All requirements met, can continue');
+    
+    console.log('✅ All requirements met');
     return true;
   };
 
@@ -124,15 +110,15 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       missing.push('Add at least one participant');
     }
     
-    if (!isFormComplete) {
+    if (!isParentInfoComplete) {
       missing.push('Complete all required parent/guardian information fields');
     }
     
-    if (!flowData.waiverAccepted) {
+    if (!isWaiverAccepted) {
       missing.push('Accept the liability waiver');
     }
     
-    if (!flowData.communicationPermission) {
+    if (!isCommunicationPermissionGranted) {
       missing.push('Grant communication permission');
     }
     
@@ -141,8 +127,6 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
 
   const buttonEnabled = canContinue();
   const missingRequirements = getMissingRequirements();
-
-  console.log('Button render state:', { buttonEnabled, missingRequirements });
 
   return (
     <div className="space-y-6">
@@ -229,14 +213,22 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
             </div>
           )}
           
-          {/* Debug info - remove this after testing */}
+          {/* Debug info */}
           <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
             <div>Debug: Button enabled = {buttonEnabled.toString()}</div>
             <div>Missing: {missingRequirements.join(', ')}</div>
-            <div>Form Complete: {isFormComplete?.toString()}</div>
-            <div>Waiver: {flowData.waiverAccepted?.toString()}</div>
-            <div>Communication: {flowData.communicationPermission?.toString()}</div>
-            <div>Parent Info: {JSON.stringify(flowData.parentGuardianInfo)}</div>
+            <div>Form Complete: {isParentInfoComplete.toString()}</div>
+            <div>Waiver: {isWaiverAccepted.toString()}</div>
+            <div>Communication: {isCommunicationPermissionGranted.toString()}</div>
+            <div>Parent Info Fields:</div>
+            <div className="ml-2">
+              <div>firstName: "{parentInfo?.firstName || 'empty'}"</div>
+              <div>lastName: "{parentInfo?.lastName || 'empty'}"</div>
+              <div>email: "{parentInfo?.email || 'empty'}"</div>
+              <div>phone: "{parentInfo?.phone || 'empty'}"</div>
+              <div>zip: "{parentInfo?.zip || 'empty'}"</div>
+            </div>
+            <div>Flow Data Keys: {Object.keys(flowData).join(', ')}</div>
           </div>
         </CardContent>
       </Card>
