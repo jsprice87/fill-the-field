@@ -272,7 +272,7 @@ const ClassBooking: React.FC = () => {
     return getTotalParticipants() < 5;
   };
 
-  // Fixed validation logic for the confirmation button
+  // Enhanced validation logic for the confirmation button
   const canConfirmBooking = () => {
     console.log('🔍 Checking if booking can be confirmed...', {
       participants: flowData.participants?.length || 0,
@@ -285,7 +285,7 @@ const ClassBooking: React.FC = () => {
     const hasParticipants = (flowData.participants?.length || 0) > 0;
     console.log('✅ Has participants:', hasParticipants);
 
-    // Check parent/guardian info - more robust validation
+    // Check parent/guardian info - more robust validation with trimming
     const parentInfo = flowData.parentGuardianInfo;
     const hasValidParentInfo = !!(
       parentInfo?.firstName?.trim() &&
@@ -304,6 +304,12 @@ const ClassBooking: React.FC = () => {
 
     const canConfirm = hasParticipants && hasValidParentInfo && hasWaiver && hasCommunicationPermission;
     console.log('🎯 Can confirm booking:', canConfirm);
+    console.log('🎯 All dependencies check:', {
+      hasParticipants,
+      hasValidParentInfo,
+      hasWaiver,
+      hasCommunicationPermission
+    });
 
     return canConfirm;
   };
@@ -509,8 +515,11 @@ const ClassBooking: React.FC = () => {
               </Card>
             )}
 
-            {/* Parent Guardian Form */}
-            <ParentGuardianForm />
+            {/* Parent Guardian Form - now with shared data */}
+            <ParentGuardianForm 
+              flowData={flowData}
+              updateFlow={updateFlow}
+            />
 
             {/* Confirmation Button */}
             <Card className="border-l-4 border-l-green-500">
@@ -541,6 +550,12 @@ const ClassBooking: React.FC = () => {
                   <div>Waiver: {String(!!flowData.waiverAccepted)}</div>
                   <div>Communication: {String(!!flowData.communicationPermission)}</div>
                   <div>Parent Data: {JSON.stringify(flowData.parentGuardianInfo || {})}</div>
+                  <div className="mt-2 text-green-600">
+                    <div>✓ Participants: {(flowData.participants?.length || 0) > 0 ? 'PASS' : 'FAIL'}</div>
+                    <div>✓ Parent Info: {!!(flowData.parentGuardianInfo?.firstName?.trim() && flowData.parentGuardianInfo?.lastName?.trim() && flowData.parentGuardianInfo?.email?.trim() && flowData.parentGuardianInfo?.phone?.trim() && flowData.parentGuardianInfo?.zip?.trim()) ? 'PASS' : 'FAIL'}</div>
+                    <div>✓ Waiver: {!!flowData.waiverAccepted ? 'PASS' : 'FAIL'}</div>
+                    <div>✓ Communication: {!!flowData.communicationPermission ? 'PASS' : 'FAIL'}</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

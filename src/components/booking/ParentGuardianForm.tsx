@@ -7,14 +7,18 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { User, FileText } from 'lucide-react';
-import { useBookingFlow } from '@/hooks/useBookingFlow';
-import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { BookingFlowData } from '@/hooks/useBookingFlow';
 
-const ParentGuardianForm: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const flowId = searchParams.get('flow');
-  const { flowData, updateFlow } = useBookingFlow(flowId || undefined);
+interface ParentGuardianFormProps {
+  flowData: BookingFlowData;
+  updateFlow: (updates: Partial<BookingFlowData>) => Promise<void>;
+}
+
+const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ 
+  flowData, 
+  updateFlow 
+}) => {
   const [customWaiver, setCustomWaiver] = useState<string>('');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   
@@ -247,7 +251,6 @@ const ParentGuardianForm: React.FC = () => {
     communicationPermission: flowData.communicationPermission,
     marketingPermission: flowData.marketingPermission,
     parentGuardianInfo: flowData.parentGuardianInfo,
-    flowId,
     formData
   });
 
@@ -423,7 +426,6 @@ const ParentGuardianForm: React.FC = () => {
         {/* Debug section for form data */}
         <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
           <div className="font-semibold mb-2">ParentGuardianForm Debug:</div>
-          <div>Flow ID: {flowId || 'Not set'}</div>
           <div>Form Data: {JSON.stringify(formData)}</div>
           <div>Flow Parent Info: {JSON.stringify(flowData.parentGuardianInfo || 'Not set')}</div>
           <div>Waiver Accepted: {String(flowData.waiverAccepted || false)}</div>
