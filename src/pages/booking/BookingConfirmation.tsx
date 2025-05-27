@@ -1,11 +1,15 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Calendar, Clock, MapPin, Users, Share, ArrowLeft, ExternalLink } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, MapPin, Users, Share, ArrowLeft, ExternalLink, CalendarPlus } from 'lucide-react';
+import { Facebook, Instagram } from 'lucide-react';
 import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
+import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { generateCalendarUrls, downloadICSFile } from '@/utils/calendarUtils';
 
 interface BookingData {
   id: string;
@@ -33,14 +37,16 @@ interface BookingData {
 
 interface FranchiseeData {
   company_name: string;
+  website?: string;
 }
 
 const BookingConfirmation: React.FC = () => {
   const { franchiseeId, bookingId } = useParams();
   const navigate = useNavigate();
   const { data: settings } = useFranchiseeSettings();
+  const { data: franchiseeData } = useFranchiseeData();
   const [booking, setBooking] = useState<BookingData | null>(null);
-  const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
+  const [franchiseeInfo, setFranchiseeInfo] = useState<FranchiseeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,14 +63,14 @@ const BookingConfirmation: React.FC = () => {
       // Get franchisee data first
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
-        .select('company_name')
+        .select('company_name, website')
         .eq('slug', franchiseeId)
         .single();
 
       if (franchiseeError) {
         console.error('Error loading franchisee:', franchiseeError);
       } else {
-        setFranchiseeData(franchisee);
+        setFranchiseeInfo(franchisee);
       }
 
       // Fetch booking with appointments and location data
@@ -117,8 +123,16 @@ const BookingConfirmation: React.FC = () => {
   };
 
   const handleShare = () => {
-    const businessName = franchiseeData?.company_name || 'Soccer Stars';
-    const shareText = `I just signed up my child for a free soccer trial at ${businessName}! Check it out: ${window.location.origin}/${franchiseeId}/free-trial`;
+    const businessName = franchiseeInfo?.company_name || franchiseeData?.company_name || 'Soccer Stars';
+    
+    // Use custom share message template from settings if available
+    let shareText = settings?.share_message_template || 
+      `I just signed up my child for a free soccer trial at {company_name}! Check it out: {url}`;
+    
+    // Replace placeholders
+    shareText = shareText
+      .replace(/{company_name}/g, businessName)
+      .replace(/{url}/g, `${window.location.origin}/${franchiseeId}/free-trial`);
     
     if (navigator.share) {
       navigator.share({
@@ -130,6 +144,55 @@ const BookingConfirmation: React.FC = () => {
       navigator.clipboard.writeText(shareText);
       toast.success('Share message copied to clipboard!');
     }
+  };
+
+  const handleAddToCalendar = (appointment: any) => {
+    if (!appointment.selected_date) return;
+
+    // Parse the class time to get start and end times
+    const timeMatch = appointment.class_time.match(/(\d{1,2}:\d{2}\s*(?:AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM))/i);
+    if (!timeMatch) return;
+
+    const [, startTimeStr, endTimeStr] = timeMatch;
+    const appointmentDate = new Date(appointment.selected_date);
+    
+    // Create start and end Date objects
+    const startTime = parseTimeString(startTimeStr, appointmentDate);
+    const endTime = parseTimeString(endTimeStr, appointmentDate);
+
+    const calendarEvent = {
+      title: `${appointment.class_name} - ${appointment.participant_name}`,
+      description: `Soccer class for ${appointment.participant_name} (${appointment.participant_age} years old)${appointment.health_conditions ? `\nSpecial notes: ${appointment.health_conditions}` : ''}`,
+      start: startTime,
+      end: endTime,
+      location: `${booking?.location.name}, ${booking?.location.address}`
+    };
+
+    const urls = generateCalendarUrls(calendarEvent);
+    
+    // For now, let's offer Google Calendar and download ICS
+    const choice = confirm('Add to Google Calendar? (Cancel to download calendar file instead)');
+    if (choice) {
+      window.open(urls.google, '_blank');
+    } else {
+      downloadICSFile(calendarEvent);
+    }
+  };
+
+  const parseTimeString = (timeStr: string, date: Date) => {
+    const [time, period] = timeStr.split(/\s*(AM|PM)/i);
+    const [hours, minutes] = time.split(':').map(Number);
+    
+    let hour24 = hours;
+    if (period.toUpperCase() === 'PM' && hours !== 12) {
+      hour24 += 12;
+    } else if (period.toUpperCase() === 'AM' && hours === 12) {
+      hour24 = 0;
+    }
+    
+    const result = new Date(date);
+    result.setHours(hour24, minutes, 0, 0);
+    return result;
   };
 
   const formatDate = (dateStr?: string) => {
@@ -182,12 +245,15 @@ const BookingConfirmation: React.FC = () => {
     return acc;
   }, {} as Record<string, { className: string; classTime: string; appointments: any[] }>);
 
+  const businessName = franchiseeInfo?.company_name || franchiseeData?.company_name || 'Soccer Stars';
+  const websiteUrl = franchiseeInfo?.website || settings?.website_url;
+
   return (
     <div className="min-h-screen bg-white">
       <div className="bg-brand-navy text-white py-4">
         <div className="container mx-auto px-4">
           <h1 className="font-anton text-2xl">
-            {franchiseeData?.company_name?.toUpperCase() || 'SOCCER STARS'} - BOOKING CONFIRMED
+            {businessName.toUpperCase()} - BOOKING CONFIRMED
           </h1>
           {booking.booking_reference && (
             <p className="font-poppins text-sm opacity-90">Booking Reference: {booking.booking_reference}</p>
@@ -239,20 +305,35 @@ const BookingConfirmation: React.FC = () => {
                     <Users className="h-4 w-4 text-brand-red" />
                     <span className="font-poppins font-medium">Participants:</span>
                   </div>
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {classGroup.appointments.map((appointment) => (
                       <li key={appointment.id} className="font-poppins text-gray-700">
-                        • {appointment.participant_name} ({appointment.participant_age} years old)
-                        {appointment.selected_date && (
-                          <div className="ml-4 text-sm text-brand-blue">
-                            📅 {formatDate(appointment.selected_date)}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            • {appointment.participant_name} ({appointment.participant_age} years old)
+                            {appointment.selected_date && (
+                              <div className="ml-4 text-sm text-brand-blue font-medium">
+                                📅 {formatDate(appointment.selected_date)}
+                              </div>
+                            )}
+                            {appointment.age_override && (
+                              <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                                Age Override
+                              </span>
+                            )}
                           </div>
-                        )}
-                        {appointment.age_override && (
-                          <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                            Age Override
-                          </span>
-                        )}
+                          {appointment.selected_date && (
+                            <Button
+                              onClick={() => handleAddToCalendar(appointment)}
+                              size="sm"
+                              variant="outline"
+                              className="ml-4 text-xs"
+                            >
+                              <CalendarPlus className="h-3 w-3 mr-1" />
+                              Add to Calendar
+                            </Button>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -294,8 +375,8 @@ const BookingConfirmation: React.FC = () => {
             <Card className="text-center">
               <CardContent className="pt-6">
                 <div className="flex justify-center gap-2 mb-3">
-                  <div className="h-8 w-8 bg-brand-red rounded-full"></div>
-                  <div className="h-8 w-8 bg-brand-blue rounded-full"></div>
+                  <Facebook className="h-8 w-8 text-blue-600" />
+                  <Instagram className="h-8 w-8 text-pink-600" />
                 </div>
                 <h4 className="font-agrandir text-lg text-brand-navy mb-2">Follow Us</h4>
                 <p className="font-poppins text-gray-600 text-sm mb-4">
@@ -305,6 +386,7 @@ const BookingConfirmation: React.FC = () => {
                   {settings?.facebook_url && (
                     <Button variant="outline" size="sm" asChild className="w-full">
                       <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer">
+                        <Facebook className="h-4 w-4 mr-2" />
                         Facebook
                       </a>
                     </Button>
@@ -312,6 +394,7 @@ const BookingConfirmation: React.FC = () => {
                   {settings?.instagram_url && (
                     <Button variant="outline" size="sm" asChild className="w-full">
                       <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer">
+                        <Instagram className="h-4 w-4 mr-2" />
                         Instagram
                       </a>
                     </Button>
@@ -328,9 +411,9 @@ const BookingConfirmation: React.FC = () => {
                 <p className="font-poppins text-gray-600 text-sm mb-4">
                   Discover our full program offerings and philosophy
                 </p>
-                {settings?.website_url ? (
+                {websiteUrl ? (
                   <Button asChild className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins">
-                    <a href={settings.website_url} target="_blank" rel="noopener noreferrer">
+                    <a href={websiteUrl} target="_blank" rel="noopener noreferrer">
                       Visit Website
                     </a>
                   </Button>

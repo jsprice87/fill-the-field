@@ -41,8 +41,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    birthDay: '',
     birthMonth: '',
+    birthDay: '',
     birthYear: '',
     healthConditions: '',
     ageOverride: false,
@@ -57,7 +57,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  const calculateAge = (day: string, month: string, year: string) => {
+  const calculateAge = (month: string, day: string, year: string) => {
     if (!day || !month || !year) return 0;
     
     const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -70,7 +70,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     return age;
   };
 
-  const isValidDate = (day: string, month: string, year: string) => {
+  const isValidDate = (month: string, day: string, year: string) => {
     if (!day || !month || !year) return false;
     
     const dayNum = parseInt(day);
@@ -97,12 +97,12 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isValidDate(formData.birthDay, formData.birthMonth, formData.birthYear)) {
+    if (!isValidDate(formData.birthMonth, formData.birthDay, formData.birthYear)) {
       toast.error('Please enter a valid birth date');
       return;
     }
 
-    const age = calculateAge(formData.birthDay, formData.birthMonth, formData.birthYear);
+    const age = calculateAge(formData.birthMonth, formData.birthDay, formData.birthYear);
     const isValidAge = isAgeInRange(age);
     
     if (!isValidAge && !formData.ageOverride) {
@@ -149,8 +149,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     setFormData({
       firstName: '',
       lastName: '',
-      birthDay: '',
       birthMonth: '',
+      birthDay: '',
       birthYear: '',
       healthConditions: '',
       ageOverride: false,
@@ -164,9 +164,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     setFormData(prev => ({ ...prev, selectedDate: date }));
   };
 
-  const currentAge = calculateAge(formData.birthDay, formData.birthMonth, formData.birthYear);
-  const showAgeWarning = isValidDate(formData.birthDay, formData.birthMonth, formData.birthYear) && !isAgeInRange(currentAge);
-  const hasValidBirthDate = isValidDate(formData.birthDay, formData.birthMonth, formData.birthYear);
+  const currentAge = calculateAge(formData.birthMonth, formData.birthDay, formData.birthYear);
+  const showAgeWarning = isValidDate(formData.birthMonth, formData.birthDay, formData.birthYear) && !isAgeInRange(currentAge);
+  const hasValidBirthDate = isValidDate(formData.birthMonth, formData.birthDay, formData.birthYear);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -217,20 +217,6 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             <Label className="font-poppins">Birth Date *</Label>
             <div className="grid grid-cols-3 gap-2 mt-1">
               <div>
-                <Label htmlFor="birthDay" className="text-xs text-gray-500">Day</Label>
-                <Input
-                  id="birthDay"
-                  type="number"
-                  min="1"
-                  max="31"
-                  placeholder="DD"
-                  value={formData.birthDay}
-                  onChange={(e) => setFormData({...formData, birthDay: e.target.value})}
-                  className="font-poppins text-center"
-                  required
-                />
-              </div>
-              <div>
                 <Label htmlFor="birthMonth" className="text-xs text-gray-500">Month</Label>
                 <Input
                   id="birthMonth"
@@ -240,6 +226,20 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                   placeholder="MM"
                   value={formData.birthMonth}
                   onChange={(e) => setFormData({...formData, birthMonth: e.target.value})}
+                  className="font-poppins text-center"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="birthDay" className="text-xs text-gray-500">Day</Label>
+                <Input
+                  id="birthDay"
+                  type="number"
+                  min="1"
+                  max="31"
+                  placeholder="DD"
+                  value={formData.birthDay}
+                  onChange={(e) => setFormData({...formData, birthDay: e.target.value})}
                   className="font-poppins text-center"
                   required
                 />
@@ -264,7 +264,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                 Age: {currentAge} years old
               </p>
             )}
-            {!hasValidBirthDate && (formData.birthDay || formData.birthMonth || formData.birthYear) && (
+            {!hasValidBirthDate && (formData.birthMonth || formData.birthDay || formData.birthYear) && (
               <p className="text-sm text-red-500 mt-1 font-poppins">
                 Please enter a valid date
               </p>
