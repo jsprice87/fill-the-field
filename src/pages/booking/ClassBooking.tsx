@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Clock, Users, MapPin, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, Users, MapPin, ArrowLeft, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 import ParticipantModal from '@/components/booking/ParticipantModal';
-import ParticipantsSummary from '@/components/booking/ParticipantsSummary';
+import ParentGuardianForm from '@/components/booking/ParentGuardianForm';
 
 interface ClassSchedule {
   id: string;
@@ -273,28 +272,21 @@ const ClassBooking: React.FC = () => {
     return getTotalParticipants() < 5;
   };
 
-  // Convert ParticipantData to the format expected by ParticipantsSummary
-  const convertedParticipants = (flowData.participants || []).map((p, index) => ({
-    id: p.id || `temp-${index}`,
-    firstName: p.firstName,
-    lastName: p.lastName,
-    birthDate: p.birthDate,
-    age: p.age,
-    classScheduleId: p.classScheduleId,
-    className: p.className,
-    classTime: p.classTime,
-    selectedDate: p.selectedDate,
-    healthConditions: p.healthConditions,
-    ageOverride: p.ageOverride
-  }));
+  // Simple validation for the confirmation button
+  const canConfirmBooking = () => {
+    const hasParticipants = (flowData.participants?.length || 0) > 0;
+    const parentInfo = flowData.parentGuardianInfo;
+    const hasParentInfo = !!(
+      parentInfo?.firstName?.trim() &&
+      parentInfo?.lastName?.trim() &&
+      parentInfo?.email?.trim() &&
+      parentInfo?.phone?.trim() &&
+      parentInfo?.zip?.trim()
+    );
+    const hasWaiver = !!flowData.waiverAccepted;
+    const hasCommunication = !!flowData.communicationPermission;
 
-  const handleRemoveParticipant = async (participantId: string) => {
-    try {
-      await removeParticipant(participantId);
-    } catch (error) {
-      console.error('Error removing participant:', error);
-      toast.error('Failed to remove participant. Please try again.');
-    }
+    return hasParticipants && hasParentInfo && hasWaiver && hasCommunication;
   };
 
   // Show loading state while flow is being loaded or classes are being fetched
@@ -462,14 +454,66 @@ const ClassBooking: React.FC = () => {
             )}
           </div>
 
-          {/* Participants Summary */}
-          <div className="lg:col-span-1">
-            <ParticipantsSummary
-              participants={convertedParticipants}
-              onRemoveParticipant={handleRemoveParticipant}
-              onContinue={handleContinueToConfirmation}
-              flowData={flowData}
-            />
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Participants Summary */}
+            {(flowData.participants?.length || 0) > 0 && (
+              <Card className="border-l-4 border-l-brand-blue">
+                <CardHeader>
+                  <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Participants Added ({flowData.participants?.length || 0})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {flowData.participants?.map((participant, index) => (
+                    <div key={participant.id || index} className="flex items-center justify-between bg-gray-50 rounded p-3">
+                      <div className="flex-1">
+                        <div className="font-poppins font-medium">
+                          {participant.firstName} {participant.lastName}
+                        </div>
+                        <div className="text-sm text-gray-600 font-poppins">
+                          {participant.className} - {participant.age} years old
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveParticipant(participant.id || `temp-${index}`)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Parent Guardian Form */}
+            <ParentGuardianForm />
+
+            {/* Confirmation Button */}
+            <Card className="border-l-4 border-l-green-500">
+              <CardContent className="pt-6">
+                <Button
+                  onClick={handleContinueToConfirmation}
+                  disabled={!canConfirmBooking()}
+                  className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins py-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  size="lg"
+                >
+                  {canConfirmBooking() ? 'Confirm Booking' : 'Complete Required Information'}
+                </Button>
+                
+                {!canConfirmBooking() && (
+                  <div className="mt-3 text-center">
+                    <p className="text-sm text-gray-600 font-poppins">
+                      Please add at least one participant and complete all required information above.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
 
