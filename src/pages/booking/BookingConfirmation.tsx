@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +36,6 @@ interface BookingData {
 
 interface FranchiseeData {
   company_name: string;
-  website?: string;
 }
 
 const BookingConfirmation: React.FC = () => {
@@ -63,7 +61,7 @@ const BookingConfirmation: React.FC = () => {
       // Get franchisee data first
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
-        .select('company_name, website')
+        .select('company_name')
         .eq('slug', franchiseeId)
         .single();
 
@@ -246,7 +244,7 @@ const BookingConfirmation: React.FC = () => {
   }, {} as Record<string, { className: string; classTime: string; appointments: any[] }>);
 
   const businessName = franchiseeInfo?.company_name || franchiseeData?.company_name || 'Soccer Stars';
-  const websiteUrl = franchiseeInfo?.website || settings?.website_url;
+  const websiteUrl = settings?.website_url;
 
   return (
     <div className="min-h-screen bg-white">
