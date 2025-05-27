@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,14 +29,31 @@ const ParentGuardianForm: React.FC = () => {
   // Load franchisee and custom waiver data
   useEffect(() => {
     const loadFranchiseeData = async () => {
-      if (!flowData.leadData?.franchiseeId) return;
+      // Get franchisee ID from the selected location or flow data
+      const selectedLocation = flowData.selectedLocation;
+      let franchiseeId = null;
+      
+      if (selectedLocation) {
+        // Get franchisee ID from the location
+        const { data: location, error: locationError } = await supabase
+          .from('locations')
+          .select('franchisee_id')
+          .eq('id', selectedLocation.id)
+          .single();
+          
+        if (!locationError && location) {
+          franchiseeId = location.franchisee_id;
+        }
+      }
+      
+      if (!franchiseeId) return;
       
       try {
         // Get franchisee data
         const { data: franchisee, error: franchiseeError } = await supabase
           .from('franchisees')
           .select('*')
-          .eq('id', flowData.leadData.franchiseeId)
+          .eq('id', franchiseeId)
           .single();
 
         if (franchiseeError) {
@@ -64,7 +80,7 @@ const ParentGuardianForm: React.FC = () => {
     };
 
     loadFranchiseeData();
-  }, [flowData.leadData?.franchiseeId]);
+  }, [flowData.selectedLocation]);
 
   // Pre-fill form with lead data on component mount
   useEffect(() => {
