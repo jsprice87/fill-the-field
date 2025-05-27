@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -146,56 +147,67 @@ const ParentGuardianForm: React.FC = () => {
   }, [flowData.leadData, flowData.parentGuardianInfo]);
 
   const updateParentGuardianInfo = async (info: any) => {
+    console.log('🔄 Updating parent guardian info:', info);
     try {
       await updateFlow({ parentGuardianInfo: info });
+      console.log('✅ Parent guardian info updated successfully');
     } catch (error) {
-      console.error('Error updating parent guardian info:', error);
+      console.error('❌ Error updating parent guardian info:', error);
     }
   };
 
   const updateWaiverAccepted = async (accepted: boolean) => {
+    console.log('🔄 Updating waiver accepted:', accepted);
     try {
       await updateFlow({ waiverAccepted: accepted });
+      console.log('✅ Waiver acceptance updated successfully');
     } catch (error) {
-      console.error('Error updating waiver acceptance:', error);
+      console.error('❌ Error updating waiver acceptance:', error);
     }
   };
 
   const updateCommunicationPermission = async (permission: boolean) => {
+    console.log('🔄 Updating communication permission:', permission);
     try {
       await updateFlow({ communicationPermission: permission });
+      console.log('✅ Communication permission updated successfully');
     } catch (error) {
-      console.error('Error updating communication permission:', error);
+      console.error('❌ Error updating communication permission:', error);
     }
   };
 
   const updateMarketingPermission = async (permission: boolean) => {
+    console.log('🔄 Updating marketing permission:', permission);
     try {
       await updateFlow({ marketingPermission: permission });
+      console.log('✅ Marketing permission updated successfully');
     } catch (error) {
-      console.error('Error updating marketing permission:', error);
+      console.error('❌ Error updating marketing permission:', error);
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = async (field: string, value: string) => {
+    console.log(`📝 Input changed - ${field}:`, value);
     const newFormData = { ...formData, [field]: value };
     setFormData(newFormData);
-    updateParentGuardianInfo(newFormData);
+    
+    // Immediately update the flow with the new data
+    await updateParentGuardianInfo(newFormData);
   };
 
-  const handleWaiverChange = (checked: boolean) => {
-    console.log('Waiver checkbox changed:', checked);
-    updateWaiverAccepted(checked);
+  const handleWaiverChange = async (checked: boolean) => {
+    console.log('☑️ Waiver checkbox changed:', checked);
+    await updateWaiverAccepted(checked);
   };
 
-  const handleCommunicationPermissionChange = (checked: boolean) => {
-    console.log('Communication permission changed:', checked);
-    updateCommunicationPermission(checked);
+  const handleCommunicationPermissionChange = async (checked: boolean) => {
+    console.log('📞 Communication permission changed:', checked);
+    await updateCommunicationPermission(checked);
   };
 
-  const handleMarketingPermissionChange = (checked: boolean) => {
-    console.log('Marketing permission changed:', checked);
-    updateMarketingPermission(checked);
+  const handleMarketingPermissionChange = async (checked: boolean) => {
+    console.log('📧 Marketing permission changed:', checked);
+    await updateMarketingPermission(checked);
   };
 
   const isFormComplete = formData.firstName && formData.lastName && formData.email && formData.phone && formData.zip;
@@ -234,7 +246,9 @@ const ParentGuardianForm: React.FC = () => {
     waiverAccepted: flowData.waiverAccepted,
     communicationPermission: flowData.communicationPermission,
     marketingPermission: flowData.marketingPermission,
-    parentGuardianInfo: flowData.parentGuardianInfo
+    parentGuardianInfo: flowData.parentGuardianInfo,
+    flowId,
+    formData
   });
 
   return (
@@ -354,12 +368,6 @@ const ParentGuardianForm: React.FC = () => {
                       <div className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
                         {waiverText}
                       </div>
-                      {/* Debug info for waiver */}
-                      <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-                        <div>Custom waiver loaded: {!!customWaiver}</div>
-                        <div>Franchisee: {franchiseeData?.company_name || 'Not loaded'}</div>
-                        <div>Waiver length: {waiverText.length} characters</div>
-                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -411,6 +419,16 @@ const ParentGuardianForm: React.FC = () => {
             </p>
           </div>
         )}
+
+        {/* Debug section for form data */}
+        <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+          <div className="font-semibold mb-2">ParentGuardianForm Debug:</div>
+          <div>Flow ID: {flowId || 'Not set'}</div>
+          <div>Form Data: {JSON.stringify(formData)}</div>
+          <div>Flow Parent Info: {JSON.stringify(flowData.parentGuardianInfo || 'Not set')}</div>
+          <div>Waiver Accepted: {String(flowData.waiverAccepted || false)}</div>
+          <div>Communication Permission: {String(flowData.communicationPermission || false)}</div>
+        </div>
       </CardContent>
     </Card>
   );
