@@ -468,6 +468,7 @@ const ClassBooking: React.FC = () => {
               participants={convertedParticipants}
               onRemoveParticipant={handleRemoveParticipant}
               onContinue={handleContinueToConfirmation}
+              flowData={flowData}
             />
           </div>
         </div>

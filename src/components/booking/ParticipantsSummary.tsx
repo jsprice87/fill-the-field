@@ -3,9 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, X, Calendar, Clock } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
 import ParentGuardianForm from './ParentGuardianForm';
-import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { BookingFlowData } from '@/hooks/useBookingFlow';
 
 interface Participant {
   id: string;
@@ -25,17 +24,15 @@ interface ParticipantsSummaryProps {
   participants: Participant[];
   onRemoveParticipant: (participantId: string) => void;
   onContinue: () => void;
+  flowData: BookingFlowData;
 }
 
 const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
   participants,
   onRemoveParticipant,
-  onContinue
+  onContinue,
+  flowData
 }) => {
-  const [searchParams] = useSearchParams();
-  const flowId = searchParams.get('flow');
-  const { flowData } = useBookingFlow(flowId || undefined);
-
   if (participants.length === 0) {
     return null;
   }
@@ -72,7 +69,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
 
   // Overall validation
   const canContinue = () => {
-    console.log('=== VALIDATION CHECK ===');
+    console.log('=== VALIDATION CHECK (ParticipantsSummary) ===');
     console.log('Participants count:', participants.length);
     console.log('Parent info complete:', isParentInfoComplete);
     console.log('Waiver accepted:', isWaiverAccepted);
@@ -215,7 +212,8 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
           
           {/* Debug info */}
           <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-            <div>Debug: Button enabled = {buttonEnabled.toString()}</div>
+            <div className="font-semibold mb-2">ParticipantsSummary Debug:</div>
+            <div>Button enabled: {buttonEnabled.toString()}</div>
             <div>Missing: {missingRequirements.join(', ')}</div>
             <div>Form Complete: {isParentInfoComplete.toString()}</div>
             <div>Waiver: {isWaiverAccepted.toString()}</div>
@@ -229,6 +227,9 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
               <div>zip: "{parentInfo?.zip || 'empty'}"</div>
             </div>
             <div>Flow Data Keys: {Object.keys(flowData).join(', ')}</div>
+            <div>FlowData parentGuardianInfo: {JSON.stringify(flowData.parentGuardianInfo)}</div>
+            <div>FlowData waiverAccepted: {JSON.stringify(flowData.waiverAccepted)}</div>
+            <div>FlowData communicationPermission: {JSON.stringify(flowData.communicationPermission)}</div>
           </div>
         </CardContent>
       </Card>
