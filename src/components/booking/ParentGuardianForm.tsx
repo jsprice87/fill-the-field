@@ -29,11 +29,14 @@ const ParentGuardianForm: React.FC = () => {
   // Load franchisee and custom waiver data
   useEffect(() => {
     const loadFranchiseeData = async () => {
+      console.log('Loading franchisee data, flowData:', flowData);
+      
       // Get franchisee ID from the selected location or flow data
       const selectedLocation = flowData.selectedLocation;
       let franchiseeId = null;
       
       if (selectedLocation) {
+        console.log('Selected location:', selectedLocation);
         // Get franchisee ID from the location
         const { data: location, error: locationError } = await supabase
           .from('locations')
@@ -43,10 +46,40 @@ const ParentGuardianForm: React.FC = () => {
           
         if (!locationError && location) {
           franchiseeId = location.franchisee_id;
+          console.log('Got franchisee ID from location:', franchiseeId);
+        } else {
+          console.error('Error getting franchisee from location:', locationError);
         }
       }
       
-      if (!franchiseeId) return;
+      // If no franchisee ID from location, try to get it from the URL or flow
+      if (!franchiseeId) {
+        console.log('No franchisee ID from location, checking URL...');
+        // Extract from current URL path if possible
+        const pathParts = window.location.pathname.split('/');
+        if (pathParts.length > 1) {
+          const slug = pathParts[1]; // First part after domain should be the slug
+          console.log('Trying to get franchisee by slug:', slug);
+          
+          const { data: franchisee, error: franchiseeError } = await supabase
+            .from('franchisees')
+            .select('id')
+            .eq('slug', slug)
+            .single();
+            
+          if (!franchiseeError && franchisee) {
+            franchiseeId = franchisee.id;
+            console.log('Got franchisee ID from slug:', franchiseeId);
+          } else {
+            console.error('Error getting franchisee by slug:', franchiseeError);
+          }
+        }
+      }
+      
+      if (!franchiseeId) {
+        console.log('No franchisee ID found, cannot load custom waiver');
+        return;
+      }
       
       try {
         // Get franchisee data
@@ -61,6 +94,7 @@ const ParentGuardianForm: React.FC = () => {
           return;
         }
 
+        console.log('Loaded franchisee data:', franchisee);
         setFranchiseeData(franchisee);
 
         // Get custom waiver from settings
@@ -72,7 +106,10 @@ const ParentGuardianForm: React.FC = () => {
           .single();
 
         if (!settingsError && settings?.setting_value) {
+          console.log('Loaded custom waiver text:', settings.setting_value.substring(0, 100) + '...');
           setCustomWaiver(settings.setting_value);
+        } else {
+          console.log('No custom waiver found or error:', settingsError);
         }
       } catch (error) {
         console.error('Error loading franchisee data:', error);
@@ -316,6 +353,12 @@ const ParentGuardianForm: React.FC = () => {
                     <div className="prose prose-sm max-w-none font-poppins">
                       <div className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
                         {waiverText}
+                      </div>
+                      {/* Debug info for waiver */}
+                      <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+                        <div>Custom waiver loaded: {!!customWaiver}</div>
+                        <div>Franchisee: {franchiseeData?.company_name || 'Not loaded'}</div>
+                        <div>Waiver length: {waiverText.length} characters</div>
                       </div>
                     </div>
                   </DialogContent>

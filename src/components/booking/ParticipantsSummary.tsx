@@ -54,6 +54,22 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
     return acc;
   }, {} as Record<string, { className: string; classTime: string; participants: Participant[] }>);
 
+  // Use the same validation logic as ParentGuardianForm
+  const parentInfo = flowData.parentGuardianInfo;
+  const isFormComplete = parentInfo && 
+    parentInfo.firstName && 
+    parentInfo.firstName.trim() !== '' &&
+    parentInfo.lastName && 
+    parentInfo.lastName.trim() !== '' &&
+    parentInfo.email && 
+    parentInfo.email.trim() !== '' &&
+    parentInfo.phone && 
+    parentInfo.phone.trim() !== '' &&
+    parentInfo.zip && 
+    parentInfo.zip.trim() !== '';
+
+  const allRequiredAgreements = flowData.waiverAccepted && flowData.communicationPermission;
+
   const canContinue = () => {
     console.log('=== DEBUGGING CONTINUE BUTTON ===');
     console.log('flowData:', flowData);
@@ -66,24 +82,8 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
     }
     console.log('✅ Participants found:', participants.length);
 
-    // Check if parent/guardian info is complete
-    const parentInfo = flowData.parentGuardianInfo;
-    console.log('parentInfo:', parentInfo);
-    
-    const hasCompleteParentInfo = parentInfo && 
-      parentInfo.firstName && 
-      parentInfo.firstName.trim() !== '' &&
-      parentInfo.lastName && 
-      parentInfo.lastName.trim() !== '' &&
-      parentInfo.email && 
-      parentInfo.email.trim() !== '' &&
-      parentInfo.phone && 
-      parentInfo.phone.trim() !== '' &&
-      parentInfo.zip && 
-      parentInfo.zip.trim() !== '';
-    
-    console.log('hasCompleteParentInfo:', hasCompleteParentInfo);
-    console.log('parentInfo fields check:', {
+    console.log('isFormComplete:', isFormComplete);
+    console.log('parentInfo fields:', {
       firstName: parentInfo?.firstName,
       lastName: parentInfo?.lastName,
       email: parentInfo?.email,
@@ -91,7 +91,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       zip: parentInfo?.zip
     });
     
-    if (!hasCompleteParentInfo) {
+    if (!isFormComplete) {
       console.log('❌ Parent info incomplete');
       return false;
     }
@@ -124,20 +124,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
       missing.push('Add at least one participant');
     }
     
-    const parentInfo = flowData.parentGuardianInfo;
-    const hasCompleteParentInfo = parentInfo && 
-      parentInfo.firstName && 
-      parentInfo.firstName.trim() !== '' &&
-      parentInfo.lastName && 
-      parentInfo.lastName.trim() !== '' &&
-      parentInfo.email && 
-      parentInfo.email.trim() !== '' &&
-      parentInfo.phone && 
-      parentInfo.phone.trim() !== '' &&
-      parentInfo.zip && 
-      parentInfo.zip.trim() !== '';
-    
-    if (!hasCompleteParentInfo) {
+    if (!isFormComplete) {
       missing.push('Complete all required parent/guardian information fields');
     }
     
@@ -246,6 +233,7 @@ const ParticipantsSummary: React.FC<ParticipantsSummaryProps> = ({
           <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
             <div>Debug: Button enabled = {buttonEnabled.toString()}</div>
             <div>Missing: {missingRequirements.join(', ')}</div>
+            <div>Form Complete: {isFormComplete?.toString()}</div>
             <div>Waiver: {flowData.waiverAccepted?.toString()}</div>
             <div>Communication: {flowData.communicationPermission?.toString()}</div>
             <div>Parent Info: {JSON.stringify(flowData.parentGuardianInfo)}</div>
