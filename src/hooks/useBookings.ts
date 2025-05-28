@@ -1,7 +1,7 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { LeadStatus } from './useLeads';
 
 export interface Booking {
   id: string;
@@ -13,7 +13,7 @@ export interface Booking {
   participant_name: string;
   participant_age: number;
   participant_birth_date: string;
-  status: LeadStatus; // Now derived from leads table
+  status: string;
   location_id: string;
   location_name?: string;
   lead_first_name?: string;
@@ -38,14 +38,14 @@ export const useBookings = (franchiseeId?: string) => {
           participant_name,
           participant_age,
           participant_birth_date,
+          status,
           created_at,
           bookings!inner(
             lead_id,
             leads!inner(
               first_name,
               last_name,
-              franchisee_id,
-              status
+              franchisee_id
             )
           ),
           class_schedules!inner(
@@ -65,18 +65,18 @@ export const useBookings = (franchiseeId?: string) => {
         throw error;
       }
 
-      // Transform the data to flatten the nested structure and derive status from leads
+      // Transform the data to flatten the nested structure
       const transformedData = (data || []).map(appointment => ({
         id: appointment.id,
         lead_id: appointment.bookings.lead_id,
-        class_schedule_id: appointment.booking_id,
+        class_schedule_id: appointment.booking_id, // This might need adjustment based on your schema
         selected_date: appointment.selected_date,
         class_time: appointment.class_time,
         class_name: appointment.class_name,
         participant_name: appointment.participant_name,
         participant_age: appointment.participant_age,
         participant_birth_date: appointment.participant_birth_date,
-        status: appointment.bookings?.leads?.status || 'new' as LeadStatus,
+        status: appointment.status,
         location_id: appointment.class_schedules?.classes?.location_id,
         location_name: appointment.class_schedules?.classes?.locations?.name,
         lead_first_name: appointment.bookings?.leads?.first_name,
@@ -88,5 +88,107 @@ export const useBookings = (franchiseeId?: string) => {
       return transformedData;
     },
     enabled: !!franchiseeId,
+  });
+};
+
+export const useUpdateBookingStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ bookingId, leadId, status }: { 
+      bookingId: string; 
+      leadId: string; 
+      status: string; 
+    }) => {
+      console.log('Starting status update mutation:', { bookingId, leadId, status });
+      
+      // Update the appointment status
+      const { data: appointmentData, error: appointmentError } = await supabase
+        .from('appointments')
+        .update({ status })
+        .eq('id', bookingId)
+        .select();
+
+      if (appointmentError) {
+        console.error('Error updating appointment:', appointmentError);
+        throw appointmentError;
+      }
+
+      console.log('Appointment updated successfully:', appointmentData);
+
+      // Update the lead status to match
+      const { data: leadData, error: leadError } = await supabase
+        .from('leads')
+        .update({ status })
+        .eq('id', leadId)
+        .select();
+
+      if (leadError) {
+        console.error('Error updating lead:', leadError);
+        throw leadError;
+      }
+
+      console.log('Lead updated successfully:', leadData);
+      console.log('Successfully updated both appointment and lead status');
+      return { bookingId, leadId, status, appointmentData, leadData };
+    },
+    onMutate: async ({ bookingId, leadId, status }) => {
+      console.log('Optimistic update starting for:', { bookingId, leadId, status });
+      
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['bookings'] });
+      await queryClient.cancelQueries({ queryKey: ['leads'] });
+      
+      // Snapshot the previous values
+      const previousBookings = queryClient.getQueryData(['bookings']);
+      const previousLeads = queryClient.getQueryData(['leads']);
+      
+      // Optimistically update bookings
+      queryClient.setQueryData(['bookings'], (old: any) => {
+        if (!old) return old;
+        return old.map((booking: any) => 
+          booking.id === bookingId ? { ...booking, status } : booking
+        );
+      });
+      
+      // Optimistically update leads
+      queryClient.setQueryData(['leads'], (old: any) => {
+        if (!old) return old;
+        return old.map((lead: any) => 
+          lead.id === leadId ? { ...lead, status } : lead
+        );
+      });
+      
+      console.log('Optimistic updates applied');
+      return { previousBookings, previousLeads };
+    },
+    onSuccess: (data, variables) => {
+      console.log('Mutation successful, invalidating and refetching queries...', data);
+      
+      // Force refetch all related queries
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
+      
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ['bookings'] });
+      queryClient.refetchQueries({ queryKey: ['leads'] });
+      queryClient.refetchQueries({ queryKey: ['lead-stats'] });
+      
+      toast.success('Status updated successfully');
+    },
+    onError: (error, variables, context) => {
+      console.error('Mutation failed:', error);
+      
+      // Rollback optimistic updates
+      if (context?.previousBookings) {
+        queryClient.setQueryData(['bookings'], context.previousBookings);
+      }
+      if (context?.previousLeads) {
+        queryClient.setQueryData(['leads'], context.previousLeads);
+      }
+      
+      toast.error('Failed to update status');
+    }
   });
 };

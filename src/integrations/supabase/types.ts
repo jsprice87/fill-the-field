@@ -23,6 +23,7 @@ export type Database = {
           participant_birth_date: string | null
           participant_name: string
           selected_date: string | null
+          status: string | null
           updated_at: string
         }
         Insert: {
@@ -38,6 +39,7 @@ export type Database = {
           participant_birth_date?: string | null
           participant_name: string
           selected_date?: string | null
+          status?: string | null
           updated_at?: string
         }
         Update: {
@@ -53,6 +55,7 @@ export type Database = {
           participant_birth_date?: string | null
           participant_name?: string
           selected_date?: string | null
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -128,6 +131,7 @@ export type Database = {
           parent_phone: string | null
           parent_relationship: string | null
           parent_zip: string | null
+          status: string | null
           updated_at: string
           waiver_accepted: boolean | null
           waiver_accepted_at: string | null
@@ -149,6 +153,7 @@ export type Database = {
           parent_phone?: string | null
           parent_relationship?: string | null
           parent_zip?: string | null
+          status?: string | null
           updated_at?: string
           waiver_accepted?: boolean | null
           waiver_accepted_at?: string | null
@@ -170,6 +175,7 @@ export type Database = {
           parent_phone?: string | null
           parent_relationship?: string | null
           parent_zip?: string | null
+          status?: string | null
           updated_at?: string
           waiver_accepted?: boolean | null
           waiver_accepted_at?: string | null
@@ -451,41 +457,6 @@ export type Database = {
           },
         ]
       }
-      lead_notes: {
-        Row: {
-          author_id: string
-          body: string
-          created_at: string
-          id: string
-          lead_id: string
-          updated_at: string
-        }
-        Insert: {
-          author_id: string
-          body: string
-          created_at?: string
-          id?: string
-          lead_id: string
-          updated_at?: string
-        }
-        Update: {
-          author_id?: string
-          body?: string
-          created_at?: string
-          id?: string
-          lead_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lead_notes_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       leads: {
         Row: {
           booking_session_data: Json | null
@@ -500,7 +471,7 @@ export type Database = {
           phone: string
           selected_location_id: string | null
           source: string | null
-          status: Database["public"]["Enums"]["lead_status"]
+          status: string | null
           updated_at: string
           zip: string
         }
@@ -517,7 +488,7 @@ export type Database = {
           phone: string
           selected_location_id?: string | null
           source?: string | null
-          status?: Database["public"]["Enums"]["lead_status"]
+          status?: string | null
           updated_at?: string
           zip: string
         }
@@ -534,7 +505,7 @@ export type Database = {
           phone?: string
           selected_location_id?: string | null
           source?: string | null
-          status?: Database["public"]["Enums"]["lead_status"]
+          status?: string | null
           updated_at?: string
           zip?: string
         }
@@ -749,21 +720,9 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
-      update_lead_status_from_bookings: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
     }
     Enums: {
-      lead_status:
-        | "new"
-        | "booked_upcoming"
-        | "booked_complete"
-        | "no_show"
-        | "follow_up"
-        | "canceled"
-        | "closed_lost"
-        | "closed_won"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -878,17 +837,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      lead_status: [
-        "new",
-        "booked_upcoming",
-        "booked_complete",
-        "no_show",
-        "follow_up",
-        "canceled",
-        "closed_lost",
-        "closed_won",
-      ],
-    },
+    Enums: {},
   },
 } as const

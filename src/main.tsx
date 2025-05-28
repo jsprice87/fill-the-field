@@ -1,20 +1,15 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
 import App from './App';
 import './index.css';
+import { updateFranchiseeSlugs } from './scripts/updateFranchiseeSlugs';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+// Update existing franchisees with slugs if needed
+if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+  // Only run in development mode to avoid production issues
+  updateFranchiseeSlugs().catch(console.error);
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -24,9 +19,6 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-      <Toaster />
-    </QueryClientProvider>
+    <App />
   </React.StrictMode>
 );
