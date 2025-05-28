@@ -163,6 +163,7 @@ const App: React.FC = () => {
               <Route path="classes/add" element={<AddClasses />} />
               <Route path="classes/edit/:classId" element={<EditClass />} />
               <Route path="leads" element={<PortalLeads />} />
+              <Route path="bookings" element={<PortalBookings />} />
               <Route path="settings" element={<PortalSettings />} />
             </Route>
             
