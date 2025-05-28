@@ -140,9 +140,7 @@ const BookingConfirmation: React.FC = () => {
     
     if (navigator.share) {
       navigator.share({
-        title: `${businessName} Free Trial`,
-        text: shareText,
-        url: `${window.location.origin}/${franchiseeId}/free-trial`
+        text: shareText
       });
     } else {
       navigator.clipboard.writeText(shareText);
