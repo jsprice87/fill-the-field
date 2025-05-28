@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, MapPin, User, Baby } from 'lucide-react';
+import { Calendar, MapPin, Baby } from 'lucide-react';
 import { useUpdateBookingStatus } from '@/hooks/useBookings';
+import StatusSelect from '../leads/StatusSelect';
 import type { Database } from '@/integrations/supabase/types';
 
 type LeadStatus = Database['public']['Enums']['lead_status'];
@@ -32,8 +32,6 @@ interface BookingsTableProps {
 }
 
 const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
-  const updateStatusMutation = useUpdateBookingStatus();
-
   const getStatusBadge = (status: string, bookingDate: string) => {
     const today = new Date();
     const date = new Date(bookingDate);
@@ -97,20 +95,6 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
       month: 'short',
       day: 'numeric'
     });
-  };
-
-  const handleStatusChange = async (bookingId: string, leadId: string, newStatus: LeadStatus) => {
-    console.log('Status change triggered:', { bookingId, leadId, newStatus });
-    try {
-      await updateStatusMutation.mutateAsync({
-        bookingId,
-        leadId,
-        status: newStatus
-      });
-      console.log('Status change completed successfully');
-    } catch (error) {
-      console.error('Error updating status:', error);
-    }
   };
 
   if (bookings.length === 0) {
@@ -180,28 +164,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
               <TableCell>
                 <div className="space-y-2">
                   {getStatusBadge(booking.status, booking.selected_date)}
-                  <Select
-                    value={booking.status}
-                    onValueChange={(value) => {
-                      console.log('Select value changed:', { bookingId: booking.id, leadId: booking.lead_id, value });
-                      handleStatusChange(booking.id, booking.lead_id, value as LeadStatus);
-                    }}
-                    disabled={updateStatusMutation.isPending}
-                  >
-                    <SelectTrigger className="text-xs w-full min-w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="booked_upcoming">Booked Upcoming</SelectItem>
-                      <SelectItem value="booked_complete">Booked Complete</SelectItem>
-                      <SelectItem value="no_show">No Show</SelectItem>
-                      <SelectItem value="follow_up">Follow-up</SelectItem>
-                      <SelectItem value="canceled">Canceled</SelectItem>
-                      <SelectItem value="closed_lost">Closed Lost</SelectItem>
-                      <SelectItem value="closed_won">Closed Won</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <StatusSelect 
+                    leadId={booking.lead_id}
+                    currentStatus={booking.status as LeadStatus}
+                  />
                 </div>
               </TableCell>
             </TableRow>

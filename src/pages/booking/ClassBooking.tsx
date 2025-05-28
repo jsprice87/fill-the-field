@@ -61,11 +61,9 @@ const ClassBooking: React.FC = () => {
       return;
     }
 
-    // Load flow data first
     loadFlowData();
   }, [flowId, franchiseeId]);
 
-  // Load classes when flow data is loaded and we have a location
   useEffect(() => {
     console.log('ClassBooking: Flow data effect', { flowLoaded, selectedLocation: flowData.selectedLocation });
     
@@ -175,7 +173,7 @@ const ClassBooking: React.FC = () => {
         .from('bookings')
         .insert({
           lead_id: leadId,
-          class_schedule_id: participants[0].classScheduleId, // Use first participant's class
+          class_schedule_id: participants[0].classScheduleId,
           parent_first_name: parentInfo.firstName,
           parent_last_name: parentInfo.lastName,
           parent_email: parentInfo.email,
@@ -186,8 +184,7 @@ const ClassBooking: React.FC = () => {
           waiver_accepted_at: flowData.waiverAccepted ? new Date().toISOString() : null,
           communication_permission: flowData.communicationPermission,
           marketing_permission: flowData.marketingPermission,
-          child_speaks_english: flowData.childSpeaksEnglish,
-          status: 'confirmed'
+          child_speaks_english: flowData.childSpeaksEnglish
         })
         .select()
         .single();
@@ -213,14 +210,12 @@ const ClassBooking: React.FC = () => {
             class_time: participant.classTime,
             selected_date: participant.selectedDate,
             health_conditions: participant.healthConditions,
-            age_override: participant.ageOverride,
-            status: 'confirmed'
+            age_override: participant.ageOverride
           })
       );
 
       const appointmentResults = await Promise.all(appointmentPromises);
       
-      // Check for appointment creation errors
       for (const result of appointmentResults) {
         if (result.error) {
           console.error('Appointment creation error:', result.error);
@@ -230,13 +225,12 @@ const ClassBooking: React.FC = () => {
 
       console.log('All appointments created successfully');
 
-      // Update lead status to converted
+      // Update lead status to booked_upcoming (since all bookings are future dates)
       await supabase
         .from('leads')
-        .update({ status: 'closed_won' })
+        .update({ status: 'booked_upcoming' })
         .eq('id', leadId);
 
-      // Navigate to confirmation page with booking ID
       navigate(`/${franchiseeId}/free-trial/booking/${booking.id}`);
       
     } catch (error) {
@@ -285,14 +279,15 @@ const ClassBooking: React.FC = () => {
     const hasParticipants = (flowData.participants?.length || 0) > 0;
     console.log('✅ Has participants:', hasParticipants);
 
-    // Check parent/guardian info - more robust validation with trimming
+    // Check parent/guardian info with proper field validation
     const parentInfo = flowData.parentGuardianInfo;
     const hasValidParentInfo = !!(
       parentInfo?.firstName?.trim() &&
       parentInfo?.lastName?.trim() &&
       parentInfo?.email?.trim() &&
       parentInfo?.phone?.trim() &&
-      parentInfo?.zip?.trim()
+      parentInfo?.zip?.trim() &&
+      parentInfo?.relationship?.trim()
     );
     console.log('✅ Has valid parent info:', hasValidParentInfo, parentInfo);
 
@@ -304,12 +299,6 @@ const ClassBooking: React.FC = () => {
 
     const canConfirm = hasParticipants && hasValidParentInfo && hasWaiver && hasCommunicationPermission;
     console.log('🎯 Can confirm booking:', canConfirm);
-    console.log('🎯 All dependencies check:', {
-      hasParticipants,
-      hasValidParentInfo,
-      hasWaiver,
-      hasCommunicationPermission
-    });
 
     return canConfirm;
   };
@@ -515,7 +504,7 @@ const ClassBooking: React.FC = () => {
               </Card>
             )}
 
-            {/* Parent Guardian Form - now with shared data */}
+            {/* Parent Guardian Form */}
             <ParentGuardianForm 
               flowData={flowData}
               updateFlow={updateFlow}
@@ -540,8 +529,6 @@ const ClassBooking: React.FC = () => {
                     </p>
                   </div>
                 )}
-
-                
               </CardContent>
             </Card>
           </div>

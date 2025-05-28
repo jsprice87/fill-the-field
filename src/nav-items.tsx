@@ -1,0 +1,305 @@
+import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon } from "lucide-react";
+import Index from "./pages/Index";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Dashboard from "./pages/dashboard/Dashboard";
+import PortalDashboard from "./pages/portal/Dashboard";
+import PortalLeads from "./pages/portal/Leads";
+import LeadDetail from "./pages/portal/LeadDetail";
+import PortalBookings from "./pages/portal/Bookings";
+import PortalLocations from "./pages/portal/Locations";
+import PortalClasses from "./pages/portal/Classes";
+import ClassesList from "./pages/portal/ClassesList";
+import AddClasses from "./pages/portal/AddClasses";
+import EditClass from "./pages/portal/EditClass";
+import PortalProfile from "./pages/portal/Profile";
+import PortalSettings from "./pages/portal/Settings";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminUserManagement from "./pages/admin/UserManagement";
+import AdminTransactions from "./pages/admin/Transactions";
+import AdminGlobalSettings from "./pages/admin/GlobalSettings";
+import AdminSettings from "./pages/admin/Settings";
+import LandingPage from "./pages/landing/LandingPage";
+import SpanishLanding from "./pages/landing/SpanishLanding";
+import FindClasses from "./pages/landing/FindClasses";
+import BookClass from "./pages/landing/BookClass";
+import Confirmation from "./pages/landing/Confirmation";
+import ContactUs from "./pages/landing/ContactUs";
+import BookingLanding from "./pages/booking/BookingLanding";
+import BookingFindClasses from "./pages/booking/FindClasses";
+import ClassBooking from "./pages/booking/ClassBooking";
+import BookingConfirmation from "./pages/booking/BookingConfirmation";
+import ThankYou from "./pages/booking/ThankYou";
+import SpanishInfo from "./pages/booking/SpanishInfo";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import SlugResolver from "./components/auth/SlugResolver";
+
+export const navItems = [
+  {
+    title: "Home",
+    to: "/",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: <Index />,
+  },
+  {
+    title: "Login",
+    to: "/login",
+    icon: <UserIcon className="h-4 w-4" />,
+    page: <Login />,
+  },
+  {
+    title: "Register",
+    to: "/register",
+    icon: <UserIcon className="h-4 w-4" />,
+    page: <Register />,
+  },
+  {
+    title: "Dashboard",
+    to: "/dashboard",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Portal Dashboard",
+    to: "/portal/dashboard",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <PortalDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Portal Leads",
+    to: "/portal/leads",
+    icon: <UsersIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <PortalLeads />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Lead Detail",
+    to: "/portal/leads/:leadId",
+    icon: <UserIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <LeadDetail />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Portal Bookings",
+    to: "/portal/bookings",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <PortalBookings />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Portal Locations",
+    to: "/portal/locations",
+    icon: <MapPinIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <PortalLocations />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Portal Classes",
+    to: "/portal/classes",
+    icon: <BookOpenIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <PortalClasses />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Classes List",
+    to: "/portal/classes/list",
+    icon: <BookOpenIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <ClassesList />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Add Classes",
+    to: "/portal/classes/add",
+    icon: <BookOpenIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <AddClasses />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Edit Class",
+    to: "/portal/classes/edit/:classId",
+    icon: <BookOpenIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <EditClass />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Portal Profile",
+    to: "/portal/profile",
+    icon: <UserIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <PortalProfile />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Portal Settings",
+    to: "/portal/settings",
+    icon: <SettingsIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <PortalSettings />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Admin Dashboard",
+    to: "/admin/dashboard",
+    icon: <BarChart3Icon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <AdminDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Admin User Management",
+    to: "/admin/users",
+    icon: <UsersIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <AdminUserManagement />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Admin Transactions",
+    to: "/admin/transactions",
+    icon: <CreditCardIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <AdminTransactions />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Admin Global Settings",
+    to: "/admin/global-settings",
+    icon: <SettingsIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <AdminGlobalSettings />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Admin Settings",
+    to: "/admin/settings",
+    icon: <ShieldIcon className="h-4 w-4" />,
+    page: (
+      <ProtectedRoute>
+        <AdminSettings />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    title: "Landing Page",
+    to: "/:franchiseeSlug",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Spanish Landing",
+    to: "/:franchiseeSlug/es",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Find Classes",
+    to: "/:franchiseeSlug/find-classes",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Book Class",
+    to: "/:franchiseeSlug/book",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Confirmation",
+    to: "/:franchiseeSlug/confirmation",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Contact Us",
+    to: "/:franchiseeSlug/contact",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Booking Landing",
+    to: "/:franchiseeSlug/free-trial",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Booking Find Classes",
+    to: "/:franchiseeSlug/free-trial/find-classes",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Class Booking",
+    to: "/:franchiseeSlug/free-trial/classes",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Booking Confirmation",
+    to: "/:franchiseeSlug/free-trial/booking/:bookingId",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Thank You",
+    to: "/:franchiseeSlug/thank-you",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Spanish Info",
+    to: "/:franchiseeSlug/spanish-info",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver />,
+  },
+  {
+    title: "Not Found",
+    to: "*",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: <NotFound />,
+  },
+];

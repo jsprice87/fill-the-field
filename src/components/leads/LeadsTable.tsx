@@ -3,14 +3,18 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Phone, Mail, MapPin, Calendar, User } from 'lucide-react';
+import { Phone, Mail, MapPin, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Lead } from '@/hooks/useLeads';
+import StatusSelect from './StatusSelect';
 
 interface LeadsTableProps {
   leads: Lead[];
 }
 
 const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
+  const navigate = useNavigate();
+
   const getStatusBadge = (status: string) => {
     const variants = {
       'new': 'bg-blue-100 text-blue-800',
@@ -49,10 +53,14 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
     });
   };
 
+  const handleViewLead = (leadId: string) => {
+    navigate(`/portal/leads/${leadId}`);
+  };
+
   if (leads.length === 0) {
     return (
       <div className="text-center p-8">
-        <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <Phone className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h3 className="font-agrandir text-xl text-brand-navy mb-2">No Leads Yet</h3>
         <p className="font-poppins text-gray-600 mb-6">
           When users sign up through your landing page, they'll appear here.
@@ -122,8 +130,12 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
                 </div>
               </TableCell>
               <TableCell>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {getStatusBadge(lead.status)}
+                  <StatusSelect 
+                    leadId={lead.id}
+                    currentStatus={lead.status as any}
+                  />
                   <div className="md:hidden text-xs text-gray-500">
                     from {lead.source?.replace('_', ' ') || 'unknown'}
                   </div>
@@ -143,7 +155,11 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
                   <Button size="sm" variant="outline" className="text-xs">
                     Call
                   </Button>
-                  <Button size="sm" className="bg-brand-red hover:bg-brand-red/90 text-white text-xs">
+                  <Button 
+                    size="sm" 
+                    className="bg-brand-red hover:bg-brand-red/90 text-white text-xs"
+                    onClick={() => handleViewLead(lead.id)}
+                  >
                     View
                   </Button>
                 </div>
