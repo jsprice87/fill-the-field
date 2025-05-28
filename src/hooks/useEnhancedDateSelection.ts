@@ -1,259 +1,232 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
+import { useFranchiseeSettings } from './useFranchiseeSettings';
 import { 
+  getDayOfWeekInTimezone, 
   getCurrentDateInTimezone, 
   addDaysInTimezone, 
-  getDayOfWeekInTimezone, 
-  getDateStringInTimezone,
-  DEFAULT_TIMEZONE
+  isSameDayInTimezone,
+  DEFAULT_TIMEZONE,
+  getDateStringInTimezone
 } from '@/utils/timezoneUtils';
-import { parseISO } from 'date-fns';
 
-export interface ValidatedDate {
-  date: string;
-  dayName: string;
-  isNextAvailable: boolean;
-}
-
-interface ClassScheduleData {
+export interface ClassSchedule {
+  id: string;
   day_of_week: number;
+  start_time: string;
+  end_time: string;
   date_start?: string;
   date_end?: string;
-  schedule_exceptions?: Array<{
-    exception_date: string;
-    is_cancelled: boolean;
-  }>;
+  classes: {
+    name: string;
+    min_age?: number;
+    max_age?: number;
+  };
 }
 
-export const useEnhancedDateSelection = (classScheduleId?: string) => {
+export interface ScheduleException {
+  exception_date: string;
+  is_cancelled: boolean;
+}
+
+export interface BookingRestrictions {
+  advance_booking_days?: number;
+  max_advance_booking_days?: number;
+  same_day_booking_enabled?: boolean;
+  restrict_to_schedule_days?: boolean;
+}
+
+export const useEnhancedDateSelection = (
+  schedules: ClassSchedule[] = [],
+  participantAge?: number,
+  franchiseeId?: string
+) => {
   const { data: settings } = useFranchiseeSettings();
-  const [availableDates, setAvailableDates] = useState<ValidatedDate[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const allowFutureBookings = settings?.allow_future_bookings === 'true';
-  const maxBookingDaysAhead = parseInt(settings?.max_booking_days_ahead || '7');
   const timezone = settings?.timezone || DEFAULT_TIMEZONE;
+  
+  const [scheduleExceptions, setScheduleExceptions] = useState<ScheduleException[]>([]);
+  const [bookingRestrictions, setBookingRestrictions] = useState<BookingRestrictions>({});
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load schedule exceptions and booking restrictions
   useEffect(() => {
-    if (classScheduleId) {
-      loadValidDates();
-    }
-  }, [classScheduleId, allowFutureBookings, maxBookingDaysAhead, timezone]);
-
-  const loadValidDates = async () => {
-    if (!classScheduleId) return;
-
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Fetch class schedule with exceptions
-      const { data: schedule, error: scheduleError } = await supabase
-        .from('class_schedules')
-        .select(`
-          day_of_week,
-          date_start,
-          date_end,
-          schedule_exceptions(
-            exception_date,
-            is_cancelled
-          )
-        `)
-        .eq('id', classScheduleId)
-        .single();
-
-      if (scheduleError || !schedule) {
-        console.error('Error loading schedule:', scheduleError);
-        setError('Failed to load class schedule');
+    const loadData = async () => {
+      if (!franchiseeId || schedules.length === 0) {
+        setIsLoading(false);
         return;
       }
 
-      const validDates = generateValidDates(schedule as ClassScheduleData);
-      setAvailableDates(validDates);
-      
-      // Auto-select the first available date
-      if (validDates.length > 0) {
-        setSelectedDate(validDates[0].date);
+      try {
+        // Load schedule exceptions
+        const scheduleIds = schedules.map(s => s.id);
+        const { data: exceptions } = await supabase
+          .from('schedule_exceptions')
+          .select('exception_date, is_cancelled')
+          .in('class_schedule_id', scheduleIds);
+
+        if (exceptions) {
+          setScheduleExceptions(exceptions);
+        }
+
+        // Load booking restrictions from franchisee settings
+        const { data: restrictionSettings } = await supabase
+          .from('franchisee_settings')
+          .select('setting_key, setting_value')
+          .eq('franchisee_id', franchiseeId)
+          .in('setting_key', [
+            'advance_booking_days',
+            'max_advance_booking_days', 
+            'same_day_booking_enabled',
+            'restrict_to_schedule_days'
+          ]);
+
+        if (restrictionSettings) {
+          const restrictions: BookingRestrictions = {};
+          restrictionSettings.forEach(setting => {
+            if (setting.setting_key === 'advance_booking_days' || setting.setting_key === 'max_advance_booking_days') {
+              restrictions[setting.setting_key] = parseInt(setting.setting_value || '0');
+            } else if (setting.setting_key === 'same_day_booking_enabled' || setting.setting_key === 'restrict_to_schedule_days') {
+              restrictions[setting.setting_key] = setting.setting_value === 'true';
+            }
+          });
+          setBookingRestrictions(restrictions);
+        }
+      } catch (error) {
+        console.error('Error loading date selection data:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading valid dates:', error);
-      setError('Failed to load available dates');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  const generateValidDates = (schedule: ClassScheduleData): ValidatedDate[] => {
-    const dates: ValidatedDate[] = [];
-    const today = getCurrentDateInTimezone(timezone);
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    
-    // Get override dates (cancelled dates) for this class
-    const cancelledDates = new Set(
-      schedule.schedule_exceptions
-        ?.filter(exception => exception.is_cancelled)
-        .map(exception => exception.exception_date) || []
-    );
+    loadData();
+  }, [schedules, franchiseeId]);
 
-    // Parse class schedule dates in the correct timezone
-    const classStartDate = schedule.date_start ? parseISO(schedule.date_start + 'T00:00:00') : null;
-    const classEndDate = schedule.date_end ? parseISO(schedule.date_end + 'T23:59:59') : null;
+  // Filter schedules by participant age
+  const ageFilteredSchedules = useMemo(() => {
+    if (!participantAge) return schedules;
     
-    // Calculate the maximum date we can book
-    const maxBookingDate = addDaysInTimezone(today, maxBookingDaysAhead, timezone);
-
-    // Find the next occurrence of the class day
-    let currentDate = new Date(today);
-    
-    // Find the next occurrence of the target day of week
-    let daysUntilClass = (schedule.day_of_week - getDayOfWeekInTimezone(currentDate, timezone) + 7) % 7;
-    
-    // If it's the same day but after 6 PM in the local timezone, start from next week
-    const currentHour = currentDate.getHours();
-    if (daysUntilClass === 0 && currentHour >= 18) {
-      daysUntilClass = 7;
-    }
-    
-    currentDate = addDaysInTimezone(currentDate, daysUntilClass, timezone);
-
-    let foundNextAvailable = false;
-    let weeksChecked = 0;
-    const maxWeeksToCheck = Math.ceil(maxBookingDaysAhead / 7) + 4; // Buffer for edge cases
-
-    while (weeksChecked < maxWeeksToCheck && dates.length < 10) {
-      const dateStr = getDateStringInTimezone(currentDate, timezone);
+    return schedules.filter(schedule => {
+      const minAge = schedule.classes.min_age;
+      const maxAge = schedule.classes.max_age;
       
-      // Verify the day of week is correct (double-check our calculation)
-      const dayOfWeek = getDayOfWeekInTimezone(currentDate, timezone);
-      if (dayOfWeek !== schedule.day_of_week) {
-        console.error(`Day of week mismatch: expected ${schedule.day_of_week}, got ${dayOfWeek} for date ${dateStr}`);
-        // Skip this date and try the next week
-        currentDate = addDaysInTimezone(currentDate, 7, timezone);
-        weeksChecked++;
-        continue;
+      if (minAge && participantAge < minAge) return false;
+      if (maxAge && participantAge > maxAge) return false;
+      
+      return true;
+    });
+  }, [schedules, participantAge]);
+
+  // Get valid days of week from filtered schedules
+  const validDaysOfWeek = useMemo(() => {
+    return [...new Set(ageFilteredSchedules.map(schedule => schedule.day_of_week))];
+  }, [ageFilteredSchedules]);
+
+  // Check if a date is valid for booking
+  const isDateValid = useMemo(() => {
+    return (date: Date): boolean => {
+      const currentDate = getCurrentDateInTimezone(timezone);
+      const dateString = getDateStringInTimezone(date, timezone);
+      
+      // Check if date is in the past
+      if (isSameDayInTimezone(date, currentDate, timezone)) {
+        // Same day booking check
+        if (!bookingRestrictions.same_day_booking_enabled) {
+          return false;
+        }
+      } else if (date < currentDate) {
+        return false;
       }
+
+      // Check advance booking restrictions
+      if (bookingRestrictions.advance_booking_days) {
+        const minBookingDate = addDaysInTimezone(currentDate, bookingRestrictions.advance_booking_days, timezone);
+        if (date < minBookingDate) {
+          return false;
+        }
+      }
+
+      // Check max advance booking restrictions
+      if (bookingRestrictions.max_advance_booking_days) {
+        const maxBookingDate = addDaysInTimezone(currentDate, bookingRestrictions.max_advance_booking_days, timezone);
+        if (date > maxBookingDate) {
+          return false;
+        }
+      }
+
+      // Check if we should restrict to schedule days only
+      if (bookingRestrictions.restrict_to_schedule_days) {
+        const dayOfWeek = getDayOfWeekInTimezone(date, timezone);
+        if (!validDaysOfWeek.includes(dayOfWeek)) {
+          return false;
+        }
+      }
+
+      // Check for cancelled exceptions
+      const isCancelled = scheduleExceptions.some(exception => 
+        exception.exception_date === dateString && exception.is_cancelled
+      );
       
-      // Check all validation rules
-      const isValidDate = isDateValid(currentDate, {
-        classStartDate,
-        classEndDate,
-        cancelledDates,
-        maxBookingDate,
-        allowFutureBookings,
-        isFirstDate: !foundNextAvailable,
-        timezone
+      if (isCancelled) {
+        return false;
+      }
+
+      // Check if date falls within any schedule's active period
+      const hasActiveSchedule = ageFilteredSchedules.some(schedule => {
+        const dayOfWeek = getDayOfWeekInTimezone(date, timezone);
+        
+        if (schedule.day_of_week !== dayOfWeek) {
+          return false;
+        }
+
+        // Check date range if specified
+        if (schedule.date_start) {
+          if (date < new Date(schedule.date_start)) {
+            return false;
+          }
+        }
+        
+        if (schedule.date_end) {
+          if (date > new Date(schedule.date_end)) {
+            return false;
+          }
+        }
+
+        return true;
       });
 
-      if (isValidDate) {
-        dates.push({
-          date: dateStr,
-          dayName: dayNames[schedule.day_of_week],
-          isNextAvailable: !foundNextAvailable
-        });
-        
-        if (!foundNextAvailable) {
-          foundNextAvailable = true;
-        }
+      return hasActiveSchedule;
+    };
+  }, [ageFilteredSchedules, scheduleExceptions, bookingRestrictions, validDaysOfWeek, timezone]);
 
-        // If future bookings are not allowed, only get the next available date
-        if (!allowFutureBookings && foundNextAvailable) {
-          break;
-        }
+  // Generate available dates for the next 60 days
+  const availableDates = useMemo(() => {
+    if (isLoading || ageFilteredSchedules.length === 0) {
+      return [];
+    }
+
+    const dates: Date[] = [];
+    const currentDate = getCurrentDateInTimezone(timezone);
+    const endDate = addDaysInTimezone(currentDate, 60, timezone);
+
+    let checkDate = new Date(currentDate);
+    while (checkDate <= endDate) {
+      if (isDateValid(checkDate)) {
+        dates.push(new Date(checkDate));
       }
-
-      // Move to next week
-      currentDate = addDaysInTimezone(currentDate, 7, timezone);
-      weeksChecked++;
+      checkDate = addDaysInTimezone(checkDate, 1, timezone);
     }
 
     return dates;
-  };
-
-  const isDateValid = (
-    date: Date,
-    options: {
-      classStartDate: Date | null;
-      classEndDate: Date | null;
-      cancelledDates: Set<string>;
-      maxBookingDate: Date;
-      allowFutureBookings: boolean;
-      isFirstDate: boolean;
-      timezone: string;
-    }
-  ): boolean => {
-    const dateStr = getDateStringInTimezone(date, options.timezone);
-    const today = getCurrentDateInTimezone(options.timezone);
-
-    // Check if date is in the past (but allow today)
-    if (date < today && !isSameDayInTimezone(date, today, options.timezone)) {
-      return false;
-    }
-
-    // Check if date is within class schedule range
-    if (options.classStartDate && date < options.classStartDate) {
-      return false;
-    }
-    
-    if (options.classEndDate && date > options.classEndDate) {
-      return false;
-    }
-
-    // Check if date is cancelled/override
-    if (options.cancelledDates.has(dateStr)) {
-      return false;
-    }
-
-    // For the first date (next available), always allow regardless of future booking settings
-    if (options.isFirstDate) {
-      return true;
-    }
-
-    // Check future booking restrictions
-    if (!options.allowFutureBookings) {
-      return false;
-    }
-
-    // Check if date is within max booking days ahead
-    if (date > options.maxBookingDate) {
-      return false;
-    }
-
-    return true;
-  };
-
-  const isSameDayInTimezone = (date1: Date, date2: Date, timezone: string): boolean => {
-    const date1Str = getDateStringInTimezone(date1, timezone);
-    const date2Str = getDateStringInTimezone(date2, timezone);
-    return date1Str === date2Str;
-  };
-
-  const getValidationMessage = (): string | null => {
-    if (error) return error;
-    
-    if (availableDates.length === 0 && !isLoading) {
-      if (!allowFutureBookings) {
-        return "No classes available at this time. Please check back later.";
-      } else {
-        return `No classes available in the next ${maxBookingDaysAhead} days. Please contact us directly or check back later.`;
-      }
-    }
-    
-    return null;
-  };
+  }, [ageFilteredSchedules, isDateValid, isLoading, timezone]);
 
   return {
     availableDates,
-    selectedDate,
-    setSelectedDate,
+    isDateValid,
     isLoading,
-    error,
-    allowFutureBookings,
-    maxBookingDaysAhead,
-    validationMessage: getValidationMessage(),
+    validDaysOfWeek,
+    ageFilteredSchedules,
+    bookingRestrictions,
     timezone
   };
 };

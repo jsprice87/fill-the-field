@@ -9,6 +9,7 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { generateCalendarUrls, downloadICSFile } from '@/utils/calendarUtils';
+import { formatDateInTimezone, DEFAULT_TIMEZONE } from '@/utils/timezoneUtils';
 
 interface BookingData {
   id: string;
@@ -46,6 +47,9 @@ const BookingConfirmation: React.FC = () => {
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [franchiseeInfo, setFranchiseeInfo] = useState<FranchiseeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Get timezone from settings or use default
+  const timezone = settings?.timezone || DEFAULT_TIMEZONE;
 
   useEffect(() => {
     if (!bookingId) {
@@ -163,7 +167,8 @@ const BookingConfirmation: React.FC = () => {
       description: `Soccer class for ${appointment.participant_name} (${appointment.participant_age} years old)${appointment.health_conditions ? `\nSpecial notes: ${appointment.health_conditions}` : ''}`,
       start: startTime,
       end: endTime,
-      location: `${booking?.location.name}, ${booking?.location.address}`
+      location: `${booking?.location.name}, ${booking?.location.address}`,
+      timezone: timezone
     };
 
     const urls = generateCalendarUrls(calendarEvent);
@@ -195,13 +200,9 @@ const BookingConfirmation: React.FC = () => {
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long',
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+    
+    // Use timezone-aware formatting
+    return formatDateInTimezone(dateStr, timezone, 'EEEE, MMMM d, yyyy');
   };
 
   if (isLoading) {
