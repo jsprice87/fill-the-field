@@ -541,22 +541,7 @@ const ClassBooking: React.FC = () => {
                   </div>
                 )}
 
-                {/* Enhanced Debug section for validation state */}
-                <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-                  <div className="font-semibold mb-2">Button Validation Debug:</div>
-                  <div>Can Confirm: {String(canConfirmBooking())}</div>
-                  <div>Participants: {flowData.participants?.length || 0}</div>
-                  <div>Parent Info Valid: {String(!!(flowData.parentGuardianInfo?.firstName?.trim() && flowData.parentGuardianInfo?.lastName?.trim() && flowData.parentGuardianInfo?.email?.trim() && flowData.parentGuardianInfo?.phone?.trim() && flowData.parentGuardianInfo?.zip?.trim()))}</div>
-                  <div>Waiver: {String(!!flowData.waiverAccepted)}</div>
-                  <div>Communication: {String(!!flowData.communicationPermission)}</div>
-                  <div>Parent Data: {JSON.stringify(flowData.parentGuardianInfo || {})}</div>
-                  <div className="mt-2 text-green-600">
-                    <div>✓ Participants: {(flowData.participants?.length || 0) > 0 ? 'PASS' : 'FAIL'}</div>
-                    <div>✓ Parent Info: {!!(flowData.parentGuardianInfo?.firstName?.trim() && flowData.parentGuardianInfo?.lastName?.trim() && flowData.parentGuardianInfo?.email?.trim() && flowData.parentGuardianInfo?.phone?.trim() && flowData.parentGuardianInfo?.zip?.trim()) ? 'PASS' : 'FAIL'}</div>
-                    <div>✓ Waiver: {!!flowData.waiverAccepted ? 'PASS' : 'FAIL'}</div>
-                    <div>✓ Communication: {!!flowData.communicationPermission ? 'PASS' : 'FAIL'}</div>
-                  </div>
-                </div>
+                
               </CardContent>
             </Card>
           </div>
