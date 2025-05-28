@@ -95,12 +95,14 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
   };
 
   const handleStatusChange = async (bookingId: string, leadId: string, newStatus: string) => {
+    console.log('Status change triggered:', { bookingId, leadId, newStatus });
     try {
       await updateStatusMutation.mutateAsync({
         bookingId,
         leadId,
         status: newStatus
       });
+      console.log('Status change completed successfully');
     } catch (error) {
       console.error('Error updating status:', error);
     }
@@ -175,7 +177,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
                   {getStatusBadge(booking.status, booking.selected_date)}
                   <Select
                     value={booking.status}
-                    onValueChange={(value) => handleStatusChange(booking.id, booking.lead_id, value)}
+                    onValueChange={(value) => {
+                      console.log('Select value changed:', { bookingId: booking.id, leadId: booking.lead_id, value });
+                      handleStatusChange(booking.id, booking.lead_id, value);
+                    }}
                     disabled={updateStatusMutation.isPending}
                   >
                     <SelectTrigger className="text-xs w-full min-w-[120px]">

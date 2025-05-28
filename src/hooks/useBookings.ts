@@ -84,6 +84,7 @@ export const useBookings = (franchiseeId?: string) => {
         created_at: appointment.created_at
       }));
 
+      console.log('Fetched bookings data:', transformedData);
       return transformedData;
     },
     enabled: !!franchiseeId,
@@ -99,43 +100,94 @@ export const useUpdateBookingStatus = () => {
       leadId: string; 
       status: string; 
     }) => {
-      console.log('Updating booking status:', { bookingId, leadId, status });
+      console.log('Starting status update mutation:', { bookingId, leadId, status });
       
       // Update the appointment status
-      const { error: appointmentError } = await supabase
+      const { data: appointmentData, error: appointmentError } = await supabase
         .from('appointments')
         .update({ status })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select();
 
       if (appointmentError) {
         console.error('Error updating appointment:', appointmentError);
         throw appointmentError;
       }
 
+      console.log('Appointment updated successfully:', appointmentData);
+
       // Update the lead status to match
-      const { error: leadError } = await supabase
+      const { data: leadData, error: leadError } = await supabase
         .from('leads')
         .update({ status })
-        .eq('id', leadId);
+        .eq('id', leadId)
+        .select();
 
       if (leadError) {
         console.error('Error updating lead:', leadError);
         throw leadError;
       }
 
+      console.log('Lead updated successfully:', leadData);
       console.log('Successfully updated both appointment and lead status');
-      return { bookingId, leadId, status };
+      return { bookingId, leadId, status, appointmentData, leadData };
     },
-    onSuccess: (data) => {
-      console.log('Mutation successful, invalidating queries...');
-      // Invalidate all related queries to refresh the data
+    onMutate: async ({ bookingId, leadId, status }) => {
+      console.log('Optimistic update starting for:', { bookingId, leadId, status });
+      
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['bookings'] });
+      await queryClient.cancelQueries({ queryKey: ['leads'] });
+      
+      // Snapshot the previous values
+      const previousBookings = queryClient.getQueryData(['bookings']);
+      const previousLeads = queryClient.getQueryData(['leads']);
+      
+      // Optimistically update bookings
+      queryClient.setQueryData(['bookings'], (old: any) => {
+        if (!old) return old;
+        return old.map((booking: any) => 
+          booking.id === bookingId ? { ...booking, status } : booking
+        );
+      });
+      
+      // Optimistically update leads
+      queryClient.setQueryData(['leads'], (old: any) => {
+        if (!old) return old;
+        return old.map((lead: any) => 
+          lead.id === leadId ? { ...lead, status } : lead
+        );
+      });
+      
+      console.log('Optimistic updates applied');
+      return { previousBookings, previousLeads };
+    },
+    onSuccess: (data, variables) => {
+      console.log('Mutation successful, invalidating and refetching queries...', data);
+      
+      // Force refetch all related queries
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
+      
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ['bookings'] });
+      queryClient.refetchQueries({ queryKey: ['leads'] });
+      queryClient.refetchQueries({ queryKey: ['lead-stats'] });
+      
       toast.success('Status updated successfully');
     },
-    onError: (error) => {
-      console.error('Error updating status:', error);
+    onError: (error, variables, context) => {
+      console.error('Mutation failed:', error);
+      
+      // Rollback optimistic updates
+      if (context?.previousBookings) {
+        queryClient.setQueryData(['bookings'], context.previousBookings);
+      }
+      if (context?.previousLeads) {
+        queryClient.setQueryData(['leads'], context.previousLeads);
+      }
+      
       toast.error('Failed to update status');
     }
   });
