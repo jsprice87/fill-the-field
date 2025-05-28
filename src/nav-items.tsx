@@ -1,4 +1,3 @@
-
 import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon } from "lucide-react";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
