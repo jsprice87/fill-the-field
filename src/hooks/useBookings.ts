@@ -99,13 +99,18 @@ export const useUpdateBookingStatus = () => {
       leadId: string; 
       status: string; 
     }) => {
+      console.log('Updating booking status:', { bookingId, leadId, status });
+      
       // Update the appointment status
       const { error: appointmentError } = await supabase
         .from('appointments')
         .update({ status })
         .eq('id', bookingId);
 
-      if (appointmentError) throw appointmentError;
+      if (appointmentError) {
+        console.error('Error updating appointment:', appointmentError);
+        throw appointmentError;
+      }
 
       // Update the lead status to match
       const { error: leadError } = await supabase
@@ -113,13 +118,20 @@ export const useUpdateBookingStatus = () => {
         .update({ status })
         .eq('id', leadId);
 
-      if (leadError) throw leadError;
+      if (leadError) {
+        console.error('Error updating lead:', leadError);
+        throw leadError;
+      }
 
+      console.log('Successfully updated both appointment and lead status');
       return { bookingId, leadId, status };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutation successful, invalidating queries...');
+      // Invalidate all related queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
       toast.success('Status updated successfully');
     },
     onError: (error) => {
