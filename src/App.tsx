@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -25,6 +26,7 @@ import ClassesList from "./pages/portal/ClassesList";
 import AddClasses from "./pages/portal/AddClasses";
 import EditClass from "./pages/portal/EditClass";
 import PortalLeads from "./pages/portal/Leads";
+import PortalBookings from "./pages/portal/Bookings";
 import PortalSettings from "./pages/portal/Settings";
 import UserProfile from "./pages/portal/Profile";
 

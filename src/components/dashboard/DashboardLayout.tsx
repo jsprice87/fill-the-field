@@ -126,6 +126,12 @@ const DashboardLayout = () => {
                         Leads
                       </Button>
                     </Link>
+                    <Link to={`${navPrefix}/portal/bookings`}>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <BarChart3 className="mr-2 h-5 w-5" />
+                        Bookings
+                      </Button>
+                    </Link>
                     <Link to={`${navPrefix}/free-trial`} target="_blank">
                       <Button variant="ghost" className="w-full justify-start">
                         <Globe className="mr-2 h-5 w-5" />
