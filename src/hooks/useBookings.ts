@@ -38,14 +38,14 @@ export const useBookings = (franchiseeId?: string) => {
           participant_name,
           participant_age,
           participant_birth_date,
-          status,
           created_at,
           bookings!inner(
             lead_id,
             leads!inner(
               first_name,
               last_name,
-              franchisee_id
+              franchisee_id,
+              status
             )
           ),
           class_schedules!inner(
@@ -69,14 +69,14 @@ export const useBookings = (franchiseeId?: string) => {
       const transformedData = (data || []).map(appointment => ({
         id: appointment.id,
         lead_id: appointment.bookings.lead_id,
-        class_schedule_id: appointment.booking_id, // This might need adjustment based on your schema
+        class_schedule_id: appointment.booking_id,
         selected_date: appointment.selected_date,
         class_time: appointment.class_time,
         class_name: appointment.class_name,
         participant_name: appointment.participant_name,
         participant_age: appointment.participant_age,
         participant_birth_date: appointment.participant_birth_date,
-        status: appointment.status,
+        status: appointment.bookings?.leads?.status || 'new',
         location_id: appointment.class_schedules?.classes?.location_id,
         location_name: appointment.class_schedules?.classes?.locations?.name,
         lead_first_name: appointment.bookings?.leads?.first_name,
@@ -102,21 +102,7 @@ export const useUpdateBookingStatus = () => {
     }) => {
       console.log('Starting status update mutation:', { bookingId, leadId, status });
       
-      // Update the appointment status
-      const { data: appointmentData, error: appointmentError } = await supabase
-        .from('appointments')
-        .update({ status })
-        .eq('id', bookingId)
-        .select();
-
-      if (appointmentError) {
-        console.error('Error updating appointment:', appointmentError);
-        throw appointmentError;
-      }
-
-      console.log('Appointment updated successfully:', appointmentData);
-
-      // Update the lead status to match
+      // Update the lead status directly since we removed status from appointments
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
         .update({ status })
@@ -129,8 +115,7 @@ export const useUpdateBookingStatus = () => {
       }
 
       console.log('Lead updated successfully:', leadData);
-      console.log('Successfully updated both appointment and lead status');
-      return { bookingId, leadId, status, appointmentData, leadData };
+      return { bookingId, leadId, status, leadData };
     },
     onMutate: async ({ bookingId, leadId, status }) => {
       console.log('Optimistic update starting for:', { bookingId, leadId, status });

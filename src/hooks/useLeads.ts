@@ -63,7 +63,9 @@ const fetchLeadStats = async (franchiseeId: string) => {
   
   // Use simple filter operations to avoid deep type inference
   const newLeads = leadsArray.filter(lead => lead.status === 'new').length;
-  const convertedLeads = leadsArray.filter(lead => lead.status === 'converted').length;
+  const convertedLeads = leadsArray.filter(lead => 
+    ['booked_upcoming', 'booked_complete', 'closed_won'].includes(lead.status)
+  ).length;
   const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
   // Calculate monthly growth

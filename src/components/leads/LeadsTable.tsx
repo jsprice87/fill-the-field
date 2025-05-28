@@ -14,15 +14,29 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
   const getStatusBadge = (status: string) => {
     const variants = {
       'new': 'bg-blue-100 text-blue-800',
-      'contacted': 'bg-yellow-100 text-yellow-800',
-      'interested': 'bg-green-100 text-green-800',
-      'converted': 'bg-purple-100 text-purple-800',
-      'not_interested': 'bg-gray-100 text-gray-800'
+      'booked_upcoming': 'bg-green-100 text-green-800',
+      'booked_complete': 'bg-purple-100 text-purple-800',
+      'no_show': 'bg-red-100 text-red-800',
+      'follow_up': 'bg-yellow-100 text-yellow-800',
+      'canceled': 'bg-gray-100 text-gray-800',
+      'closed_lost': 'bg-red-100 text-red-800',
+      'closed_won': 'bg-emerald-100 text-emerald-800'
+    };
+
+    const labels = {
+      'new': 'NEW',
+      'booked_upcoming': 'BOOKED UPCOMING',
+      'booked_complete': 'BOOKED COMPLETE',
+      'no_show': 'NO SHOW',
+      'follow_up': 'FOLLOW UP',
+      'canceled': 'CANCELED',
+      'closed_lost': 'CLOSED LOST',
+      'closed_won': 'CLOSED WON'
     };
     
     return (
       <Badge className={variants[status as keyof typeof variants] || variants.new}>
-        {status.replace('_', ' ').toUpperCase()}
+        {labels[status as keyof typeof labels] || status.replace('_', ' ').toUpperCase()}
       </Badge>
     );
   };

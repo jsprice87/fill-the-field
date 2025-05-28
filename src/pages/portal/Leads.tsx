@@ -78,7 +78,7 @@ const PortalLeads: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {leads.filter(lead => ['new', 'contacted'].includes(lead.status)).length}
+              {leads.filter(lead => ['new', 'follow_up'].includes(lead.status)).length}
             </div>
             <p className="text-xs text-muted-foreground">
               Action required

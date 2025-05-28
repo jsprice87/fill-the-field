@@ -37,28 +37,30 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
     const isPast = date < today;
     
     // Auto-determine status for past dates
-    const displayStatus = (status === 'confirmed' && isPast) ? 'needs_status' : status;
+    const displayStatus = (status === 'booked_upcoming' && isPast) ? 'needs_status' : status;
     
     const variants = {
-      'confirmed': 'bg-green-100 text-green-800',
+      'booked_upcoming': 'bg-green-100 text-green-800',
+      'booked_complete': 'bg-purple-100 text-purple-800',
       'needs_status': 'bg-orange-100 text-orange-800',
-      'rescheduled': 'bg-blue-100 text-blue-800',
-      'canceled': 'bg-red-100 text-red-800',
+      'no_show': 'bg-red-100 text-red-800',
       'follow_up': 'bg-yellow-100 text-yellow-800',
-      'no_show': 'bg-gray-100 text-gray-800'
+      'canceled': 'bg-gray-100 text-gray-800',
+      'new': 'bg-blue-100 text-blue-800'
     };
     
     const labels = {
-      'confirmed': 'Upcoming',
+      'booked_upcoming': 'Upcoming',
+      'booked_complete': 'Complete',
       'needs_status': 'Needs Status',
-      'rescheduled': 'Rescheduled',
-      'canceled': 'Canceled',
+      'no_show': 'No-Show',
       'follow_up': 'Follow-up',
-      'no_show': 'No-Show'
+      'canceled': 'Canceled',
+      'new': 'New'
     };
     
     return (
-      <Badge className={variants[displayStatus as keyof typeof variants] || variants.confirmed}>
+      <Badge className={variants[displayStatus as keyof typeof variants] || variants.booked_upcoming}>
         {labels[displayStatus as keyof typeof labels] || 'Upcoming'}
       </Badge>
     );
@@ -187,12 +189,14 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="confirmed">Upcoming</SelectItem>
-                      <SelectItem value="needs_status">Needs Status</SelectItem>
-                      <SelectItem value="rescheduled">Rescheduled</SelectItem>
-                      <SelectItem value="canceled">Canceled</SelectItem>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="booked_upcoming">Booked Upcoming</SelectItem>
+                      <SelectItem value="booked_complete">Booked Complete</SelectItem>
+                      <SelectItem value="no_show">No Show</SelectItem>
                       <SelectItem value="follow_up">Follow-up</SelectItem>
-                      <SelectItem value="no_show">No-Show</SelectItem>
+                      <SelectItem value="canceled">Canceled</SelectItem>
+                      <SelectItem value="closed_lost">Closed Lost</SelectItem>
+                      <SelectItem value="closed_won">Closed Won</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
