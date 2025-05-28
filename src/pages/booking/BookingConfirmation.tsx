@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { generateCalendarUrls, downloadICSFile } from '@/utils/calendarUtils';
 import { formatDateInTimezone, DEFAULT_TIMEZONE } from '@/utils/timezoneUtils';
+import { parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 interface BookingData {
   id: string;
