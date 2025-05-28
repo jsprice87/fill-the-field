@@ -1,6 +1,6 @@
 
 import { ReactNode, useEffect, useState } from "react";
-import { Link, useNavigate, useParams, Outlet, useLocation } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   Sidebar,
@@ -23,30 +23,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
 
-const DashboardLayout = () => {
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
-  const { franchiseeId } = useParams();
+  const { franchiseeSlug } = useParams();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
 
   // Get the current slug for navigation
   useEffect(() => {
-    if (!isAdminRoute && franchiseeId) {
+    if (!isAdminRoute && franchiseeSlug) {
       // If it's not already a slug, try to get the slug
-      if (!franchiseeId.includes('-')) {
-        getSlugFromFranchiseeId(franchiseeId).then(slug => {
+      if (!franchiseeSlug.includes('-')) {
+        getSlugFromFranchiseeId(franchiseeSlug).then(slug => {
           if (slug) {
             setCurrentSlug(slug);
           } else {
-            setCurrentSlug(franchiseeId);
+            setCurrentSlug(franchiseeSlug);
           }
         });
       } else {
-        setCurrentSlug(franchiseeId);
+        setCurrentSlug(franchiseeSlug);
       }
     }
-  }, [franchiseeId, isAdminRoute]);
+  }, [franchiseeSlug, isAdminRoute]);
 
   const handleSignOut = async () => {
     try {
@@ -59,7 +63,7 @@ const DashboardLayout = () => {
   };
 
   // Use the slug or ID for navigation
-  const navPrefix = isAdminRoute ? "" : `/${currentSlug || franchiseeId}`;
+  const navPrefix = isAdminRoute ? "" : `/${currentSlug || franchiseeSlug}`;
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -192,7 +196,7 @@ const DashboardLayout = () => {
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6">
-            <Outlet />
+            {children}
           </main>
         </div>
       </div>
