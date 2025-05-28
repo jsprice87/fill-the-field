@@ -423,14 +423,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({
           </div>
         )}
 
-        {/* Debug section for form data */}
-        <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-          <div className="font-semibold mb-2">ParentGuardianForm Debug:</div>
-          <div>Form Data: {JSON.stringify(formData)}</div>
-          <div>Flow Parent Info: {JSON.stringify(flowData.parentGuardianInfo || 'Not set')}</div>
-          <div>Waiver Accepted: {String(flowData.waiverAccepted || false)}</div>
-          <div>Communication Permission: {String(flowData.communicationPermission || false)}</div>
-        </div>
+        
       </CardContent>
     </Card>
   );
