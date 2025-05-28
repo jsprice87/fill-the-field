@@ -80,7 +80,7 @@ const PortalBookings: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredBookings.filter(booking => booking.status === 'confirmed').length}
+              {filteredBookings.filter(booking => booking.status === 'booked_upcoming').length}
             </div>
             <p className="text-xs text-muted-foreground">
               Ready to attend
@@ -98,7 +98,7 @@ const PortalBookings: React.FC = () => {
               {filteredBookings.filter(booking => {
                 const today = new Date();
                 const bookingDate = new Date(booking.selected_date || '');
-                return bookingDate < today && booking.status === 'confirmed';
+                return bookingDate < today && booking.status === 'booked_upcoming';
               }).length}
             </div>
             <p className="text-xs text-muted-foreground">

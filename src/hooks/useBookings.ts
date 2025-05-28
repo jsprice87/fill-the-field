@@ -2,6 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
+
+type LeadStatus = Database['public']['Enums']['lead_status'];
 
 export interface Booking {
   id: string;
@@ -98,7 +101,7 @@ export const useUpdateBookingStatus = () => {
     mutationFn: async ({ bookingId, leadId, status }: { 
       bookingId: string; 
       leadId: string; 
-      status: string; 
+      status: LeadStatus; 
     }) => {
       console.log('Starting status update mutation:', { bookingId, leadId, status });
       

@@ -233,7 +233,7 @@ const ClassBooking: React.FC = () => {
       // Update lead status to converted
       await supabase
         .from('leads')
-        .update({ status: 'converted' })
+        .update({ status: 'closed_won' })
         .eq('id', leadId);
 
       // Navigate to confirmation page with booking ID
