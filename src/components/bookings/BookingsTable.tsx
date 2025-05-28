@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, MapPin, User, Baby } from 'lucide-react';
 import { useUpdateBookingStatus } from '@/hooks/useBookings';
 
@@ -90,8 +90,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      day: 'numeric'
     });
   };
 
@@ -109,105 +108,94 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
 
   if (bookings.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="font-agrandir text-xl text-brand-navy mb-2">No Bookings Yet</h3>
-          <p className="font-poppins text-gray-600">
-            When people book classes through your landing page, they'll appear here.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="text-center p-8">
+        <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="font-agrandir text-xl text-brand-navy mb-2">No Bookings Yet</h3>
+        <p className="font-poppins text-gray-600">
+          When people book classes through your landing page, they'll appear here.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {bookings.map((booking) => (
-        <Card key={booking.id} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 space-y-3">
-                <div className="flex items-center gap-3">
-                  <h3 className="font-agrandir text-lg text-brand-navy">
-                    {booking.lead_first_name} {booking.lead_last_name}
-                  </h3>
+    <div className="border rounded-lg">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="font-agrandir">Lead</TableHead>
+            <TableHead className="font-agrandir">Participant</TableHead>
+            <TableHead className="font-agrandir hidden md:table-cell">Location</TableHead>
+            <TableHead className="font-agrandir hidden lg:table-cell">Class</TableHead>
+            <TableHead className="font-agrandir">Date/Time</TableHead>
+            <TableHead className="font-agrandir">Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {bookings.map((booking) => (
+            <TableRow key={booking.id} className="hover:bg-muted/50">
+              <TableCell>
+                <div className="font-agrandir font-medium text-brand-navy">
+                  {booking.lead_first_name} {booking.lead_last_name}
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="space-y-1">
+                  <div className="font-medium">{booking.participant_name}</div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Baby className="h-3 w-3 mr-1" />
+                    {formatAge(booking.participant_birth_date, booking.participant_age)}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell">
+                <div className="flex items-center text-gray-600">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  <span className="text-sm">{booking.location_name}</span>
+                </div>
+              </TableCell>
+              <TableCell className="hidden lg:table-cell">
+                <div className="text-sm">{booking.class_name}</div>
+              </TableCell>
+              <TableCell>
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">{formatDate(booking.selected_date)}</div>
+                  <div className="text-xs text-gray-600">{booking.class_time}</div>
+                  <div className="md:hidden text-xs text-gray-600 mt-1">
+                    <div className="flex items-center">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {booking.location_name}
+                    </div>
+                    <div className="lg:hidden mt-1">{booking.class_name}</div>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="space-y-2">
                   {getStatusBadge(booking.status, booking.selected_date)}
+                  <Select
+                    value={booking.status}
+                    onValueChange={(value) => handleStatusChange(booking.id, booking.lead_id, value)}
+                    disabled={updateStatusMutation.isPending}
+                  >
+                    <SelectTrigger className="text-xs w-full min-w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="confirmed">Upcoming</SelectItem>
+                      <SelectItem value="needs_status">Needs Status</SelectItem>
+                      <SelectItem value="rescheduled">Rescheduled</SelectItem>
+                      <SelectItem value="canceled">Canceled</SelectItem>
+                      <SelectItem value="follow_up">Follow-up</SelectItem>
+                      <SelectItem value="no_show">No-Show</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                  <div className="flex items-center text-gray-600">
-                    <User className="h-4 w-4 mr-2 text-brand-blue" />
-                    <div>
-                      <span className="font-poppins font-medium">Participant:</span>
-                      <br />
-                      <span className="font-poppins">{booking.participant_name}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <Baby className="h-4 w-4 mr-2 text-brand-blue" />
-                    <div>
-                      <span className="font-poppins font-medium">Age:</span>
-                      <br />
-                      <span className="font-poppins">
-                        {formatAge(booking.participant_birth_date, booking.participant_age)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="h-4 w-4 mr-2 text-brand-blue" />
-                    <div>
-                      <span className="font-poppins font-medium">Location:</span>
-                      <br />
-                      <span className="font-poppins">{booking.location_name}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <Calendar className="h-4 w-4 mr-2 text-brand-blue" />
-                    <div>
-                      <span className="font-poppins font-medium">Class:</span>
-                      <br />
-                      <span className="font-poppins">{booking.class_name}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span className="font-poppins">
-                    <strong>Date:</strong> {formatDate(booking.selected_date)}
-                  </span>
-                  <span className="font-poppins">
-                    <strong>Time:</strong> {booking.class_time}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="ml-4 min-w-[140px]">
-                <Select
-                  value={booking.status}
-                  onValueChange={(value) => handleStatusChange(booking.id, booking.lead_id, value)}
-                  disabled={updateStatusMutation.isPending}
-                >
-                  <SelectTrigger className="text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="confirmed">Upcoming</SelectItem>
-                    <SelectItem value="needs_status">Needs Status</SelectItem>
-                    <SelectItem value="rescheduled">Rescheduled</SelectItem>
-                    <SelectItem value="canceled">Canceled</SelectItem>
-                    <SelectItem value="follow_up">Follow-up</SelectItem>
-                    <SelectItem value="no_show">No-Show</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };
