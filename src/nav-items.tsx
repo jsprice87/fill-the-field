@@ -1,4 +1,3 @@
-
 import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon } from "lucide-react";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
@@ -35,6 +34,7 @@ import SpanishInfo from "./pages/booking/SpanishInfo";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SlugResolver from "./components/auth/SlugResolver";
+import DashboardLayout from "./components/dashboard/DashboardLayout";
 
 export const navItems = [
   {
@@ -230,67 +230,67 @@ export const navItems = [
     title: "Franchisee Portal Dashboard",
     to: "/:franchiseeSlug/portal/dashboard",
     icon: <HomeIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><PortalDashboard /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalDashboard /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Portal Leads",
     to: "/:franchiseeSlug/portal/leads",
     icon: <UsersIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><PortalLeads /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalLeads /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Lead Detail",
     to: "/:franchiseeSlug/portal/leads/:leadId",
     icon: <UserIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><LeadDetail /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><LeadDetail /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Portal Bookings",
     to: "/:franchiseeSlug/portal/bookings",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><PortalBookings /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalBookings /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Portal Locations",
     to: "/:franchiseeSlug/portal/locations",
     icon: <MapPinIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><PortalLocations /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalLocations /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Portal Classes",
     to: "/:franchiseeSlug/portal/classes",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><PortalClasses /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalClasses /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Classes List",
     to: "/:franchiseeSlug/portal/classes/list",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><ClassesList /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><ClassesList /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Add Classes",
     to: "/:franchiseeSlug/portal/classes/add",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><AddClasses /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><AddClasses /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Edit Class",
     to: "/:franchiseeSlug/portal/classes/edit/:classId",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><EditClass /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><EditClass /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Portal Profile",
     to: "/:franchiseeSlug/portal/profile",
     icon: <UserIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><PortalProfile /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalProfile /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Portal Settings",
     to: "/:franchiseeSlug/portal/settings",
     icon: <SettingsIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><PortalSettings /></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalSettings /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Landing Page",
