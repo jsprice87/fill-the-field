@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { navItems } from "./nav-items";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SlugResolver from "./components/auth/SlugResolver";
+import LeadDetail from "./pages/portal/LeadDetail";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +25,9 @@ const App = () => (
             path="/portal/leads/:leadId"
             element={
               <ProtectedRoute>
-                <SlugResolver />
+                <SlugResolver>
+                  <LeadDetail />
+                </SlugResolver>
               </ProtectedRoute>
             }
           />
