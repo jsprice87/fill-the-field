@@ -1,31 +1,19 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Phone, Mail, MapPin, Calendar, User } from 'lucide-react';
-import { Lead } from '@/hooks/useLeads';
+import { useNavigate } from 'react-router-dom';
+import { Lead, useUpdateLeadStatus } from '@/hooks/useLeads';
+import StatusDropdown from '@/components/common/StatusDropdown';
 
 interface LeadsTableProps {
   leads: Lead[];
 }
 
 const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      'new': 'bg-blue-100 text-blue-800',
-      'contacted': 'bg-yellow-100 text-yellow-800',
-      'interested': 'bg-green-100 text-green-800',
-      'converted': 'bg-purple-100 text-purple-800',
-      'not_interested': 'bg-gray-100 text-gray-800'
-    };
-    
-    return (
-      <Badge className={variants[status as keyof typeof variants] || variants.new}>
-        {status.replace('_', ' ').toUpperCase()}
-      </Badge>
-    );
-  };
+  const navigate = useNavigate();
+  const updateStatusMutation = useUpdateLeadStatus();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -33,6 +21,21 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
       day: 'numeric',
       year: 'numeric'
     });
+  };
+
+  const handleStatusChange = async (leadId: string, newStatus: any) => {
+    try {
+      await updateStatusMutation.mutateAsync({
+        leadId,
+        status: newStatus
+      });
+    } catch (error) {
+      console.error('Error updating lead status:', error);
+    }
+  };
+
+  const handleViewLead = (leadId: string) => {
+    navigate(`/portal/leads/${leadId}`);
   };
 
   if (leads.length === 0) {
@@ -109,7 +112,12 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  {getStatusBadge(lead.status)}
+                  <StatusDropdown
+                    status={lead.status}
+                    onStatusChange={(status) => handleStatusChange(lead.id, status)}
+                    disabled={updateStatusMutation.isPending}
+                    showBadge={true}
+                  />
                   <div className="md:hidden text-xs text-gray-500">
                     from {lead.source?.replace('_', ' ') || 'unknown'}
                   </div>
@@ -129,7 +137,11 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
                   <Button size="sm" variant="outline" className="text-xs">
                     Call
                   </Button>
-                  <Button size="sm" className="bg-brand-red hover:bg-brand-red/90 text-white text-xs">
+                  <Button 
+                    size="sm" 
+                    className="bg-brand-red hover:bg-brand-red/90 text-white text-xs"
+                    onClick={() => handleViewLead(lead.id)}
+                  >
                     View
                   </Button>
                 </div>

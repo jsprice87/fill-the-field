@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, MapPin, User, Baby } from 'lucide-react';
-import { useUpdateBookingStatus } from '@/hooks/useBookings';
+import { Calendar, MapPin, Baby } from 'lucide-react';
+import { useUpdateLeadStatus } from '@/hooks/useLeads';
+import StatusDropdown from '@/components/common/StatusDropdown';
 
 interface Booking {
   id: string;
@@ -29,40 +28,7 @@ interface BookingsTableProps {
 }
 
 const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
-  const updateStatusMutation = useUpdateBookingStatus();
-
-  const getStatusBadge = (status: string, bookingDate: string) => {
-    const today = new Date();
-    const date = new Date(bookingDate);
-    const isPast = date < today;
-    
-    // Auto-determine status for past dates
-    const displayStatus = (status === 'confirmed' && isPast) ? 'needs_status' : status;
-    
-    const variants = {
-      'confirmed': 'bg-green-100 text-green-800',
-      'needs_status': 'bg-orange-100 text-orange-800',
-      'rescheduled': 'bg-blue-100 text-blue-800',
-      'canceled': 'bg-red-100 text-red-800',
-      'follow_up': 'bg-yellow-100 text-yellow-800',
-      'no_show': 'bg-gray-100 text-gray-800'
-    };
-    
-    const labels = {
-      'confirmed': 'Upcoming',
-      'needs_status': 'Needs Status',
-      'rescheduled': 'Rescheduled',
-      'canceled': 'Canceled',
-      'follow_up': 'Follow-up',
-      'no_show': 'No-Show'
-    };
-    
-    return (
-      <Badge className={variants[displayStatus as keyof typeof variants] || variants.confirmed}>
-        {labels[displayStatus as keyof typeof labels] || 'Upcoming'}
-      </Badge>
-    );
-  };
+  const updateStatusMutation = useUpdateLeadStatus();
 
   const formatAge = (birthDateString: string, ageNumber: number) => {
     if (birthDateString) {
@@ -94,11 +60,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
     });
   };
 
-  const handleStatusChange = async (bookingId: string, leadId: string, newStatus: string) => {
-    console.log('Status change triggered:', { bookingId, leadId, newStatus });
+  const handleStatusChange = async (leadId: string, newStatus: any) => {
+    console.log('Status change triggered:', { leadId, newStatus });
     try {
       await updateStatusMutation.mutateAsync({
-        bookingId,
         leadId,
         status: newStatus
       });
@@ -173,29 +138,12 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
                 </div>
               </TableCell>
               <TableCell>
-                <div className="space-y-2">
-                  {getStatusBadge(booking.status, booking.selected_date)}
-                  <Select
-                    value={booking.status}
-                    onValueChange={(value) => {
-                      console.log('Select value changed:', { bookingId: booking.id, leadId: booking.lead_id, value });
-                      handleStatusChange(booking.id, booking.lead_id, value);
-                    }}
-                    disabled={updateStatusMutation.isPending}
-                  >
-                    <SelectTrigger className="text-xs w-full min-w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="confirmed">Upcoming</SelectItem>
-                      <SelectItem value="needs_status">Needs Status</SelectItem>
-                      <SelectItem value="rescheduled">Rescheduled</SelectItem>
-                      <SelectItem value="canceled">Canceled</SelectItem>
-                      <SelectItem value="follow_up">Follow-up</SelectItem>
-                      <SelectItem value="no_show">No-Show</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <StatusDropdown
+                  status={booking.status as any}
+                  onStatusChange={(status) => handleStatusChange(booking.lead_id, status)}
+                  disabled={updateStatusMutation.isPending}
+                  showBadge={true}
+                />
               </TableCell>
             </TableRow>
           ))}
