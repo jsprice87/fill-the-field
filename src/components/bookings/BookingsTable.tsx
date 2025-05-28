@@ -5,6 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, MapPin, User, Baby } from 'lucide-react';
 import { useUpdateBookingStatus } from '@/hooks/useBookings';
+import type { Database } from '@/integrations/supabase/types';
+
+type LeadStatus = Database['public']['Enums']['lead_status'];
 
 interface Booking {
   id: string;
@@ -96,7 +99,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
     });
   };
 
-  const handleStatusChange = async (bookingId: string, leadId: string, newStatus: string) => {
+  const handleStatusChange = async (bookingId: string, leadId: string, newStatus: LeadStatus) => {
     console.log('Status change triggered:', { bookingId, leadId, newStatus });
     try {
       await updateStatusMutation.mutateAsync({
@@ -181,7 +184,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
                     value={booking.status}
                     onValueChange={(value) => {
                       console.log('Select value changed:', { bookingId: booking.id, leadId: booking.lead_id, value });
-                      handleStatusChange(booking.id, booking.lead_id, value);
+                      handleStatusChange(booking.id, booking.lead_id, value as LeadStatus);
                     }}
                     disabled={updateStatusMutation.isPending}
                   >
