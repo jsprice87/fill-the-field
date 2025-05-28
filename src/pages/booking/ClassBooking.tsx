@@ -12,17 +12,23 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ClassSchedule {
   id: string;
-  class_name: string;
-  class_description: string;
-  class_time: string;
-  location_id: string;
-  price: number;
-  age_range: string;
-  spots_available: number;
+  class_id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  date_start?: string;
+  date_end?: string;
+  is_active: boolean;
+  current_bookings: number;
   created_at: string;
-  classes: {
+  updated_at: string;
+  classes?: {
+    name: string;
+    description?: string;
     location_id: string;
-  } | null;
+    min_age?: number;
+    max_age?: number;
+  };
 }
 
 const ClassBooking = () => {
@@ -77,9 +83,18 @@ const ClassBooking = () => {
         try {
           const { data, error } = await supabase
             .from('class_schedules')
-            .select('*')
-            .eq('franchisee_id', franchiseeData.id)
-            .eq('selected_date', formattedDate);
+            .select(`
+              *,
+              classes (
+                name,
+                description,
+                location_id,
+                min_age,
+                max_age
+              )
+            `)
+            .eq('classes.location_id', franchiseeData.id)
+            .eq('is_active', true);
 
           if (error) {
             console.error('Error fetching classes:', error);
@@ -119,6 +134,21 @@ const ClassBooking = () => {
 
     try {
       // Create lead with proper status
+      const bookingSessionData = {
+        selected_class: {
+          id: selectedClass.id,
+          name: selectedClass.classes?.name || '',
+          start_time: selectedClass.start_time,
+          end_time: selectedClass.end_time
+        },
+        selected_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+        participant_info: {
+          name: formData.participantName,
+          age: formData.participantAge,
+          birth_date: formData.participantBirthDate
+        }
+      };
+
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
         .insert({
@@ -128,18 +158,10 @@ const ClassBooking = () => {
           email: formData.parentEmail,
           phone: formData.parentPhone,
           zip: formData.parentZip,
-          status: 'booked_upcoming', // Use the correct enum value
+          status: 'booked_upcoming',
           source: 'landing_page',
-          selected_location_id: selectedClass.location_id,
-          booking_session_data: {
-            selected_class: selectedClass,
-            selected_date: selectedDate,
-            participant_info: {
-              name: formData.participantName,
-              age: formData.participantAge,
-              birth_date: formData.participantBirthDate
-            }
-          }
+          selected_location_id: selectedClass.classes?.location_id,
+          booking_session_data: bookingSessionData
         })
         .select()
         .single();
@@ -155,12 +177,13 @@ const ClassBooking = () => {
         .from('appointments')
         .insert({
           booking_id: leadData.id,
-          selected_date: format(selectedDate, 'yyyy-MM-dd'),
-          class_time: selectedClass.class_time,
-          class_name: selectedClass.class_name,
+          selected_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null,
+          class_time: `${selectedClass.start_time} - ${selectedClass.end_time}`,
+          class_name: selectedClass.classes?.name || '',
           participant_name: formData.participantName,
-          participant_age: formData.participantAge,
-          participant_birth_date: formData.participantBirthDate
+          participant_age: parseInt(formData.participantAge),
+          participant_birth_date: formData.participantBirthDate || null,
+          class_schedule_id: selectedClass.id
         })
         .select()
         .single();
@@ -200,7 +223,7 @@ const ClassBooking = () => {
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 placeholderText="Select a date"
-                className="w-full rounded-md border border-gray-200 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="w-full"
               />
             </div>
             <div>
@@ -220,7 +243,7 @@ const ClassBooking = () => {
                 <option value="">Select a class</option>
                 {classes.map(cls => (
                   <option key={cls.id} value={cls.id}>
-                    {cls.class_name} - {cls.class_time}
+                    {cls.classes?.name || 'Class'} - {cls.start_time}
                   </option>
                 ))}
               </select>
