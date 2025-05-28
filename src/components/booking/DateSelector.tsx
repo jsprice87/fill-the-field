@@ -4,9 +4,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useEnhancedDateSelection } from '@/hooks/useEnhancedDateSelection';
+import { useDateSelection } from '@/hooks/useDateSelection';
 import { formatDateInTimezone } from '@/utils/timezoneUtils';
 import { parseISO } from 'date-fns';
+import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
 
 interface DateSelectorProps {
   classScheduleId: string;
@@ -19,15 +20,16 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   onDateSelect,
   selectedDate: externalSelectedDate
 }) => {
+  const { data: settings } = useFranchiseeSettings();
+  const timezone = settings?.timezone || 'America/New_York';
+  
   const { 
     availableDates, 
     selectedDate, 
     setSelectedDate, 
     isLoading,
-    allowFutureBookings,
-    validationMessage,
-    timezone
-  } = useEnhancedDateSelection(classScheduleId);
+    allowFutureBookings
+  } = useDateSelection(classScheduleId);
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
@@ -72,11 +74,11 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         <h4 className="font-poppins font-medium text-brand-navy">Select Class Date</h4>
       </div>
 
-      {validationMessage ? (
+      {availableDates.length === 0 ? (
         <Alert className="border-orange-400 bg-orange-50">
           <Info className="h-4 w-4 text-orange-600" />
           <AlertDescription className="text-orange-800 font-poppins text-sm">
-            {validationMessage}
+            No available dates found for this class.
           </AlertDescription>
         </Alert>
       ) : (
