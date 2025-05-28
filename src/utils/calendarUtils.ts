@@ -1,5 +1,6 @@
 
-import { formatInTimeZone } from 'date-fns-tz';
+import { format } from 'date-fns';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import { DEFAULT_TIMEZONE } from './timezoneUtils';
 
 interface CalendarEvent {
@@ -14,9 +15,13 @@ interface CalendarEvent {
 export const generateCalendarUrls = (event: CalendarEvent) => {
   const timezone = event.timezone || DEFAULT_TIMEZONE;
   
-  // Format times in the specified timezone
-  const startTime = formatInTimeZone(event.start, timezone, "yyyyMMdd'T'HHmmss");
-  const endTime = formatInTimeZone(event.end, timezone, "yyyyMMdd'T'HHmmss");
+  // Convert to the target timezone and format for calendar URLs
+  const startInTz = toZonedTime(event.start, timezone);
+  const endInTz = toZonedTime(event.end, timezone);
+  
+  // Format for calendar URLs (no timezone suffix for cross-platform compatibility)
+  const startTime = format(startInTz, "yyyyMMdd'T'HHmmss");
+  const endTime = format(endInTz, "yyyyMMdd'T'HHmmss");
   
   const encodedTitle = encodeURIComponent(event.title);
   const encodedDescription = encodeURIComponent(event.description);
@@ -31,17 +36,24 @@ export const generateCalendarUrls = (event: CalendarEvent) => {
 
 const generateICSFile = (event: CalendarEvent) => {
   const timezone = event.timezone || DEFAULT_TIMEZONE;
-  const startTime = formatInTimeZone(event.start, timezone, "yyyyMMdd'T'HHmmss");
-  const endTime = formatInTimeZone(event.end, timezone, "yyyyMMdd'T'HHmmss");
-  const now = formatInTimeZone(new Date(), timezone, "yyyyMMdd'T'HHmmss");
+  
+  // Convert to the target timezone
+  const startInTz = toZonedTime(event.start, timezone);
+  const endInTz = toZonedTime(event.end, timezone);
+  const nowInTz = toZonedTime(new Date(), timezone);
+  
+  // Format for ICS file
+  const startTime = format(startInTz, "yyyyMMdd'T'HHmmss");
+  const endTime = format(endInTz, "yyyyMMdd'T'HHmmss");
+  const now = format(nowInTz, "yyyyMMdd'T'HHmmss");
 
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Soccer Stars//EN',
-    `BEGIN:VTIMEZONE`,
+    'BEGIN:VTIMEZONE',
     `TZID:${timezone}`,
-    `END:VTIMEZONE`,
+    'END:VTIMEZONE',
     'BEGIN:VEVENT',
     `UID:${now}@soccerstars.com`,
     `DTSTAMP:${now}`,

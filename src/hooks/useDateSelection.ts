@@ -2,6 +2,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
+import { 
+  getCurrentDateInTimezone, 
+  addDaysInTimezone, 
+  isSameDayInTimezone,
+  getDayOfWeekInTimezone,
+  getDateStringInTimezone,
+  DEFAULT_TIMEZONE
+} from '@/utils/timezoneUtils';
+import { parseISO } from 'date-fns';
 
 export interface AvailableDate {
   date: string;
@@ -11,6 +20,8 @@ export interface AvailableDate {
 
 export const useDateSelection = (classScheduleId?: string) => {
   const { data: settings } = useFranchiseeSettings();
+  const timezone = settings?.timezone || DEFAULT_TIMEZONE;
+  
   const [availableDates, setAvailableDates] = useState<AvailableDate[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +33,7 @@ export const useDateSelection = (classScheduleId?: string) => {
     if (classScheduleId) {
       loadAvailableDates();
     }
-  }, [classScheduleId, allowFutureBookings, maxBookingDaysAhead]);
+  }, [classScheduleId, allowFutureBookings, maxBookingDaysAhead, timezone]);
 
   const loadAvailableDates = async () => {
     if (!classScheduleId) return;
@@ -31,7 +42,7 @@ export const useDateSelection = (classScheduleId?: string) => {
     try {
       const { data: schedule, error } = await supabase
         .from('class_schedules')
-        .select('day_of_week')
+        .select('day_of_week, date_start, date_end')
         .eq('id', classScheduleId)
         .single();
 
@@ -40,7 +51,13 @@ export const useDateSelection = (classScheduleId?: string) => {
         return;
       }
 
-      const dates = generateAvailableDates(schedule.day_of_week, allowFutureBookings, maxBookingDaysAhead);
+      const dates = generateAvailableDates(
+        schedule.day_of_week, 
+        allowFutureBookings, 
+        maxBookingDaysAhead,
+        schedule.date_start,
+        schedule.date_end
+      );
       setAvailableDates(dates);
       
       // Auto-select the next available date
@@ -54,40 +71,72 @@ export const useDateSelection = (classScheduleId?: string) => {
     }
   };
 
-  const generateAvailableDates = (dayOfWeek: number, allowFuture: boolean, maxDays: number): AvailableDate[] => {
+  const generateAvailableDates = (
+    dayOfWeek: number, 
+    allowFuture: boolean, 
+    maxDays: number,
+    dateStart?: string,
+    dateEnd?: string
+  ): AvailableDate[] => {
     const dates: AvailableDate[] = [];
-    const today = new Date();
+    const currentDate = getCurrentDateInTimezone(timezone);
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
+    // Parse schedule bounds if they exist
+    const scheduleStartDate = dateStart ? parseISO(dateStart + 'T00:00:00') : null;
+    const scheduleEndDate = dateEnd ? parseISO(dateEnd + 'T23:59:59') : null;
+    
     // Find the next occurrence of the class day
-    let nextDate = new Date(today);
-    const daysUntilClass = (dayOfWeek - today.getDay() + 7) % 7;
-    if (daysUntilClass === 0 && today.getHours() >= 18) {
+    let nextDate = new Date(currentDate);
+    const daysUntilClass = (dayOfWeek - getDayOfWeekInTimezone(currentDate, timezone) + 7) % 7;
+    
+    if (daysUntilClass === 0 && currentDate.getHours() >= 18) {
       // If it's the same day but after 6 PM, move to next week
-      nextDate.setDate(today.getDate() + 7);
+      nextDate = addDaysInTimezone(currentDate, 7, timezone);
     } else {
-      nextDate.setDate(today.getDate() + daysUntilClass);
+      nextDate = addDaysInTimezone(currentDate, daysUntilClass, timezone);
     }
 
-    // Add the next available date
-    dates.push({
-      date: nextDate.toISOString().split('T')[0],
-      dayName: dayNames[dayOfWeek],
-      isNextAvailable: true
-    });
-
-    // Add future dates if allowed
-    if (allowFuture) {
-      for (let i = 1; i <= Math.floor(maxDays / 7); i++) {
-        const futureDate = new Date(nextDate);
-        futureDate.setDate(nextDate.getDate() + (i * 7));
-        
-        dates.push({
-          date: futureDate.toISOString().split('T')[0],
-          dayName: dayNames[dayOfWeek],
-          isNextAvailable: false
-        });
+    // Check if the next date is within schedule bounds
+    if (scheduleStartDate && nextDate < scheduleStartDate) {
+      // If next occurrence is before schedule start, use schedule start date
+      const startDayOfWeek = getDayOfWeekInTimezone(scheduleStartDate, timezone);
+      if (startDayOfWeek === dayOfWeek) {
+        nextDate = new Date(scheduleStartDate);
+      } else {
+        // Find the first occurrence of the class day on or after schedule start
+        const daysFromStartToClass = (dayOfWeek - startDayOfWeek + 7) % 7;
+        nextDate = addDaysInTimezone(scheduleStartDate, daysFromStartToClass, timezone);
       }
+    }
+
+    // Add dates within bounds
+    let dateToCheck = new Date(nextDate);
+    let isFirst = true;
+    
+    for (let i = 0; i < (allowFuture ? Math.floor(maxDays / 7) + 1 : 1); i++) {
+      // Check if date is within schedule bounds
+      if (scheduleStartDate && dateToCheck < scheduleStartDate) {
+        dateToCheck = addDaysInTimezone(dateToCheck, 7, timezone);
+        continue;
+      }
+      
+      if (scheduleEndDate && dateToCheck > scheduleEndDate) {
+        break;
+      }
+      
+      // Check if date is not too far in the past
+      if (dateToCheck >= currentDate || isSameDayInTimezone(dateToCheck, currentDate, timezone)) {
+        dates.push({
+          date: getDateStringInTimezone(dateToCheck, timezone),
+          dayName: dayNames[dayOfWeek],
+          isNextAvailable: isFirst
+        });
+        isFirst = false;
+      }
+      
+      if (!allowFuture) break;
+      dateToCheck = addDaysInTimezone(dateToCheck, 7, timezone);
     }
 
     return dates;

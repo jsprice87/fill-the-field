@@ -156,11 +156,11 @@ const BookingConfirmation: React.FC = () => {
     if (!timeMatch) return;
 
     const [, startTimeStr, endTimeStr] = timeMatch;
-    const appointmentDate = new Date(appointment.selected_date);
     
-    // Create start and end Date objects
-    const startTime = parseTimeString(startTimeStr, appointmentDate);
-    const endTime = parseTimeString(endTimeStr, appointmentDate);
+    // Create date objects in the correct timezone
+    const appointmentDate = parseISO(appointment.selected_date + 'T00:00:00');
+    const startTime = parseTimeStringInTimezone(startTimeStr, appointmentDate, timezone);
+    const endTime = parseTimeStringInTimezone(endTimeStr, appointmentDate, timezone);
 
     const calendarEvent = {
       title: `${appointment.class_name} - ${appointment.participant_name}`,
@@ -182,7 +182,7 @@ const BookingConfirmation: React.FC = () => {
     }
   };
 
-  const parseTimeString = (timeStr: string, date: Date) => {
+  const parseTimeStringInTimezone = (timeStr: string, date: Date, tz: string) => {
     const [time, period] = timeStr.split(/\s*(AM|PM)/i);
     const [hours, minutes] = time.split(':').map(Number);
     
@@ -193,8 +193,16 @@ const BookingConfirmation: React.FC = () => {
       hour24 = 0;
     }
     
-    const result = new Date(date);
+    // Create the date in the specified timezone
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create a date in the target timezone
+    const result = new Date();
+    result.setFullYear(year, month, day);
     result.setHours(hour24, minutes, 0, 0);
+    
     return result;
   };
 
