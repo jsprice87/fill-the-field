@@ -22,15 +22,15 @@ const DefaultBookingRedirect: React.FC = () => {
           .limit(1)
           .single();
 
-        if (error || !franchisee) {
-          console.error('No active franchisee found:', error);
+        if (error || !franchisee?.slug) {
+          console.error('No active franchisee with slug found:', error);
           toast.error('No booking pages are currently available');
           navigate('/');
           return;
         }
 
-        console.log('Redirecting to franchisee:', franchisee.slug);
-        // Redirect to the franchisee's booking landing page
+        console.log('Redirecting to franchisee slug:', franchisee.slug);
+        // Redirect to the franchisee's booking landing page using the slug
         navigate(`/${franchisee.slug}/free-trial`, { replace: true });
         
       } catch (error) {
