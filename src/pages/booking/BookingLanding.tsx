@@ -16,14 +16,18 @@ const BookingLanding: React.FC = () => {
 
   useEffect(() => {
     const resolveFranchiseeId = async () => {
-      if (!franchiseeSlug) return;
+      if (!franchiseeSlug) {
+        console.error('No franchisee slug provided');
+        setIsLoadingId(false);
+        return;
+      }
       
       try {
         console.log('Resolving franchisee ID for slug:', franchiseeSlug);
         const id = await getFranchiseeIdFromSlug(franchiseeSlug);
         
         if (id) {
-          console.log('Resolved franchisee ID:', id);
+          console.log('Successfully resolved franchisee ID:', id);
           setResolvedFranchiseeId(id);
         } else {
           console.error('Could not resolve franchisee ID from slug:', franchiseeSlug);
@@ -43,9 +47,12 @@ const BookingLanding: React.FC = () => {
   }, [franchiseeSlug, navigate]);
 
   const handleFormSuccess = async (leadId: string, leadData: any) => {
-    if (!resolvedFranchiseeId || !franchiseeSlug) return;
+    if (!resolvedFranchiseeId || !franchiseeSlug) {
+      console.error('Missing required data for flow creation:', { resolvedFranchiseeId, franchiseeSlug });
+      return;
+    }
     
-    console.log('Form success - creating flow with lead data:', { leadId, leadData });
+    console.log('Form success - creating flow with lead data:', { leadId, leadData, franchiseeId: resolvedFranchiseeId });
     
     setIsCreatingFlow(true);
     try {
@@ -61,7 +68,7 @@ const BookingLanding: React.FC = () => {
         }
       });
       
-      console.log('Flow created:', flowId);
+      console.log('Flow created successfully:', flowId);
       
       // Navigate to find classes with the flow ID (using slug in URL)
       navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
@@ -136,7 +143,7 @@ const BookingLanding: React.FC = () => {
                 </div>
               ) : (
                 <QuickCaptureForm 
-                  franchiseeId={franchiseeSlug}
+                  franchiseeId={resolvedFranchiseeId}
                   onSuccess={handleFormSuccess}
                   showTitle={true}
                 />

@@ -27,7 +27,7 @@ export const LeadCreationTest: React.FC<LeadCreationTestProps> = ({ franchiseeSl
 
       // Create test lead
       const testLead = {
-        franchisee_id: franchiseeId,
+        franchisee_id: franchiseeId, // Now using the correct franchisee table ID
         first_name: 'Test',
         last_name: 'User',
         email: `test+${Date.now()}@example.com`,

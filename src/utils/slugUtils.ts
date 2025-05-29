@@ -54,13 +54,15 @@ export const ensureUniqueSlug = async (baseSlug: string): Promise<string> => {
 /**
  * Gets franchisee ID from a slug
  * @param slug The slug to look up
- * @returns The franchisee ID associated with the slug
+ * @returns The franchisee ID (not user_id) associated with the slug
  */
 export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | null> => {
   try {
+    console.log('Resolving slug to franchisee ID:', slug);
+    
     const { data, error } = await supabase
       .from('franchisees')
-      .select('user_id')
+      .select('id')  // Changed from user_id to id
       .eq('slug', slug)
       .single();
     
@@ -69,7 +71,8 @@ export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | nu
       return null;
     }
     
-    return data.user_id;
+    console.log('Resolved franchisee ID:', data.id);
+    return data.id;
   } catch (error) {
     console.error("Error in getFranchiseeIdFromSlug:", error);
     return null;
@@ -86,7 +89,7 @@ export const getSlugFromFranchiseeId = async (franchiseeId: string): Promise<str
     const { data, error } = await supabase
       .from('franchisees')
       .select('slug')
-      .eq('user_id', franchiseeId)
+      .eq('id', franchiseeId)  // Changed from user_id to id for consistency
       .single();
     
     if (error || !data || !data.slug) {

@@ -7,16 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getFranchiseeIdFromSlug } from '@/utils/slugUtils';
 
 interface QuickCaptureFormProps {
-  franchiseeId: string; // This is actually the slug from the URL
+  franchiseeId: string; // This is now the actual franchisee table ID
   onSuccess?: (leadId: string, leadData: any) => void;
   showTitle?: boolean;
 }
 
 export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
-  franchiseeId: franchiseeSlug,
+  franchiseeId,
   onSuccess,
   showTitle = false
 }) => {
@@ -34,23 +33,13 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      console.log('Starting form submission with slug:', franchiseeSlug);
-      
-      // Convert slug to actual franchisee ID
-      const actualFranchiseeId = await getFranchiseeIdFromSlug(franchiseeSlug);
-      
-      if (!actualFranchiseeId) {
-        console.error('Could not resolve franchisee ID from slug:', franchiseeSlug);
-        throw new Error('Franchisee not found');
-      }
+      console.log('Starting form submission with franchisee ID:', franchiseeId);
 
-      console.log('Resolved franchisee ID:', actualFranchiseeId);
-
-      // Create lead with the actual franchisee ID
+      // Create lead directly with the franchisee ID (no conversion needed)
       const { data: lead, error: leadError } = await supabase
         .from('leads')
         .insert({
-          franchisee_id: actualFranchiseeId,
+          franchisee_id: franchiseeId,
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
