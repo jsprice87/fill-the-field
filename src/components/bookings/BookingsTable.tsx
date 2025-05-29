@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, MapPin, Baby } from 'lucide-react';
-import { useUpdateBookingStatus } from '@/hooks/useBookings';
 import StatusSelect from '../leads/StatusSelect';
+import StatusBadge from '../leads/StatusBadge';
 import type { Database } from '@/integrations/supabase/types';
 
 type LeadStatus = Database['public']['Enums']['lead_status'];
@@ -32,41 +31,6 @@ interface BookingsTableProps {
 }
 
 const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
-  const getStatusBadge = (status: string, bookingDate: string) => {
-    const today = new Date();
-    const date = new Date(bookingDate);
-    const isPast = date < today;
-    
-    // Auto-determine status for past dates
-    const displayStatus = (status === 'booked_upcoming' && isPast) ? 'needs_status' : status;
-    
-    const variants = {
-      'booked_upcoming': 'bg-green-100 text-green-800',
-      'booked_complete': 'bg-purple-100 text-purple-800',
-      'needs_status': 'bg-orange-100 text-orange-800',
-      'no_show': 'bg-red-100 text-red-800',
-      'follow_up': 'bg-yellow-100 text-yellow-800',
-      'canceled': 'bg-gray-100 text-gray-800',
-      'new': 'bg-blue-100 text-blue-800'
-    };
-    
-    const labels = {
-      'booked_upcoming': 'Upcoming',
-      'booked_complete': 'Complete',
-      'needs_status': 'Needs Status',
-      'no_show': 'No-Show',
-      'follow_up': 'Follow-up',
-      'canceled': 'Canceled',
-      'new': 'New'
-    };
-    
-    return (
-      <Badge className={variants[displayStatus as keyof typeof variants] || variants.booked_upcoming}>
-        {labels[displayStatus as keyof typeof labels] || 'Upcoming'}
-      </Badge>
-    );
-  };
-
   const formatAge = (birthDateString: string, ageNumber: number) => {
     if (birthDateString) {
       const birthDate = new Date(birthDateString);
@@ -163,7 +127,11 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings }) => {
               </TableCell>
               <TableCell>
                 <div className="space-y-2">
-                  {getStatusBadge(booking.status, booking.selected_date)}
+                  <StatusBadge 
+                    leadId={booking.lead_id}
+                    bookingDate={booking.selected_date}
+                    fallbackStatus={booking.status}
+                  />
                   <StatusSelect 
                     leadId={booking.lead_id}
                     currentStatus={booking.status as LeadStatus}
