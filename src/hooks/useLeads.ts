@@ -11,6 +11,7 @@ export interface Lead {
   phone: string;
   zip: string;
   status: string;
+  status_manually_set: boolean;
   source: string;
   notes?: string;
   child_speaks_english?: boolean;
@@ -50,7 +51,7 @@ export const useLeads = (franchiseeId?: string) => {
 const fetchLeadStats = async (franchiseeId: string) => {
   const { data: leads, error } = await supabase
     .from('leads')
-    .select('status, created_at')
+    .select('status, created_at, status_manually_set')
     .eq('franchisee_id', franchiseeId);
 
   if (error) {

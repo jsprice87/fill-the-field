@@ -23,7 +23,7 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leads')
-        .select('status')
+        .select('status, status_manually_set')
         .eq('id', leadId)
         .single();
 
@@ -40,12 +40,13 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
 
   const updateStatusMutation = useMutation({
     mutationFn: async (newStatus: LeadStatus) => {
-      console.log('Updating lead status:', { leadId, newStatus });
+      console.log('Updating lead status manually:', { leadId, newStatus });
       
       const { data, error } = await supabase
         .from('leads')
         .update({ 
           status: newStatus, 
+          status_manually_set: true, // Mark as manually set
           updated_at: new Date().toISOString() 
         })
         .eq('id', leadId)
@@ -57,7 +58,7 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
         throw error;
       }
       
-      console.log('Lead status updated successfully:', data);
+      console.log('Lead status updated successfully (manual override):', data);
       return data;
     },
     onMutate: async (newStatus) => {
@@ -68,7 +69,10 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
       const previousStatus = queryClient.getQueryData(['lead-status', leadId]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(['lead-status', leadId], { status: newStatus });
+      queryClient.setQueryData(['lead-status', leadId], { 
+        status: newStatus, 
+        status_manually_set: true 
+      });
 
       // Return a context object with the snapshotted value
       return { previousStatus };
@@ -96,7 +100,7 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
   });
 
   const handleStatusChange = (newStatus: LeadStatus) => {
-    console.log('Status change requested:', { from: actualStatus, to: newStatus });
+    console.log('Manual status change requested:', { from: actualStatus, to: newStatus });
     updateStatusMutation.mutate(newStatus);
   };
 

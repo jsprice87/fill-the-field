@@ -17,6 +17,7 @@ export interface Booking {
   participant_age: number;
   participant_birth_date: string;
   status: string;
+  status_manually_set: boolean;
   location_id: string;
   location_name?: string;
   lead_first_name?: string;
@@ -48,7 +49,8 @@ export const useBookings = (franchiseeId?: string) => {
               first_name,
               last_name,
               franchisee_id,
-              status
+              status,
+              status_manually_set
             )
           ),
           class_schedules!inner(
@@ -80,6 +82,7 @@ export const useBookings = (franchiseeId?: string) => {
         participant_age: appointment.participant_age,
         participant_birth_date: appointment.participant_birth_date,
         status: appointment.bookings?.leads?.status || 'new',
+        status_manually_set: appointment.bookings?.leads?.status_manually_set || false,
         location_id: appointment.class_schedules?.classes?.location_id,
         location_name: appointment.class_schedules?.classes?.locations?.name,
         lead_first_name: appointment.bookings?.leads?.first_name,
@@ -105,10 +108,13 @@ export const useUpdateBookingStatus = () => {
     }) => {
       console.log('Starting status update mutation:', { bookingId, leadId, status });
       
-      // Update the lead status directly since we removed status from appointments
+      // Update the lead status and mark as manually set
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
-        .update({ status })
+        .update({ 
+          status,
+          status_manually_set: true // Mark as manually set since this is coming from user interaction
+        })
         .eq('id', leadId)
         .select();
 
@@ -135,7 +141,7 @@ export const useUpdateBookingStatus = () => {
       queryClient.setQueryData(['bookings'], (old: any) => {
         if (!old) return old;
         return old.map((booking: any) => 
-          booking.id === bookingId ? { ...booking, status } : booking
+          booking.id === bookingId ? { ...booking, status, status_manually_set: true } : booking
         );
       });
       
@@ -143,7 +149,7 @@ export const useUpdateBookingStatus = () => {
       queryClient.setQueryData(['leads'], (old: any) => {
         if (!old) return old;
         return old.map((lead: any) => 
-          lead.id === leadId ? { ...lead, status } : lead
+          lead.id === leadId ? { ...lead, status, status_manually_set: true } : lead
         );
       });
       
@@ -157,11 +163,7 @@ export const useUpdateBookingStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
-      
-      // Force immediate refetch
-      queryClient.refetchQueries({ queryKey: ['bookings'] });
-      queryClient.refetchQueries({ queryKey: ['leads'] });
-      queryClient.refetchQueries({ queryKey: ['lead-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-status', variables.leadId] });
       
       toast.success('Status updated successfully');
     },
