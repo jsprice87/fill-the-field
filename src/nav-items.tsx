@@ -35,6 +35,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SlugResolver from "./components/auth/SlugResolver";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import DefaultBookingRedirect from "./pages/booking/DefaultBookingRedirect";
 
 export const navItems = [
   {
@@ -224,6 +225,13 @@ export const navItems = [
         <AdminSettings />
       </ProtectedRoute>
     ),
+  },
+  // Add the new default booking redirect route BEFORE the slug-based routes
+  {
+    title: "Default Free Trial Redirect",
+    to: "/free-trial",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <DefaultBookingRedirect />,
   },
   // Franchisee slug-based portal routes - these are what the login system redirects to
   {
