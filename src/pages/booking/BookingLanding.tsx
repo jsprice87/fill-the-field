@@ -1,18 +1,27 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 
-const BookingLanding: React.FC = () => {
-  const { franchiseeId } = useParams();
+interface BookingLandingProps {
+  franchiseeId?: string;
+}
+
+const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId }) => {
   const navigate = useNavigate();
   const { createFlow } = useBookingFlow();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);
 
+  console.log('BookingLanding rendered with franchiseeId:', franchiseeId);
+
   const handleFormSuccess = async (leadId: string, leadData: any) => {
-    if (!franchiseeId) return;
+    if (!franchiseeId) {
+      console.error('No franchisee ID available');
+      toast.error('Unable to process booking. Please try again.');
+      return;
+    }
     
     console.log('Form success - creating flow with lead data:', { leadId, leadData });
     
@@ -41,6 +50,15 @@ const BookingLanding: React.FC = () => {
       setIsCreatingFlow(false);
     }
   };
+
+  // Show loading state if no franchisee ID is provided yet
+  if (!franchiseeId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -85,13 +103,11 @@ const BookingLanding: React.FC = () => {
                   <p className="font-poppins text-gray-600">Starting your booking...</p>
                 </div>
               ) : (
-                franchiseeId && (
-                  <QuickCaptureForm 
-                    franchiseeId={franchiseeId}
-                    onSuccess={handleFormSuccess}
-                    showTitle={true}
-                  />
-                )
+                <QuickCaptureForm 
+                  franchiseeId={franchiseeId}
+                  onSuccess={handleFormSuccess}
+                  showTitle={true}
+                />
               )}
             </div>
           </div>
