@@ -118,7 +118,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         Locations
                       </Button>
                     </Link>
-                    <Link to={`${navPrefix}/portal/classes`}>
+                    <Link to={`${navPrefix}/portal/classes/list`}>
                       <Button variant="ghost" className="w-full justify-start">
                         <Calendar className="mr-2 h-5 w-5" />
                         Classes

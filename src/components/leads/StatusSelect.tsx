@@ -19,21 +19,33 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
 
   const updateStatusMutation = useMutation({
     mutationFn: async (newStatus: LeadStatus) => {
+      console.log('Updating lead status:', { leadId, newStatus });
+      
       const { data, error } = await supabase
         .from('leads')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update({ 
+          status: newStatus, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', leadId)
         .select()
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle 0 rows
 
-      if (error) throw error;
+      if (error) {
+        console.error('Lead status update error:', error);
+        throw error;
+      }
+      
+      console.log('Lead status updated successfully:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Status update mutation successful:', data);
       // Invalidate and refetch relevant queries
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-detail'] });
       toast.success('Status updated successfully');
     },
     onError: (error) => {
@@ -43,6 +55,7 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
   });
 
   const handleStatusChange = (newStatus: LeadStatus) => {
+    console.log('Status change requested:', { from: currentStatus, to: newStatus });
     updateStatusMutation.mutate(newStatus);
   };
 
