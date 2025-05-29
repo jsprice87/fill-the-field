@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
@@ -28,7 +29,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
     
     setIsCreatingFlow(true);
     try {
-      // Create a new flow with the resolved franchisee ID
+      // Create a new flow with the resolved franchisee ID (UUID)
       const flowId = await createFlow(resolvedFranchiseeId, {
         leadId,
         leadData: {

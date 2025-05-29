@@ -22,12 +22,12 @@ interface Location {
 }
 
 const FindClasses: React.FC = () => {
-  const { franchiseeId } = useParams();
+  const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const flowId = searchParams.get('flow');
   
-  const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeId);
+  const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeSlug);
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -35,21 +35,21 @@ const FindClasses: React.FC = () => {
   const [flowLoaded, setFlowLoaded] = useState(false);
 
   useEffect(() => {
-    console.log('FindClasses: useEffect triggered', { flowId, franchiseeId });
+    console.log('FindClasses: useEffect triggered', { flowId, franchiseeSlug });
     
     if (!flowId) {
       console.log('No flow ID found, redirecting to landing');
-      navigate(`/${franchiseeId}/free-trial`);
+      navigate(`/${franchiseeSlug}/free-trial`);
       return;
     }
 
     loadData();
-  }, [franchiseeId, flowId]);
+  }, [franchiseeSlug, flowId]);
 
   const loadData = async () => {
-    if (!franchiseeId || !flowId) return;
+    if (!franchiseeSlug || !flowId) return;
     
-    console.log('Loading data for FindClasses', { franchiseeId, flowId });
+    console.log('Loading data for FindClasses', { franchiseeSlug, flowId });
     setIsLoading(true);
     
     try {
@@ -64,7 +64,7 @@ const FindClasses: React.FC = () => {
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('*')
-        .eq('slug', franchiseeId)
+        .eq('slug', franchiseeSlug)
         .single();
 
       if (franchiseeError || !franchisee) {
@@ -95,7 +95,7 @@ const FindClasses: React.FC = () => {
       console.error('Error loading data:', error);
       toast.error('Failed to load locations');
       // If flow loading fails, redirect to start over
-      navigate(`/${franchiseeId}/free-trial`);
+      navigate(`/${franchiseeSlug}/free-trial`);
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +120,7 @@ const FindClasses: React.FC = () => {
       });
       
       console.log('Location updated in flow, navigating to booking page');
-      navigate(`/${franchiseeId}/free-trial/booking?flow=${flowId}`);
+      navigate(`/${franchiseeSlug}/free-trial/booking?flow=${flowId}`);
     } catch (error) {
       console.error('Error updating flow:', error);
       toast.error('Failed to select location. Please try again.');

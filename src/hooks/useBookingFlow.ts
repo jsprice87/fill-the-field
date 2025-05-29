@@ -48,19 +48,10 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
   const [currentFlowId, setCurrentFlowId] = useState<string | null>(flowId || null);
 
   // Create a new flow
-  const createFlow = useCallback(async (franchiseeSlug: string, initialData: Partial<BookingFlowData> = {}) => {
+  const createFlow = useCallback(async (franchiseeId: string, initialData: Partial<BookingFlowData> = {}) => {
     setIsLoading(true);
     try {
-      // Get franchisee by slug
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('id')
-        .eq('slug', franchiseeSlug)
-        .single();
-
-      if (franchiseeError || !franchisee) {
-        throw new Error('Franchisee not found');
-      }
+      console.log('Creating flow for franchisee ID:', franchiseeId);
 
       // Generate flow ID
       const newFlowId = crypto.randomUUID();
@@ -70,17 +61,19 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
         .from('booking_flows')
         .insert({
           flow_id: newFlowId,
-          franchisee_id: franchisee.id,
+          franchisee_id: franchiseeId, // Use the franchisee ID directly
           state_data: initialData as any
         });
 
       if (flowError) {
+        console.error('Flow creation error:', flowError);
         throw flowError;
       }
 
       setCurrentFlowId(newFlowId);
       setFlowData(initialData);
       
+      console.log('Flow created successfully with ID:', newFlowId);
       return newFlowId;
     } catch (error) {
       console.error('Error creating flow:', error);
