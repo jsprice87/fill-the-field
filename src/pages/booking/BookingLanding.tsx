@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
@@ -10,7 +9,7 @@ interface BookingLandingProps {
 }
 
 const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranchiseeId }) => {
-  const { franchiseeId: franchiseeSlug } = useParams();
+  const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const { createFlow } = useBookingFlow();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);

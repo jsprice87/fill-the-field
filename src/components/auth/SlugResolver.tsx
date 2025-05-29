@@ -14,7 +14,7 @@ interface SlugResolverProps {
  * and injects it into the context for child components
  */
 const SlugResolver = ({ children }: SlugResolverProps) => {
-  const { franchiseeId } = useParams<{ franchiseeId: string }>();
+  const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
   const [resolvedId, setResolvedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -22,35 +22,35 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
   useEffect(() => {
     const resolveSlug = async () => {
       try {
-        if (!franchiseeId) return;
+        if (!franchiseeSlug) return;
 
-        // Check if franchiseeId is a UUID (meaning it's not a slug)
+        // Check if franchiseeSlug is a UUID (meaning it's not a slug)
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (uuidPattern.test(franchiseeId)) {
+        if (uuidPattern.test(franchiseeSlug)) {
           // It's already a UUID, but let's check if there's a slug for it
           const { data: { session } } = await supabase.auth.getSession();
           
           // Only redirect if this is the currently logged in user
-          if (session?.user && session.user.id === franchiseeId) {
+          if (session?.user && session.user.id === franchiseeSlug) {
             const { data } = await supabase
               .from('franchisees')
               .select('slug')
-              .eq('user_id', franchiseeId)
+              .eq('user_id', franchiseeSlug)
               .single();
               
             if (data?.slug) {
               // Redirect to the slug-based URL
-              const path = window.location.pathname.replace(franchiseeId, data.slug);
+              const path = window.location.pathname.replace(franchiseeSlug, data.slug);
               navigate(path, { replace: true });
               return;
             }
           }
           
           // If no slug found or not the current user, just use the ID
-          setResolvedId(franchiseeId);
+          setResolvedId(franchiseeSlug);
         } else {
           // It's a slug, resolve it to a franchisee ID
-          const id = await getFranchiseeIdFromSlug(franchiseeId);
+          const id = await getFranchiseeIdFromSlug(franchiseeSlug);
           
           if (id) {
             setResolvedId(id);
@@ -69,7 +69,7 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
     };
 
     resolveSlug();
-  }, [franchiseeId, navigate]);
+  }, [franchiseeSlug, navigate]);
 
   if (isLoading) {
     return (
