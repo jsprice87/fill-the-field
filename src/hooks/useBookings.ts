@@ -71,26 +71,46 @@ export const useBookings = (franchiseeId?: string) => {
       }
 
       // Transform the data to flatten the nested structure
-      const transformedData = (data || []).map(appointment => ({
-        id: appointment.id,
-        lead_id: appointment.bookings.lead_id,
-        class_schedule_id: appointment.booking_id,
-        selected_date: appointment.selected_date,
-        class_time: appointment.class_time,
-        class_name: appointment.class_name,
-        participant_name: appointment.participant_name,
-        participant_age: appointment.participant_age,
-        participant_birth_date: appointment.participant_birth_date,
-        status: appointment.bookings?.leads?.status || 'new',
-        status_manually_set: appointment.bookings?.leads?.status_manually_set || false,
-        location_id: appointment.class_schedules?.classes?.location_id,
-        location_name: appointment.class_schedules?.classes?.locations?.name,
-        lead_first_name: appointment.bookings?.leads?.first_name,
-        lead_last_name: appointment.bookings?.leads?.last_name,
-        created_at: appointment.created_at
-      }));
+      const transformedData = (data || []).map(appointment => {
+        const leadStatus = appointment.bookings?.leads?.status || 'new';
+        const isManuallySet = appointment.bookings?.leads?.status_manually_set || false;
+        const bookingDate = new Date(appointment.selected_date || '');
+        const today = new Date();
+        
+        // Auto-update status based on booking date if not manually set
+        let finalStatus = leadStatus;
+        
+        // If lead has a booking and status is still 'new', it should be 'booked_upcoming'
+        if (!isManuallySet && leadStatus === 'new') {
+          finalStatus = 'booked_upcoming';
+        }
+        
+        // If booking date has passed and status is 'booked_upcoming', it should be 'booked_complete'
+        if (!isManuallySet && leadStatus === 'booked_upcoming' && bookingDate < today) {
+          finalStatus = 'booked_complete';
+        }
 
-      console.log('Fetched bookings data:', transformedData);
+        return {
+          id: appointment.id,
+          lead_id: appointment.bookings.lead_id,
+          class_schedule_id: appointment.booking_id,
+          selected_date: appointment.selected_date,
+          class_time: appointment.class_time,
+          class_name: appointment.class_name,
+          participant_name: appointment.participant_name,
+          participant_age: appointment.participant_age,
+          participant_birth_date: appointment.participant_birth_date,
+          status: finalStatus,
+          status_manually_set: isManuallySet,
+          location_id: appointment.class_schedules?.classes?.location_id,
+          location_name: appointment.class_schedules?.classes?.locations?.name,
+          lead_first_name: appointment.bookings?.leads?.first_name,
+          lead_last_name: appointment.bookings?.leads?.last_name,
+          created_at: appointment.created_at
+        };
+      });
+
+      console.log('Fetched bookings data with corrected statuses:', transformedData);
       return transformedData;
     },
     enabled: !!franchiseeId,
@@ -126,36 +146,6 @@ export const useUpdateBookingStatus = () => {
       console.log('Lead updated successfully:', leadData);
       return { bookingId, leadId, status, leadData };
     },
-    onMutate: async ({ bookingId, leadId, status }) => {
-      console.log('Optimistic update starting for:', { bookingId, leadId, status });
-      
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['bookings'] });
-      await queryClient.cancelQueries({ queryKey: ['leads'] });
-      
-      // Snapshot the previous values
-      const previousBookings = queryClient.getQueryData(['bookings']);
-      const previousLeads = queryClient.getQueryData(['leads']);
-      
-      // Optimistically update bookings
-      queryClient.setQueryData(['bookings'], (old: any) => {
-        if (!old) return old;
-        return old.map((booking: any) => 
-          booking.id === bookingId ? { ...booking, status, status_manually_set: true } : booking
-        );
-      });
-      
-      // Optimistically update leads
-      queryClient.setQueryData(['leads'], (old: any) => {
-        if (!old) return old;
-        return old.map((lead: any) => 
-          lead.id === leadId ? { ...lead, status, status_manually_set: true } : lead
-        );
-      });
-      
-      console.log('Optimistic updates applied');
-      return { previousBookings, previousLeads };
-    },
     onSuccess: (data, variables) => {
       console.log('Mutation successful, invalidating and refetching queries...', data);
       
@@ -167,17 +157,8 @@ export const useUpdateBookingStatus = () => {
       
       toast.success('Status updated successfully');
     },
-    onError: (error, variables, context) => {
+    onError: (error) => {
       console.error('Mutation failed:', error);
-      
-      // Rollback optimistic updates
-      if (context?.previousBookings) {
-        queryClient.setQueryData(['bookings'], context.previousBookings);
-      }
-      if (context?.previousLeads) {
-        queryClient.setQueryData(['leads'], context.previousLeads);
-      }
-      
       toast.error('Failed to update status');
     }
   });

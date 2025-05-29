@@ -38,6 +38,8 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
   // Use the database status if available, otherwise fall back to prop
   const actualStatus = leadData?.status || currentStatus;
 
+  console.log('StatusSelect render:', { leadId, actualStatus, currentStatus, leadData });
+
   const updateStatusMutation = useMutation({
     mutationFn: async (newStatus: LeadStatus) => {
       console.log('Updating lead status manually:', { leadId, newStatus });
@@ -61,22 +63,6 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
       console.log('Lead status updated successfully (manual override):', data);
       return data;
     },
-    onMutate: async (newStatus) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['lead-status', leadId] });
-
-      // Snapshot the previous value
-      const previousStatus = queryClient.getQueryData(['lead-status', leadId]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(['lead-status', leadId], { 
-        status: newStatus, 
-        status_manually_set: true 
-      });
-
-      // Return a context object with the snapshotted value
-      return { previousStatus };
-    },
     onSuccess: (data) => {
       console.log('Status update mutation successful:', data);
       // Invalidate and refetch relevant queries
@@ -87,16 +73,10 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
       queryClient.invalidateQueries({ queryKey: ['lead-status', leadId] });
       toast.success('Status updated successfully');
     },
-    onError: (error, newStatus, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(['lead-status', leadId], context?.previousStatus);
+    onError: (error) => {
       console.error('Error updating lead status:', error);
       toast.error('Failed to update status');
     },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: ['lead-status', leadId] });
-    }
   });
 
   const handleStatusChange = (newStatus: LeadStatus) => {

@@ -36,6 +36,8 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ leadId, bookingDate, fallback
   const actualStatus = leadData?.status || fallbackStatus || 'new';
   const isManuallySet = leadData?.status_manually_set || false;
 
+  console.log('StatusBadge render:', { leadId, actualStatus, isManuallySet, bookingDate });
+
   const getStatusBadge = (status: string, bookingDate?: string, isManuallySet?: boolean) => {
     const today = new Date();
     const date = bookingDate ? new Date(bookingDate) : null;

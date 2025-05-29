@@ -33,16 +33,28 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     setIsSubmitting(true);
 
     try {
+      console.log('Looking up franchisee with slug:', franchiseeId);
+      
       // Get franchisee by slug
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('id')
         .eq('slug', franchiseeId)
-        .single();
+        .maybeSingle();
 
-      if (franchiseeError || !franchisee) {
+      console.log('Franchisee lookup result:', { franchisee, franchiseeError });
+
+      if (franchiseeError) {
+        console.error('Franchisee lookup error:', franchiseeError);
+        throw new Error('Failed to find franchisee');
+      }
+
+      if (!franchisee) {
+        console.error('No franchisee found with slug:', franchiseeId);
         throw new Error('Franchisee not found');
       }
+
+      console.log('Creating lead for franchisee:', franchisee.id);
 
       // Create lead
       const { data: lead, error: leadError } = await supabase
@@ -55,12 +67,14 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
           phone: formData.phone,
           zip: formData.zip,
           source: 'free_trial_booking',
-          status: 'new'
+          status: 'new',
+          status_manually_set: false
         })
         .select()
         .single();
 
       if (leadError) {
+        console.error('Lead creation error:', leadError);
         throw leadError;
       }
 
@@ -71,9 +85,10 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         onSuccess(lead.id, lead);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating lead:', error);
-      toast.error('Failed to save information. Please try again.');
+      const errorMessage = error.message || 'Failed to save information. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
