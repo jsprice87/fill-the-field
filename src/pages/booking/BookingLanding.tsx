@@ -1,54 +1,27 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
-import { getFranchiseeIdFromSlug } from '@/utils/slugUtils';
 
-const BookingLanding: React.FC = () => {
+interface BookingLandingProps {
+  franchiseeId?: string;
+}
+
+const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranchiseeId }) => {
   const { franchiseeId: franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const { createFlow } = useBookingFlow();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);
-  const [resolvedFranchiseeId, setResolvedFranchiseeId] = useState<string | null>(null);
-  const [isLoadingId, setIsLoadingId] = useState(true);
 
-  useEffect(() => {
-    const resolveFranchiseeId = async () => {
-      if (!franchiseeSlug) {
-        console.error('No franchisee slug provided');
-        setIsLoadingId(false);
-        return;
-      }
-      
-      try {
-        console.log('Resolving franchisee ID for slug:', franchiseeSlug);
-        const id = await getFranchiseeIdFromSlug(franchiseeSlug);
-        
-        if (id) {
-          console.log('Successfully resolved franchisee ID:', id);
-          setResolvedFranchiseeId(id);
-        } else {
-          console.error('Could not resolve franchisee ID from slug:', franchiseeSlug);
-          toast.error('Invalid account URL');
-          navigate('/');
-        }
-      } catch (error) {
-        console.error('Error resolving franchisee ID:', error);
-        toast.error('Error loading account information');
-        navigate('/');
-      } finally {
-        setIsLoadingId(false);
-      }
-    };
-
-    resolveFranchiseeId();
-  }, [franchiseeSlug, navigate]);
+  // Use the prop from SlugResolver if available, otherwise this component won't work properly
+  const resolvedFranchiseeId = propFranchiseeId;
 
   const handleFormSuccess = async (leadId: string, leadData: any) => {
     if (!resolvedFranchiseeId || !franchiseeSlug) {
       console.error('Missing required data for flow creation:', { resolvedFranchiseeId, franchiseeSlug });
+      toast.error('Unable to start booking process. Please try again.');
       return;
     }
     
@@ -80,15 +53,7 @@ const BookingLanding: React.FC = () => {
     }
   };
 
-  if (isLoadingId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
-  if (!franchiseeSlug || !resolvedFranchiseeId) {
+  if (!resolvedFranchiseeId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
