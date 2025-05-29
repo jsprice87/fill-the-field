@@ -20,7 +20,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ leadId, bookingDate, fallback
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leads')
-        .select('status, status_manually_set')
+        .select('status')
         .eq('id', leadId)
         .maybeSingle();
 
@@ -34,20 +34,14 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ leadId, bookingDate, fallback
 
   // Use the database status if available, otherwise fall back to prop
   const actualStatus = leadData?.status || fallbackStatus || 'new';
-  const isManuallySet = leadData?.status_manually_set || false;
 
-  console.log('StatusBadge render:', { leadId, actualStatus, isManuallySet, bookingDate });
-
-  const getStatusBadge = (status: string, bookingDate?: string, isManuallySet?: boolean) => {
+  const getStatusBadge = (status: string, bookingDate?: string) => {
     const today = new Date();
     const date = bookingDate ? new Date(bookingDate) : null;
     const isPast = date && date < today;
     
-    // Only auto-determine status for past dates if status hasn't been manually set
-    let displayStatus = status;
-    if (!isManuallySet && status === 'booked_upcoming' && isPast) {
-      displayStatus = 'booked_complete';
-    }
+    // Auto-determine status for past dates
+    const displayStatus = (status === 'booked_upcoming' && isPast) ? 'needs_status' : status;
     
     const variants = {
       'booked_upcoming': 'bg-green-100 text-green-800',
@@ -80,7 +74,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ leadId, bookingDate, fallback
     );
   };
 
-  return getStatusBadge(actualStatus, bookingDate, isManuallySet);
+  return getStatusBadge(actualStatus, bookingDate);
 };
 
 export default StatusBadge;

@@ -33,27 +33,34 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      console.log('Creating lead for franchisee ID:', franchiseeId);
+      // Get franchisee by slug
+      const { data: franchisee, error: franchiseeError } = await supabase
+        .from('franchisees')
+        .select('id')
+        .eq('slug', franchiseeId)
+        .single();
 
-      // Create lead directly with the franchisee ID
+      if (franchiseeError || !franchisee) {
+        throw new Error('Franchisee not found');
+      }
+
+      // Create lead
       const { data: lead, error: leadError } = await supabase
         .from('leads')
         .insert({
-          franchisee_id: franchiseeId,
+          franchisee_id: franchisee.id,
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
           phone: formData.phone,
           zip: formData.zip,
           source: 'free_trial_booking',
-          status: 'new',
-          status_manually_set: false
+          status: 'new'
         })
         .select()
         .single();
 
       if (leadError) {
-        console.error('Lead creation error:', leadError);
         throw leadError;
       }
 
@@ -64,10 +71,9 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         onSuccess(lead.id, lead);
       }
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating lead:', error);
-      const errorMessage = error.message || 'Failed to save information. Please try again.';
-      toast.error(errorMessage);
+      toast.error('Failed to save information. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

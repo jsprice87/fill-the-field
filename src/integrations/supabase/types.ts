@@ -501,7 +501,6 @@ export type Database = {
           selected_location_id: string | null
           source: string | null
           status: Database["public"]["Enums"]["lead_status"]
-          status_manually_set: boolean
           updated_at: string
           zip: string
         }
@@ -519,7 +518,6 @@ export type Database = {
           selected_location_id?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
-          status_manually_set?: boolean
           updated_at?: string
           zip: string
         }
@@ -537,7 +535,6 @@ export type Database = {
           selected_location_id?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
-          status_manually_set?: boolean
           updated_at?: string
           zip?: string
         }

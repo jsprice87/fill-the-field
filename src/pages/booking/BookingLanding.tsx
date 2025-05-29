@@ -1,27 +1,18 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 
-interface BookingLandingProps {
-  franchiseeId?: string;
-}
-
-const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId }) => {
+const BookingLanding: React.FC = () => {
+  const { franchiseeId } = useParams();
   const navigate = useNavigate();
   const { createFlow } = useBookingFlow();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);
 
-  console.log('BookingLanding rendered with franchiseeId:', franchiseeId);
-
   const handleFormSuccess = async (leadId: string, leadData: any) => {
-    if (!franchiseeId) {
-      console.error('No franchisee ID available');
-      toast.error('Unable to process booking. Please try again.');
-      return;
-    }
+    if (!franchiseeId) return;
     
     console.log('Form success - creating flow with lead data:', { leadId, leadData });
     
@@ -50,15 +41,6 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId }) => {
       setIsCreatingFlow(false);
     }
   };
-
-  // Show loading state if no franchisee ID is provided yet
-  if (!franchiseeId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -104,7 +86,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId }) => {
                 </div>
               ) : (
                 <QuickCaptureForm 
-                  franchiseeId={franchiseeId}
+                  franchiseeId={franchiseeId!}
                   onSuccess={handleFormSuccess}
                   showTitle={true}
                 />
