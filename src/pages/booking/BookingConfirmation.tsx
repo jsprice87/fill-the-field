@@ -42,7 +42,7 @@ interface FranchiseeData {
 }
 
 const BookingConfirmation: React.FC = () => {
-  const { franchiseeId, bookingId } = useParams();
+  const { franchiseeSlug, bookingId } = useParams();
   const navigate = useNavigate();
   const { data: settings } = useFranchiseeSettings();
   const { data: franchiseeData } = useFranchiseeData();
@@ -55,12 +55,12 @@ const BookingConfirmation: React.FC = () => {
 
   useEffect(() => {
     if (!bookingId) {
-      navigate(`/${franchiseeId}/free-trial`);
+      navigate(`/${franchiseeSlug}/free-trial`);
       return;
     }
 
     loadBookingData();
-  }, [bookingId, franchiseeId, navigate]);
+  }, [bookingId, franchiseeSlug, navigate]);
 
   const loadBookingData = async () => {
     try {
@@ -68,7 +68,7 @@ const BookingConfirmation: React.FC = () => {
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('company_name')
-        .eq('slug', franchiseeId)
+        .eq('slug', franchiseeSlug)
         .single();
 
       if (franchiseeError) {
@@ -96,7 +96,7 @@ const BookingConfirmation: React.FC = () => {
       if (bookingError) {
         console.error('Error loading booking:', bookingError);
         toast.error('Failed to load booking details');
-        navigate(`/${franchiseeId}/free-trial`);
+        navigate(`/${franchiseeSlug}/free-trial`);
         return;
       }
 
@@ -120,7 +120,7 @@ const BookingConfirmation: React.FC = () => {
     } catch (error) {
       console.error('Error loading booking:', error);
       toast.error('Failed to load booking details');
-      navigate(`/${franchiseeId}/free-trial`);
+      navigate(`/${franchiseeSlug}/free-trial`);
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +136,7 @@ const BookingConfirmation: React.FC = () => {
     // Replace placeholders
     shareText = shareText
       .replace(/{company_name}/g, businessName)
-      .replace(/{url}/g, `${window.location.origin}/${franchiseeId}/free-trial`);
+      .replace(/{url}/g, `${window.location.origin}/${franchiseeSlug}/free-trial`);
     
     if (navigator.share) {
       navigator.share({
@@ -231,7 +231,7 @@ const BookingConfirmation: React.FC = () => {
           <h2 className="font-agrandir text-2xl text-brand-navy mb-4">Booking Not Found</h2>
           <p className="font-poppins text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
           <Button asChild className="bg-brand-navy hover:bg-brand-navy/90 text-white font-poppins">
-            <Link to={`/${franchiseeId}/free-trial`}>Back to Home</Link>
+            <Link to={`/${franchiseeSlug}/free-trial`}>Back to Home</Link>
           </Button>
         </div>
       </div>
@@ -436,13 +436,13 @@ const BookingConfirmation: React.FC = () => {
           {/* Navigation */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button variant="outline" asChild className="font-poppins">
-              <Link to={`/${franchiseeId}/free-trial/find-classes`}>
+              <Link to={`/${franchiseeSlug}/free-trial/find-classes`}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Register More Children
               </Link>
             </Button>
             <Button asChild className="bg-brand-navy hover:bg-brand-navy/90 text-white font-poppins">
-              <Link to={`/${franchiseeId}/free-trial`}>
+              <Link to={`/${franchiseeSlug}/free-trial`}>
                 Back to Home
               </Link>
             </Button>

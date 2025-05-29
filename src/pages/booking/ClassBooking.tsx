@@ -29,7 +29,7 @@ interface ClassSchedule {
 }
 
 const ClassBooking: React.FC = () => {
-  const { franchiseeId } = useParams();
+  const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const flowId = searchParams.get('flow');
@@ -42,7 +42,7 @@ const ClassBooking: React.FC = () => {
     removeParticipant, 
     getParticipantCountForClass,
     isLoading: flowLoading 
-  } = useBookingFlow(flowId || undefined, franchiseeId);
+  } = useBookingFlow(flowId || undefined, franchiseeSlug);
   
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,16 +53,16 @@ const ClassBooking: React.FC = () => {
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   useEffect(() => {
-    console.log('ClassBooking: useEffect triggered', { flowId, franchiseeId, flowLoaded });
+    console.log('ClassBooking: useEffect triggered', { flowId, franchiseeSlug, flowLoaded });
     
     if (!flowId) {
       console.log('No flow ID found, redirecting to landing');
-      navigate(`/${franchiseeId}/free-trial`);
+      navigate(`/${franchiseeSlug}/free-trial`);
       return;
     }
 
     loadFlowData();
-  }, [flowId, franchiseeId]);
+  }, [flowId, franchiseeSlug]);
 
   useEffect(() => {
     console.log('ClassBooking: Flow data effect', { flowLoaded, selectedLocation: flowData.selectedLocation });
@@ -72,7 +72,7 @@ const ClassBooking: React.FC = () => {
       loadClasses();
     } else if (flowLoaded && !flowData.selectedLocation?.id) {
       console.log('No location selected, redirecting to find classes');
-      navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
+      navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
     }
   }, [flowLoaded, flowData.selectedLocation]);
 
@@ -89,7 +89,7 @@ const ClassBooking: React.FC = () => {
     } catch (error) {
       console.error('Error loading flow:', error);
       toast.error('Session expired. Please start over.');
-      navigate(`/${franchiseeId}/free-trial`);
+      navigate(`/${franchiseeSlug}/free-trial`);
     }
   };
 
@@ -231,7 +231,7 @@ const ClassBooking: React.FC = () => {
         .update({ status: 'booked_upcoming' })
         .eq('id', leadId);
 
-      navigate(`/${franchiseeId}/free-trial/booking/${booking.id}`);
+      navigate(`/${franchiseeSlug}/free-trial/booking/${booking.id}`);
       
     } catch (error) {
       console.error('Error creating booking:', error);
@@ -241,7 +241,7 @@ const ClassBooking: React.FC = () => {
 
   const handleBackToLocations = () => {
     if (!flowId) return;
-    navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
+    navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
   };
 
   const formatTime = (timeString: string) => {
