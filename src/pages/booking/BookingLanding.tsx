@@ -4,22 +4,53 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
+import { getFranchiseeIdFromSlug } from '@/utils/slugUtils';
 
 const BookingLanding: React.FC = () => {
-  const { franchiseeId } = useParams();
+  const { franchiseeId: franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const { createFlow } = useBookingFlow();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);
+  const [resolvedFranchiseeId, setResolvedFranchiseeId] = useState<string | null>(null);
+  const [isLoadingId, setIsLoadingId] = useState(true);
+
+  useEffect(() => {
+    const resolveFranchiseeId = async () => {
+      if (!franchiseeSlug) return;
+      
+      try {
+        console.log('Resolving franchisee ID for slug:', franchiseeSlug);
+        const id = await getFranchiseeIdFromSlug(franchiseeSlug);
+        
+        if (id) {
+          console.log('Resolved franchisee ID:', id);
+          setResolvedFranchiseeId(id);
+        } else {
+          console.error('Could not resolve franchisee ID from slug:', franchiseeSlug);
+          toast.error('Invalid account URL');
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Error resolving franchisee ID:', error);
+        toast.error('Error loading account information');
+        navigate('/');
+      } finally {
+        setIsLoadingId(false);
+      }
+    };
+
+    resolveFranchiseeId();
+  }, [franchiseeSlug, navigate]);
 
   const handleFormSuccess = async (leadId: string, leadData: any) => {
-    if (!franchiseeId) return;
+    if (!resolvedFranchiseeId || !franchiseeSlug) return;
     
     console.log('Form success - creating flow with lead data:', { leadId, leadData });
     
     setIsCreatingFlow(true);
     try {
-      // Create a new flow with the lead data
-      const flowId = await createFlow(franchiseeId, {
+      // Create a new flow with the resolved franchisee ID
+      const flowId = await createFlow(resolvedFranchiseeId, {
         leadId,
         leadData: {
           firstName: leadData.first_name,
@@ -32,8 +63,8 @@ const BookingLanding: React.FC = () => {
       
       console.log('Flow created:', flowId);
       
-      // Navigate to find classes with the flow ID
-      navigate(`/${franchiseeId}/free-trial/find-classes?flow=${flowId}`);
+      // Navigate to find classes with the flow ID (using slug in URL)
+      navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
     } catch (error) {
       console.error('Error creating flow:', error);
       toast.error('Failed to start booking process. Please try again.');
@@ -41,6 +72,25 @@ const BookingLanding: React.FC = () => {
       setIsCreatingFlow(false);
     }
   };
+
+  if (isLoadingId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!franchiseeSlug || !resolvedFranchiseeId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Account Not Found</h1>
+          <p className="text-gray-600">The requested account could not be found.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -86,7 +136,7 @@ const BookingLanding: React.FC = () => {
                 </div>
               ) : (
                 <QuickCaptureForm 
-                  franchiseeId={franchiseeId!}
+                  franchiseeId={franchiseeSlug}
                   onSuccess={handleFormSuccess}
                   showTitle={true}
                 />

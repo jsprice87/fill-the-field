@@ -7,15 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getFranchiseeIdFromSlug } from '@/utils/slugUtils';
 
 interface QuickCaptureFormProps {
-  franchiseeId: string;
+  franchiseeId: string; // This is actually the slug from the URL
   onSuccess?: (leadId: string, leadData: any) => void;
   showTitle?: boolean;
 }
 
 export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
-  franchiseeId,
+  franchiseeId: franchiseeSlug,
   onSuccess,
   showTitle = false
 }) => {
@@ -33,22 +34,23 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Get franchisee by slug
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('id')
-        .eq('slug', franchiseeId)
-        .single();
-
-      if (franchiseeError || !franchisee) {
+      console.log('Starting form submission with slug:', franchiseeSlug);
+      
+      // Convert slug to actual franchisee ID
+      const actualFranchiseeId = await getFranchiseeIdFromSlug(franchiseeSlug);
+      
+      if (!actualFranchiseeId) {
+        console.error('Could not resolve franchisee ID from slug:', franchiseeSlug);
         throw new Error('Franchisee not found');
       }
 
-      // Create lead
+      console.log('Resolved franchisee ID:', actualFranchiseeId);
+
+      // Create lead with the actual franchisee ID
       const { data: lead, error: leadError } = await supabase
         .from('leads')
         .insert({
-          franchisee_id: franchisee.id,
+          franchisee_id: actualFranchiseeId,
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
@@ -61,6 +63,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         .single();
 
       if (leadError) {
+        console.error('Error creating lead:', leadError);
         throw leadError;
       }
 
@@ -72,7 +75,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
       }
 
     } catch (error) {
-      console.error('Error creating lead:', error);
+      console.error('Error in form submission:', error);
       toast.error('Failed to save information. Please try again.');
     } finally {
       setIsSubmitting(false);
