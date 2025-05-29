@@ -33,34 +33,13 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      console.log('Looking up franchisee with slug:', franchiseeId);
-      
-      // Get franchisee by slug
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('id')
-        .eq('slug', franchiseeId)
-        .maybeSingle();
+      console.log('Creating lead for franchisee ID:', franchiseeId);
 
-      console.log('Franchisee lookup result:', { franchisee, franchiseeError });
-
-      if (franchiseeError) {
-        console.error('Franchisee lookup error:', franchiseeError);
-        throw new Error('Failed to find franchisee');
-      }
-
-      if (!franchisee) {
-        console.error('No franchisee found with slug:', franchiseeId);
-        throw new Error('Franchisee not found');
-      }
-
-      console.log('Creating lead for franchisee:', franchisee.id);
-
-      // Create lead
+      // Create lead directly with the franchisee ID
       const { data: lead, error: leadError } = await supabase
         .from('leads')
         .insert({
-          franchisee_id: franchisee.id,
+          franchisee_id: franchiseeId,
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,

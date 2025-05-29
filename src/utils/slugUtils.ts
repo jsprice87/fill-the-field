@@ -60,7 +60,7 @@ export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | nu
   try {
     const { data, error } = await supabase
       .from('franchisees')
-      .select('user_id')
+      .select('id')
       .eq('slug', slug)
       .single();
     
@@ -69,7 +69,7 @@ export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | nu
       return null;
     }
     
-    return data.user_id;
+    return data.id;
   } catch (error) {
     console.error("Error in getFranchiseeIdFromSlug:", error);
     return null;

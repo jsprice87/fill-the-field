@@ -85,11 +85,13 @@ const BookingLanding: React.FC = () => {
                   <p className="font-poppins text-gray-600">Starting your booking...</p>
                 </div>
               ) : (
-                <QuickCaptureForm 
-                  franchiseeId={franchiseeId!}
-                  onSuccess={handleFormSuccess}
-                  showTitle={true}
-                />
+                franchiseeId && (
+                  <QuickCaptureForm 
+                    franchiseeId={franchiseeId}
+                    onSuccess={handleFormSuccess}
+                    showTitle={true}
+                  />
+                )
               )}
             </div>
           </div>

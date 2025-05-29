@@ -46,8 +46,20 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
             }
           }
           
-          // If no slug found or not the current user, just use the ID
-          setResolvedId(franchiseeId);
+          // If no slug found or not the current user, treat as a franchisee ID
+          // But we need to get the actual franchisee table ID, not the user ID
+          const { data: franchiseeData } = await supabase
+            .from('franchisees')
+            .select('id')
+            .eq('user_id', franchiseeId)
+            .single();
+            
+          if (franchiseeData) {
+            setResolvedId(franchiseeData.id);
+          } else {
+            toast.error('Invalid account URL');
+            navigate('/login');
+          }
         } else {
           // It's a slug, resolve it to a franchisee ID
           const id = await getFranchiseeIdFromSlug(franchiseeId);
