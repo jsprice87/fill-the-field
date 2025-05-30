@@ -22,12 +22,52 @@ serve(async (req) => {
 
     console.log('Starting automatic lead status update...');
 
-    // Call the existing database function to update lead statuses
-    const { error } = await supabase.rpc('update_lead_status_from_bookings');
+    // Update leads with past bookings from 'booked_upcoming' to 'booked_complete'
+    // Only update if status was not manually set
+    const { error: updateCompletedError } = await supabase.rpc('sql', {
+      query: `
+        UPDATE public.leads 
+        SET status = 'booked_complete',
+            updated_at = now()
+        WHERE status = 'booked_upcoming'
+        AND status_manually_set = false
+        AND EXISTS (
+          SELECT 1 FROM public.bookings b
+          JOIN public.appointments a ON b.id = a.booking_id
+          WHERE b.lead_id = leads.id
+          AND a.selected_date < CURRENT_DATE
+        );
+      `
+    });
 
-    if (error) {
-      console.error('Error updating lead statuses:', error);
-      throw error;
+    if (updateCompletedError) {
+      console.error('Error updating completed bookings:', updateCompletedError);
+    } else {
+      console.log('Updated completed bookings successfully');
+    }
+
+    // Update leads with future bookings from 'new' to 'booked_upcoming'
+    // Only update if status was not manually set
+    const { error: updateUpcomingError } = await supabase.rpc('sql', {
+      query: `
+        UPDATE public.leads 
+        SET status = 'booked_upcoming',
+            updated_at = now()
+        WHERE status = 'new'
+        AND status_manually_set = false
+        AND EXISTS (
+          SELECT 1 FROM public.bookings b
+          JOIN public.appointments a ON b.id = a.booking_id
+          WHERE b.lead_id = leads.id
+          AND a.selected_date >= CURRENT_DATE
+        );
+      `
+    });
+
+    if (updateUpcomingError) {
+      console.error('Error updating upcoming bookings:', updateUpcomingError);
+    } else {
+      console.log('Updated upcoming bookings successfully');
     }
 
     console.log('Lead statuses updated successfully');
@@ -35,7 +75,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Lead statuses updated successfully',
+        message: 'Lead statuses updated successfully (respecting manual overrides)',
         timestamp: new Date().toISOString()
       }),
       { 

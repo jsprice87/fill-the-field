@@ -46,6 +46,7 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
         .from('leads')
         .update({ 
           status: newStatus, 
+          status_manually_set: true, // Mark as manually set to prevent automatic overrides
           updated_at: new Date().toISOString() 
         })
         .eq('id', leadId)
