@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,18 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Soccer Stars Brand Colors
+				'brand-red': 'hsl(var(--brand-red))',
+				'brand-navy': 'hsl(var(--brand-navy))',
+				'brand-blue': 'hsl(var(--brand-blue))',
+				'brand-grey': 'hsl(var(--brand-grey))',
+				'brand-red-600': 'hsl(var(--brand-red-600))',
+			},
+			fontFamily: {
+				anton: ['Anton', 'sans-serif'],
+				agrandir: ['Inter', 'sans-serif'], // Using Inter as Agrandir substitute
+				poppins: ['Poppins', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

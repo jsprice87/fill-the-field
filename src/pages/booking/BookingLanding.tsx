@@ -4,6 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
+import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface BookingLandingProps {
   franchiseeId?: string;
@@ -15,7 +17,6 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
   const { createFlow } = useBookingFlow();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);
 
-  // Use the prop from SlugResolver if available, otherwise this component won't work properly
   const resolvedFranchiseeId = propFranchiseeId;
 
   const handleFormSuccess = async (leadId: string, leadData: any) => {
@@ -29,7 +30,6 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
     
     setIsCreatingFlow(true);
     try {
-      // Create a new flow with the resolved franchisee ID (UUID)
       const flowId = await createFlow(resolvedFranchiseeId, {
         leadId,
         leadData: {
@@ -42,8 +42,6 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
       });
       
       console.log('Flow created successfully:', flowId);
-      
-      // Navigate to find classes with the flow ID (using slug in URL)
       navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
     } catch (error) {
       console.error('Error creating flow:', error);
@@ -55,10 +53,10 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
 
   if (!resolvedFranchiseeId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Account Not Found</h1>
-          <p className="text-gray-600">The requested account could not be found.</p>
+          <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Account Not Found</h1>
+          <p className="font-poppins text-brand-grey">The requested account could not be found.</p>
         </div>
       </div>
     );
@@ -66,9 +64,8 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section with Background Image and Embedded Form */}
-      <div className="relative min-h-screen flex items-center justify-center">
-        {/* Background Image */}
+      {/* Hero Section - 70-100vh with background image and overlay */}
+      <section className="hero-section relative flex items-center justify-center">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -76,49 +73,56 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
           }}
         />
         
-        <div className="relative z-10 text-center text-white px-4 max-w-7xl w-full">
+        <div className="relative z-10 container mx-auto px-4 py-24">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Side - Branding and Value Propositions */}
-            <div className="text-left lg:text-center space-y-8">
-              {/* Logo */}
-              <div className="flex justify-center lg:justify-center mb-6">
+            {/* Left Side - Brand and Value Props */}
+            <div className="text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start mb-8">
                 <img 
                   src="/lovable-uploads/73ddb431-9bcb-476d-b5a8-e7cde1c58b51.png" 
                   alt="Soccer Stars Logo" 
                   className="h-16 md:h-20 w-auto"
+                  loading="eager"
                 />
               </div>
               
-              <h1 className="font-anton text-4xl md:text-6xl lg:text-7xl mb-6 tracking-wide text-center">
+              <h1 className="font-anton text-4xl md:text-6xl lg:text-7xl text-white mb-6">
                 FREE TRIAL CLASSES
               </h1>
-              <h2 className="font-agrandir text-xl md:text-3xl mb-8 text-center">
+              
+              <h2 className="font-agrandir text-xl md:text-2xl text-white mb-8">
                 Fun Soccer for Kids Ages 2-14
               </h2>
               
-              {/* Value Propositions */}
-              <div className="space-y-6 mb-8">
-                <p className="font-poppins text-lg md:text-xl flex items-center justify-center lg:justify-center">
-                  <span className="text-green-400 text-2xl mr-4">⚽</span>
-                  Professional coaching in a fun environment
-                </p>
-                <p className="font-poppins text-lg md:text-xl flex items-center justify-center lg:justify-center">
-                  <span className="text-green-400 text-2xl mr-4">🏆</span>
-                  Build confidence & skills through play
-                </p>
-                <p className="font-poppins text-lg md:text-xl flex items-center justify-center lg:justify-center">
-                  <span className="text-green-400 text-2xl mr-4">👫</span>
-                  Non-competitive, inclusive for all abilities
-                </p>
+              {/* Three Key Value Props */}
+              <div className="space-y-4 mb-8 text-white">
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <Users className="w-3 h-3 text-white" />
+                  </div>
+                  <p className="font-poppins text-lg">Professional coaching in a fun environment</p>
+                </div>
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <Star className="w-3 h-3 text-white" />
+                  </div>
+                  <p className="font-poppins text-lg">Build confidence & skills through play</p>
+                </div>
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <Clock className="w-3 h-3 text-white" />
+                  </div>
+                  <p className="font-poppins text-lg">Non-competitive, inclusive for all abilities</p>
+                </div>
               </div>
             </div>
 
-            {/* Right Side - Embedded Form */}
-            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-auto">
+            {/* Right Side - Lead Capture Form */}
+            <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-auto">
               {isCreatingFlow ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-                  <p className="font-poppins text-gray-600">Starting your booking...</p>
+                  <p className="font-poppins text-brand-grey">Starting your booking...</p>
                 </div>
               ) : (
                 <QuickCaptureForm 
@@ -130,23 +134,27 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Features Section with Real Images */}
-      <div className="py-20 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
+      {/* Value-Prop Strip - Three Equal Columns */}
+      <section className="py-20 px-4 bg-gray-50">
+        <div className="container mx-auto">
           <h3 className="font-agrandir text-4xl text-brand-navy text-center mb-16">
             Why Choose Soccer Stars?
           </h3>
           
-          <div className="grid md:grid-cols-3 gap-12">
+          <div className="value-prop-strip">
             <div className="text-center">
               <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
                 <img 
                   src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" 
                   alt="Toddler Soccer Fun" 
                   className="w-full h-64 object-cover"
+                  loading="lazy"
                 />
+              </div>
+              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-white" />
               </div>
               <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-4: Little Kickers</h4>
               <p className="font-poppins text-brand-grey text-lg">Fun introduction to soccer with focus on motor skills and following simple instructions</p>
@@ -158,7 +166,11 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
                   src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" 
                   alt="Youth Soccer Development" 
                   className="w-full h-64 object-cover"
+                  loading="lazy"
                 />
+              </div>
+              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="w-6 h-6 text-white" />
               </div>
               <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 5-8: Skill Builders</h4>
               <p className="font-poppins text-brand-grey text-lg">Development of fundamental soccer skills with age-appropriate games and activities</p>
@@ -170,32 +182,46 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
                   src="/lovable-uploads/a0964960-70c4-4c41-a94e-98ca3a2312e6.png" 
                   alt="Advanced Soccer Training" 
                   className="w-full h-64 object-cover"
+                  loading="lazy"
                 />
+              </div>
+              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-6 h-6 text-white" />
               </div>
               <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 9-14: Advanced Players</h4>
               <p className="font-poppins text-brand-grey text-lg">Enhanced technical skills with tactical understanding and team play concepts</p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Testimonial Section with Happy Kids */}
-      <div className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto text-center">
-          <h3 className="font-agrandir text-4xl text-brand-navy mb-12">
+      {/* Testimonials Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto">
+          <h3 className="font-agrandir text-4xl text-brand-navy text-center mb-12">
             See the Joy in Action
           </h3>
           
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div className="space-y-8">
-              <div className="bg-gray-50 p-8 rounded-xl">
+              <div className="bg-gray-50 p-8 rounded-xl border-l-4 border-l-brand-red">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
                 <p className="font-poppins text-xl text-gray-700 mb-4 italic">
                   "My daughter absolutely loves Soccer Stars! She's gained so much confidence and made great friends. The coaches are amazing with kids."
                 </p>
                 <p className="font-poppins font-semibold text-brand-navy">- Sarah M., Parent</p>
               </div>
               
-              <div className="bg-gray-50 p-8 rounded-xl">
+              <div className="bg-gray-50 p-8 rounded-xl border-l-4 border-l-brand-blue">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
                 <p className="font-poppins text-xl text-gray-700 mb-4 italic">
                   "The non-competitive environment is perfect for our son. He's learning skills while having a blast!"
                 </p>
@@ -208,36 +234,99 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
                 src="/lovable-uploads/f5c00969-26f0-44a8-8551-f73f45e5fec2.png" 
                 alt="Happy Soccer Kid" 
                 className="rounded-lg shadow-lg w-full h-48 object-cover"
+                loading="lazy"
               />
               <img 
                 src="/lovable-uploads/80139c96-b766-49d4-83b6-10e210326cd7.png" 
                 alt="Excited Soccer Player" 
                 className="rounded-lg shadow-lg w-full h-48 object-cover"
+                loading="lazy"
               />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Call to Action */}
-      <div className="py-16 px-4 bg-brand-red text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h3 className="font-agrandir text-3xl md:text-4xl mb-6">
+      {/* CTA Band - Navy background with white text and red button */}
+      <section className="cta-band">
+        <div className="container mx-auto px-4">
+          <h3 className="font-agrandir text-3xl md:text-4xl mb-6 text-white">
             Ready to Get Started?
           </h3>
-          <p className="font-poppins text-xl mb-8">
+          <p className="font-poppins text-xl mb-8 text-white max-w-2xl mx-auto">
             Join thousands of families who have discovered the joy of Soccer Stars. Your free trial is just a click away!
           </p>
-          <button 
+          <Button 
+            variant="soccer_primary"
+            size="soccer"
             onClick={() => {
               document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="bg-white text-brand-red px-8 py-4 rounded-lg font-poppins text-xl font-semibold hover:bg-gray-100 transition-colors"
+            className="text-xl"
           >
-            Book Your Free Trial Now
-          </button>
+            Find Your Free Trial
+          </Button>
         </div>
-      </div>
+      </section>
+
+      {/* Footer - Navy background, three columns */}
+      <footer className="soccer-footer">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {/* Column 1: Sitemap Links */}
+            <div>
+              <h4 className="font-agrandir text-lg mb-4 text-white">Programs</h4>
+              <div className="space-y-2">
+                <p className="font-poppins text-gray-300">Little Kickers (Ages 2-4)</p>
+                <p className="font-poppins text-gray-300">Skill Builders (Ages 5-8)</p>
+                <p className="font-poppins text-gray-300">Advanced Players (Ages 9-14)</p>
+                <p className="font-poppins text-gray-300">Free Trial Classes</p>
+              </div>
+            </div>
+            
+            {/* Column 2: Contact Info */}
+            <div>
+              <h4 className="font-agrandir text-lg mb-4 text-white">Contact Us</h4>
+              <div className="space-y-2">
+                <div className="flex items-center text-gray-300">
+                  <Phone className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">1-800-SOCCER-STARS</span>
+                </div>
+                <div className="flex items-center text-gray-300">
+                  <Mail className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">info@soccerstars.com</span>
+                </div>
+                <div className="flex items-center text-gray-300">
+                  <MapPin className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">Find Local Programs</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Column 3: Social Icons */}
+            <div>
+              <h4 className="font-agrandir text-lg mb-4 text-white">Follow Us</h4>
+              <div className="flex space-x-4">
+                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
+                  <span className="text-white font-poppins text-sm">f</span>
+                </div>
+                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
+                  <span className="text-white font-poppins text-sm">ig</span>
+                </div>
+                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
+                  <span className="text-white font-poppins text-sm">tw</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-600 pt-6 text-center">
+            <p className="font-poppins text-gray-400 text-sm">
+              © {new Date().getFullYear()} Soccer Stars. All rights reserved. | Backed by 20 years of experience
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface QuickCaptureFormProps {
-  franchiseeId: string; // This is now the actual franchisee table ID
+  franchiseeId: string;
   onSuccess?: (leadId: string, leadData: any) => void;
   showTitle?: boolean;
 }
@@ -27,15 +27,38 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     zip: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    if (!formData.zip.trim()) newErrors.zip = 'ZIP code is required';
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
       console.log('Starting form submission with franchisee ID:', franchiseeId);
 
-      // Create lead directly with the franchisee ID (no conversion needed)
       const { data: lead, error: leadError } = await supabase
         .from('leads')
         .insert({
@@ -73,6 +96,10 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   return (
@@ -82,7 +109,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
           <CardTitle className="font-agrandir text-2xl text-brand-navy">
             Get Started with Your Free Trial
           </CardTitle>
-          <p className="font-poppins text-gray-600 text-sm">
+          <p className="font-poppins text-brand-grey text-sm">
             Just a few details to find classes near you
           </p>
         </CardHeader>
@@ -91,7 +118,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+              <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
                 First Name *
               </Label>
               <Input
@@ -101,11 +128,16 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 required
                 placeholder="Enter first name"
-                className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+                soccer
+                error={!!errors.firstName}
+                className="h-12"
               />
+              {errors.firstName && (
+                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.firstName}</p>
+              )}
             </div>
             <div>
-              <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+              <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
                 Last Name *
               </Label>
               <Input
@@ -115,13 +147,18 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 required
                 placeholder="Enter last name"
-                className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+                soccer
+                error={!!errors.lastName}
+                className="h-12"
               />
+              {errors.lastName && (
+                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.lastName}</p>
+              )}
             </div>
           </div>
 
           <div>
-            <Label htmlFor="email" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+            <Label htmlFor="email" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
               Email Address *
             </Label>
             <Input
@@ -131,12 +168,17 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               onChange={(e) => handleInputChange('email', e.target.value)}
               required
               placeholder="your.email@example.com"
-              className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+              soccer
+              error={!!errors.email}
+              className="h-12"
             />
+            {errors.email && (
+              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.email}</p>
+            )}
           </div>
 
           <div>
-            <Label htmlFor="phone" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+            <Label htmlFor="phone" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
               Phone Number *
             </Label>
             <Input
@@ -146,12 +188,17 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               onChange={(e) => handleInputChange('phone', e.target.value)}
               required
               placeholder="(555) 123-4567"
-              className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+              soccer
+              error={!!errors.phone}
+              className="h-12"
             />
+            {errors.phone && (
+              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.phone}</p>
+            )}
           </div>
 
           <div>
-            <Label htmlFor="zip" className="font-poppins text-sm font-medium text-gray-700 mb-1 block">
+            <Label htmlFor="zip" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
               ZIP Code *
             </Label>
             <Input
@@ -162,14 +209,21 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               required
               placeholder="12345"
               maxLength={5}
-              className="font-poppins bg-white border-2 border-gray-200 focus:border-brand-blue text-gray-900 placeholder:text-gray-500 h-11"
+              soccer
+              error={!!errors.zip}
+              className="h-12"
             />
+            {errors.zip && (
+              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.zip}</p>
+            )}
           </div>
 
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins text-lg py-6 h-auto"
+            variant="soccer_primary"
+            size="soccer"
+            className="w-full text-lg"
           >
             {isSubmitting ? (
               <>
@@ -181,7 +235,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             )}
           </Button>
 
-          <p className="text-xs text-gray-500 text-center font-poppins leading-relaxed">
+          <p className="text-xs text-brand-grey text-center font-poppins leading-relaxed">
             By submitting, you agree to receive information about Soccer Stars programs. 
             We respect your privacy and won't spam you.
           </p>

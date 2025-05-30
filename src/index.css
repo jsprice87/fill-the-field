@@ -39,10 +39,11 @@
     --radius: 0.5rem;
 
     /* Soccer Stars Brand Colors */
-    --brand-red: 206 92% 44%;      /* #CE0E2D */
+    --brand-red: 348 92% 44%;      /* #CE0E2D */
     --brand-navy: 218 94% 14%;     /* #021D49 */
     --brand-blue: 215 100% 40%;    /* #003BCE */
     --brand-grey: 210 9% 64%;      /* #99A3AD */
+    --brand-red-600: 348 84% 45%;  /* For error states */
   }
  
   .dark {
@@ -83,17 +84,20 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Poppins', sans-serif;
+    font-size: 16px; /* Base 16px as per brand guidelines */
   }
 }
 
-/* Brand Typography Classes */
+/* Soccer Stars Brand Typography Classes */
 .font-anton {
   font-family: 'Anton', sans-serif;
   text-transform: uppercase;
+  letter-spacing: 1px; /* +1px letter spacing as per guidelines */
+  font-weight: 400;
 }
 
 .font-agrandir {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif; /* Using Inter as Agrandir substitute */
   font-weight: 900;
 }
 
@@ -101,7 +105,20 @@
   font-family: 'Poppins', sans-serif;
 }
 
-/* Brand Color Classes */
+/* Heading Scale - ×1.25 using rem */
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.25rem; }
+.text-xl { font-size: 1.563rem; }
+.text-2xl { font-size: 1.953rem; }
+.text-3xl { font-size: 2.441rem; }
+.text-4xl { font-size: 3.052rem; }
+.text-5xl { font-size: 3.815rem; }
+.text-6xl { font-size: 4.768rem; }
+.text-7xl { font-size: 5.96rem; }
+
+/* Soccer Stars Brand Color Classes */
 .text-brand-red {
   color: hsl(var(--brand-red));
 }
@@ -116,6 +133,10 @@
 
 .text-brand-grey {
   color: hsl(var(--brand-grey));
+}
+
+.text-brand-red-600 {
+  color: hsl(var(--brand-red-600));
 }
 
 .bg-brand-red {
@@ -150,15 +171,67 @@
   border-color: hsl(var(--brand-grey));
 }
 
-/* Hover states */
-.hover\:bg-brand-red:hover {
-  background-color: hsl(var(--brand-red) / 0.9);
+/* Soccer Stars Brand Button Styles */
+.btn-soccer-primary {
+  @apply bg-brand-red text-white font-poppins font-medium px-6 py-3 rounded transition-colors min-h-[44px] min-w-[44px];
 }
 
-.hover\:bg-brand-navy:hover {
-  background-color: hsl(var(--brand-navy) / 0.9);
+.btn-soccer-primary:hover {
+  background-color: hsl(var(--brand-blue));
 }
 
-.hover\:bg-brand-blue:hover {
-  background-color: hsl(var(--brand-blue) / 0.9);
+.btn-soccer-secondary {
+  @apply bg-transparent border-2 border-brand-navy text-brand-navy font-poppins font-medium px-6 py-3 rounded transition-colors min-h-[44px] min-w-[44px];
+}
+
+.btn-soccer-secondary:hover {
+  @apply bg-brand-navy text-white;
+}
+
+/* Soccer Stars Form Styles */
+.input-soccer {
+  @apply rounded border-2 border-gray-300 px-3 py-2 text-base font-poppins bg-white transition-colors min-h-[44px];
+  border-radius: 4px; /* 4px radius as per guidelines */
+}
+
+.input-soccer:focus {
+  @apply border-brand-navy outline-none ring-0;
+}
+
+.input-soccer.error {
+  @apply border-brand-red-600;
+}
+
+/* Layout Patterns */
+.hero-section {
+  min-height: 70vh;
+}
+
+@media (min-width: 1024px) {
+  .hero-section {
+    min-height: 100vh;
+  }
+}
+
+.value-prop-strip {
+  @apply grid md:grid-cols-3 gap-8;
+}
+
+.cta-band {
+  @apply bg-brand-navy text-white py-16 text-center;
+}
+
+.soccer-footer {
+  @apply bg-brand-navy text-white py-12;
+}
+
+/* Accessibility - Ensure interactive targets are ≥44×44px */
+button, .btn, [role="button"], a[href] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Performance - Lazy loading images */
+img[loading="lazy"] {
+  object-fit: cover;
 }
