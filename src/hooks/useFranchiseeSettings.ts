@@ -42,15 +42,22 @@ export const useUpdateFranchiseeSetting = () => {
 
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      console.log('Updating setting:', key, value);
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       // Get franchisee_id
-      const { data: franchisee } = await supabase
+      const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('id')
         .eq('user_id', user.id)
         .single();
+
+      if (franchiseeError) {
+        console.error('Franchisee lookup error:', franchiseeError);
+        throw franchiseeError;
+      }
 
       if (!franchisee) throw new Error('Franchisee not found');
 
@@ -64,7 +71,12 @@ export const useUpdateFranchiseeSetting = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Setting update error:', error);
+        throw error;
+      }
+      
+      console.log('Setting updated successfully:', data);
       return data;
     },
     onSuccess: () => {
@@ -72,8 +84,8 @@ export const useUpdateFranchiseeSetting = () => {
       toast.success('Setting updated successfully');
     },
     onError: (error) => {
-      toast.error('Failed to update setting');
-      console.error('Setting update error:', error);
+      console.error('Setting update mutation error:', error);
+      toast.error(`Failed to update setting: ${error.message}`);
     }
   });
 };

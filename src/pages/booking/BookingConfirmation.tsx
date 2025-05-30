@@ -1,17 +1,12 @@
+
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Calendar, Clock, MapPin, Users, Share, ArrowLeft, ExternalLink, CalendarPlus } from 'lucide-react';
-import { Facebook, Instagram } from 'lucide-react';
-import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
-import { useFranchiseeData } from '@/hooks/useFranchiseeData';
+import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { generateCalendarUrls, downloadICSFile } from '@/utils/calendarUtils';
-import { formatDateInTimezone, DEFAULT_TIMEZONE } from '@/utils/timezoneUtils';
-import { parseISO } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { format } from 'date-fns';
 
 interface BookingData {
   id: string;
@@ -20,103 +15,115 @@ interface BookingData {
   parent_last_name: string;
   parent_email: string;
   parent_phone: string;
-  created_at: string;
+  class_schedule_id: string;
   appointments: Array<{
-    id: string;
-    participant_name: string;
-    participant_age: number;
+    selected_date: string;
     class_name: string;
     class_time: string;
-    selected_date?: string;
-    health_conditions?: string;
-    age_override?: boolean;
+    participant_name: string;
   }>;
-  location: {
-    name: string;
-    address: string;
+  class_schedules: {
+    classes: {
+      name: string;
+      locations: {
+        name: string;
+        address: string;
+        city: string;
+        state: string;
+        phone?: string;
+      };
+    };
   };
 }
 
 interface FranchiseeData {
   company_name: string;
+  contact_name: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+}
+
+interface FranchiseeSettings {
+  website_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  share_message_template?: string;
 }
 
 const BookingConfirmation: React.FC = () => {
   const { franchiseeSlug, bookingId } = useParams();
   const navigate = useNavigate();
-  const { data: settings } = useFranchiseeSettings();
-  const { data: franchiseeData } = useFranchiseeData();
   const [booking, setBooking] = useState<BookingData | null>(null);
-  const [franchiseeInfo, setFranchiseeInfo] = useState<FranchiseeData | null>(null);
+  const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
+  const [franchiseeSettings, setFranchiseeSettings] = useState<FranchiseeSettings>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get timezone from settings or use default
-  const timezone = settings?.timezone || DEFAULT_TIMEZONE;
-
   useEffect(() => {
-    if (!bookingId) {
-      navigate(`/${franchiseeSlug}/free-trial`);
+    if (!franchiseeSlug || !bookingId) {
+      navigate('/');
       return;
     }
-
     loadBookingData();
-  }, [bookingId, franchiseeSlug, navigate]);
+  }, [franchiseeSlug, bookingId]);
 
   const loadBookingData = async () => {
     try {
-      // Get franchisee data first
+      // Get franchisee by slug
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
-        .select('company_name')
+        .select('*')
         .eq('slug', franchiseeSlug)
         .single();
 
-      if (franchiseeError) {
-        console.error('Error loading franchisee:', franchiseeError);
-      } else {
-        setFranchiseeInfo(franchisee);
+      if (franchiseeError || !franchisee) {
+        throw new Error('Franchisee not found');
       }
 
-      // Fetch booking with appointments and location data
+      setFranchiseeData(franchisee);
+
+      // Get franchisee settings
+      const { data: settings, error: settingsError } = await supabase
+        .from('franchisee_settings')
+        .select('*')
+        .eq('franchisee_id', franchisee.id);
+
+      if (!settingsError && settings) {
+        const settingsMap = settings.reduce((acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value;
+          return acc;
+        }, {} as Record<string, string>);
+        setFranchiseeSettings(settingsMap);
+      }
+
+      // Get booking details
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .select(`
           *,
-          appointments(*),
-          class_schedules!inner(
-            classes!inner(
-              location_id,
-              locations!inner(name, address)
+          appointments (*),
+          class_schedules (
+            classes (
+              name,
+              locations (
+                name,
+                address,
+                city,
+                state,
+                phone
+              )
             )
           )
         `)
         .eq('id', bookingId)
         .single();
 
-      if (bookingError) {
-        console.error('Error loading booking:', bookingError);
-        toast.error('Failed to load booking details');
-        navigate(`/${franchiseeSlug}/free-trial`);
-        return;
+      if (bookingError || !bookingData) {
+        throw new Error('Booking not found');
       }
 
-      // Transform the data to match our interface
-      const transformedBooking: BookingData = {
-        id: bookingData.id,
-        booking_reference: bookingData.booking_reference,
-        parent_first_name: bookingData.parent_first_name,
-        parent_last_name: bookingData.parent_last_name,
-        parent_email: bookingData.parent_email,
-        parent_phone: bookingData.parent_phone,
-        created_at: bookingData.created_at,
-        appointments: bookingData.appointments || [],
-        location: {
-          name: bookingData.class_schedules?.classes?.locations?.name || 'Location',
-          address: bookingData.class_schedules?.classes?.locations?.address || ''
-        }
-      };
-
-      setBooking(transformedBooking);
+      setBooking(bookingData);
     } catch (error) {
       console.error('Error loading booking:', error);
       toast.error('Failed to load booking details');
@@ -126,91 +133,28 @@ const BookingConfirmation: React.FC = () => {
     }
   };
 
-  const handleShare = () => {
-    const businessName = franchiseeInfo?.company_name || franchiseeData?.company_name || 'Soccer Stars';
-    
-    // Use custom share message template from settings if available
-    let shareText = settings?.share_message_template || 
-      `I just signed up my child for a free soccer trial at {company_name}! Check it out: {url}`;
-    
-    // Replace placeholders
-    shareText = shareText
-      .replace(/{company_name}/g, businessName)
-      .replace(/{url}/g, `${window.location.origin}/${franchiseeSlug}/free-trial`);
-    
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/${franchiseeSlug}/free-trial`;
+    const message = franchiseeSettings.share_message_template 
+      ? franchiseeSettings.share_message_template
+          .replace('{company_name}', franchiseeData?.company_name || 'Soccer Stars')
+          .replace('{url}', shareUrl)
+      : `I just signed up my child for a free soccer trial at ${franchiseeData?.company_name || 'Soccer Stars'}! Check it out: ${shareUrl}`;
+
     if (navigator.share) {
-      navigator.share({
-        text: shareText
-      });
+      try {
+        await navigator.share({
+          title: 'Soccer Trial Booking',
+          text: message,
+          url: shareUrl,
+        });
+      } catch (error) {
+        console.log('Share cancelled');
+      }
     } else {
-      navigator.clipboard.writeText(shareText);
+      await navigator.clipboard.writeText(message);
       toast.success('Share message copied to clipboard!');
     }
-  };
-
-  const handleAddToCalendar = (appointment: any) => {
-    if (!appointment.selected_date) return;
-
-    // Parse the class time to get start and end times
-    const timeMatch = appointment.class_time.match(/(\d{1,2}:\d{2}\s*(?:AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM))/i);
-    if (!timeMatch) return;
-
-    const [, startTimeStr, endTimeStr] = timeMatch;
-    
-    // Create date objects in the correct timezone
-    const appointmentDate = parseISO(appointment.selected_date + 'T00:00:00');
-    const startTime = parseTimeStringInTimezone(startTimeStr, appointmentDate, timezone);
-    const endTime = parseTimeStringInTimezone(endTimeStr, appointmentDate, timezone);
-
-    const calendarEvent = {
-      title: `${appointment.class_name} - ${appointment.participant_name}`,
-      description: `Soccer class for ${appointment.participant_name} (${appointment.participant_age} years old)${appointment.health_conditions ? `\nSpecial notes: ${appointment.health_conditions}` : ''}`,
-      start: startTime,
-      end: endTime,
-      location: `${booking?.location.name}, ${booking?.location.address}`,
-      timezone: timezone
-    };
-
-    const urls = generateCalendarUrls(calendarEvent);
-    
-    // For now, let's offer Google Calendar and download ICS
-    const choice = confirm('Add to Google Calendar? (Cancel to download calendar file instead)');
-    if (choice) {
-      window.open(urls.google, '_blank');
-    } else {
-      downloadICSFile(calendarEvent);
-    }
-  };
-
-  const parseTimeStringInTimezone = (timeStr: string, date: Date, tz: string) => {
-    const [time, period] = timeStr.split(/\s*(AM|PM)/i);
-    const [hours, minutes] = time.split(':').map(Number);
-    
-    let hour24 = hours;
-    if (period.toUpperCase() === 'PM' && hours !== 12) {
-      hour24 += 12;
-    } else if (period.toUpperCase() === 'AM' && hours === 12) {
-      hour24 = 0;
-    }
-    
-    // Create the date in the specified timezone
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-    
-    // Create a date in the target timezone
-    const result = new Date();
-    result.setFullYear(year, month, day);
-    result.setHours(hour24, minutes, 0, 0);
-    
-    return result;
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '';
-    
-    // Use timezone-aware formatting
-    return formatDateInTimezone(dateStr, timezone, 'EEEE, MMMM d, yyyy');
   };
 
   if (isLoading) {
@@ -224,229 +168,204 @@ const BookingConfirmation: React.FC = () => {
     );
   }
 
-  if (!booking) {
+  if (!booking || !franchiseeData) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h2 className="font-agrandir text-2xl text-brand-navy mb-4">Booking Not Found</h2>
-          <p className="font-poppins text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
-          <Button asChild className="bg-brand-navy hover:bg-brand-navy/90 text-white font-poppins">
-            <Link to={`/${franchiseeSlug}/free-trial`}>Back to Home</Link>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Booking Not Found</h1>
+          <p className="text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
+          <Button onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}>
+            Back to Booking
           </Button>
         </div>
       </div>
     );
   }
 
-  // Group appointments by class
-  const appointmentsByClass = booking.appointments.reduce((acc, appointment) => {
-    const key = `${appointment.class_name}-${appointment.class_time}`;
-    if (!acc[key]) {
-      acc[key] = {
-        className: appointment.class_name,
-        classTime: appointment.class_time,
-        appointments: []
-      };
-    }
-    acc[key].appointments.push(appointment);
-    return acc;
-  }, {} as Record<string, { className: string; classTime: string; appointments: any[] }>);
-
-  const businessName = franchiseeInfo?.company_name || franchiseeData?.company_name || 'Soccer Stars';
-  const websiteUrl = settings?.website_url;
+  const appointment = booking.appointments[0];
+  const location = booking.class_schedules.classes.locations;
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="bg-brand-navy text-white py-4">
+      <div className="bg-brand-navy text-white py-6">
         <div className="container mx-auto px-4">
-          <h1 className="font-anton text-2xl">
-            {businessName.toUpperCase()} - BOOKING CONFIRMED
-          </h1>
-          {booking.booking_reference && (
-            <p className="font-poppins text-sm opacity-90">Booking Reference: {booking.booking_reference}</p>
-          )}
+          <h1 className="font-anton text-3xl mb-2">SOCCER STARS</h1>
+          <h2 className="font-agrandir text-xl">Booking Confirmed!</h2>
         </div>
       </div>
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Success Header */}
-          <div className="text-center">
-            <div className="bg-green-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-12 w-12 text-green-600" />
-            </div>
-            <h2 className="font-agrandir text-4xl text-brand-navy mb-4">Booking Confirmed!</h2>
-            <p className="font-poppins text-lg text-gray-600 mb-4">
-              Your free trial class has been booked. We're excited to see you on the field!
-            </p>
-          </div>
 
-          {/* Booking Summary */}
-          <Card className="border-l-4 border-l-green-500">
-            <CardHeader>
-              <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Your Booking Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Location */}
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-brand-red mt-1" />
-                <div>
-                  <h4 className="font-poppins font-semibold text-brand-navy">{booking.location.name}</h4>
-                  <p className="font-poppins text-gray-600">{booking.location.address}</p>
-                </div>
-              </div>
-
-              {/* Classes and Appointments */}
-              {Object.values(appointmentsByClass).map((classGroup, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Clock className="h-4 w-4 text-brand-blue" />
-                    <h4 className="font-agrandir text-lg text-brand-navy">{classGroup.className}</h4>
-                  </div>
-                  <p className="font-poppins text-gray-600 mb-3">{classGroup.classTime}</p>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="h-4 w-4 text-brand-red" />
-                    <span className="font-poppins font-medium">Participants:</span>
-                  </div>
-                  <ul className="space-y-3">
-                    {classGroup.appointments.map((appointment) => (
-                      <li key={appointment.id} className="font-poppins text-gray-700">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            • {appointment.participant_name} ({appointment.participant_age} years old)
-                            {appointment.selected_date && (
-                              <div className="ml-4 text-sm text-brand-blue font-medium">
-                                📅 {formatDate(appointment.selected_date)}
-                              </div>
-                            )}
-                            {appointment.age_override && (
-                              <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                                Age Override
-                              </span>
-                            )}
-                          </div>
-                          {appointment.selected_date && (
-                            <Button
-                              onClick={() => handleAddToCalendar(appointment)}
-                              size="sm"
-                              variant="outline"
-                              className="ml-4 text-xs"
-                            >
-                              <CalendarPlus className="h-3 w-3 mr-1" />
-                              Add to Calendar
-                            </Button>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-
-              {/* Parent/Guardian Info */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="font-poppins font-semibold text-brand-navy mb-2">Parent/Guardian Contact:</h4>
-                <p className="font-poppins text-gray-700">
-                  {booking.parent_first_name} {booking.parent_last_name}
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        {/* Success Message */}
+        <Card className="mb-8 border-l-4 border-l-green-500">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-8 w-8 text-green-500" />
+              <div>
+                <CardTitle className="font-agrandir text-xl text-brand-navy">
+                  Booking Confirmed!
+                </CardTitle>
+                <p className="font-poppins text-gray-600 mt-1">
+                  Reference: {booking.booking_reference}
                 </p>
-                <p className="font-poppins text-gray-600">{booking.parent_email}</p>
-                <p className="font-poppins text-gray-600">{booking.parent_phone}</p>
               </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="font-poppins text-gray-700 mb-4">
+              Thank you {booking.parent_first_name}! Your free trial has been successfully booked. 
+              We're excited to see {appointment.participant_name} on the field!
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Booking Details */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="font-agrandir text-lg text-brand-navy">Booking Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <Calendar className="h-5 w-5 text-brand-blue mt-1" />
+              <div>
+                <p className="font-poppins font-medium">Date & Time</p>
+                <p className="font-poppins text-gray-600">
+                  {format(new Date(appointment.selected_date), 'EEEE, MMMM d, yyyy')} at {appointment.class_time}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <User className="h-5 w-5 text-brand-blue mt-1" />
+              <div>
+                <p className="font-poppins font-medium">Class</p>
+                <p className="font-poppins text-gray-600">{appointment.class_name}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+              <div>
+                <p className="font-poppins font-medium">Location</p>
+                <p className="font-poppins text-gray-600">
+                  {location.name}<br />
+                  {location.address}, {location.city}, {location.state}
+                </p>
+                {location.phone && (
+                  <p className="font-poppins text-gray-600 flex items-center gap-1 mt-1">
+                    <Phone className="h-4 w-4" />
+                    {location.phone}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Information */}
+        {(franchiseeData.phone || franchiseeData.address || franchiseeSettings.website_url) && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="font-agrandir text-lg text-brand-navy">Contact Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {franchiseeData.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-brand-blue" />
+                  <span className="font-poppins text-gray-700">{franchiseeData.phone}</span>
+                </div>
+              )}
+              
+              {franchiseeData.address && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+                  <span className="font-poppins text-gray-700">
+                    {franchiseeData.address}
+                    {franchiseeData.city && franchiseeData.state && (
+                      <><br />{franchiseeData.city}, {franchiseeData.state}</>
+                    )}
+                  </span>
+                </div>
+              )}
+
+              {franchiseeSettings.website_url && (
+                <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-brand-blue" />
+                  <a 
+                    href={franchiseeSettings.website_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="font-poppins text-brand-blue hover:underline"
+                  >
+                    Visit our website
+                  </a>
+                </div>
+              )}
             </CardContent>
           </Card>
+        )}
 
-          {/* Action Cards */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Share with Friends */}
-            <Card className="text-center">
-              <CardContent className="pt-6">
-                <Share className="h-8 w-8 text-brand-blue mx-auto mb-3" />
-                <h4 className="font-agrandir text-lg text-brand-navy mb-2">Share with Friends</h4>
-                <p className="font-poppins text-gray-600 text-sm mb-4">
-                  Know other families who might enjoy soccer? Share your experience!
-                </p>
-                <Button 
-                  onClick={handleShare}
-                  className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+        {/* Actions */}
+        <div className="space-y-4">
+          <Button
+            onClick={handleShare}
+            className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+            size="lg"
+          >
+            <Share2 className="h-5 w-5 mr-2" />
+            Share with Friends
+          </Button>
+
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/${franchiseeSlug}`)}
+              className="flex-1 font-poppins"
+            >
+              Back to Home
+            </Button>
+            {franchiseeSettings.website_url && (
+              <Button
+                variant="outline"
+                onClick={() => window.open(franchiseeSettings.website_url, '_blank')}
+                className="flex-1 font-poppins"
+              >
+                Visit Website
+              </Button>
+            )}
+          </div>
+
+          {/* Social Links */}
+          {(franchiseeSettings.facebook_url || franchiseeSettings.instagram_url) && (
+            <div className="flex justify-center gap-4 pt-4">
+              {franchiseeSettings.facebook_url && (
+                <a
+                  href={franchiseeSettings.facebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-blue hover:text-brand-blue/80"
                 >
-                  Share Now
-                </Button>
-              </CardContent>
-            </Card>
+                  Follow us on Facebook
+                </a>
+              )}
+              {franchiseeSettings.instagram_url && (
+                <a
+                  href={franchiseeSettings.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-blue hover:text-brand-blue/80"
+                >
+                  Follow us on Instagram
+                </a>
+              )}
+            </div>
+          )}
+        </div>
 
-            {/* Social Media */}
-            <Card className="text-center">
-              <CardContent className="pt-6">
-                <div className="flex justify-center gap-2 mb-3">
-                  <Facebook className="h-8 w-8 text-blue-600" />
-                  <Instagram className="h-8 w-8 text-pink-600" />
-                </div>
-                <h4 className="font-agrandir text-lg text-brand-navy mb-2">Follow Us</h4>
-                <p className="font-poppins text-gray-600 text-sm mb-4">
-                  Stay connected for updates, tips, and soccer fun!
-                </p>
-                <div className="space-y-2">
-                  {settings?.facebook_url && (
-                    <Button variant="outline" size="sm" asChild className="w-full">
-                      <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer">
-                        <Facebook className="h-4 w-4 mr-2" />
-                        Facebook
-                      </a>
-                    </Button>
-                  )}
-                  {settings?.instagram_url && (
-                    <Button variant="outline" size="sm" asChild className="w-full">
-                      <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer">
-                        <Instagram className="h-4 w-4 mr-2" />
-                        Instagram
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Learn More */}
-            <Card className="text-center">
-              <CardContent className="pt-6">
-                <ExternalLink className="h-8 w-8 text-brand-red mx-auto mb-3" />
-                <h4 className="font-agrandir text-lg text-brand-navy mb-2">Learn More</h4>
-                <p className="font-poppins text-gray-600 text-sm mb-4">
-                  Discover our full program offerings and philosophy
-                </p>
-                {websiteUrl ? (
-                  <Button asChild className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins">
-                    <a href={websiteUrl} target="_blank" rel="noopener noreferrer">
-                      Visit Website
-                    </a>
-                  </Button>
-                ) : (
-                  <Button className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins">
-                    Coming Soon
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" asChild className="font-poppins">
-              <Link to={`/${franchiseeSlug}/free-trial/find-classes`}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Register More Children
-              </Link>
-            </Button>
-            <Button asChild className="bg-brand-navy hover:bg-brand-navy/90 text-white font-poppins">
-              <Link to={`/${franchiseeSlug}/free-trial`}>
-                Back to Home
-              </Link>
-            </Button>
-          </div>
+        {/* Confirmation Email Notice */}
+        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="font-poppins text-blue-800 text-center text-sm">
+            📧 A confirmation email has been sent to {booking.parent_email}
+          </p>
         </div>
       </div>
     </div>

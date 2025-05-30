@@ -4,13 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Save, Globe, Share2, Calendar } from 'lucide-react';
+import { Globe, Share2 } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
-import { toast } from 'sonner';
 import BookingRestrictionsCard from '@/components/portal/BookingRestrictionsCard';
 import TimezoneSettingsCard from '@/components/portal/TimezoneSettingsCard';
+import BusinessInformationCard from '@/components/portal/BusinessInformationCard';
+import CustomWaiverCard from '@/components/portal/CustomWaiverCard';
 
 const Settings: React.FC = () => {
   const { data: settings, isLoading } = useFranchiseeSettings();
@@ -42,6 +41,9 @@ const Settings: React.FC = () => {
       </div>
 
       <div className="grid gap-6">
+        {/* Business Information */}
+        <BusinessInformationCard />
+
         {/* Timezone Settings */}
         <TimezoneSettingsCard />
 
@@ -110,6 +112,9 @@ const Settings: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Custom Waiver */}
+        <CustomWaiverCard />
 
         {/* Booking Restrictions */}
         <BookingRestrictionsCard />

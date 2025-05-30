@@ -1,22 +1,87 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Phone, MapPin, Globe } from 'lucide-react';
+
+interface FranchiseeData {
+  company_name: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  email: string;
+}
+
+interface FranchiseeSettings {
+  website_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+}
 
 const ContactUs: React.FC = () => {
-  const { franchiseeId } = useParams();
+  const { franchiseeSlug } = useParams();
+  const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
+  const [franchiseeSettings, setFranchiseeSettings] = useState<FranchiseeSettings>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (franchiseeSlug) {
+      loadFranchiseeData();
+    }
+  }, [franchiseeSlug]);
+
+  const loadFranchiseeData = async () => {
+    try {
+      // Get franchisee by slug
+      const { data: franchisee, error: franchiseeError } = await supabase
+        .from('franchisees')
+        .select('*')
+        .eq('slug', franchiseeSlug)
+        .single();
+
+      if (franchiseeError || !franchisee) {
+        console.error('Franchisee error:', franchiseeError);
+        return;
+      }
+
+      setFranchiseeData(franchisee);
+
+      // Get franchisee settings
+      const { data: settings, error: settingsError } = await supabase
+        .from('franchisee_settings')
+        .select('*')
+        .eq('franchisee_id', franchisee.id);
+
+      if (!settingsError && settings) {
+        const settingsMap = settings.reduce((acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value;
+          return acc;
+        }, {} as Record<string, string>);
+        setFranchiseeSettings(settingsMap);
+      }
+    } catch (error) {
+      console.error('Error loading franchisee data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const displayName = franchiseeData?.company_name || 'Soccer Stars';
   
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-indigo-600 text-white">
         <div className="container mx-auto p-4 flex justify-between items-center">
-          <Link to={`/${franchiseeId}/landing-page`} className="text-xl font-bold">Soccer Stars</Link>
+          <Link to={`/${franchiseeSlug}`} className="text-xl font-bold">{displayName}</Link>
           <nav className="hidden md:flex space-x-4">
-            <Link to={`/${franchiseeId}/landing-page`} className="hover:underline">Home</Link>
-            <Link to={`/${franchiseeId}/landing-page/find-classes`} className="hover:underline">Find Classes</Link>
-            <Link to={`/${franchiseeId}/landing-page/contact-us`} className="hover:underline font-medium">Contact Us</Link>
-            <Link to={`/${franchiseeId}/landing-page/spanish-speaking`} className="hover:underline">Español</Link>
+            <Link to={`/${franchiseeSlug}`} className="hover:underline">Home</Link>
+            <Link to={`/${franchiseeSlug}/find-classes`} className="hover:underline">Find Classes</Link>
+            <Link to={`/${franchiseeSlug}/contact`} className="hover:underline font-medium">Contact Us</Link>
+            <Link to={`/${franchiseeSlug}/es`} className="hover:underline">Español</Link>
           </nav>
-          <Link to={`/${franchiseeId}/landing-page/book-a-class`} className="bg-white text-indigo-600 px-4 py-2 rounded font-medium hover:bg-gray-100 transition">
+          <Link to={`/${franchiseeSlug}/free-trial`} className="bg-white text-indigo-600 px-4 py-2 rounded font-medium hover:bg-gray-100 transition">
             Book Now
           </Link>
         </div>
@@ -54,22 +119,81 @@ const ContactUs: React.FC = () => {
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
                 <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium text-gray-700">Address</h3>
-                    <p className="text-gray-600">123 Soccer Lane<br />Denver, CO 80202</p>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-700">Phone</h3>
-                    <p className="text-gray-600">(303) 555-1234</p>
-                  </div>
+                  {franchiseeData?.address && (
+                    <div>
+                      <h3 className="font-medium text-gray-700 flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Address
+                      </h3>
+                      <p className="text-gray-600">
+                        {franchiseeData.address}
+                        {franchiseeData.city && franchiseeData.state && (
+                          <><br />{franchiseeData.city}, {franchiseeData.state} {franchiseeData.zip}</>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {franchiseeData?.phone && (
+                    <div>
+                      <h3 className="font-medium text-gray-700 flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Phone
+                      </h3>
+                      <p className="text-gray-600">{franchiseeData.phone}</p>
+                    </div>
+                  )}
+                  
                   <div>
                     <h3 className="font-medium text-gray-700">Email</h3>
-                    <p className="text-gray-600">info@soccerstars.com</p>
+                    <p className="text-gray-600">{franchiseeData?.email || 'info@soccerstars.com'}</p>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-700">Hours</h3>
-                    <p className="text-gray-600">Monday - Friday: 9am - 5pm<br />Saturday: 10am - 2pm<br />Sunday: Closed</p>
-                  </div>
+
+                  {franchiseeSettings.website_url && (
+                    <div>
+                      <h3 className="font-medium text-gray-700 flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        Website
+                      </h3>
+                      <a 
+                        href={franchiseeSettings.website_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 hover:underline"
+                      >
+                        Visit our website
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Social Links */}
+                  {(franchiseeSettings.facebook_url || franchiseeSettings.instagram_url) && (
+                    <div>
+                      <h3 className="font-medium text-gray-700">Follow Us</h3>
+                      <div className="flex gap-4 mt-2">
+                        {franchiseeSettings.facebook_url && (
+                          <a
+                            href={franchiseeSettings.facebook_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 hover:underline"
+                          >
+                            Facebook
+                          </a>
+                        )}
+                        {franchiseeSettings.instagram_url && (
+                          <a
+                            href={franchiseeSettings.instagram_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 hover:underline"
+                          >
+                            Instagram
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -81,21 +205,21 @@ const ContactUs: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between">
             <div className="mb-6 md:mb-0">
-              <h3 className="text-lg font-bold mb-2">Soccer Stars</h3>
+              <h3 className="text-lg font-bold mb-2">{displayName}</h3>
               <p className="text-gray-300">Making soccer fun for kids since 2005</p>
             </div>
             <div>
               <h4 className="font-medium mb-2">Quick Links</h4>
               <div className="grid grid-cols-2 gap-2">
-                <Link to={`/${franchiseeId}/landing-page`} className="text-gray-300 hover:text-white">Home</Link>
-                <Link to={`/${franchiseeId}/landing-page/find-classes`} className="text-gray-300 hover:text-white">Find Classes</Link>
-                <Link to={`/${franchiseeId}/landing-page/contact-us`} className="text-gray-300 hover:text-white">Contact Us</Link>
-                <Link to={`/${franchiseeId}/landing-page/book-a-class`} className="text-gray-300 hover:text-white">Book a Class</Link>
+                <Link to={`/${franchiseeSlug}`} className="text-gray-300 hover:text-white">Home</Link>
+                <Link to={`/${franchiseeSlug}/find-classes`} className="text-gray-300 hover:text-white">Find Classes</Link>
+                <Link to={`/${franchiseeSlug}/contact`} className="text-gray-300 hover:text-white">Contact Us</Link>
+                <Link to={`/${franchiseeSlug}/free-trial`} className="text-gray-300 hover:text-white">Book a Class</Link>
               </div>
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
-            © {new Date().getFullYear()} Soccer Stars. All rights reserved.
+            © {new Date().getFullYear()} {displayName}. All rights reserved.
           </div>
         </div>
       </footer>
