@@ -72,7 +72,9 @@ export const navItems = [
     icon: <HomeIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <PortalDashboard />
+        <DashboardLayout>
+          <PortalDashboard />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -82,7 +84,9 @@ export const navItems = [
     icon: <UsersIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <PortalLeads />
+        <DashboardLayout>
+          <PortalLeads />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -92,7 +96,9 @@ export const navItems = [
     icon: <UserIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <LeadDetail />
+        <DashboardLayout>
+          <LeadDetail />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -102,7 +108,9 @@ export const navItems = [
     icon: <CalendarIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <PortalBookings />
+        <DashboardLayout>
+          <PortalBookings />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -112,7 +120,9 @@ export const navItems = [
     icon: <MapPinIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <PortalLocations />
+        <DashboardLayout>
+          <PortalLocations />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -122,7 +132,9 @@ export const navItems = [
     icon: <BookOpenIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <PortalClasses />
+        <DashboardLayout>
+          <PortalClasses />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -132,7 +144,9 @@ export const navItems = [
     icon: <BookOpenIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <ClassesList />
+        <DashboardLayout>
+          <ClassesList />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -142,7 +156,9 @@ export const navItems = [
     icon: <BookOpenIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <AddClasses />
+        <DashboardLayout>
+          <AddClasses />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -152,7 +168,9 @@ export const navItems = [
     icon: <BookOpenIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <EditClass />
+        <DashboardLayout>
+          <EditClass />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -162,7 +180,9 @@ export const navItems = [
     icon: <UserIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <PortalProfile />
+        <DashboardLayout>
+          <PortalProfile />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -172,7 +192,9 @@ export const navItems = [
     icon: <SettingsIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <PortalSettings />
+        <DashboardLayout>
+          <PortalSettings />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
