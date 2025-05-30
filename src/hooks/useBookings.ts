@@ -1,10 +1,6 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import type { Database } from '@/integrations/supabase/types';
-
-type LeadStatus = Database['public']['Enums']['lead_status'];
 
 export interface Booking {
   id: string;
@@ -16,7 +12,7 @@ export interface Booking {
   participant_name: string;
   participant_age: number;
   participant_birth_date: string;
-  status: string;
+  status: string; // This will come from the lead, not the booking
   location_id: string;
   location_name?: string;
   lead_first_name?: string;
@@ -79,7 +75,7 @@ export const useBookings = (franchiseeId?: string) => {
         participant_name: appointment.participant_name,
         participant_age: appointment.participant_age,
         participant_birth_date: appointment.participant_birth_date,
-        status: appointment.bookings?.leads?.status || 'new',
+        status: appointment.bookings?.leads?.status || 'new', // Status comes from lead
         location_id: appointment.class_schedules?.classes?.location_id,
         location_name: appointment.class_schedules?.classes?.locations?.name,
         lead_first_name: appointment.bookings?.leads?.first_name,
@@ -91,92 +87,5 @@ export const useBookings = (franchiseeId?: string) => {
       return transformedData;
     },
     enabled: !!franchiseeId,
-  });
-};
-
-export const useUpdateBookingStatus = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ bookingId, leadId, status }: { 
-      bookingId: string; 
-      leadId: string; 
-      status: LeadStatus; 
-    }) => {
-      console.log('Starting status update mutation:', { bookingId, leadId, status });
-      
-      // Update the lead status directly since we removed status from appointments
-      const { data: leadData, error: leadError } = await supabase
-        .from('leads')
-        .update({ status })
-        .eq('id', leadId)
-        .select();
-
-      if (leadError) {
-        console.error('Error updating lead:', leadError);
-        throw leadError;
-      }
-
-      console.log('Lead updated successfully:', leadData);
-      return { bookingId, leadId, status, leadData };
-    },
-    onMutate: async ({ bookingId, leadId, status }) => {
-      console.log('Optimistic update starting for:', { bookingId, leadId, status });
-      
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['bookings'] });
-      await queryClient.cancelQueries({ queryKey: ['leads'] });
-      
-      // Snapshot the previous values
-      const previousBookings = queryClient.getQueryData(['bookings']);
-      const previousLeads = queryClient.getQueryData(['leads']);
-      
-      // Optimistically update bookings
-      queryClient.setQueryData(['bookings'], (old: any) => {
-        if (!old) return old;
-        return old.map((booking: any) => 
-          booking.id === bookingId ? { ...booking, status } : booking
-        );
-      });
-      
-      // Optimistically update leads
-      queryClient.setQueryData(['leads'], (old: any) => {
-        if (!old) return old;
-        return old.map((lead: any) => 
-          lead.id === leadId ? { ...lead, status } : lead
-        );
-      });
-      
-      console.log('Optimistic updates applied');
-      return { previousBookings, previousLeads };
-    },
-    onSuccess: (data, variables) => {
-      console.log('Mutation successful, invalidating and refetching queries...', data);
-      
-      // Force refetch all related queries
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
-      queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
-      
-      // Force immediate refetch
-      queryClient.refetchQueries({ queryKey: ['bookings'] });
-      queryClient.refetchQueries({ queryKey: ['leads'] });
-      queryClient.refetchQueries({ queryKey: ['lead-stats'] });
-      
-      toast.success('Status updated successfully');
-    },
-    onError: (error, variables, context) => {
-      console.error('Mutation failed:', error);
-      
-      // Rollback optimistic updates
-      if (context?.previousBookings) {
-        queryClient.setQueryData(['bookings'], context.previousBookings);
-      }
-      if (context?.previousLeads) {
-        queryClient.setQueryData(['leads'], context.previousLeads);
-      }
-      
-      toast.error('Failed to update status');
-    }
   });
 };

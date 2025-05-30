@@ -1,1 +1,5 @@
+
 project_id = "ojowhfojaswbbuefxaae"
+
+[functions.update-lead-status]
+verify_jwt = false
