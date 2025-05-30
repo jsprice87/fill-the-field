@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -120,7 +119,7 @@ const FindClasses: React.FC = () => {
       });
       
       console.log('Location updated in flow, navigating to booking page');
-      navigate(`/${franchiseeSlug}/free-trial/booking?flow=${flowId}`);
+      navigate(`/${franchiseeSlug}/free-trial/classes?flow=${flowId}`);
     } catch (error) {
       console.error('Error updating flow:', error);
       toast.error('Failed to select location. Please try again.');
