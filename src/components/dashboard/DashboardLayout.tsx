@@ -155,7 +155,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 )}
                 
                 {!isAdminRoute && (
-                  <Link to={`${navPrefix}/profile`}>
+                  <Link to={`${navPrefix}/portal/profile`}>
                     <Button variant="ghost" className="w-full justify-start">
                       <UserCircle className="mr-2 h-5 w-5" />
                       Profile
