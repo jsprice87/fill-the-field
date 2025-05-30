@@ -225,11 +225,26 @@ const ClassBooking: React.FC = () => {
 
       console.log('All appointments created successfully');
 
-      // Update lead status to booked_upcoming (since all bookings are future dates)
-      await supabase
+      // Only update lead status to booked_upcoming if it hasn't been manually set
+      const { data: leadData, error: leadFetchError } = await supabase
         .from('leads')
-        .update({ status: 'booked_upcoming' })
-        .eq('id', leadId);
+        .select('status_manually_set')
+        .eq('id', leadId)
+        .single();
+
+      if (leadFetchError) {
+        console.error('Error fetching lead data:', leadFetchError);
+      } else if (!leadData.status_manually_set) {
+        // Only update status if it hasn't been manually set
+        await supabase
+          .from('leads')
+          .update({ status: 'booked_upcoming' })
+          .eq('id', leadId);
+        
+        console.log('Lead status updated to booked_upcoming (automatic)');
+      } else {
+        console.log('Lead status not updated - was manually set by user');
+      }
 
       navigate(`/${franchiseeSlug}/free-trial/booking/${booking.id}`);
       
