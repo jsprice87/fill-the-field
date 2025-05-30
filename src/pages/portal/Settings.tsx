@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -15,8 +15,27 @@ const Settings: React.FC = () => {
   const { data: settings, isLoading } = useFranchiseeSettings();
   const updateSetting = useUpdateFranchiseeSetting();
 
-  const handleSettingChange = (key: string, value: string) => {
-    updateSetting.mutate({ key, value });
+  // Local state for website and social media fields to prevent constant DB updates
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [facebookUrl, setFacebookUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [shareMessageTemplate, setShareMessageTemplate] = useState('');
+
+  // Initialize local state when settings load
+  useEffect(() => {
+    if (settings) {
+      setWebsiteUrl(settings.website_url || '');
+      setFacebookUrl(settings.facebook_url || '');
+      setInstagramUrl(settings.instagram_url || '');
+      setShareMessageTemplate(settings.share_message_template || '');
+    }
+  }, [settings]);
+
+  const handleSettingBlur = (key: string, value: string) => {
+    // Only update if the value has actually changed
+    if (settings?.[key] !== value) {
+      updateSetting.mutate({ key, value });
+    }
   };
 
   if (isLoading) {
@@ -61,8 +80,10 @@ const Settings: React.FC = () => {
               <Input
                 id="website_url"
                 placeholder="https://your-website.com"
-                value={settings?.website_url || ''}
-                onChange={(e) => handleSettingChange('website_url', e.target.value)}
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                onBlur={(e) => handleSettingBlur('website_url', e.target.value)}
+                disabled={updateSetting.isPending}
               />
             </div>
             
@@ -71,8 +92,10 @@ const Settings: React.FC = () => {
               <Input
                 id="facebook_url"
                 placeholder="https://facebook.com/your-page"
-                value={settings?.facebook_url || ''}
-                onChange={(e) => handleSettingChange('facebook_url', e.target.value)}
+                value={facebookUrl}
+                onChange={(e) => setFacebookUrl(e.target.value)}
+                onBlur={(e) => handleSettingBlur('facebook_url', e.target.value)}
+                disabled={updateSetting.isPending}
               />
             </div>
             
@@ -81,8 +104,10 @@ const Settings: React.FC = () => {
               <Input
                 id="instagram_url"
                 placeholder="https://instagram.com/your-profile"
-                value={settings?.instagram_url || ''}
-                onChange={(e) => handleSettingChange('instagram_url', e.target.value)}
+                value={instagramUrl}
+                onChange={(e) => setInstagramUrl(e.target.value)}
+                onBlur={(e) => handleSettingBlur('instagram_url', e.target.value)}
+                disabled={updateSetting.isPending}
               />
             </div>
           </CardContent>
@@ -102,8 +127,10 @@ const Settings: React.FC = () => {
               <Textarea
                 id="share_message_template"
                 placeholder="I just signed up my child for a free soccer trial at {company_name}! Check it out: {url}"
-                value={settings?.share_message_template || ''}
-                onChange={(e) => handleSettingChange('share_message_template', e.target.value)}
+                value={shareMessageTemplate}
+                onChange={(e) => setShareMessageTemplate(e.target.value)}
+                onBlur={(e) => handleSettingBlur('share_message_template', e.target.value)}
+                disabled={updateSetting.isPending}
                 rows={3}
               />
               <p className="text-sm text-gray-500 mt-1">
