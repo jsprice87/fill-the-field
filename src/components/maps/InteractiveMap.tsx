@@ -1,13 +1,13 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { LatLngBounds } from 'leaflet';
 import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import LocationMarker from './LocationMarker';
+import MapboxTokenInput from './MapboxTokenInput';
 import mapConfig from '@/assets/map-style.json';
 import { supabase } from '@/integrations/supabase/client';
-import { geocodeAddress } from '@/utils/geocoding';
+import { geocodeLocationsWithMapbox, getGeocodingCacheStats } from '@/utils/mapboxGeocoding';
 import 'leaflet/dist/leaflet.css';
 
 interface Location {
@@ -40,7 +40,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [locationData, setLocationData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [geocodingProgress, setGeocodingProgress] = useState({ current: 0, total: 0 });
+  const [needsMapboxToken, setNeedsMapboxToken] = useState(false);
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
 
   useEffect(() => {
     if (locations.length > 0) {
@@ -48,13 +50,32 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     } else {
       setIsLoading(false);
     }
-  }, [locations]);
+  }, [locations, mapboxToken]);
 
   const loadLocationData = async () => {
     setIsLoading(true);
-    setGeocodingProgress({ current: 0, total: locations.length });
     
     try {
+      // Get franchisee ID first
+      const { data: franchisee } = await supabase
+        .from('franchisees')
+        .select('id')
+        .eq('slug', franchiseeSlug)
+        .single();
+
+      if (!franchisee) {
+        console.error('Franchisee not found');
+        setIsLoading(false);
+        return;
+      }
+
+      const currentFranchiseeId = franchisee.id;
+      setFranchiseeId(currentFranchiseeId);
+
+      // Check cache stats
+      const cacheStats = getGeocodingCacheStats(currentFranchiseeId);
+      console.log('Geocoding cache stats:', cacheStats);
+
       // Get classes and schedules for these locations
       const locationIds = locations.map(loc => loc.id);
       const { data: classes } = await supabase
@@ -66,34 +87,69 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         .in('location_id', locationIds)
         .eq('is_active', true);
 
-      // Process each location and geocode if needed
+      // Try to geocode locations using existing coordinates or Mapbox
+      const locationsToGeocode = locations.map(loc => ({
+        address: loc.address,
+        city: loc.city,
+        state: loc.state,
+        zip: loc.zip
+      }));
+
+      // First, check if we have any locations that need geocoding and don't have cached results
+      const hasUngeocodedLocations = locations.some(loc => {
+        const hasCoordinates = loc.latitude && loc.longitude && 
+          !isNaN(Number(loc.latitude)) && !isNaN(Number(loc.longitude));
+        return !hasCoordinates;
+      });
+
+      let geocodedResults: (any | null)[] = [];
+
+      if (hasUngeocodedLocations) {
+        // Try geocoding with Mapbox (will use cache if available)
+        geocodedResults = await geocodeLocationsWithMapbox(
+          locationsToGeocode, 
+          currentFranchiseeId, 
+          mapboxToken || undefined
+        );
+
+        // Check if we need a Mapbox token for remaining locations
+        const stillNeedGeocoding = geocodedResults.some((result, index) => {
+          const location = locations[index];
+          const hasExistingCoords = location.latitude && location.longitude && 
+            !isNaN(Number(location.latitude)) && !isNaN(Number(location.longitude));
+          return !hasExistingCoords && !result;
+        });
+
+        if (stillNeedGeocoding && !mapboxToken) {
+          setNeedsMapboxToken(true);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Process each location and enrich with class data
       const enrichedLocations = [];
       
       for (let i = 0; i < locations.length; i++) {
         const location = locations[i];
-        setGeocodingProgress({ current: i + 1, total: locations.length });
+        const geocoded = geocodedResults[i];
         
-        let latitude = location.latitude ? Number(location.latitude) : null;
-        let longitude = location.longitude ? Number(location.longitude) : null;
-        
-        // If no coordinates, try to geocode the address
-        if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-          console.log(`Geocoding location: ${location.name}`);
-          const geocoded = await geocodeAddress({
-            address: location.address,
-            city: location.city,
-            state: location.state,
-            zip: location.zip
-          });
-          
-          if (geocoded) {
-            latitude = geocoded.latitude;
-            longitude = geocoded.longitude;
-            console.log(`Successfully geocoded ${location.name}:`, geocoded);
-          } else {
-            console.warn(`Failed to geocode ${location.name}`);
-            continue; // Skip this location if geocoding failed
-          }
+        // Use existing coordinates or geocoded coordinates
+        let latitude: number | null = null;
+        let longitude: number | null = null;
+
+        if (location.latitude && location.longitude && 
+            !isNaN(Number(location.latitude)) && !isNaN(Number(location.longitude))) {
+          latitude = Number(location.latitude);
+          longitude = Number(location.longitude);
+        } else if (geocoded) {
+          latitude = geocoded.latitude;
+          longitude = geocoded.longitude;
+        }
+
+        if (!latitude || !longitude) {
+          console.warn(`Skipping location ${location.name} - no coordinates available`);
+          continue;
         }
         
         // Get class information for this location
@@ -130,12 +186,16 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       }
     } catch (error) {
       console.error('Error loading location data:', error);
-      // Fallback to basic location data without coordinates
       setLocationData([]);
     } finally {
       setIsLoading(false);
-      setGeocodingProgress({ current: 0, total: 0 });
     }
+  };
+
+  const handleMapboxTokenSubmit = (token: string) => {
+    setMapboxToken(token);
+    setNeedsMapboxToken(false);
+    // This will trigger useEffect to reload data with the token
   };
 
   const getDayName = (dayNumber?: number) => {
@@ -214,17 +274,23 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     );
   }
 
+  if (needsMapboxToken) {
+    return (
+      <div className={`flex items-center justify-center bg-gray-50 rounded-lg ${className}`}>
+        <MapboxTokenInput onTokenSubmit={handleMapboxTokenSubmit} />
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 rounded-lg ${className}`}>
         <div className="text-center p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-4"></div>
           <p className="font-poppins text-gray-600 text-lg mb-2">Loading map...</p>
-          {geocodingProgress.total > 0 && (
-            <p className="font-poppins text-gray-500 text-sm">
-              Finding coordinates for locations ({geocodingProgress.current}/{geocodingProgress.total})
-            </p>
-          )}
+          <p className="font-poppins text-gray-500 text-sm">
+            {mapboxToken ? 'Geocoding locations...' : 'Checking cached locations...'}
+          </p>
         </div>
       </div>
     );
