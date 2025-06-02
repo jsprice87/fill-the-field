@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +6,9 @@ import { MapPin, Clock, Users, Map, List } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
+
+// Lazy load the map component for better performance
+const InteractiveMap = lazy(() => import('@/components/maps/InteractiveMap'));
 
 interface Location {
   id: string;
@@ -190,87 +193,102 @@ const FindClasses: React.FC = () => {
           </div>
         </div>
 
-        {viewMode === 'map' && (
-          <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center mb-8 border-2 border-dashed border-gray-300">
-            <div className="text-center">
-              <Map className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="font-poppins text-gray-600 text-lg">Interactive Map Coming Soon</p>
-              <p className="font-poppins text-gray-500 text-sm">
-                We're working on adding map functionality to help you visualize location distances
-              </p>
-            </div>
-          </div>
-        )}
-        
-        {/* Locations List */}
-        <div className="space-y-4">
-          {locations.length > 0 ? (
-            locations.map((location) => (
-              <Card key={location.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="font-agrandir text-xl text-brand-navy mb-3">
-                        {location.name}
-                      </CardTitle>
-                      <div className="space-y-2">
-                        <div className="flex items-start text-gray-600">
-                          <MapPin className="h-4 w-4 mr-2 mt-1 flex-shrink-0" />
-                          <span className="font-poppins">
-                            {location.address}<br />
-                            {location.city}, {location.state} {location.zip}
-                          </span>
-                        </div>
-                        {location.phone && (
-                          <div className="flex items-center text-gray-600">
-                            <span className="font-poppins text-sm">
-                              📞 {location.phone}
-                            </span>
-                          </div>
-                        )}
-                        {location.email && (
-                          <div className="flex items-center text-gray-600">
-                            <span className="font-poppins text-sm">
-                              ✉️ {location.email}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="ml-6">
-                      <Button
-                        onClick={() => handleLocationSelect(location)}
-                        className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3"
-                        size="lg"
-                      >
-                        Select Location
-                      </Button>
+        {/* Responsive layout: Desktop side-by-side, Mobile stacked */}
+        <div className={`${viewMode === 'map' ? 'lg:grid lg:grid-cols-3 lg:gap-8' : ''}`}>
+          {/* Map View */}
+          {viewMode === 'map' && (
+            <div className="lg:col-span-2 mb-8 lg:mb-0">
+              <div className="h-[300px] lg:h-[600px]">
+                <Suspense fallback={
+                  <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-2"></div>
+                      <p className="font-poppins text-gray-600 text-sm">Loading map...</p>
                     </div>
                   </div>
-                </CardHeader>
-              </Card>
-            ))
-          ) : (
-            <Card className="p-8 text-center border-l-4 border-l-brand-red">
-              <div className="mb-6">
-                <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="font-agrandir text-xl text-brand-navy mb-2">
-                  No Locations Found Near You
-                </h3>
-                <p className="font-poppins text-gray-600 mb-6 max-w-md mx-auto">
-                  We don't currently have any locations within 50km of your area ({currentLeadData?.zip}).
-                  Would you like us to notify you when programs become available in your area?
-                </p>
-                <Button
-                  onClick={handleRequestLocation}
-                  className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
-                  size="lg"
-                >
-                  Request Programs in My Area
-                </Button>
+                }>
+                  <InteractiveMap
+                    locations={locations}
+                    franchiseeSlug={franchiseeSlug || ''}
+                    flowId={flowId || undefined}
+                    onLocationSelect={handleLocationSelect}
+                    className="h-full"
+                  />
+                </Suspense>
               </div>
-            </Card>
+            </div>
           )}
+          
+          {/* Locations List */}
+          <div className={`space-y-4 ${viewMode === 'map' ? 'lg:col-span-1' : ''}`}>
+            {locations.length > 0 ? (
+              locations.map((location) => (
+                <Card key={location.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <CardTitle className="font-agrandir text-xl text-brand-navy mb-3">
+                          {location.name}
+                        </CardTitle>
+                        <div className="space-y-2">
+                          <div className="flex items-start text-gray-600">
+                            <MapPin className="h-4 w-4 mr-2 mt-1 flex-shrink-0" />
+                            <span className="font-poppins">
+                              {location.address}<br />
+                              {location.city}, {location.state} {location.zip}
+                            </span>
+                          </div>
+                          {location.phone && (
+                            <div className="flex items-center text-gray-600">
+                              <span className="font-poppins text-sm">
+                                📞 {location.phone}
+                              </span>
+                            </div>
+                          )}
+                          {location.email && (
+                            <div className="flex items-center text-gray-600">
+                              <span className="font-poppins text-sm">
+                                ✉️ {location.email}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="ml-6">
+                        <Button
+                          onClick={() => handleLocationSelect(location)}
+                          className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3"
+                          size="lg"
+                        >
+                          Select Location
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))
+            ) : (
+              <Card className="p-8 text-center border-l-4 border-l-brand-red">
+                <div className="mb-6">
+                  <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="font-agrandir text-xl text-brand-navy mb-2">
+                    No Locations Found Near You
+                  </h3>
+                  <p className="font-poppins text-gray-600 mb-6 max-w-md mx-auto">
+                    We don't currently have any locations within 50km of your area ({currentLeadData?.zip}).
+                    Would you like us to notify you when programs become available in your area?
+                  </p>
+                  <Button
+                    onClick={handleRequestLocation}
+                    className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+                    size="lg"
+                  >
+                    Request Programs in My Area
+                  </Button>
+                </div>
+              </Card>
+            )}
+          </div>
         </div>
 
         {/* Navigation hint */}
