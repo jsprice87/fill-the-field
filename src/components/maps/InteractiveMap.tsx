@@ -16,6 +16,7 @@ interface Location {
   address: string;
   city: string;
   state: string;
+  zip: string;
   latitude?: number;
   longitude?: number;
 }
@@ -82,7 +83,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
             address: location.address,
             city: location.city,
             state: location.state,
-            zip: location.zip || ''
+            zip: location.zip
           });
           
           if (geocoded) {
