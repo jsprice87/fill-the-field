@@ -67,6 +67,8 @@ export const useUpdateFranchiseeSetting = () => {
           franchisee_id: franchisee.id,
           setting_key: key,
           setting_value: value
+        }, {
+          onConflict: 'franchisee_id,setting_key'
         })
         .select()
         .single();
