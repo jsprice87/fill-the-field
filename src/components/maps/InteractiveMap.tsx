@@ -2,12 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { LatLngBounds } from 'leaflet';
 import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, MapPin } from 'lucide-react';
 import LocationMarker from './LocationMarker';
-import MapboxTokenInput from './MapboxTokenInput';
 import mapConfig from '@/assets/map-style.json';
 import { supabase } from '@/integrations/supabase/client';
-import { geocodeLocationsWithMapbox, getGeocodingCacheStats } from '@/utils/mapboxGeocoding';
+import { geocodeLocations, getGeocodingCacheStats } from '@/utils/freeGeocoding';
 import 'leaflet/dist/leaflet.css';
 
 interface Location {
@@ -40,9 +39,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [locationData, setLocationData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [needsMapboxToken, setNeedsMapboxToken] = useState(false);
-  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
+  const [geocodingProgress, setGeocodingProgress] = useState({ completed: 0, total: 0 });
 
   useEffect(() => {
     if (locations.length > 0) {
@@ -50,7 +48,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     } else {
       setIsLoading(false);
     }
-  }, [locations, mapboxToken]);
+  }, [locations]);
 
   const loadLocationData = async () => {
     setIsLoading(true);
@@ -87,7 +85,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         .in('location_id', locationIds)
         .eq('is_active', true);
 
-      // Try to geocode locations using existing coordinates or Mapbox
+      // Prepare locations for geocoding
       const locationsToGeocode = locations.map(loc => ({
         address: loc.address,
         city: loc.city,
@@ -95,7 +93,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         zip: loc.zip
       }));
 
-      // First, check if we have any locations that need geocoding and don't have cached results
+      // Check if we have any locations that need geocoding
       const hasUngeocodedLocations = locations.some(loc => {
         const hasCoordinates = loc.latitude && loc.longitude && 
           !isNaN(Number(loc.latitude)) && !isNaN(Number(loc.longitude));
@@ -105,26 +103,17 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       let geocodedResults: (any | null)[] = [];
 
       if (hasUngeocodedLocations) {
-        // Try geocoding with Mapbox (will use cache if available)
-        geocodedResults = await geocodeLocationsWithMapbox(
+        // Initialize progress
+        setGeocodingProgress({ completed: 0, total: locations.length });
+        
+        // Geocode with progress callback
+        geocodedResults = await geocodeLocations(
           locationsToGeocode, 
-          currentFranchiseeId, 
-          mapboxToken || undefined
+          currentFranchiseeId,
+          (completed, total) => {
+            setGeocodingProgress({ completed, total });
+          }
         );
-
-        // Check if we need a Mapbox token for remaining locations
-        const stillNeedGeocoding = geocodedResults.some((result, index) => {
-          const location = locations[index];
-          const hasExistingCoords = location.latitude && location.longitude && 
-            !isNaN(Number(location.latitude)) && !isNaN(Number(location.longitude));
-          return !hasExistingCoords && !result;
-        });
-
-        if (stillNeedGeocoding && !mapboxToken) {
-          setNeedsMapboxToken(true);
-          setIsLoading(false);
-          return;
-        }
       }
 
       // Process each location and enrich with class data
@@ -190,12 +179,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleMapboxTokenSubmit = (token: string) => {
-    setMapboxToken(token);
-    setNeedsMapboxToken(false);
-    // This will trigger useEffect to reload data with the token
   };
 
   const getDayName = (dayNumber?: number) => {
@@ -274,23 +257,33 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     );
   }
 
-  if (needsMapboxToken) {
-    return (
-      <div className={`flex items-center justify-center bg-gray-50 rounded-lg ${className}`}>
-        <MapboxTokenInput onTokenSubmit={handleMapboxTokenSubmit} />
-      </div>
-    );
-  }
-
   if (isLoading) {
+    const isGeocoding = geocodingProgress.total > 0;
     return (
       <div className={`flex items-center justify-center bg-gray-100 rounded-lg ${className}`}>
         <div className="text-center p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-4"></div>
-          <p className="font-poppins text-gray-600 text-lg mb-2">Loading map...</p>
-          <p className="font-poppins text-gray-500 text-sm">
-            {mapboxToken ? 'Geocoding locations...' : 'Checking cached locations...'}
+          <p className="font-poppins text-gray-600 text-lg mb-2">
+            {isGeocoding ? 'Finding location coordinates...' : 'Loading map...'}
           </p>
+          {isGeocoding && (
+            <>
+              <p className="font-poppins text-gray-500 text-sm mb-3">
+                Using free geocoding services (OpenStreetMap & LocationIQ)
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div 
+                  className="bg-brand-blue h-2 rounded-full transition-all duration-300" 
+                  style={{ 
+                    width: `${geocodingProgress.total > 0 ? (geocodingProgress.completed / geocodingProgress.total) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
+              <p className="font-poppins text-gray-500 text-xs">
+                {geocodingProgress.completed} of {geocodingProgress.total} locations processed
+              </p>
+            </>
+          )}
         </div>
       </div>
     );
@@ -301,6 +294,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       <div className={`flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 ${className}`}>
         <div className="text-center p-8">
           <div className="text-gray-500 font-poppins">
+            <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <p className="text-lg mb-2">Map Not Available</p>
             <p className="text-sm">Unable to find coordinates for the locations</p>
             <p className="text-xs mt-2 text-gray-400">
@@ -369,6 +363,13 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           </p>
         </div>
       )}
+      
+      {/* Show free service indicator */}
+      <div className="absolute top-4 right-4 z-[1000] bg-green-100 border border-green-400 rounded-lg p-2 shadow-lg">
+        <p className="font-poppins text-green-800 text-xs">
+          🌍 Free OpenStreetMap
+        </p>
+      </div>
     </div>
   );
 };
