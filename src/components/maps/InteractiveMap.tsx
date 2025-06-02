@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { LatLngBounds } from 'leaflet';
@@ -8,6 +9,9 @@ import MapErrorBoundary from './MapErrorBoundary';
 import mapConfig from '@/assets/map-style.json';
 import { supabase } from '@/integrations/supabase/client';
 import { geocodeLocations, getGeocodingCacheStats } from '@/utils/freeGeocoding';
+import { validateLocationArray } from '@/utils/coordinateValidation';
+import { geocodingCircuitBreaker } from '@/utils/geocodingCircuitBreaker';
+import './MapMarkerStyles.css';
 import 'leaflet/dist/leaflet.css';
 
 interface Location {
@@ -44,57 +48,77 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [geocodingProgress, setGeocodingProgress] = useState({ completed: 0, total: 0 });
   const [geocodingError, setGeocodingError] = useState<string | null>(null);
   const [hasPartialResults, setHasPartialResults] = useState(false);
+  const [performanceMetrics, setPerformanceMetrics] = useState({
+    startTime: 0,
+    geocodingTime: 0,
+    renderTime: 0
+  });
 
   // Cleanup function to cancel ongoing requests
   useEffect(() => {
+    const startTime = Date.now();
+    setPerformanceMetrics(prev => ({ ...prev, startTime }));
+    
     return () => {
-      // Cancel any ongoing geocoding requests when component unmounts
-      console.log('InteractiveMap: Component unmounting, cleaning up...');
+      const endTime = Date.now();
+      const totalTime = endTime - startTime;
+      console.log('InteractiveMap: Component unmounting after', totalTime, 'ms');
     };
   }, []);
 
   useEffect(() => {
     if (locations.length > 0) {
+      console.log('InteractiveMap: Loading location data for', locations.length, 'locations');
       loadLocationData();
     } else {
+      console.log('InteractiveMap: No locations provided');
       setIsLoading(false);
     }
   }, [locations]);
 
   const loadLocationData = async () => {
+    const loadStartTime = Date.now();
     setIsLoading(true);
     setGeocodingError(null);
     setHasPartialResults(false);
     
     try {
-      // Validate locations array
+      // Validate input locations
       if (!Array.isArray(locations) || locations.length === 0) {
+        console.warn('InteractiveMap: Invalid or empty locations array');
         setLocationData([]);
         setIsLoading(false);
         return;
       }
 
+      console.log('InteractiveMap: Processing', locations.length, 'locations');
+
       // Get franchisee ID first
-      const { data: franchisee } = await supabase
+      const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('id')
         .eq('slug', franchiseeSlug)
         .single();
 
-      if (!franchisee) {
+      if (franchiseeError || !franchisee) {
+        console.error('InteractiveMap: Franchisee error:', franchiseeError);
         throw new Error('Franchisee not found');
       }
 
       const currentFranchiseeId = franchisee.id;
       setFranchiseeId(currentFranchiseeId);
 
+      // Check circuit breaker state
+      const circuitState = geocodingCircuitBreaker.getState();
+      console.log('InteractiveMap: Circuit breaker state:', circuitState);
+
       // Check cache stats
       const cacheStats = getGeocodingCacheStats(currentFranchiseeId);
-      console.log('Geocoding cache stats:', cacheStats);
+      console.log('InteractiveMap: Geocoding cache stats:', cacheStats);
 
       // Get classes and schedules for these locations
       const locationIds = locations.map(loc => loc.id);
-      const { data: classes } = await supabase
+      const { data: classes, error: classesError } = await supabase
         .from('classes')
         .select(`
           *,
@@ -103,24 +127,26 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         .in('location_id', locationIds)
         .eq('is_active', true);
 
-      // Check if we have existing coordinates
-      const hasExistingCoordinates = locations.some(loc => {
-        const hasCoordinates = loc.latitude && loc.longitude && 
-          !isNaN(Number(loc.latitude)) && !isNaN(Number(loc.longitude));
-        return hasCoordinates;
+      if (classesError) {
+        console.warn('InteractiveMap: Error loading classes:', classesError);
+      }
+
+      // Validate existing coordinates first
+      const { valid: validLocations, invalid: invalidLocations } = validateLocationArray(
+        locations.filter(loc => loc.latitude && loc.longitude)
+      );
+
+      console.log('InteractiveMap: Coordinate validation results:', {
+        valid: validLocations.length,
+        invalid: invalidLocations.length,
+        needsGeocoding: locations.length - validLocations.length - invalidLocations.length
       });
 
-      // Process locations with existing coordinates first
+      // Process locations with existing valid coordinates first
       const enrichedLocations = [];
       
-      // First pass: Add locations that already have coordinates
-      for (const location of locations) {
-        if (location.latitude && location.longitude && 
-            !isNaN(Number(location.latitude)) && !isNaN(Number(location.longitude))) {
-          
-          const latitude = Number(location.latitude);
-          const longitude = Number(location.longitude);
-          
+      for (const location of validLocations) {
+        try {
           // Get class information for this location
           const locationClasses = classes?.filter(c => c.location_id === location.id) || [];
           
@@ -137,36 +163,43 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           enrichedLocations.push({
             id: location.id,
             name: location.name,
-            latitude,
-            longitude,
+            latitude: location.latitude,
+            longitude: location.longitude,
             address: `${location.address}, ${location.city}, ${location.state}`,
             classDays,
             timeOfDay,
             ageRange
           });
+        } catch (error) {
+          console.error('InteractiveMap: Error enriching location:', location.id, error);
         }
       }
 
-      // Show partial results immediately if we have some coordinates
+      // Show partial results immediately if we have valid coordinates
       if (enrichedLocations.length > 0) {
-        console.log(`Showing ${enrichedLocations.length} locations with existing coordinates`);
+        console.log(`InteractiveMap: Showing ${enrichedLocations.length} locations with existing coordinates`);
         setLocationData(enrichedLocations);
         setHasPartialResults(enrichedLocations.length < locations.length);
         calculateMapBounds(enrichedLocations);
         
         // If we have all coordinates, we're done
         if (enrichedLocations.length === locations.length) {
+          const renderTime = Date.now() - loadStartTime;
+          setPerformanceMetrics(prev => ({ ...prev, renderTime }));
+          console.log('InteractiveMap: All locations processed in', renderTime, 'ms');
           setIsLoading(false);
           return;
         }
       }
 
-      // Prepare locations that need geocoding
+      // Prepare locations that need geocoding (excluding those with invalid coordinates)
       const locationsToGeocode = locations
         .filter(loc => {
-          const hasCoordinates = loc.latitude && loc.longitude && 
-            !isNaN(Number(loc.latitude)) && !isNaN(Number(loc.longitude));
-          return !hasCoordinates;
+          // Skip if already has valid coordinates
+          if (validLocations.some(valid => valid.id === loc.id)) return false;
+          // Skip if coordinates are invalid
+          if (invalidLocations.some(invalid => invalid.id === loc.id)) return false;
+          return true;
         })
         .map(loc => ({
           address: loc.address,
@@ -175,8 +208,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           zip: loc.zip
         }));
 
-      if (locationsToGeocode.length > 0) {
-        console.log(`Need to geocode ${locationsToGeocode.length} locations`);
+      if (locationsToGeocode.length > 0 && geocodingCircuitBreaker.canProceed()) {
+        console.log(`InteractiveMap: Need to geocode ${locationsToGeocode.length} locations`);
+        
+        const geocodingStartTime = Date.now();
         
         // Initialize progress
         setGeocodingProgress({ completed: 0, total: locationsToGeocode.length });
@@ -190,14 +225,22 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           }
         );
 
+        const geocodingTime = Date.now() - geocodingStartTime;
+        setPerformanceMetrics(prev => ({ ...prev, geocodingTime }));
+        console.log('InteractiveMap: Geocoding completed in', geocodingTime, 'ms');
+
         // Process geocoded results
         let geocodeIndex = 0;
         for (let i = 0; i < locations.length; i++) {
           const location = locations[i];
           
           // Skip if we already processed this location
-          if (location.latitude && location.longitude && 
-              !isNaN(Number(location.latitude)) && !isNaN(Number(location.longitude))) {
+          if (validLocations.some(valid => valid.id === location.id)) {
+            continue;
+          }
+          
+          // Skip if coordinates were invalid
+          if (invalidLocations.some(invalid => invalid.id === location.id)) {
             continue;
           }
           
@@ -205,45 +248,56 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           geocodeIndex++;
           
           if (!geocoded) {
-            console.warn(`Skipping location ${location.name} - no coordinates available`);
+            console.warn(`InteractiveMap: Skipping location ${location.name} - geocoding failed`);
             continue;
           }
           
-          // Get class information for this location
-          const locationClasses = classes?.filter(c => c.location_id === location.id) || [];
-          
-          // Extract class days and times
-          const allSchedules = locationClasses.flatMap(c => c.class_schedules || []);
-          const classDays = [...new Set(allSchedules.map(s => getDayName(s.day_of_week)))].filter(Boolean);
-          
-          // Determine time of day
-          const timeOfDay = getTimeOfDay(allSchedules);
-          
-          // Calculate age range
-          const ageRange = getAgeRange(locationClasses);
+          try {
+            // Get class information for this location
+            const locationClasses = classes?.filter(c => c.location_id === location.id) || [];
+            
+            // Extract class days and times
+            const allSchedules = locationClasses.flatMap(c => c.class_schedules || []);
+            const classDays = [...new Set(allSchedules.map(s => getDayName(s.day_of_week)))].filter(Boolean);
+            
+            // Determine time of day
+            const timeOfDay = getTimeOfDay(allSchedules);
+            
+            // Calculate age range
+            const ageRange = getAgeRange(locationClasses);
 
-          enrichedLocations.push({
-            id: location.id,
-            name: location.name,
-            latitude: geocoded.latitude,
-            longitude: geocoded.longitude,
-            address: `${location.address}, ${location.city}, ${location.state}`,
-            classDays,
-            timeOfDay,
-            ageRange
-          });
+            enrichedLocations.push({
+              id: location.id,
+              name: location.name,
+              latitude: geocoded.latitude,
+              longitude: geocoded.longitude,
+              address: `${location.address}, ${location.city}, ${location.state}`,
+              classDays,
+              timeOfDay,
+              ageRange
+            });
+          } catch (error) {
+            console.error('InteractiveMap: Error enriching geocoded location:', location.id, error);
+          }
         }
+      } else if (locationsToGeocode.length > 0) {
+        console.warn('InteractiveMap: Geocoding circuit breaker is open, skipping geocoding');
+        setGeocodingError('Geocoding temporarily disabled due to service issues');
       }
 
-      console.log(`Successfully processed ${enrichedLocations.length} out of ${locations.length} locations`);
+      console.log(`InteractiveMap: Successfully processed ${enrichedLocations.length} out of ${locations.length} locations`);
       setLocationData(enrichedLocations);
       
       // Calculate map bounds for all successfully processed locations
       if (enrichedLocations.length > 0) {
         calculateMapBounds(enrichedLocations);
       }
+
+      const totalTime = Date.now() - loadStartTime;
+      setPerformanceMetrics(prev => ({ ...prev, renderTime: totalTime }));
+      console.log('InteractiveMap: Total processing time:', totalTime, 'ms');
     } catch (error) {
-      console.error('Error loading location data:', error);
+      console.error('InteractiveMap: Error loading location data:', error);
       setGeocodingError(error instanceof Error ? error.message : 'Unknown error occurred');
       // Don't completely fail - show what we can
       if (locationData.length > 0) {
@@ -291,17 +345,33 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   };
 
   const calculateMapBounds = (locations: any[]) => {
-    if (locations.length === 0) return;
+    if (locations.length === 0) {
+      console.warn('InteractiveMap: Cannot calculate bounds for empty locations array');
+      return;
+    }
 
     // Validate coordinates before calculating bounds
-    const validLocations = locations.filter(loc => 
-      typeof loc.latitude === 'number' && 
-      typeof loc.longitude === 'number' &&
-      !isNaN(loc.latitude) && 
-      !isNaN(loc.longitude)
-    );
+    const validLocations = locations.filter(loc => {
+      const isValid = typeof loc.latitude === 'number' && 
+        typeof loc.longitude === 'number' &&
+        !isNaN(loc.latitude) && 
+        !isNaN(loc.longitude) &&
+        loc.latitude >= -90 && loc.latitude <= 90 &&
+        loc.longitude >= -180 && loc.longitude <= 180;
+      
+      if (!isValid) {
+        console.warn('InteractiveMap: Invalid coordinates for bounds calculation:', loc);
+      }
+      
+      return isValid;
+    });
 
-    if (validLocations.length === 0) return;
+    if (validLocations.length === 0) {
+      console.warn('InteractiveMap: No valid coordinates for bounds calculation');
+      return;
+    }
+
+    console.log(`InteractiveMap: Calculating bounds for ${validLocations.length} valid locations`);
 
     const latitudes = validLocations.map(loc => loc.latitude);
     const longitudes = validLocations.map(loc => loc.longitude);
@@ -320,11 +390,13 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       [maxLat + latPadding, maxLng + lngPadding]
     );
 
+    console.log('InteractiveMap: Calculated bounds:', bounds);
     setMapBounds(bounds);
   };
 
   const resetView = () => {
     if (mapRef.current && mapBounds) {
+      console.log('InteractiveMap: Resetting view to bounds');
       mapRef.current.fitBounds(mapBounds);
     }
   };
@@ -477,6 +549,16 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           <div className="absolute top-4 right-4 z-[1000] bg-red-100 border border-red-400 rounded-lg p-3 shadow-lg max-w-xs">
             <p className="font-poppins text-red-800 text-xs">
               Some locations couldn't be geocoded: {geocodingError}
+            </p>
+          </div>
+        )}
+        
+        {/* Show performance metrics in development */}
+        {process.env.NODE_ENV === 'development' && performanceMetrics.renderTime > 0 && (
+          <div className="absolute bottom-4 right-4 z-[1000] bg-blue-100 border border-blue-400 rounded-lg p-2 shadow-lg">
+            <p className="font-poppins text-blue-800 text-xs">
+              🔧 Render: {performanceMetrics.renderTime}ms
+              {performanceMetrics.geocodingTime > 0 && ` | Geocoding: ${performanceMetrics.geocodingTime}ms`}
             </p>
           </div>
         )}

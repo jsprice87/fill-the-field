@@ -1,4 +1,3 @@
-
 interface GeocodingResult {
   latitude: number;
   longitude: number;
@@ -116,6 +115,7 @@ const geocodeWithNominatim = async (address: string): Promise<GeocodingResult | 
     const data = await response.json();
     
     if (data && data.length > 0) {
+      geocodingCircuitBreaker.recordSuccess();
       return {
         latitude: parseFloat(data[0].lat),
         longitude: parseFloat(data[0].lon)
@@ -123,6 +123,7 @@ const geocodeWithNominatim = async (address: string): Promise<GeocodingResult | 
     }
     return null;
   } catch (error) {
+    geocodingCircuitBreaker.recordFailure();
     if (error.name === 'AbortError') {
       console.error('Nominatim request timed out for:', address);
     } else {
@@ -149,6 +150,7 @@ const geocodeWithLocationIQ = async (address: string): Promise<GeocodingResult |
     const data = await response.json();
     
     if (data && data.length > 0) {
+      geocodingCircuitBreaker.recordSuccess();
       return {
         latitude: parseFloat(data[0].lat),
         longitude: parseFloat(data[0].lon)
@@ -156,6 +158,7 @@ const geocodeWithLocationIQ = async (address: string): Promise<GeocodingResult |
     }
     return null;
   } catch (error) {
+    geocodingCircuitBreaker.recordFailure();
     if (error.name === 'AbortError') {
       console.error('LocationIQ request timed out for:', address);
     } else {
@@ -174,10 +177,23 @@ const batchGeocodeFree = async (
   let consecutiveFailures = 0;
   let completed = 0;
 
+  // Check circuit breaker before starting
+  if (!geocodingCircuitBreaker.canProceed()) {
+    console.warn('Geocoding circuit breaker is open, skipping batch geocoding');
+    onProgress?.(addresses.length, addresses.length);
+    return results;
+  }
+
   // Process in batches to avoid overwhelming the APIs
   for (let i = 0; i < addresses.length; i += MAX_CONCURRENT) {
     if (consecutiveFailures >= MAX_FAILURES) {
       console.warn(`Stopping geocoding after ${MAX_FAILURES} consecutive failures`);
+      break;
+    }
+
+    // Check circuit breaker before each batch
+    if (!geocodingCircuitBreaker.canProceed()) {
+      console.warn('Circuit breaker opened during batch processing, stopping');
       break;
     }
 
@@ -190,7 +206,7 @@ const batchGeocodeFree = async (
       let result = await geocodeWithNominatim(address);
       
       // If Nominatim fails, try LocationIQ as fallback
-      if (!result) {
+      if (!result && geocodingCircuitBreaker.canProceed()) {
         console.log('Nominatim failed, trying LocationIQ...');
         result = await geocodeWithLocationIQ(address);
       }

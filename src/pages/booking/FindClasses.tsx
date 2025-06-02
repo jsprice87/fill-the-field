@@ -6,6 +6,7 @@ import { MapPin, Clock, Users, Map, List } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
+import { AlertTriangle } from 'lucide-react';
 
 // Lazy load the map component for better performance
 const InteractiveMap = lazy(() => import('@/components/maps/InteractiveMap'));
@@ -36,6 +37,7 @@ const FindClasses: React.FC = () => {
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   const [flowLoaded, setFlowLoaded] = useState(false);
   const [skipMap, setSkipMap] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('FindClasses: useEffect triggered', { flowId, franchiseeSlug });
@@ -136,6 +138,15 @@ const FindClasses: React.FC = () => {
   };
 
   const handleSkipMap = () => {
+    console.log('User chose to skip map view');
+    setSkipMap(true);
+    setViewMode('list');
+  };
+
+  const handleMapError = (error: string) => {
+    console.error('Map error occurred:', error);
+    setMapError(error);
+    toast.error('Map failed to load. Showing locations list instead.');
     setSkipMap(true);
     setViewMode('list');
   };
@@ -188,7 +199,7 @@ const FindClasses: React.FC = () => {
               <List className="h-4 w-4 mr-2" />
               List
             </Button>
-            {!skipMap && (
+            {!skipMap && !mapError && (
               <Button
                 variant={viewMode === 'map' ? 'default' : 'outline'}
                 onClick={() => setViewMode('map')}
@@ -201,10 +212,25 @@ const FindClasses: React.FC = () => {
           </div>
         </div>
 
+        {/* Show map error notification */}
+        {mapError && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
+              <div>
+                <p className="font-poppins text-yellow-800 font-medium">Map Unavailable</p>
+                <p className="font-poppins text-yellow-700 text-sm">
+                  The map couldn't load due to technical issues. You can still view and select locations from the list below.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Responsive layout: Desktop side-by-side, Mobile stacked */}
-        <div className={`${viewMode === 'map' && !skipMap ? 'lg:grid lg:grid-cols-3 lg:gap-8' : ''}`}>
+        <div className={`${viewMode === 'map' && !skipMap && !mapError ? 'lg:grid lg:grid-cols-3 lg:gap-8' : ''}`}>
           {/* Map View */}
-          {viewMode === 'map' && !skipMap && (
+          {viewMode === 'map' && !skipMap && !mapError && (
             <div className="lg:col-span-2 mb-8 lg:mb-0">
               <div className="h-[300px] lg:h-[600px] relative">
                 <Suspense fallback={
@@ -221,6 +247,7 @@ const FindClasses: React.FC = () => {
                     flowId={flowId || undefined}
                     onLocationSelect={handleLocationSelect}
                     className="h-full"
+                    onError={handleMapError}
                   />
                 </Suspense>
                 
@@ -238,7 +265,7 @@ const FindClasses: React.FC = () => {
           )}
           
           {/* Locations List */}
-          <div className={`space-y-4 ${viewMode === 'map' && !skipMap ? 'lg:col-span-1' : ''}`}>
+          <div className={`space-y-4 ${viewMode === 'map' && !skipMap && !mapError ? 'lg:col-span-1' : ''}`}>
             {locations.length > 0 ? (
               locations.map((location) => (
                 <Card key={location.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
