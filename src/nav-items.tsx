@@ -204,7 +204,9 @@ export const navItems = [
     icon: <BarChart3Icon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <AdminDashboard />
+        <DashboardLayout>
+          <AdminDashboard />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -214,7 +216,9 @@ export const navItems = [
     icon: <UsersIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <AdminUserManagement />
+        <DashboardLayout>
+          <AdminUserManagement />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -224,7 +228,9 @@ export const navItems = [
     icon: <CreditCardIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <AdminTransactions />
+        <DashboardLayout>
+          <AdminTransactions />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -234,7 +240,9 @@ export const navItems = [
     icon: <SettingsIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <AdminGlobalSettings />
+        <DashboardLayout>
+          <AdminGlobalSettings />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -244,7 +252,9 @@ export const navItems = [
     icon: <ShieldIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
-        <AdminSettings />
+        <DashboardLayout>
+          <AdminSettings />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
