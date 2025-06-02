@@ -32,7 +32,7 @@ const FindClasses: React.FC = () => {
   const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeSlug);
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('map'); // Changed to default to map view
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   const [flowLoaded, setFlowLoaded] = useState(false);
 

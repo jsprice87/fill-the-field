@@ -7,6 +7,7 @@ import { RotateCcw } from 'lucide-react';
 import LocationMarker from './LocationMarker';
 import mapConfig from '@/assets/map-style.json';
 import { supabase } from '@/integrations/supabase/client';
+import { geocodeAddress } from '@/utils/geocoding';
 import 'leaflet/dist/leaflet.css';
 
 interface Location {
@@ -38,26 +39,23 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [locationData, setLocationData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Filter locations with valid coordinates
-  const validLocations = locations.filter(loc => 
-    loc.latitude && loc.longitude && 
-    !isNaN(Number(loc.latitude)) && !isNaN(Number(loc.longitude))
-  );
+  const [geocodingProgress, setGeocodingProgress] = useState({ current: 0, total: 0 });
 
   useEffect(() => {
-    if (validLocations.length > 0) {
-      loadLocationClassData();
-      calculateMapBounds();
+    if (locations.length > 0) {
+      loadLocationData();
+    } else {
+      setIsLoading(false);
     }
-  }, [validLocations]);
+  }, [locations]);
 
-  const loadLocationClassData = async () => {
+  const loadLocationData = async () => {
     setIsLoading(true);
+    setGeocodingProgress({ current: 0, total: locations.length });
+    
     try {
-      const locationIds = validLocations.map(loc => loc.id);
-      
       // Get classes and schedules for these locations
+      const locationIds = locations.map(loc => loc.id);
       const { data: classes } = await supabase
         .from('classes')
         .select(`
@@ -67,7 +65,37 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         .in('location_id', locationIds)
         .eq('is_active', true);
 
-      const enrichedLocations = validLocations.map(location => {
+      // Process each location and geocode if needed
+      const enrichedLocations = [];
+      
+      for (let i = 0; i < locations.length; i++) {
+        const location = locations[i];
+        setGeocodingProgress({ current: i + 1, total: locations.length });
+        
+        let latitude = location.latitude ? Number(location.latitude) : null;
+        let longitude = location.longitude ? Number(location.longitude) : null;
+        
+        // If no coordinates, try to geocode the address
+        if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+          console.log(`Geocoding location: ${location.name}`);
+          const geocoded = await geocodeAddress({
+            address: location.address,
+            city: location.city,
+            state: location.state,
+            zip: location.zip || ''
+          });
+          
+          if (geocoded) {
+            latitude = geocoded.latitude;
+            longitude = geocoded.longitude;
+            console.log(`Successfully geocoded ${location.name}:`, geocoded);
+          } else {
+            console.warn(`Failed to geocode ${location.name}`);
+            continue; // Skip this location if geocoding failed
+          }
+        }
+        
+        // Get class information for this location
         const locationClasses = classes?.filter(c => c.location_id === location.id) || [];
         
         // Extract class days and times
@@ -80,34 +108,32 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         // Calculate age range
         const ageRange = getAgeRange(locationClasses);
 
-        return {
+        enrichedLocations.push({
           id: location.id,
           name: location.name,
-          latitude: Number(location.latitude),
-          longitude: Number(location.longitude),
+          latitude,
+          longitude,
           address: `${location.address}, ${location.city}, ${location.state}`,
           classDays,
           timeOfDay,
           ageRange
-        };
-      });
+        });
+      }
 
+      console.log(`Successfully processed ${enrichedLocations.length} out of ${locations.length} locations`);
       setLocationData(enrichedLocations);
+      
+      // Calculate map bounds for successfully geocoded locations
+      if (enrichedLocations.length > 0) {
+        calculateMapBounds(enrichedLocations);
+      }
     } catch (error) {
-      console.error('Error loading location class data:', error);
-      // Fallback to basic location data
-      setLocationData(validLocations.map(loc => ({
-        id: loc.id,
-        name: loc.name,
-        latitude: Number(loc.latitude),
-        longitude: Number(loc.longitude),
-        address: `${loc.address}, ${loc.city}, ${loc.state}`,
-        classDays: [],
-        timeOfDay: '',
-        ageRange: ''
-      })));
+      console.error('Error loading location data:', error);
+      // Fallback to basic location data without coordinates
+      setLocationData([]);
     } finally {
       setIsLoading(false);
+      setGeocodingProgress({ current: 0, total: 0 });
     }
   };
 
@@ -145,11 +171,11 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     return minAge === maxAge ? `Age ${minAge}` : `Ages ${minAge}-${maxAge}`;
   };
 
-  const calculateMapBounds = () => {
-    if (validLocations.length === 0) return;
+  const calculateMapBounds = (locations: any[]) => {
+    if (locations.length === 0) return;
 
-    const latitudes = validLocations.map(loc => Number(loc.latitude));
-    const longitudes = validLocations.map(loc => Number(loc.longitude));
+    const latitudes = locations.map(loc => loc.latitude);
+    const longitudes = locations.map(loc => loc.longitude);
 
     const minLat = Math.min(...latitudes);
     const maxLat = Math.max(...latitudes);
@@ -174,13 +200,45 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     }
   };
 
-  if (validLocations.length === 0) {
+  if (locations.length === 0) {
+    return (
+      <div className={`flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 ${className}`}>
+        <div className="text-center p-8">
+          <div className="text-gray-500 font-poppins">
+            <p className="text-lg mb-2">No Locations Available</p>
+            <p className="text-sm">No active locations found for this franchisee</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className={`flex items-center justify-center bg-gray-100 rounded-lg ${className}`}>
+        <div className="text-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-4"></div>
+          <p className="font-poppins text-gray-600 text-lg mb-2">Loading map...</p>
+          {geocodingProgress.total > 0 && (
+            <p className="font-poppins text-gray-500 text-sm">
+              Finding coordinates for locations ({geocodingProgress.current}/{geocodingProgress.total})
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (locationData.length === 0) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 ${className}`}>
         <div className="text-center p-8">
           <div className="text-gray-500 font-poppins">
             <p className="text-lg mb-2">Map Not Available</p>
-            <p className="text-sm">No locations have coordinates set for mapping</p>
+            <p className="text-sm">Unable to find coordinates for the locations</p>
+            <p className="text-xs mt-2 text-gray-400">
+              Locations may have incomplete address information
+            </p>
           </div>
         </div>
       </div>
@@ -192,7 +250,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       <div className={`flex items-center justify-center bg-gray-100 rounded-lg ${className}`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-2"></div>
-          <p className="font-poppins text-gray-600 text-sm">Loading map...</p>
+          <p className="font-poppins text-gray-600 text-sm">Calculating map bounds...</p>
         </div>
       </div>
     );
@@ -235,6 +293,15 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <RotateCcw className="h-4 w-4 mr-1" />
         Reset View
       </Button>
+      
+      {/* Show success message if some locations were geocoded */}
+      {locationData.length > 0 && locationData.length < locations.length && (
+        <div className="absolute top-4 left-4 z-[1000] bg-yellow-100 border border-yellow-400 rounded-lg p-3 shadow-lg">
+          <p className="font-poppins text-yellow-800 text-sm">
+            Showing {locationData.length} of {locations.length} locations on map
+          </p>
+        </div>
+      )}
     </div>
   );
 };
