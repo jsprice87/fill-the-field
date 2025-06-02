@@ -11,9 +11,10 @@ const Index = () => {
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-indigo-600">SuperLeadStar</span>
+            <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Fill The Field - Fast Funnels for Free Trials" className="h-12 w-auto" />
           </div>
           <div className="flex items-center gap-4">
+            <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Fill The Field Shield" className="h-8 w-8" />
             <Link to="/login" className="text-gray-600 hover:text-indigo-600">
               Login
             </Link>
@@ -27,6 +28,9 @@ const Index = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-8">
+            <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Fill The Field Shield" className="h-24 w-24 mx-auto mb-6" />
+          </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Fill Your Trial Classes and Convert More Customers
           </h1>
@@ -131,10 +135,13 @@ const Index = () => {
 
       {/* Pricing CTA Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="bg-indigo-600 rounded-2xl p-8 md:p-12 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Ready to Grow Your Business?</h2>
+        <div className="bg-indigo-600 rounded-2xl p-8 md:p-12 text-center text-white relative overflow-hidden">
+          <div className="absolute top-4 right-4 opacity-20">
+            <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Fill The Field Shield" className="h-16 w-16" />
+          </div>
+          <h2 className="text-3xl font-bold mb-4">Ready to Fill The Field?</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of business owners who are filling their classes and growing their customer base with SuperLeadStar.
+            Join thousands of business owners who are filling their classes and growing their customer base with our fast funnels for free trials.
           </p>
           <Link to="/register">
             <Button size="lg" variant="secondary" className="px-8">
@@ -147,6 +154,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-50 border-t">
         <div className="container mx-auto px-4 py-12">
+          <div className="text-center mb-8">
+            <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Fill The Field - Fast Funnels for Free Trials" className="h-16 w-auto mx-auto mb-4" />
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
@@ -182,7 +192,7 @@ const Index = () => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-gray-200">
-            <p className="text-center text-gray-500">© {new Date().getFullYear()} SuperLeadStar. All rights reserved.</p>
+            <p className="text-center text-gray-500">© {new Date().getFullYear()} Fill The Field. All rights reserved.</p>
           </div>
         </div>
       </footer>
