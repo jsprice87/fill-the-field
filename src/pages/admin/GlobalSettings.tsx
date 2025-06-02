@@ -59,7 +59,8 @@ const AdminGlobalSettings: React.FC = () => {
         .from('global_settings')
         .upsert({
           setting_key: 'mapbox_public_token',
-          setting_value: mapboxToken.trim()
+          setting_value: mapboxToken.trim(),
+          updated_at: new Date().toISOString()
         }, {
           onConflict: 'setting_key'
         });
