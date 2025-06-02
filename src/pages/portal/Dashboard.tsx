@@ -1,16 +1,16 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, MapPin, Calendar, TrendingUp } from 'lucide-react';
 import { useLeadStats } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
-
 const PortalDashboard: React.FC = () => {
-  const { data: franchiseeData } = useFranchiseeData();
-  const { data: leadStats } = useLeadStats(franchiseeData?.id);
-
-  return (
-    <div className="space-y-6">
+  const {
+    data: franchiseeData
+  } = useFranchiseeData();
+  const {
+    data: leadStats
+  } = useLeadStats(franchiseeData?.id);
+  return <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
@@ -19,11 +19,7 @@ const PortalDashboard: React.FC = () => {
           </p>
         </div>
         <div className="mt-4 md:mt-0">
-          <img 
-            src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
-            alt="Fill The Field logo" 
-            className="h-10 w-auto hidden md:block"
-          />
+          
         </div>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -76,8 +72,6 @@ const PortalDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PortalDashboard;
