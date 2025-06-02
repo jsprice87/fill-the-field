@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { batchGeocodeWithMapbox } from '@/utils/batchMapboxGeocoding';
 import { supabase } from '@/integrations/supabase/client';
+import MapErrorFallback from './MapErrorFallback';
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -44,28 +45,37 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [geocodedLocations, setGeocodedLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [mapError, setMapError] = useState<string>('');
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const isMountedRef = useRef(true);
 
+  // Cleanup on unmount
   useEffect(() => {
-    loadMapboxToken();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
-  useEffect(() => {
-    if (mapboxToken && locations.length > 0) {
-      processLocations();
+  // Safe state update function
+  const safeSetState = useCallback((updateFn: () => void) => {
+    if (isMountedRef.current) {
+      updateFn();
     }
-  }, [mapboxToken, locations]);
+  }, []);
 
-  const loadMapboxToken = async () => {
+  const loadMapboxToken = useCallback(async () => {
     try {
+      console.log('Loading Mapbox token...');
+      
       // Use the edge function to get the global setting
       const { data, error } = await supabase.functions.invoke('get-global-setting', {
         body: { setting_name: 'mapbox_public_token' }
       });
 
       if (error) {
+        console.log('Edge function failed, trying direct query...', error);
+        
         // Fallback: try direct query if edge function doesn't work
-        console.log('Edge function failed, trying direct query...');
         const { data: directData, error: directError } = await supabase
           .from('global_settings' as any)
           .select('setting_value')
@@ -74,41 +84,80 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
         if (directError && directError.code !== 'PGRST116') {
           console.error('Error loading Mapbox token:', directError);
-          setError('Failed to load map configuration');
-          setIsLoading(false);
+          safeSetState(() => {
+            setError('Failed to load map configuration');
+            setIsLoading(false);
+          });
           return;
         }
 
         if (directData && 'setting_value' in directData && directData.setting_value) {
-          setMapboxToken(String(directData.setting_value));
+          safeSetState(() => setMapboxToken(String(directData.setting_value)));
         } else {
-          setError('Mapbox token not configured. Please configure it in admin settings.');
-          setIsLoading(false);
+          safeSetState(() => {
+            setError('Mapbox token not configured. Please configure it in admin settings.');
+            setIsLoading(false);
+          });
         }
         return;
       }
 
       if (data) {
-        setMapboxToken(String(data));
+        console.log('Mapbox token loaded successfully');
+        safeSetState(() => setMapboxToken(String(data)));
       } else {
-        setError('Mapbox token not configured. Please configure it in admin settings.');
-        setIsLoading(false);
+        safeSetState(() => {
+          setError('Mapbox token not configured. Please configure it in admin settings.');
+          setIsLoading(false);
+        });
       }
     } catch (error) {
       console.error('Error loading Mapbox token:', error);
-      setError('Failed to load map configuration');
-      setIsLoading(false);
+      safeSetState(() => {
+        setError('Failed to load map configuration');
+        setIsLoading(false);
+      });
     }
-  };
+  }, [safeSetState]);
 
-  const processLocations = async () => {
-    setIsLoading(true);
-    setError('');
-    setProgress({ current: 0, total: locations.length });
+  const processLocations = useCallback(async () => {
+    if (!locations || locations.length === 0) {
+      console.log('No locations to process');
+      safeSetState(() => {
+        setGeocodedLocations([]);
+        setIsLoading(false);
+      });
+      return;
+    }
+
+    console.log('Processing locations for geocoding:', locations.length);
+    safeSetState(() => {
+      setIsLoading(true);
+      setError('');
+      setProgress({ current: 0, total: locations.length });
+    });
 
     try {
+      // Validate location data
+      const validLocations = locations.filter(location => 
+        location && 
+        typeof location.id === 'string' && 
+        typeof location.address === 'string' &&
+        typeof location.city === 'string' &&
+        typeof location.state === 'string' &&
+        typeof location.zip === 'string'
+      );
+
+      if (validLocations.length === 0) {
+        safeSetState(() => {
+          setError('No valid location data found');
+          setIsLoading(false);
+        });
+        return;
+      }
+
       // Format locations for geocoding
-      const formattedLocations = locations.map(location => ({
+      const formattedLocations = validLocations.map(location => ({
         id: location.id,
         address: `${location.address}, ${location.city}, ${location.state} ${location.zip}`.trim()
       }));
@@ -116,13 +165,13 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       console.log('Processing locations for geocoding:', formattedLocations);
 
       const results = await batchGeocodeWithMapbox(formattedLocations, mapboxToken, (current, total) => {
-        setProgress({ current, total });
+        safeSetState(() => setProgress({ current, total }));
       });
 
       console.log('Geocoding results:', results);
 
       // Merge geocoding results with original location data
-      const updatedLocations = locations.map(location => {
+      const updatedLocations = validLocations.map(location => {
         const geocoded = results.find(r => r.id === location.id);
         if (geocoded && geocoded.coordinates) {
           return {
@@ -134,32 +183,74 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         return location;
       });
 
-      const validLocations = updatedLocations.filter(loc => loc.latitude && loc.longitude);
+      const validGeocodedLocations = updatedLocations.filter(loc => 
+        loc.latitude && 
+        loc.longitude && 
+        !isNaN(loc.latitude) && 
+        !isNaN(loc.longitude) &&
+        isFinite(loc.latitude) &&
+        isFinite(loc.longitude)
+      );
       
-      if (validLocations.length === 0) {
-        setError(`Unable to find coordinates for any of the ${locations.length} locations. Please check that the addresses are complete and valid.`);
-      } else if (validLocations.length < locations.length) {
-        console.warn(`Only ${validLocations.length} out of ${locations.length} locations could be geocoded`);
+      if (validGeocodedLocations.length === 0) {
+        safeSetState(() => {
+          setError(`Unable to find coordinates for any of the ${locations.length} locations. Please check that the addresses are complete and valid.`);
+          setGeocodedLocations([]);
+        });
+      } else if (validGeocodedLocations.length < locations.length) {
+        console.warn(`Only ${validGeocodedLocations.length} out of ${locations.length} locations could be geocoded`);
+        safeSetState(() => setGeocodedLocations(validGeocodedLocations));
+      } else {
+        safeSetState(() => setGeocodedLocations(validGeocodedLocations));
       }
-
-      setGeocodedLocations(validLocations);
     } catch (error) {
       console.error('Error processing locations:', error);
-      setError('Failed to process location coordinates');
+      safeSetState(() => setError('Failed to process location coordinates'));
     } finally {
-      setIsLoading(false);
+      safeSetState(() => setIsLoading(false));
     }
-  };
+  }, [locations, mapboxToken, safeSetState]);
 
-  const handleMarkerClick = (location: Location) => {
-    if (onLocationSelect) {
-      onLocationSelect({
-        id: location.id,
-        name: location.name,
-        address: `${location.address}, ${location.city}, ${location.state}`
-      });
+  const handleMarkerClick = useCallback((location: Location) => {
+    try {
+      if (onLocationSelect && location) {
+        onLocationSelect({
+          id: location.id,
+          name: location.name,
+          address: `${location.address}, ${location.city}, ${location.state}`
+        });
+      }
+    } catch (error) {
+      console.error('Error handling marker click:', error);
     }
-  };
+  }, [onLocationSelect]);
+
+  const handleMapError = useCallback((errorMessage: string) => {
+    console.error('Map error:', errorMessage);
+    safeSetState(() => setMapError(errorMessage));
+  }, [safeSetState]);
+
+  const retryMapLoad = useCallback(() => {
+    safeSetState(() => {
+      setMapError('');
+      setError('');
+    });
+    if (mapboxToken && locations.length > 0) {
+      processLocations();
+    } else {
+      loadMapboxToken();
+    }
+  }, [mapboxToken, locations, processLocations, loadMapboxToken, safeSetState]);
+
+  useEffect(() => {
+    loadMapboxToken();
+  }, [loadMapboxToken]);
+
+  useEffect(() => {
+    if (mapboxToken && locations && locations.length > 0) {
+      processLocations();
+    }
+  }, [mapboxToken, locations, processLocations]);
 
   if (isLoading) {
     return (
@@ -177,73 +268,115 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     );
   }
 
-  if (error) {
+  if (error || mapError) {
     return (
-      <div className={`flex items-center justify-center p-8 bg-gray-50 rounded-lg ${className}`} style={{ height }}>
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Map Not Available</h3>
-          <p className="text-gray-600">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (geocodedLocations.length === 0) {
-    return (
-      <div className={`flex items-center justify-center p-8 bg-gray-50 rounded-lg ${className}`} style={{ height }}>
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Locations to Display</h3>
-          <p className="text-gray-600">No valid coordinates found for the locations.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Calculate map center and zoom
-  const centerLat = geocodedLocations.reduce((sum, loc) => sum + (loc.latitude || 0), 0) / geocodedLocations.length;
-  const centerLng = geocodedLocations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / geocodedLocations.length;
-
-  return (
-    <div style={{ height }} className={`rounded-lg overflow-hidden border ${className}`}>
-      <MapContainer
-        center={[centerLat, centerLng]}
-        zoom={10}
-        style={{ height: '100%', width: '100%' }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      <div className={className} style={{ height }}>
+        <MapErrorFallback 
+          error={error || mapError} 
+          onRetry={retryMapLoad}
         />
-        {geocodedLocations.map((location) => (
-          <Marker
-            key={location.id}
-            position={[location.latitude!, location.longitude!]}
-            eventHandlers={{
-              click: () => handleMarkerClick(location)
-            }}
-          >
-            <Popup>
-              <div className="p-2">
-                <h3 className="font-semibold">{location.name}</h3>
-                <p className="text-sm text-gray-600">
-                  {location.address}<br />
-                  {location.city}, {location.state} {location.zip}
-                </p>
-                {onLocationSelect && (
-                  <button 
-                    onClick={() => handleMarkerClick(location)}
-                    className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
-                  >
-                    Select Location
-                  </button>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  );
+      </div>
+    );
+  }
+
+  if (!geocodedLocations || geocodedLocations.length === 0) {
+    return (
+      <div className={className} style={{ height }}>
+        <MapErrorFallback 
+          error="No locations available to display on map"
+          showRetry={false}
+        />
+      </div>
+    );
+  }
+
+  try {
+    // Calculate map center with safety checks
+    const validLocations = geocodedLocations.filter(loc => 
+      loc.latitude && loc.longitude && 
+      !isNaN(loc.latitude) && !isNaN(loc.longitude)
+    );
+
+    if (validLocations.length === 0) {
+      return (
+        <div className={className} style={{ height }}>
+          <MapErrorFallback 
+            error="No valid coordinates found for locations"
+            onRetry={retryMapLoad}
+          />
+        </div>
+      );
+    }
+
+    const centerLat = validLocations.reduce((sum, loc) => sum + (loc.latitude || 0), 0) / validLocations.length;
+    const centerLng = validLocations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / validLocations.length;
+
+    // Validate calculated center
+    if (isNaN(centerLat) || isNaN(centerLng) || !isFinite(centerLat) || !isFinite(centerLng)) {
+      return (
+        <div className={className} style={{ height }}>
+          <MapErrorFallback 
+            error="Unable to calculate map center"
+            onRetry={retryMapLoad}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ height }} className={`rounded-lg overflow-hidden border ${className}`}>
+        <MapContainer
+          center={[centerLat, centerLng]}
+          zoom={10}
+          style={{ height: '100%', width: '100%' }}
+          onError={() => handleMapError('Map failed to initialize')}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            onError={() => handleMapError('Map tiles failed to load')}
+          />
+          {validLocations.map((location) => (
+            <Marker
+              key={location.id}
+              position={[location.latitude!, location.longitude!]}
+              eventHandlers={{
+                click: () => handleMarkerClick(location)
+              }}
+            >
+              <Popup>
+                <div className="p-2">
+                  <h3 className="font-semibold">{location.name}</h3>
+                  <p className="text-sm text-gray-600">
+                    {location.address}<br />
+                    {location.city}, {location.state} {location.zip}
+                  </p>
+                  {onLocationSelect && (
+                    <button 
+                      onClick={() => handleMarkerClick(location)}
+                      className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                    >
+                      Select Location
+                    </button>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+    );
+  } catch (renderError) {
+    console.error('Error rendering map:', renderError);
+    return (
+      <div className={className} style={{ height }}>
+        <MapErrorFallback 
+          error="Map rendering failed"
+          onRetry={retryMapLoad}
+        />
+      </div>
+    );
+  }
 };
 
 export default InteractiveMap;

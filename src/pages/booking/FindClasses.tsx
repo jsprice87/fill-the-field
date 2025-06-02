@@ -7,6 +7,7 @@ import { MapPin, Clock, Users, Map, List } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 
 // Lazy load the map component for better performance
 const InteractiveMap = lazy(() => import('@/components/maps/InteractiveMap'));
@@ -33,6 +34,7 @@ const FindClasses: React.FC = () => {
   const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeSlug);
   const [locations, setLocations] = useState<BookingLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   const [flowLoaded, setFlowLoaded] = useState(false);
@@ -50,10 +52,16 @@ const FindClasses: React.FC = () => {
   }, [franchiseeSlug, flowId]);
 
   const loadData = async () => {
-    if (!franchiseeSlug || !flowId) return;
+    if (!franchiseeSlug || !flowId) {
+      console.error('Missing required parameters:', { franchiseeSlug, flowId });
+      setError('Missing required parameters');
+      setIsLoading(false);
+      return;
+    }
     
     console.log('Loading data for FindClasses', { franchiseeSlug, flowId });
     setIsLoading(true);
+    setError('');
     
     try {
       // Load flow data first
@@ -94,23 +102,33 @@ const FindClasses: React.FC = () => {
 
       console.log('Locations loaded:', locationsData?.length || 0, 'locations');
       
-      // Convert database locations to BookingLocation format
-      const convertedLocations: BookingLocation[] = (locationsData || []).map(loc => ({
-        id: loc.id,
-        name: loc.name,
-        address: loc.address,
-        city: loc.city,
-        state: loc.state,
-        zip: loc.zip,
-        phone: loc.phone,
-        email: loc.email,
-        latitude: loc.latitude ? parseFloat(loc.latitude.toString()) : undefined,
-        longitude: loc.longitude ? parseFloat(loc.longitude.toString()) : undefined
-      }));
+      // Convert database locations to BookingLocation format with validation
+      const convertedLocations: BookingLocation[] = (locationsData || [])
+        .filter(loc => loc && loc.id && loc.name && loc.address && loc.city && loc.state && loc.zip)
+        .map(loc => ({
+          id: loc.id,
+          name: loc.name,
+          address: loc.address,
+          city: loc.city,
+          state: loc.state,
+          zip: loc.zip,
+          phone: loc.phone,
+          email: loc.email,
+          latitude: loc.latitude ? parseFloat(loc.latitude.toString()) : undefined,
+          longitude: loc.longitude ? parseFloat(loc.longitude.toString()) : undefined
+        }))
+        .filter(loc => 
+          // Additional validation for converted locations
+          typeof loc.id === 'string' && 
+          typeof loc.name === 'string' && 
+          typeof loc.address === 'string'
+        );
       
       setLocations(convertedLocations);
     } catch (error) {
       console.error('Error loading data:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
+      setError(errorMessage);
       toast.error('Failed to load locations');
       // If flow loading fails, redirect to start over
       navigate(`/${franchiseeSlug}/free-trial`);
@@ -122,6 +140,13 @@ const FindClasses: React.FC = () => {
   const handleLocationSelect = async (location: BookingLocation) => {
     if (!flowId) {
       console.error('No flow ID available for location selection');
+      toast.error('Session expired. Please start over.');
+      return;
+    }
+
+    if (!location || !location.id || !location.name) {
+      console.error('Invalid location data:', location);
+      toast.error('Invalid location data. Please try again.');
       return;
     }
     
@@ -150,6 +175,12 @@ const FindClasses: React.FC = () => {
     toast.info('Location request feature coming soon');
   };
 
+  const handleMapError = () => {
+    console.log('Map failed, switching to list view');
+    setViewMode('list');
+    toast.info('Map is unavailable, showing list view');
+  };
+
   // Show loading state while data is being loaded
   if (isLoading || flowLoading) {
     return (
@@ -162,7 +193,25 @@ const FindClasses: React.FC = () => {
     );
   }
 
-  const currentLeadData = flowData.leadData;
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <h2 className="font-agrandir text-2xl text-brand-navy mb-4">Unable to Load Locations</h2>
+          <p className="font-poppins text-gray-600 mb-6">{error}</p>
+          <Button 
+            onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}
+            className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+          >
+            Start Over
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentLeadData = flowData?.leadData;
 
   return (
     <div className="min-h-screen bg-white">
@@ -215,22 +264,40 @@ const FindClasses: React.FC = () => {
           {viewMode === 'map' && (
             <div className="lg:col-span-2 mb-8 lg:mb-0">
               <div className="h-[300px] lg:h-[600px]">
-                <Suspense fallback={
-                  <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-2"></div>
-                      <p className="font-poppins text-gray-600 text-sm">Loading map...</p>
+                <ErrorBoundary 
+                  fallback={
+                    <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
+                      <div className="text-center">
+                        <p className="font-poppins text-gray-600 mb-4">Map is unavailable</p>
+                        <Button 
+                          onClick={() => setViewMode('list')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          View List Instead
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                }>
-                  <InteractiveMap
-                    locations={locations}
-                    franchiseeSlug={franchiseeSlug || ''}
-                    flowId={flowId || undefined}
-                    onLocationSelect={handleLocationSelect}
-                    className="h-full"
-                  />
-                </Suspense>
+                  }
+                  onReset={handleMapError}
+                >
+                  <Suspense fallback={
+                    <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-2"></div>
+                        <p className="font-poppins text-gray-600 text-sm">Loading map...</p>
+                      </div>
+                    </div>
+                  }>
+                    <InteractiveMap
+                      locations={locations}
+                      franchiseeSlug={franchiseeSlug || ''}
+                      flowId={flowId || undefined}
+                      onLocationSelect={handleLocationSelect}
+                      className="h-full"
+                    />
+                  </Suspense>
+                </ErrorBoundary>
               </div>
             </div>
           )}
