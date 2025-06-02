@@ -210,7 +210,7 @@ export const navItems = [
   },
   {
     title: "Admin User Management",
-    to: "/admin/users",
+    to: "/admin/user-management",
     icon: <UsersIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
@@ -230,7 +230,7 @@ export const navItems = [
   },
   {
     title: "Admin Global Settings",
-    to: "/admin/global-settings",
+    to: "/admin/settings/global",
     icon: <SettingsIcon className="h-4 w-4" />,
     page: (
       <ProtectedRoute>
