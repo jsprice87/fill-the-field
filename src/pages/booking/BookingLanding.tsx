@@ -176,7 +176,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
               <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
             </div>
           </div>
-        </div>
+
       </section>
 
       {/* Testimonials Section */}
@@ -262,7 +262,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
               <h4 className="font-agrandir text-lg mb-4 text-white">Programs</h4>
               <div className="space-y-2">
                 <p className="font-poppins text-gray-300">Parent & Me (Ages 12-24 months)</p>
-                <p className="font-poppins text-gray-300">Skill Builders (Ages 2-10+ years)</p>
+                <p className="font-poppins text-gray-300">Super Soccer Stars (Ages 2-10+ years)</p>
                 <p className="font-poppins text-gray-300">Free Trial Classes</p>
               </div>
             </div>
