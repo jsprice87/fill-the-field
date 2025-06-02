@@ -6,11 +6,9 @@ import { LayoutDashboard, Globe, MapPin, Calendar, Users, Settings, LogOut, BarC
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
-
 interface DashboardLayoutProps {
   children: ReactNode;
 }
-
 const DashboardLayout = ({
   children
 }: DashboardLayoutProps) => {
@@ -57,7 +55,7 @@ const DashboardLayout = ({
           <SidebarContent>
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-center px-4 py-6">
-                <img alt="Fill The Field - Fast Funnels for Free Trials" src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" className="w-full h-auto max-w-[200px] object-contain" />
+                <img alt="Fill The Field - Fast Funnels for Free Trials" className="w-full h-auto max-w-[200px] object-contain" src="/lovable-uploads/b271ef46-2887-49fb-9766-22f8efbd2c4b.png" />
               </div>
               <div className="px-4 text-sm text-muted-foreground">
                 Fast Funnels for Free Trials
@@ -163,7 +161,7 @@ const DashboardLayout = ({
                   <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Fill The Field" className="h-8 w-auto" />
                 </Link>}
               <div className="ml-auto flex items-center gap-4">
-                <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Fill The Field Shield" className="h-8 w-8" />
+                <img alt="Fill The Field Shield" className="h-8 w-8" src="/lovable-uploads/8e328e3e-a97e-4671-a294-0f3791945a8d.png" />
                 <Button variant="ghost" size="icon" onClick={handleSignOut} className="md:hidden">
                   <LogOut className="h-5 w-5" />
                 </Button>
@@ -177,5 +175,4 @@ const DashboardLayout = ({
       </div>
     </SidebarProvider>;
 };
-
 export default DashboardLayout;
