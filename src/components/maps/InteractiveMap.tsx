@@ -79,7 +79,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           return;
         }
 
-        if (directData?.setting_value) {
+        if (directData && 'setting_value' in directData && directData.setting_value) {
           setMapboxToken(String(directData.setting_value));
         } else {
           setError('Mapbox token not configured. Please configure it in admin settings.');

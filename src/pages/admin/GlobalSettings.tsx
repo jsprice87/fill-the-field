@@ -32,7 +32,7 @@ const AdminGlobalSettings: React.FC = () => {
         return;
       }
 
-      if (data && data.setting_value) {
+      if (data && 'setting_value' in data && data.setting_value) {
         setMapboxToken(String(data.setting_value) || '');
       }
     } catch (error) {
