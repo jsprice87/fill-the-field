@@ -7,15 +7,20 @@ import { useBookings } from '@/hooks/useBookings';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useLocations } from '@/hooks/useLocations';
 import { useBookingsSearch } from '@/hooks/useBookingsSearch';
+import { useSearchParams } from 'react-router-dom';
 import BookingsTable from '@/components/bookings/BookingsTable';
 import SearchInput from '@/components/shared/SearchInput';
+import ArchiveToggle from '@/components/shared/ArchiveToggle';
 
 const PortalBookings: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
-  const { data: bookings = [], isLoading } = useBookings(franchiseeData?.id);
+  const [searchParams] = useSearchParams();
+  const includeArchived = searchParams.get('archived') === 'true';
+  
+  const { data: bookings = [], isLoading } = useBookings(franchiseeData?.id, includeArchived);
   const { data: locations = [] } = useLocations(franchiseeData?.id);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
-  const { searchTerm, searchQuery, filteredBookings, handleSearchChange } = useBookingsSearch(bookings);
+  const { searchTerm, searchQuery, filteredBookings, handleSearchChange } = useBookingsSearch(bookings, includeArchived);
 
   // Combine location filter with search results
   const finalBookings = selectedLocationId === 'all' 
@@ -35,12 +40,20 @@ const PortalBookings: React.FC = () => {
     );
   }
 
+  const getSearchPlaceholder = () => {
+    return includeArchived ? "Search all bookings..." : "Search bookings...";
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Bookings</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {includeArchived ? 'All Bookings' : 'Bookings'}
+        </h1>
         
         <div className="flex items-center gap-4">
+          <ArchiveToggle />
+          
           {/* Location Filter */}
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -63,7 +76,7 @@ const PortalBookings: React.FC = () => {
           <SearchInput
             value={searchTerm}
             onChange={handleSearchChange}
-            placeholder="Search bookings..."
+            placeholder={getSearchPlaceholder()}
             className="w-64"
           />
         </div>
@@ -79,7 +92,7 @@ const PortalBookings: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">{finalBookings.length}</div>
             <p className="text-xs text-muted-foreground">
-              {searchQuery || selectedLocationId !== 'all' 
+              {searchQuery || selectedLocationId !== 'all' || includeArchived
                 ? 'Current filter' 
                 : 'All locations'
               }
@@ -136,7 +149,11 @@ const PortalBookings: React.FC = () => {
       </div>
 
       {/* Bookings Table */}
-      <BookingsTable bookings={finalBookings} searchQuery={searchQuery} />
+      <BookingsTable 
+        bookings={finalBookings} 
+        searchQuery={searchQuery} 
+        showArchived={includeArchived}
+      />
     </div>
   );
 };

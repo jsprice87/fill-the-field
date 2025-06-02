@@ -5,14 +5,19 @@ import { Users, UserPlus, TrendingUp, Phone } from 'lucide-react';
 import { useLeads, useLeadStats } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useLeadsSearch } from '@/hooks/useLeadsSearch';
+import { useSearchParams } from 'react-router-dom';
 import LeadsTable from '@/components/leads/LeadsTable';
 import SearchInput from '@/components/shared/SearchInput';
+import ArchiveToggle from '@/components/shared/ArchiveToggle';
 
 const PortalLeads: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
-  const { data: leads = [], isLoading } = useLeads(franchiseeData?.id);
-  const { data: stats } = useLeadStats(franchiseeData?.id);
-  const { searchTerm, searchQuery, filteredLeads, handleSearchChange } = useLeadsSearch(leads);
+  const [searchParams] = useSearchParams();
+  const includeArchived = searchParams.get('archived') === 'true';
+  
+  const { data: leads = [], isLoading } = useLeads(franchiseeData?.id, includeArchived);
+  const { data: stats } = useLeadStats(franchiseeData?.id, includeArchived);
+  const { searchTerm, searchQuery, filteredLeads, handleSearchChange } = useLeadsSearch(leads, includeArchived);
 
   if (isLoading) {
     return (
@@ -27,16 +32,25 @@ const PortalLeads: React.FC = () => {
     );
   }
 
+  const getSearchPlaceholder = () => {
+    return includeArchived ? "Search all leads..." : "Search leads...";
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
-        <SearchInput
-          value={searchTerm}
-          onChange={handleSearchChange}
-          placeholder="Search leads..."
-          className="w-64"
-        />
+        <h1 className="text-2xl font-bold tracking-tight">
+          {includeArchived ? 'All Leads' : 'Leads'}
+        </h1>
+        <div className="flex items-center gap-4">
+          <ArchiveToggle />
+          <SearchInput
+            value={searchTerm}
+            onChange={handleSearchChange}
+            placeholder={getSearchPlaceholder()}
+            className="w-64"
+          />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -51,7 +65,12 @@ const PortalLeads: React.FC = () => {
               {searchQuery ? filteredLeads.length : (stats?.totalLeads || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {searchQuery ? `Matching "${searchQuery}"` : `+${stats?.monthlyGrowth || 0}% from last month`}
+              {searchQuery 
+                ? `Matching "${searchQuery}"` 
+                : includeArchived 
+                  ? 'Including archived'
+                  : `+${stats?.monthlyGrowth || 0}% from last month`
+              }
             </p>
           </CardContent>
         </Card>
@@ -106,7 +125,11 @@ const PortalLeads: React.FC = () => {
       </div>
 
       {/* Leads Table */}
-      <LeadsTable leads={filteredLeads} searchQuery={searchQuery} />
+      <LeadsTable 
+        leads={filteredLeads} 
+        searchQuery={searchQuery} 
+        showArchived={includeArchived}
+      />
     </div>
   );
 };

@@ -12,6 +12,7 @@ export type Database = {
       appointments: {
         Row: {
           age_override: boolean | null
+          archived_at: string | null
           booking_id: string
           class_name: string
           class_schedule_id: string
@@ -27,6 +28,7 @@ export type Database = {
         }
         Insert: {
           age_override?: boolean | null
+          archived_at?: string | null
           booking_id: string
           class_name: string
           class_schedule_id: string
@@ -42,6 +44,7 @@ export type Database = {
         }
         Update: {
           age_override?: boolean | null
+          archived_at?: string | null
           booking_id?: string
           class_name?: string
           class_schedule_id?: string
@@ -112,6 +115,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          archived_at: string | null
           booking_reference: string | null
           cancellation_reason: string | null
           child_speaks_english: boolean | null
@@ -133,6 +137,7 @@ export type Database = {
           waiver_accepted_at: string | null
         }
         Insert: {
+          archived_at?: string | null
           booking_reference?: string | null
           cancellation_reason?: string | null
           child_speaks_english?: boolean | null
@@ -154,6 +159,7 @@ export type Database = {
           waiver_accepted_at?: string | null
         }
         Update: {
+          archived_at?: string | null
           booking_reference?: string | null
           cancellation_reason?: string | null
           child_speaks_english?: boolean | null
@@ -488,6 +494,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          archived_at: string | null
           booking_session_data: Json | null
           child_speaks_english: boolean | null
           created_at: string
@@ -506,6 +513,7 @@ export type Database = {
           zip: string
         }
         Insert: {
+          archived_at?: string | null
           booking_session_data?: Json | null
           child_speaks_english?: boolean | null
           created_at?: string
@@ -524,6 +532,7 @@ export type Database = {
           zip: string
         }
         Update: {
+          archived_at?: string | null
           booking_session_data?: Json | null
           child_speaks_english?: boolean | null
           created_at?: string

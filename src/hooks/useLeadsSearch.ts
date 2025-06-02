@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { useSearchQuery, useDebounce, searchInText, searchInDate } from '@/utils/searchUtils';
 
-export const useLeadsSearch = (leads: Lead[]) => {
+export const useLeadsSearch = (leads: Lead[], includeArchived: boolean = false) => {
   const { query, setQuery } = useSearchQuery();
   const [searchTerm, setSearchTerm] = useState(query);
 
@@ -21,13 +21,20 @@ export const useLeadsSearch = (leads: Lead[]) => {
     debouncedSetQuery(value);
   };
 
-  // Filter leads based on search query
+  // Filter leads based on search query and archive status
   const filteredLeads = useMemo(() => {
-    if (!query.trim()) return leads;
+    // First filter by archive status
+    let filteredByArchive = leads;
+    if (!includeArchived) {
+      filteredByArchive = leads.filter(lead => !lead.archived_at);
+    }
+
+    // Then apply search filter
+    if (!query.trim()) return filteredByArchive;
 
     const searchQuery = query.trim();
     
-    return leads.filter(lead => {
+    return filteredByArchive.filter(lead => {
       // Search in all text fields
       return (
         searchInText(lead.first_name, searchQuery) ||
@@ -42,7 +49,7 @@ export const useLeadsSearch = (leads: Lead[]) => {
         searchInDate(lead.updated_at, searchQuery)
       );
     });
-  }, [leads, query]);
+  }, [leads, query, includeArchived]);
 
   return {
     searchTerm,

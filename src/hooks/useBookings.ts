@@ -18,15 +18,16 @@ export interface Booking {
   lead_first_name?: string;
   lead_last_name?: string;
   created_at: string;
+  archived_at?: string | null;
 }
 
-export const useBookings = (franchiseeId?: string) => {
+export const useBookings = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
-    queryKey: ['bookings', franchiseeId],
+    queryKey: ['bookings', franchiseeId, includeArchived],
     queryFn: async () => {
       if (!franchiseeId) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
         .select(`
           id,
@@ -38,13 +39,16 @@ export const useBookings = (franchiseeId?: string) => {
           participant_age,
           participant_birth_date,
           created_at,
+          archived_at,
           bookings!inner(
             lead_id,
+            archived_at,
             leads!inner(
               first_name,
               last_name,
               franchisee_id,
-              status
+              status,
+              archived_at
             )
           ),
           class_schedules!inner(
@@ -58,6 +62,15 @@ export const useBookings = (franchiseeId?: string) => {
         `)
         .eq('bookings.leads.franchisee_id', franchiseeId)
         .order('selected_date', { ascending: true });
+
+      // Filter by archive status
+      if (!includeArchived) {
+        query = query.is('archived_at', null)
+                    .is('bookings.archived_at', null)
+                    .is('bookings.leads.archived_at', null);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching bookings:', error);
@@ -80,7 +93,8 @@ export const useBookings = (franchiseeId?: string) => {
         location_name: appointment.class_schedules?.classes?.locations?.name,
         lead_first_name: appointment.bookings?.leads?.first_name,
         lead_last_name: appointment.bookings?.leads?.last_name,
-        created_at: appointment.created_at
+        created_at: appointment.created_at,
+        archived_at: appointment.archived_at
       }));
 
       console.log('Fetched bookings data:', transformedData);

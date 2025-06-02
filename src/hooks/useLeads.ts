@@ -18,15 +18,16 @@ export interface Lead {
   booking_session_data?: any;
   created_at: string;
   updated_at: string;
+  archived_at?: string | null;
 }
 
-export const useLeads = (franchiseeId?: string) => {
+export const useLeads = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
-    queryKey: ['leads', franchiseeId],
+    queryKey: ['leads', franchiseeId, includeArchived],
     queryFn: async () => {
       if (!franchiseeId) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('leads')
         .select(`
           *,
@@ -34,6 +35,13 @@ export const useLeads = (franchiseeId?: string) => {
         `)
         .eq('franchisee_id', franchiseeId)
         .order('created_at', { ascending: false });
+
+      // Filter by archive status
+      if (!includeArchived) {
+        query = query.is('archived_at', null);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching leads:', error);
@@ -47,11 +55,18 @@ export const useLeads = (franchiseeId?: string) => {
 };
 
 // Separate function to fetch lead stats to avoid deep type inference
-const fetchLeadStats = async (franchiseeId: string) => {
-  const { data: leads, error } = await supabase
+const fetchLeadStats = async (franchiseeId: string, includeArchived: boolean = false) => {
+  let query = supabase
     .from('leads')
     .select('status, created_at')
     .eq('franchisee_id', franchiseeId);
+
+  // Exclude archived leads from stats by default
+  if (!includeArchived) {
+    query = query.is('archived_at', null);
+  }
+
+  const { data: leads, error } = await query;
 
   if (error) {
     console.error('Error fetching lead stats:', error);
@@ -95,9 +110,9 @@ const fetchLeadStats = async (franchiseeId: string) => {
   };
 };
 
-export const useLeadStats = (franchiseeId?: string) => {
+export const useLeadStats = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
-    queryKey: ['lead-stats', franchiseeId],
+    queryKey: ['lead-stats', franchiseeId, includeArchived],
     queryFn: () => {
       if (!franchiseeId) {
         return {
@@ -107,7 +122,7 @@ export const useLeadStats = (franchiseeId?: string) => {
           monthlyGrowth: 0
         };
       }
-      return fetchLeadStats(franchiseeId);
+      return fetchLeadStats(franchiseeId, includeArchived);
     },
     enabled: !!franchiseeId,
   });
