@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { toast } from 'sonner';
 // Lazy load the map component for better performance
 const InteractiveMap = lazy(() => import('@/components/maps/InteractiveMap'));
 
-interface Location {
+interface BookingLocation {
   id: string;
   name: string;
   address: string;
@@ -30,9 +31,9 @@ const FindClasses: React.FC = () => {
   const flowId = searchParams.get('flow');
   
   const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeSlug);
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [locations, setLocations] = useState<BookingLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('map'); // Changed to default to map view
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   const [flowLoaded, setFlowLoaded] = useState(false);
 
@@ -92,7 +93,22 @@ const FindClasses: React.FC = () => {
       }
 
       console.log('Locations loaded:', locationsData?.length || 0, 'locations');
-      setLocations(locationsData || []);
+      
+      // Convert database locations to BookingLocation format
+      const convertedLocations: BookingLocation[] = (locationsData || []).map(loc => ({
+        id: loc.id,
+        name: loc.name,
+        address: loc.address,
+        city: loc.city,
+        state: loc.state,
+        zip: loc.zip,
+        phone: loc.phone,
+        email: loc.email,
+        latitude: loc.latitude ? parseFloat(loc.latitude.toString()) : undefined,
+        longitude: loc.longitude ? parseFloat(loc.longitude.toString()) : undefined
+      }));
+      
+      setLocations(convertedLocations);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load locations');
@@ -103,7 +119,7 @@ const FindClasses: React.FC = () => {
     }
   };
 
-  const handleLocationSelect = async (location: Location) => {
+  const handleLocationSelect = async (location: BookingLocation) => {
     if (!flowId) {
       console.error('No flow ID available for location selection');
       return;

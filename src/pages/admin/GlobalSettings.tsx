@@ -19,8 +19,9 @@ const AdminGlobalSettings: React.FC = () => {
   const loadSettings = async () => {
     setIsLoading(true);
     try {
+      // Use raw query to access global_settings table
       const { data, error } = await supabase
-        .from('global_settings')
+        .from('global_settings' as any)
         .select('*')
         .eq('setting_key', 'mapbox_public_token')
         .single();
@@ -56,7 +57,7 @@ const AdminGlobalSettings: React.FC = () => {
     setIsSaving(true);
     try {
       const { error } = await supabase
-        .from('global_settings')
+        .from('global_settings' as any)
         .upsert({
           setting_key: 'mapbox_public_token',
           setting_value: mapboxToken.trim(),

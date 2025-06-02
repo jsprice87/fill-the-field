@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { batchGeocodeWithMapbox } from '@/utils/mapboxGeocoding';
+import { batchGeocodeWithMapbox } from '@/utils/batchMapboxGeocoding';
 import { supabase } from '@/integrations/supabase/client';
 
 // Fix for default markers in react-leaflet
@@ -20,7 +20,7 @@ interface Location {
   address: string;
   city: string;
   state: string;
-  zip_code: string;
+  zip: string;
   latitude?: number;
   longitude?: number;
 }
@@ -28,9 +28,18 @@ interface Location {
 interface InteractiveMapProps {
   locations: Location[];
   height?: string;
+  franchiseeSlug?: string;
+  flowId?: string;
+  onLocationSelect?: (location: any) => void;
+  className?: string;
 }
 
-const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "400px" }) => {
+const InteractiveMap: React.FC<InteractiveMapProps> = ({ 
+  locations, 
+  height = "400px",
+  onLocationSelect,
+  className = ""
+}) => {
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const [geocodedLocations, setGeocodedLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,21 +58,38 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "40
 
   const loadMapboxToken = async () => {
     try {
-      const { data, error } = await supabase
-        .from('global_settings')
-        .select('setting_value')
-        .eq('setting_key', 'mapbox_public_token')
-        .single();
+      // Use raw SQL query to access global_settings table
+      const { data, error } = await supabase.rpc('get_global_setting', { 
+        setting_name: 'mapbox_public_token' 
+      });
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading Mapbox token:', error);
-        setError('Failed to load map configuration');
-        setIsLoading(false);
+      if (error) {
+        // Fallback: try direct query if RPC doesn't exist
+        console.log('RPC failed, trying direct query...');
+        const { data: directData, error: directError } = await supabase
+          .from('global_settings' as any)
+          .select('setting_value')
+          .eq('setting_key', 'mapbox_public_token')
+          .single();
+
+        if (directError && directError.code !== 'PGRST116') {
+          console.error('Error loading Mapbox token:', directError);
+          setError('Failed to load map configuration');
+          setIsLoading(false);
+          return;
+        }
+
+        if (directData?.setting_value) {
+          setMapboxToken(directData.setting_value);
+        } else {
+          setError('Mapbox token not configured. Please configure it in admin settings.');
+          setIsLoading(false);
+        }
         return;
       }
 
-      if (data?.setting_value) {
-        setMapboxToken(data.setting_value);
+      if (data) {
+        setMapboxToken(data);
       } else {
         setError('Mapbox token not configured. Please configure it in admin settings.');
         setIsLoading(false);
@@ -84,7 +110,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "40
       // Format locations for geocoding
       const formattedLocations = locations.map(location => ({
         id: location.id,
-        address: `${location.address}, ${location.city}, ${location.state} ${location.zip_code}`.trim()
+        address: `${location.address}, ${location.city}, ${location.state} ${location.zip}`.trim()
       }));
 
       console.log('Processing locations for geocoding:', formattedLocations);
@@ -125,9 +151,19 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "40
     }
   };
 
+  const handleMarkerClick = (location: Location) => {
+    if (onLocationSelect) {
+      onLocationSelect({
+        id: location.id,
+        name: location.name,
+        address: `${location.address}, ${location.city}, ${location.state}`
+      });
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg" style={{ height }}>
+      <div className={`flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg ${className}`} style={{ height }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading map...</p>
@@ -143,7 +179,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "40
 
   if (error) {
     return (
-      <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg" style={{ height }}>
+      <div className={`flex items-center justify-center p-8 bg-gray-50 rounded-lg ${className}`} style={{ height }}>
         <div className="text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Map Not Available</h3>
           <p className="text-gray-600">{error}</p>
@@ -154,7 +190,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "40
 
   if (geocodedLocations.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg" style={{ height }}>
+      <div className={`flex items-center justify-center p-8 bg-gray-50 rounded-lg ${className}`} style={{ height }}>
         <div className="text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Locations to Display</h3>
           <p className="text-gray-600">No valid coordinates found for the locations.</p>
@@ -168,7 +204,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "40
   const centerLng = geocodedLocations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / geocodedLocations.length;
 
   return (
-    <div style={{ height }} className="rounded-lg overflow-hidden border">
+    <div style={{ height }} className={`rounded-lg overflow-hidden border ${className}`}>
       <MapContainer
         center={[centerLat, centerLng]}
         zoom={10}
@@ -182,14 +218,25 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, height = "40
           <Marker
             key={location.id}
             position={[location.latitude!, location.longitude!]}
+            eventHandlers={{
+              click: () => handleMarkerClick(location)
+            }}
           >
             <Popup>
               <div className="p-2">
                 <h3 className="font-semibold">{location.name}</h3>
                 <p className="text-sm text-gray-600">
                   {location.address}<br />
-                  {location.city}, {location.state} {location.zip_code}
+                  {location.city}, {location.state} {location.zip}
                 </p>
+                {onLocationSelect && (
+                  <button 
+                    onClick={() => handleMarkerClick(location)}
+                    className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                  >
+                    Select Location
+                  </button>
+                )}
               </div>
             </Popup>
           </Marker>
