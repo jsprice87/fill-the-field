@@ -28,9 +28,10 @@ interface Booking {
 interface BookingsTableProps {
   bookings: Booking[];
   searchQuery?: string;
+  showArchived?: boolean;
 }
 
-const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery }) => {
+const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, showArchived }) => {
   const formatAge = (birthDateString: string, ageNumber: number) => {
     if (birthDateString) {
       const birthDate = new Date(birthDateString);
@@ -77,9 +78,14 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery }) 
     return (
       <div className="text-center p-8">
         <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="font-agrandir text-xl text-brand-navy mb-2">No Bookings Yet</h3>
+        <h3 className="font-agrandir text-xl text-brand-navy mb-2">
+          {showArchived ? 'No Archived Bookings' : 'No Bookings Yet'}
+        </h3>
         <p className="font-poppins text-gray-600">
-          When people book classes through your landing page, they'll appear here.
+          {showArchived 
+            ? 'No bookings have been archived yet.'
+            : 'When people book classes through your landing page, they\'ll appear here.'
+          }
         </p>
       </div>
     );

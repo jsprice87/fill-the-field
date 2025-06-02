@@ -10,9 +10,10 @@ import StatusSelect from './StatusSelect';
 interface LeadsTableProps {
   leads: Lead[];
   searchQuery?: string;
+  showArchived?: boolean;
 }
 
-const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery }) => {
+const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchived }) => {
   const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
@@ -73,13 +74,20 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery }) => {
     return (
       <div className="text-center p-8">
         <Phone className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="font-agrandir text-xl text-brand-navy mb-2">No Leads Yet</h3>
+        <h3 className="font-agrandir text-xl text-brand-navy mb-2">
+          {showArchived ? 'No Archived Leads' : 'No Leads Yet'}
+        </h3>
         <p className="font-poppins text-gray-600 mb-6">
-          When users sign up through your landing page, they'll appear here.
+          {showArchived 
+            ? 'No leads have been archived yet.'
+            : 'When users sign up through your landing page, they\'ll appear here.'
+          }
         </p>
-        <Button className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins">
-          Share Your Landing Page
-        </Button>
+        {!showArchived && (
+          <Button className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins">
+            Share Your Landing Page
+          </Button>
+        )}
       </div>
     );
   }
