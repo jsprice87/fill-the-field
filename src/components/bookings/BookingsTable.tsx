@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, MapPin, Baby, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, MapPin, Baby, Search, Archive, Trash2 } from 'lucide-react';
 import StatusSelect from '../leads/StatusSelect';
 import StatusBadge from '../leads/StatusBadge';
+import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
+import { useDeleteBooking } from '@/hooks/useDeleteActions';
+import DeleteConfirmationDialog from '@/components/shared/DeleteConfirmationDialog';
 import type { Database } from '@/integrations/supabase/types';
 
 type LeadStatus = Database['public']['Enums']['lead_status'];
@@ -23,6 +28,7 @@ interface Booking {
   lead_first_name?: string;
   lead_last_name?: string;
   created_at: string;
+  archived_at?: string | null;
 }
 
 interface BookingsTableProps {
@@ -32,6 +38,13 @@ interface BookingsTableProps {
 }
 
 const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, showArchived }) => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
+
+  const archiveBooking = useArchiveBooking();
+  const unarchiveBooking = useUnarchiveBooking();
+  const deleteBooking = useDeleteBooking();
+
   const formatAge = (birthDateString: string, ageNumber: number) => {
     if (birthDateString) {
       const birthDate = new Date(birthDateString);
@@ -60,6 +73,30 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleArchiveToggle = (booking: Booking) => {
+    if (booking.archived_at) {
+      unarchiveBooking.mutate(booking.class_schedule_id);
+    } else {
+      archiveBooking.mutate(booking.class_schedule_id);
+    }
+  };
+
+  const handleDeleteClick = (booking: Booking) => {
+    setBookingToDelete(booking);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (bookingToDelete) {
+      deleteBooking.mutate(bookingToDelete.class_schedule_id, {
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          setBookingToDelete(null);
+        }
+      });
+    }
   };
 
   if (bookings.length === 0) {
@@ -92,75 +129,116 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
   }
 
   return (
-    <div className="border rounded-lg">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="font-agrandir">Lead</TableHead>
-            <TableHead className="font-agrandir">Participant</TableHead>
-            <TableHead className="font-agrandir hidden md:table-cell">Location</TableHead>
-            <TableHead className="font-agrandir hidden lg:table-cell">Class</TableHead>
-            <TableHead className="font-agrandir">Date/Time</TableHead>
-            <TableHead className="font-agrandir">Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {bookings.map((booking) => (
-            <TableRow key={booking.id} className="hover:bg-muted/50">
-              <TableCell>
-                <div className="font-agrandir font-medium text-brand-navy">
-                  {booking.lead_first_name} {booking.lead_last_name}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <div className="font-medium">{booking.participant_name}</div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Baby className="h-3 w-3 mr-1" />
-                    {formatAge(booking.participant_birth_date, booking.participant_age)}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="hidden md:table-cell">
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  <span className="text-sm">{booking.location_name}</span>
-                </div>
-              </TableCell>
-              <TableCell className="hidden lg:table-cell">
-                <div className="text-sm">{booking.class_name}</div>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">{formatDate(booking.selected_date)}</div>
-                  <div className="text-xs text-gray-600">{booking.class_time}</div>
-                  <div className="md:hidden text-xs text-gray-600 mt-1">
-                    <div className="flex items-center">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {booking.location_name}
-                    </div>
-                    <div className="lg:hidden mt-1">{booking.class_name}</div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-2">
-                  <StatusBadge 
-                    leadId={booking.lead_id}
-                    bookingDate={booking.selected_date}
-                    fallbackStatus={booking.status}
-                  />
-                  <StatusSelect 
-                    leadId={booking.lead_id}
-                    currentStatus={booking.status as LeadStatus}
-                  />
-                </div>
-              </TableCell>
+    <>
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="font-agrandir">Lead</TableHead>
+              <TableHead className="font-agrandir">Participant</TableHead>
+              <TableHead className="font-agrandir hidden md:table-cell">Location</TableHead>
+              <TableHead className="font-agrandir hidden lg:table-cell">Class</TableHead>
+              <TableHead className="font-agrandir">Date/Time</TableHead>
+              <TableHead className="font-agrandir">Status</TableHead>
+              <TableHead className="font-agrandir">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {bookings.map((booking) => (
+              <TableRow 
+                key={booking.id} 
+                className={`hover:bg-muted/50 ${booking.archived_at ? 'opacity-60 bg-gray-50' : ''}`}
+              >
+                <TableCell>
+                  <div className="font-agrandir font-medium text-brand-navy flex items-center gap-2">
+                    {booking.lead_first_name} {booking.lead_last_name}
+                    {booking.archived_at && (
+                      <Badge variant="secondary" className="text-xs">Archived</Badge>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="font-medium">{booking.participant_name}</div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Baby className="h-3 w-3 mr-1" />
+                      {formatAge(booking.participant_birth_date, booking.participant_age)}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <div className="flex items-center text-gray-600">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    <span className="text-sm">{booking.location_name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  <div className="text-sm">{booking.class_name}</div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium">{formatDate(booking.selected_date)}</div>
+                    <div className="text-xs text-gray-600">{booking.class_time}</div>
+                    <div className="md:hidden text-xs text-gray-600 mt-1">
+                      <div className="flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {booking.location_name}
+                      </div>
+                      <div className="lg:hidden mt-1">{booking.class_name}</div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-2">
+                    <StatusBadge 
+                      leadId={booking.lead_id}
+                      bookingDate={booking.selected_date}
+                      fallbackStatus={booking.status}
+                    />
+                    <StatusSelect 
+                      leadId={booking.lead_id}
+                      currentStatus={booking.status as LeadStatus}
+                    />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleArchiveToggle(booking)}
+                      disabled={archiveBooking.isPending || unarchiveBooking.isPending}
+                      className="text-xs"
+                    >
+                      <Archive className="h-3 w-3 mr-1" />
+                      {booking.archived_at ? 'Unarchive' : 'Archive'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteClick(booking)}
+                      disabled={deleteBooking.isPending}
+                      className="text-xs"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Booking"
+        description={bookingToDelete ? `Are you sure you want to delete the booking for ${bookingToDelete.participant_name}? This action cannot be undone.` : ''}
+        isLoading={deleteBooking.isPending}
+      />
+    </>
   );
 };
 
