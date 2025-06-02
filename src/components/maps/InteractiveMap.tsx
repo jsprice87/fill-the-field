@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { LatLngBounds } from 'leaflet';
@@ -31,6 +30,7 @@ interface InteractiveMapProps {
   flowId?: string;
   onLocationSelect: (location: any) => void;
   className?: string;
+  onError?: (error: string) => void;
 }
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({
@@ -38,7 +38,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   franchiseeSlug,
   flowId,
   onLocationSelect,
-  className = ""
+  className = "",
+  onError
 }) => {
   const mapRef = useRef<any>(null);
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);

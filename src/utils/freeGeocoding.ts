@@ -1,3 +1,5 @@
+import { geocodingCircuitBreaker } from './geocodingCircuitBreaker';
+
 interface GeocodingResult {
   latitude: number;
   longitude: number;
