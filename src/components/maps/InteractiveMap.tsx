@@ -27,6 +27,7 @@ interface InteractiveMapProps {
   flowId?: string;
   onLocationSelect: (location: any) => void;
   className?: string;
+  onError?: (error: string) => void;
 }
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({
@@ -34,7 +35,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   franchiseeSlug,
   flowId,
   onLocationSelect,
-  className = ""
+  className = "",
+  onError
 }) => {
   const mapRef = useRef<any>(null);
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
@@ -48,13 +50,45 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   useEffect(() => {
     if (locations.length > 0) {
-      loadLocationData();
+      loadMapboxToken();
     } else {
       setIsLoading(false);
     }
-  }, [locations, mapboxToken]);
+  }, [locations]);
 
-  const loadLocationData = async () => {
+  const loadMapboxToken = async () => {
+    try {
+      // Try to get global Mapbox token first
+      const { data: globalToken } = await supabase
+        .from('global_settings')
+        .select('setting_value')
+        .eq('setting_key', 'mapbox_public_token')
+        .single();
+
+      if (globalToken?.setting_value) {
+        console.log('Using global Mapbox token');
+        setMapboxToken(globalToken.setting_value);
+        loadLocationData(globalToken.setting_value);
+      } else {
+        console.log('No global Mapbox token found, requesting user input');
+        setNeedsMapboxToken(true);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Error loading Mapbox token:', error);
+      setNeedsMapboxToken(true);
+      setIsLoading(false);
+    }
+  };
+
+  const loadLocationData = async (token?: string) => {
+    const tokenToUse = token || mapboxToken;
+    if (!tokenToUse) {
+      setNeedsMapboxToken(true);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setErrorMessage(null);
     setGeocodingProgress(null);
@@ -89,13 +123,24 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         .in('location_id', locationIds)
         .eq('is_active', true);
 
-      // Prepare locations for geocoding
-      const locationsToGeocode = locations.map(loc => ({
-        address: loc.address,
-        city: loc.city,
-        state: loc.state,
-        zip: loc.zip
-      }));
+      // Prepare locations for geocoding - ensure proper format
+      const locationsToGeocode = locations.map(loc => {
+        console.log('Processing location for geocoding:', {
+          name: loc.name,
+          address: loc.address,
+          city: loc.city,
+          state: loc.state,
+          zip: loc.zip,
+          hasCoords: !!(loc.latitude && loc.longitude)
+        });
+
+        return {
+          address: loc.address || '',
+          city: loc.city || '',
+          state: loc.state || '',
+          zip: loc.zip || ''
+        };
+      });
 
       // Check if we have any locations that need geocoding
       const hasUngeocodedLocations = locations.some(loc => {
@@ -118,26 +163,12 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         geocodedResults = await geocodeLocationsWithMapbox(
           locationsToGeocode, 
           currentFranchiseeId, 
-          mapboxToken || undefined,
+          tokenToUse,
           onProgress
         );
 
         // Clear progress indicator
         setGeocodingProgress(null);
-
-        // Check if we need a Mapbox token for remaining locations
-        const stillNeedGeocoding = geocodedResults.some((result, index) => {
-          const location = locations[index];
-          const hasExistingCoords = location.latitude && location.longitude && 
-            !isNaN(Number(location.latitude)) && !isNaN(Number(location.longitude));
-          return !hasExistingCoords && !result;
-        });
-
-        if (stillNeedGeocoding && !mapboxToken) {
-          setNeedsMapboxToken(true);
-          setIsLoading(false);
-          return;
-        }
       }
 
       // Process each location and enrich with class data
@@ -165,7 +196,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         }
 
         if (!latitude || !longitude) {
-          console.warn(`Skipping location ${location.name} - no coordinates available (address: ${location.address}, ${location.city}, ${location.state})`);
+          console.warn(`Skipping location ${location.name} - no coordinates available. Address: "${location.address}", City: "${location.city}", State: "${location.state}", Zip: "${location.zip}"`);
           continue;
         }
         
@@ -205,12 +236,20 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       if (enrichedLocations.length > 0) {
         calculateMapBounds(enrichedLocations);
       } else {
-        setErrorMessage(`Unable to find coordinates for any of the ${locations.length} locations. Please check that the addresses are complete and valid.`);
+        const errorMsg = `Unable to find coordinates for any of the ${locations.length} locations. Please check that the addresses are complete and valid.`;
+        setErrorMessage(errorMsg);
+        if (onError) {
+          onError(errorMsg);
+        }
       }
     } catch (error) {
       console.error('Error loading location data:', error);
-      setErrorMessage(`Failed to load location data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = `Failed to load location data: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      setErrorMessage(errorMsg);
       setLocationData([]);
+      if (onError) {
+        onError(errorMsg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -220,7 +259,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     console.log('Mapbox token submitted, reloading data...');
     setMapboxToken(token);
     setNeedsMapboxToken(false);
-    // This will trigger useEffect to reload data with the token
+    loadLocationData(token);
   };
 
   const getDayName = (dayNumber?: number) => {
