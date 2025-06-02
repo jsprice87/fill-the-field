@@ -11,7 +11,7 @@ const Index = () => {
             <img src="/lovable-uploads/c5e58dba-5000-47ba-a87f-3353c2c8ad0f.png" alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" />
           </div>
           <div className="flex items-center gap-4">
-            <img src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" alt="Fill The Field Shield" className="h-8 w-8" />
+            
             <Link to="/login" className="text-gray-600 hover:text-indigo-600">
               Login
             </Link>
@@ -26,7 +26,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
-            <img src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" alt="Fill The Field Shield" className="h-24 w-24 mx-auto mb-6" />
+            <img src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" alt="Fill The Field Shield" className="h-44 w-auto mx-auto mb-6" />
           </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Fill Your Trial Classes and Convert More Customers
