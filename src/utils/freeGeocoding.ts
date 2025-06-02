@@ -20,6 +20,10 @@ interface CachedGeocodingData {
 // Cache duration: 24 hours
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
 const CACHE_KEY_PREFIX = 'free_geocoding_';
+const REQUEST_TIMEOUT = 5000; // 5 second timeout per request
+const REQUEST_DELAY = 200; // Reduced delay between requests
+const MAX_CONCURRENT = 2; // Maximum concurrent requests
+const MAX_FAILURES = 3; // Stop after 3 consecutive failures
 
 // Get cache key for a franchisee
 const getCacheKey = (franchiseeId: string) => `${CACHE_KEY_PREFIX}${franchiseeId}`;
@@ -80,12 +84,28 @@ const saveCachedResults = (franchiseeId: string, results: Map<string, GeocodingR
   }
 };
 
-// Geocode using OpenStreetMap Nominatim
+// Create a timeout wrapper for fetch requests
+const fetchWithTimeout = async (url: string, timeout: number): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+};
+
+// Geocode using OpenStreetMap Nominatim with timeout
 const geocodeWithNominatim = async (address: string): Promise<GeocodingResult | null> => {
   try {
     const encodedAddress = encodeURIComponent(address);
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&countrycodes=us`
+    const response = await fetchWithTimeout(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&countrycodes=us`,
+      REQUEST_TIMEOUT
     );
     
     if (!response.ok) {
@@ -103,18 +123,22 @@ const geocodeWithNominatim = async (address: string): Promise<GeocodingResult | 
     }
     return null;
   } catch (error) {
-    console.error('Error geocoding with Nominatim:', error);
+    if (error.name === 'AbortError') {
+      console.error('Nominatim request timed out for:', address);
+    } else {
+      console.error('Error geocoding with Nominatim:', error);
+    }
     return null;
   }
 };
 
-// Geocode using LocationIQ (free tier: 5,000/day)
+// Geocode using LocationIQ with timeout
 const geocodeWithLocationIQ = async (address: string): Promise<GeocodingResult | null> => {
   try {
     const encodedAddress = encodeURIComponent(address);
-    // Using LocationIQ's free tier without API key (limited requests)
-    const response = await fetch(
-      `https://us1.locationiq.com/v1/search.php?key=demo&q=${encodedAddress}&format=json&limit=1&countrycodes=us`
+    const response = await fetchWithTimeout(
+      `https://us1.locationiq.com/v1/search.php?key=demo&q=${encodedAddress}&format=json&limit=1&countrycodes=us`,
+      REQUEST_TIMEOUT
     );
     
     if (!response.ok) {
@@ -132,46 +156,79 @@ const geocodeWithLocationIQ = async (address: string): Promise<GeocodingResult |
     }
     return null;
   } catch (error) {
-    console.error('Error geocoding with LocationIQ:', error);
+    if (error.name === 'AbortError') {
+      console.error('LocationIQ request timed out for:', address);
+    } else {
+      console.error('Error geocoding with LocationIQ:', error);
+    }
     return null;
   }
 };
 
-// Batch geocode addresses using multiple free services
-const batchGeocodeFree = async (addresses: string[]): Promise<(GeocodingResult | null)[]> => {
-  const results: (GeocodingResult | null)[] = [];
-  
-  for (let i = 0; i < addresses.length; i++) {
-    const address = addresses[i];
-    console.log(`Geocoding ${i + 1}/${addresses.length}: ${address}`);
-    
-    // Try Nominatim first (most reliable free service)
-    let result = await geocodeWithNominatim(address);
-    
-    // If Nominatim fails, try LocationIQ as fallback
-    if (!result) {
-      console.log('Nominatim failed, trying LocationIQ...');
-      result = await geocodeWithLocationIQ(address);
+// Process addresses in controlled batches
+const batchGeocodeFree = async (
+  addresses: string[], 
+  onProgress?: (completed: number, total: number) => void
+): Promise<(GeocodingResult | null)[]> => {
+  const results: (GeocodingResult | null)[] = new Array(addresses.length).fill(null);
+  let consecutiveFailures = 0;
+  let completed = 0;
+
+  // Process in batches to avoid overwhelming the APIs
+  for (let i = 0; i < addresses.length; i += MAX_CONCURRENT) {
+    if (consecutiveFailures >= MAX_FAILURES) {
+      console.warn(`Stopping geocoding after ${MAX_FAILURES} consecutive failures`);
+      break;
     }
+
+    const batch = addresses.slice(i, i + MAX_CONCURRENT);
+    const batchPromises = batch.map(async (address, batchIndex) => {
+      const actualIndex = i + batchIndex;
+      console.log(`Geocoding ${actualIndex + 1}/${addresses.length}: ${address}`);
+      
+      // Try Nominatim first
+      let result = await geocodeWithNominatim(address);
+      
+      // If Nominatim fails, try LocationIQ as fallback
+      if (!result) {
+        console.log('Nominatim failed, trying LocationIQ...');
+        result = await geocodeWithLocationIQ(address);
+      }
+      
+      if (result) {
+        console.log(`Successfully geocoded: ${address} → ${result.latitude}, ${result.longitude}`);
+        consecutiveFailures = 0; // Reset failure counter on success
+      } else {
+        console.warn(`Failed to geocode: ${address}`);
+        consecutiveFailures++;
+      }
+      
+      return { index: actualIndex, result };
+    });
+
+    // Wait for the current batch to complete
+    const batchResults = await Promise.allSettled(batchPromises);
     
-    results.push(result);
-    
-    if (result) {
-      console.log(`Successfully geocoded: ${address} → ${result.latitude}, ${result.longitude}`);
-    } else {
-      console.warn(`Failed to geocode: ${address}`);
-    }
-    
-    // Add delay between requests to be respectful to free APIs
-    if (i < addresses.length - 1) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+    // Process batch results
+    batchResults.forEach((promiseResult) => {
+      if (promiseResult.status === 'fulfilled') {
+        const { index, result } = promiseResult.value;
+        results[index] = result;
+      }
+      completed++;
+      onProgress?.(completed, addresses.length);
+    });
+
+    // Add delay between batches (except for the last batch)
+    if (i + MAX_CONCURRENT < addresses.length) {
+      await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY));
     }
   }
   
   return results;
 };
 
-// Main function to geocode locations with caching and multiple free services
+// Main function to geocode locations with improved error handling
 export const geocodeLocations = async (
   locations: Location[], 
   franchiseeId: string,
@@ -179,55 +236,62 @@ export const geocodeLocations = async (
 ): Promise<(GeocodingResult | null)[]> => {
   console.log(`Starting free geocoding for ${locations.length} locations`);
   
-  // Load cached results
-  const cachedResults = loadCachedResults(franchiseeId);
-  const results: (GeocodingResult | null)[] = [];
-  const uncachedLocations: { location: Location; index: number; address: string }[] = [];
-  
-  // Check which locations need geocoding
-  locations.forEach((location, index) => {
-    const addressKey = formatAddress(location);
-    const cached = cachedResults.get(addressKey);
+  try {
+    // Load cached results
+    const cachedResults = loadCachedResults(franchiseeId);
+    const results: (GeocodingResult | null)[] = [];
+    const uncachedLocations: { location: Location; index: number; address: string }[] = [];
     
-    if (cached !== undefined) {
-      // Use cached result (could be null for failed geocoding)
-      results[index] = cached;
-      console.log(`Using cached result for: ${location.address}`);
-    } else {
-      // Needs geocoding
-      results[index] = null; // placeholder
-      uncachedLocations.push({ location, index, address: addressKey });
+    // Check which locations need geocoding
+    locations.forEach((location, index) => {
+      const addressKey = formatAddress(location);
+      const cached = cachedResults.get(addressKey);
+      
+      if (cached !== undefined) {
+        // Use cached result (could be null for failed geocoding)
+        results[index] = cached;
+        console.log(`Using cached result for: ${location.address}`);
+      } else {
+        // Needs geocoding
+        results[index] = null; // placeholder
+        uncachedLocations.push({ location, index, address: addressKey });
+      }
+    });
+    
+    // If all results are cached, return immediately
+    if (uncachedLocations.length === 0) {
+      console.log('All locations found in cache');
+      onProgress?.(locations.length, locations.length);
+      return results;
     }
-  });
-  
-  // If all results are cached, return immediately
-  if (uncachedLocations.length === 0) {
-    console.log('All locations found in cache');
-    onProgress?.(locations.length, locations.length);
-    return results;
-  }
-  
-  console.log(`Need to geocode ${uncachedLocations.length} new addresses`);
-  
-  // Geocode uncached locations
-  const addresses = uncachedLocations.map(item => item.address);
-  const geocodedResults = await batchGeocodeFree(addresses);
-  
-  // Update results and cache as we get them
-  uncachedLocations.forEach((item, geocodeIndex) => {
-    const geocoded = geocodedResults[geocodeIndex];
-    results[item.index] = geocoded;
-    cachedResults.set(item.address, geocoded);
     
-    // Report progress
-    const completed = locations.length - uncachedLocations.length + geocodeIndex + 1;
-    onProgress?.(completed, locations.length);
-  });
-  
-  // Save updated cache
-  saveCachedResults(franchiseeId, cachedResults);
-  
-  return results;
+    console.log(`Need to geocode ${uncachedLocations.length} new addresses`);
+    
+    // Geocode uncached locations with progress tracking
+    const addresses = uncachedLocations.map(item => item.address);
+    let batchCompleted = 0;
+    
+    const geocodedResults = await batchGeocodeFree(addresses, (batchProgress, batchTotal) => {
+      const totalCompleted = locations.length - uncachedLocations.length + batchProgress;
+      onProgress?.(totalCompleted, locations.length);
+    });
+    
+    // Update results and cache
+    uncachedLocations.forEach((item, geocodeIndex) => {
+      const geocoded = geocodedResults[geocodeIndex];
+      results[item.index] = geocoded;
+      cachedResults.set(item.address, geocoded);
+    });
+    
+    // Save updated cache
+    saveCachedResults(franchiseeId, cachedResults);
+    
+    return results;
+  } catch (error) {
+    console.error('Error in geocodeLocations:', error);
+    // Return empty results array instead of throwing
+    return new Array(locations.length).fill(null);
+  }
 };
 
 // Clear cache for a specific franchisee

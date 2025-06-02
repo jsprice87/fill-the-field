@@ -32,9 +32,10 @@ const FindClasses: React.FC = () => {
   const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeSlug);
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('map'); // Changed to default to map view
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   const [flowLoaded, setFlowLoaded] = useState(false);
+  const [skipMap, setSkipMap] = useState(false);
 
   useEffect(() => {
     console.log('FindClasses: useEffect triggered', { flowId, franchiseeSlug });
@@ -134,6 +135,11 @@ const FindClasses: React.FC = () => {
     toast.info('Location request feature coming soon');
   };
 
+  const handleSkipMap = () => {
+    setSkipMap(true);
+    setViewMode('list');
+  };
+
   // Show loading state while data is being loaded
   if (isLoading || flowLoading) {
     return (
@@ -182,23 +188,25 @@ const FindClasses: React.FC = () => {
               <List className="h-4 w-4 mr-2" />
               List
             </Button>
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'outline'}
-              onClick={() => setViewMode('map')}
-              className="font-poppins"
-            >
-              <Map className="h-4 w-4 mr-2" />
-              Map
-            </Button>
+            {!skipMap && (
+              <Button
+                variant={viewMode === 'map' ? 'default' : 'outline'}
+                onClick={() => setViewMode('map')}
+                className="font-poppins"
+              >
+                <Map className="h-4 w-4 mr-2" />
+                Map
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Responsive layout: Desktop side-by-side, Mobile stacked */}
-        <div className={`${viewMode === 'map' ? 'lg:grid lg:grid-cols-3 lg:gap-8' : ''}`}>
+        <div className={`${viewMode === 'map' && !skipMap ? 'lg:grid lg:grid-cols-3 lg:gap-8' : ''}`}>
           {/* Map View */}
-          {viewMode === 'map' && (
+          {viewMode === 'map' && !skipMap && (
             <div className="lg:col-span-2 mb-8 lg:mb-0">
-              <div className="h-[300px] lg:h-[600px]">
+              <div className="h-[300px] lg:h-[600px] relative">
                 <Suspense fallback={
                   <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
                     <div className="text-center">
@@ -215,12 +223,22 @@ const FindClasses: React.FC = () => {
                     className="h-full"
                   />
                 </Suspense>
+                
+                {/* Skip map option */}
+                <Button
+                  onClick={handleSkipMap}
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-4 left-4 z-[1100] bg-white/95 hover:bg-white font-poppins shadow-lg"
+                >
+                  Skip Map
+                </Button>
               </div>
             </div>
           )}
           
           {/* Locations List */}
-          <div className={`space-y-4 ${viewMode === 'map' ? 'lg:col-span-1' : ''}`}>
+          <div className={`space-y-4 ${viewMode === 'map' && !skipMap ? 'lg:col-span-1' : ''}`}>
             {locations.length > 0 ? (
               locations.map((location) => (
                 <Card key={location.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
