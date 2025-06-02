@@ -55,7 +55,7 @@ const DashboardLayout = ({
           <SidebarContent>
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-center px-4 py-6">
-                <img alt="Fill The Field - Fast Funnels for Free Trials" className="w-full h-auto max-w-[240px] object-contain" src="/lovable-uploads/c5e58dba-5000-47ba-a87f-3353c2c8ad0f.png" />
+                <img alt="Fill The Field - Fast Funnels for Free Trials" className="w-full h-auto max-w-[240px] object-contain" src="/lovable-uploads/73760d41-05cc-4f11-b38f-69379cdadff5.png" />
               </div>
               
               <nav className="flex-1 space-y-1 px-2 py-4">
@@ -159,7 +159,7 @@ const DashboardLayout = ({
                   <img src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" alt="Fill The Field" className="h-8 w-auto" />
                 </Link>}
               <div className="ml-auto flex items-center gap-4">
-                <img alt="Fill The Field Shield" className="h-8 w-8" src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" />
+                <img alt="Fill The Field Shield" src="/lovable-uploads/977b2b37-81e9-4b17-b224-a07f7285f10c.png" className="h-12  w-auto\n" />
                 <Button variant="ghost" size="icon" onClick={handleSignOut} className="md:hidden">
                   <LogOut className="h-5 w-5" />
                 </Button>
