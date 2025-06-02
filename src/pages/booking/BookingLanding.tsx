@@ -91,7 +91,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
               </h1>
               
               <h2 className="font-agrandir text-xl md:text-2xl text-white mb-8">
-                Fun Soccer for Kids Ages 2-14
+                Fun Soccer for Kids Ages 12 months to 12 years!
               </h2>
               
               {/* Three Key Value Props */}
@@ -156,8 +156,8 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
               <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-4: Little Kickers</h4>
-              <p className="font-poppins text-brand-grey text-lg">Fun introduction to soccer with focus on motor skills and following simple instructions</p>
+              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
+              <p className="font-poppins text-brand-grey text-lg">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
             </div>
             
             <div className="text-center">
@@ -172,24 +172,8 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
               <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="w-6 h-6 text-white" />
               </div>
-              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 5-8: Skill Builders</h4>
-              <p className="font-poppins text-brand-grey text-lg">Development of fundamental soccer skills with age-appropriate games and activities</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src="/lovable-uploads/a0964960-70c4-4c41-a94e-98ca3a2312e6.png" 
-                  alt="Advanced Soccer Training" 
-                  className="w-full h-64 object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-white" />
-              </div>
-              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 9-14: Advanced Players</h4>
-              <p className="font-poppins text-brand-grey text-lg">Enhanced technical skills with tactical understanding and team play concepts</p>
+              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-10+: Super Soccer Stars</h4>
+              <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
             </div>
           </div>
         </div>
@@ -277,9 +261,8 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
             <div>
               <h4 className="font-agrandir text-lg mb-4 text-white">Programs</h4>
               <div className="space-y-2">
-                <p className="font-poppins text-gray-300">Little Kickers (Ages 2-4)</p>
-                <p className="font-poppins text-gray-300">Skill Builders (Ages 5-8)</p>
-                <p className="font-poppins text-gray-300">Advanced Players (Ages 9-14)</p>
+                <p className="font-poppins text-gray-300">Parent & Me (Ages 12-24 months)</p>
+                <p className="font-poppins text-gray-300">Skill Builders (Ages 2-10+ years)</p>
                 <p className="font-poppins text-gray-300">Free Trial Classes</p>
               </div>
             </div>
@@ -290,11 +273,11 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
               <div className="space-y-2">
                 <div className="flex items-center text-gray-300">
                   <Phone className="w-4 h-4 mr-2" />
-                  <span className="font-poppins">1-800-SOCCER-STARS</span>
+                  <span className="font-poppins">720-432-9084</span>
                 </div>
                 <div className="flex items-center text-gray-300">
                   <Mail className="w-4 h-4 mr-2" />
-                  <span className="font-poppins">info@soccerstars.com</span>
+                  <span className="font-poppins">southdenver@soccerstars.com</span>
                 </div>
                 <div className="flex items-center text-gray-300">
                   <MapPin className="w-4 h-4 mr-2" />
@@ -313,16 +296,13 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
                 <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
                   <span className="text-white font-poppins text-sm">ig</span>
                 </div>
-                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
-                  <span className="text-white font-poppins text-sm">tw</span>
-                </div>
               </div>
             </div>
           </div>
           
           <div className="border-t border-gray-600 pt-6 text-center">
             <p className="font-poppins text-gray-400 text-sm">
-              © {new Date().getFullYear()} Soccer Stars. All rights reserved. | Backed by 20 years of experience
+              © {new Date().getFullYear()} Soccer Stars. All rights reserved. | Backed by 25 years of experience
             </p>
           </div>
         </div>
