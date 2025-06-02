@@ -58,14 +58,14 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   const loadMapboxToken = async () => {
     try {
-      // Use raw SQL query to access global_settings table
-      const { data, error } = await supabase.rpc('get_global_setting', { 
-        setting_name: 'mapbox_public_token' 
+      // Use the edge function to get the global setting
+      const { data, error } = await supabase.functions.invoke('get-global-setting', {
+        body: { setting_name: 'mapbox_public_token' }
       });
 
       if (error) {
-        // Fallback: try direct query if RPC doesn't exist
-        console.log('RPC failed, trying direct query...');
+        // Fallback: try direct query if edge function doesn't work
+        console.log('Edge function failed, trying direct query...');
         const { data: directData, error: directError } = await supabase
           .from('global_settings' as any)
           .select('setting_value')
@@ -80,7 +80,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         }
 
         if (directData?.setting_value) {
-          setMapboxToken(directData.setting_value);
+          setMapboxToken(String(directData.setting_value));
         } else {
           setError('Mapbox token not configured. Please configure it in admin settings.');
           setIsLoading(false);
@@ -89,7 +89,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       }
 
       if (data) {
-        setMapboxToken(data);
+        setMapboxToken(String(data));
       } else {
         setError('Mapbox token not configured. Please configure it in admin settings.');
         setIsLoading(false);

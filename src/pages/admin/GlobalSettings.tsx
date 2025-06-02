@@ -32,8 +32,8 @@ const AdminGlobalSettings: React.FC = () => {
         return;
       }
 
-      if (data) {
-        setMapboxToken(data.setting_value || '');
+      if (data && data.setting_value) {
+        setMapboxToken(String(data.setting_value) || '');
       }
     } catch (error) {
       console.error('Error loading settings:', error);
