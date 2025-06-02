@@ -11,8 +11,20 @@ const PortalDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Fill The Field - Fast Funnels for Free Trials
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0">
+          <img 
+            src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
+            alt="Fill The Field logo" 
+            className="h-10 w-auto hidden md:block"
+          />
+        </div>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>

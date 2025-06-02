@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <SidebarContent>
             <div className="flex h-full flex-col">
               <div className="flex items-center gap-2 px-4 py-6">
-                <span className="text-xl font-bold text-indigo-600">SuperLeadStar</span>
+                <img 
+                  src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
+                  alt="Fill The Field logo" 
+                  className="h-8 w-auto"
+                />
+                <span className="text-xl font-bold text-brand-navy">Fill The Field</span>
+              </div>
+              <div className="px-4 text-sm text-muted-foreground">
+                Fast Funnels for Free Trials
               </div>
               <nav className="flex-1 space-y-1 px-2 py-4">
                 {isAdminRoute ? (
@@ -179,12 +188,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <header className="border-b bg-white shadow-sm">
             <div className="flex h-16 items-center gap-4 px-4 md:px-6">
               {isAdminRoute ? (
-                <Link to="/admin" className="md:hidden">
-                  <span className="text-xl font-bold text-indigo-600">Admin</span>
+                <Link to="/admin" className="md:hidden flex items-center gap-2">
+                  <img 
+                    src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
+                    alt="Fill The Field logo" 
+                    className="h-6 w-auto"
+                  />
+                  <span className="text-xl font-bold text-brand-navy">FTF Admin</span>
                 </Link>
               ) : (
-                <Link to={`${navPrefix}/portal`} className="md:hidden">
-                  <span className="text-xl font-bold text-indigo-600">SLS</span>
+                <Link to={`${navPrefix}/portal`} className="md:hidden flex items-center gap-2">
+                  <img 
+                    src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
+                    alt="Fill The Field logo" 
+                    className="h-6 w-auto"
+                  />
+                  <span className="text-xl font-bold text-brand-navy">FTF</span>
                 </Link>
               )}
               <div className="ml-auto flex items-center gap-4">
