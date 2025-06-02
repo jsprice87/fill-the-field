@@ -4,12 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, UserPlus, TrendingUp, Phone } from 'lucide-react';
 import { useLeads, useLeadStats } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
+import { useLeadsSearch } from '@/hooks/useLeadsSearch';
 import LeadsTable from '@/components/leads/LeadsTable';
+import SearchInput from '@/components/shared/SearchInput';
 
 const PortalLeads: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
   const { data: leads = [], isLoading } = useLeads(franchiseeData?.id);
   const { data: stats } = useLeadStats(franchiseeData?.id);
+  const { searchTerm, searchQuery, filteredLeads, handleSearchChange } = useLeadsSearch(leads);
 
   if (isLoading) {
     return (
@@ -28,6 +31,12 @@ const PortalLeads: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
+        <SearchInput
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder="Search leads..."
+          className="w-64"
+        />
       </div>
 
       {/* Stats Cards */}
@@ -38,9 +47,11 @@ const PortalLeads: React.FC = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalLeads || 0}</div>
+            <div className="text-2xl font-bold">
+              {searchQuery ? filteredLeads.length : (stats?.totalLeads || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">
-              +{stats?.monthlyGrowth || 0}% from last month
+              {searchQuery ? `Matching "${searchQuery}"` : `+${stats?.monthlyGrowth || 0}% from last month`}
             </p>
           </CardContent>
         </Card>
@@ -51,7 +62,12 @@ const PortalLeads: React.FC = () => {
             <UserPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.newLeads || 0}</div>
+            <div className="text-2xl font-bold">
+              {searchQuery 
+                ? filteredLeads.filter(lead => lead.status === 'new').length
+                : (stats?.newLeads || 0)
+              }
+            </div>
             <p className="text-xs text-muted-foreground">
               Awaiting contact
             </p>
@@ -78,7 +94,9 @@ const PortalLeads: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {leads.filter(lead => ['new', 'follow_up'].includes(lead.status)).length}
+              {(searchQuery ? filteredLeads : leads).filter(lead => 
+                ['new', 'follow_up'].includes(lead.status)
+              ).length}
             </div>
             <p className="text-xs text-muted-foreground">
               Action required
@@ -88,7 +106,7 @@ const PortalLeads: React.FC = () => {
       </div>
 
       {/* Leads Table */}
-      <LeadsTable leads={leads} />
+      <LeadsTable leads={filteredLeads} searchQuery={searchQuery} />
     </div>
   );
 };

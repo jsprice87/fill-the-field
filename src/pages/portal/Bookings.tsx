@@ -6,18 +6,21 @@ import { Calendar, MapPin, User, Users, Filter } from 'lucide-react';
 import { useBookings } from '@/hooks/useBookings';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useLocations } from '@/hooks/useLocations';
+import { useBookingsSearch } from '@/hooks/useBookingsSearch';
 import BookingsTable from '@/components/bookings/BookingsTable';
+import SearchInput from '@/components/shared/SearchInput';
 
 const PortalBookings: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
   const { data: bookings = [], isLoading } = useBookings(franchiseeData?.id);
   const { data: locations = [] } = useLocations(franchiseeData?.id);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
+  const { searchTerm, searchQuery, filteredBookings, handleSearchChange } = useBookingsSearch(bookings);
 
-  // Filter bookings by location
-  const filteredBookings = selectedLocationId === 'all' 
-    ? bookings 
-    : bookings.filter(booking => booking.location_id === selectedLocationId);
+  // Combine location filter with search results
+  const finalBookings = selectedLocationId === 'all' 
+    ? filteredBookings 
+    : filteredBookings.filter(booking => booking.location_id === selectedLocationId);
 
   if (isLoading) {
     return (
@@ -37,22 +40,32 @@ const PortalBookings: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Bookings</h1>
         
-        {/* Location Filter */}
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              {locations.map((location) => (
-                <SelectItem key={location.id} value={location.id}>
-                  {location.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-4">
+          {/* Location Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Locations</SelectItem>
+                {locations.map((location) => (
+                  <SelectItem key={location.id} value={location.id}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Search Input */}
+          <SearchInput
+            value={searchTerm}
+            onChange={handleSearchChange}
+            placeholder="Search bookings..."
+            className="w-64"
+          />
         </div>
       </div>
 
@@ -64,9 +77,12 @@ const PortalBookings: React.FC = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredBookings.length}</div>
+            <div className="text-2xl font-bold">{finalBookings.length}</div>
             <p className="text-xs text-muted-foreground">
-              {selectedLocationId === 'all' ? 'All locations' : 'Current filter'}
+              {searchQuery || selectedLocationId !== 'all' 
+                ? 'Current filter' 
+                : 'All locations'
+              }
             </p>
           </CardContent>
         </Card>
@@ -78,7 +94,7 @@ const PortalBookings: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredBookings.filter(booking => booking.status === 'booked_upcoming').length}
+              {finalBookings.filter(booking => booking.status === 'booked_upcoming').length}
             </div>
             <p className="text-xs text-muted-foreground">
               Ready to attend
@@ -93,7 +109,7 @@ const PortalBookings: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredBookings.filter(booking => {
+              {finalBookings.filter(booking => {
                 const today = new Date();
                 const bookingDate = new Date(booking.selected_date || '');
                 return bookingDate < today && booking.status === 'booked_upcoming';
@@ -120,7 +136,7 @@ const PortalBookings: React.FC = () => {
       </div>
 
       {/* Bookings Table */}
-      <BookingsTable bookings={filteredBookings} />
+      <BookingsTable bookings={finalBookings} searchQuery={searchQuery} />
     </div>
   );
 };

@@ -1,18 +1,18 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Phone, Mail, MapPin, Calendar } from 'lucide-react';
+import { Phone, Mail, MapPin, Calendar, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Lead } from '@/hooks/useLeads';
 import StatusSelect from './StatusSelect';
 
 interface LeadsTableProps {
   leads: Lead[];
+  searchQuery?: string;
 }
 
-const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
+const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery }) => {
   const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
@@ -58,6 +58,18 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
   };
 
   if (leads.length === 0) {
+    if (searchQuery) {
+      return (
+        <div className="text-center p-8">
+          <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="font-agrandir text-xl text-brand-navy mb-2">No results for "{searchQuery}"</h3>
+          <p className="font-poppins text-gray-600">
+            Try adjusting your search terms or clear the search to see all leads.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center p-8">
         <Phone className="h-16 w-16 text-gray-400 mx-auto mb-4" />
