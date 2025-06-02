@@ -1,3 +1,4 @@
+
 interface MapboxGeocodingResult {
   latitude: number;
   longitude: number;
@@ -19,6 +20,9 @@ interface CachedGeocodingData {
 // Cache duration: 24 hours
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
 const CACHE_KEY_PREFIX = 'mapbox_geocoding_';
+
+// Rate limiting: 600 requests per minute for most Mapbox plans (10 per second)
+const RATE_LIMIT_DELAY = 150; // milliseconds between requests
 
 // Get cache key for a franchisee
 const getCacheKey = (franchiseeId: string) => `${CACHE_KEY_PREFIX}${franchiseeId}`;
@@ -79,55 +83,84 @@ const saveCachedResults = (franchiseeId: string, results: Map<string, MapboxGeoc
   }
 };
 
-// Batch geocode addresses using Mapbox
-const batchGeocodeWithMapbox = async (addresses: string[], mapboxToken: string): Promise<(MapboxGeocodingResult | null)[]> => {
-  const BATCH_SIZE = 50; // Mapbox limit
+// Geocode a single address using Mapbox
+const geocodeSingleAddress = async (address: string, mapboxToken: string): Promise<MapboxGeocodingResult | null> => {
+  try {
+    const encodedAddress = encodeURIComponent(address);
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1&country=us`;
+    
+    console.log(`Geocoding: ${address}`);
+    console.log(`API URL: ${url}`);
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      console.error(`Mapbox API error for "${address}": ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log(`Mapbox response for "${address}":`, data);
+    
+    if (data.features && data.features.length > 0) {
+      const feature = data.features[0];
+      if (feature.center && feature.center.length >= 2) {
+        const result = {
+          longitude: feature.center[0],
+          latitude: feature.center[1]
+        };
+        console.log(`Successfully geocoded "${address}" → ${result.latitude}, ${result.longitude}`);
+        return result;
+      } else {
+        console.warn(`No valid coordinates found for "${address}"`);
+        return null;
+      }
+    } else {
+      console.warn(`No features found for "${address}"`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Error geocoding "${address}":`, error);
+    return null;
+  }
+};
+
+// Geocode addresses individually with rate limiting
+const geocodeWithMapbox = async (
+  addresses: string[], 
+  mapboxToken: string,
+  onProgress?: (completed: number, total: number) => void
+): Promise<(MapboxGeocodingResult | null)[]> => {
   const results: (MapboxGeocodingResult | null)[] = [];
   
-  // Process addresses in batches
-  for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-    const batch = addresses.slice(i, i + BATCH_SIZE);
-    console.log(`Geocoding batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(addresses.length / BATCH_SIZE)} (${batch.length} addresses)`);
+  console.log(`Starting individual geocoding for ${addresses.length} addresses with rate limiting`);
+  
+  for (let i = 0; i < addresses.length; i++) {
+    const address = addresses[i];
     
     try {
-      // Create batch request URL
-      const queries = batch.map(addr => encodeURIComponent(addr)).join(';');
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${queries}.json?access_token=${mapboxToken}&limit=1&country=us`;
+      const result = await geocodeSingleAddress(address, mapboxToken);
+      results.push(result);
       
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        console.error(`Mapbox API error: ${response.status} ${response.statusText}`);
-        // Fill this batch with null results
-        results.push(...Array(batch.length).fill(null));
-        continue;
+      // Report progress
+      if (onProgress) {
+        onProgress(i + 1, addresses.length);
       }
       
-      const data = await response.json();
-      
-      // Process each result in the batch
-      batch.forEach((_, index) => {
-        const feature = data.features?.[index];
-        if (feature && feature.center) {
-          results.push({
-            longitude: feature.center[0],
-            latitude: feature.center[1]
-          });
-        } else {
-          results.push(null);
-        }
-      });
-      
-      // Add delay between batches to be respectful to API limits
-      if (i + BATCH_SIZE < addresses.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+      // Rate limiting: wait between requests (except for the last one)
+      if (i < addresses.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
       }
     } catch (error) {
-      console.error(`Error geocoding batch starting at index ${i}:`, error);
-      // Fill this batch with null results
-      results.push(...Array(batch.length).fill(null));
+      console.error(`Failed to geocode address "${address}":`, error);
+      results.push(null);
     }
   }
+  
+  const successCount = results.filter(r => r !== null).length;
+  console.log(`Geocoding completed: ${successCount}/${addresses.length} addresses successfully geocoded`);
   
   return results;
 };
@@ -136,7 +169,8 @@ const batchGeocodeWithMapbox = async (addresses: string[], mapboxToken: string):
 export const geocodeLocationsWithMapbox = async (
   locations: Location[], 
   franchiseeId: string,
-  mapboxToken?: string
+  mapboxToken?: string,
+  onProgress?: (completed: number, total: number) => void
 ): Promise<(MapboxGeocodingResult | null)[]> => {
   console.log(`Starting geocoding for ${locations.length} locations`);
   
@@ -177,7 +211,7 @@ export const geocodeLocationsWithMapbox = async (
   
   // Geocode uncached locations
   const addresses = uncachedLocations.map(item => item.address);
-  const geocodedResults = await batchGeocodeWithMapbox(addresses, mapboxToken);
+  const geocodedResults = await geocodeWithMapbox(addresses, mapboxToken, onProgress);
   
   // Update results and cache
   uncachedLocations.forEach((item, geocodeIndex) => {

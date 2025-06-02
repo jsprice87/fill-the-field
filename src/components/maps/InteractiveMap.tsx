@@ -43,6 +43,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [needsMapboxToken, setNeedsMapboxToken] = useState(false);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
+  const [geocodingProgress, setGeocodingProgress] = useState<{ completed: number; total: number } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (locations.length > 0) {
@@ -54,6 +56,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   const loadLocationData = async () => {
     setIsLoading(true);
+    setErrorMessage(null);
+    setGeocodingProgress(null);
     
     try {
       // Get franchisee ID first
@@ -64,9 +68,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         .single();
 
       if (!franchisee) {
-        console.error('Franchisee not found');
-        setIsLoading(false);
-        return;
+        throw new Error('Franchisee not found');
       }
 
       const currentFranchiseeId = franchisee.id;
@@ -87,7 +89,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         .in('location_id', locationIds)
         .eq('is_active', true);
 
-      // Try to geocode locations using existing coordinates or Mapbox
+      // Prepare locations for geocoding
       const locationsToGeocode = locations.map(loc => ({
         address: loc.address,
         city: loc.city,
@@ -95,7 +97,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         zip: loc.zip
       }));
 
-      // First, check if we have any locations that need geocoding and don't have cached results
+      // Check if we have any locations that need geocoding
       const hasUngeocodedLocations = locations.some(loc => {
         const hasCoordinates = loc.latitude && loc.longitude && 
           !isNaN(Number(loc.latitude)) && !isNaN(Number(loc.longitude));
@@ -105,12 +107,23 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       let geocodedResults: (any | null)[] = [];
 
       if (hasUngeocodedLocations) {
-        // Try geocoding with Mapbox (will use cache if available)
+        console.log('Some locations need geocoding, attempting with Mapbox...');
+        
+        // Progress callback for geocoding
+        const onProgress = (completed: number, total: number) => {
+          setGeocodingProgress({ completed, total });
+        };
+
+        // Try geocoding with Mapbox
         geocodedResults = await geocodeLocationsWithMapbox(
           locationsToGeocode, 
           currentFranchiseeId, 
-          mapboxToken || undefined
+          mapboxToken || undefined,
+          onProgress
         );
+
+        // Clear progress indicator
+        setGeocodingProgress(null);
 
         // Check if we need a Mapbox token for remaining locations
         const stillNeedGeocoding = geocodedResults.some((result, index) => {
@@ -129,6 +142,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       // Process each location and enrich with class data
       const enrichedLocations = [];
+      let successfulGeocodingCount = 0;
       
       for (let i = 0; i < locations.length; i++) {
         const location = locations[i];
@@ -142,13 +156,16 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
             !isNaN(Number(location.latitude)) && !isNaN(Number(location.longitude))) {
           latitude = Number(location.latitude);
           longitude = Number(location.longitude);
+          console.log(`Using existing coordinates for ${location.name}: ${latitude}, ${longitude}`);
         } else if (geocoded) {
           latitude = geocoded.latitude;
           longitude = geocoded.longitude;
+          successfulGeocodingCount++;
+          console.log(`Using geocoded coordinates for ${location.name}: ${latitude}, ${longitude}`);
         }
 
         if (!latitude || !longitude) {
-          console.warn(`Skipping location ${location.name} - no coordinates available`);
+          console.warn(`Skipping location ${location.name} - no coordinates available (address: ${location.address}, ${location.city}, ${location.state})`);
           continue;
         }
         
@@ -178,14 +195,21 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       }
 
       console.log(`Successfully processed ${enrichedLocations.length} out of ${locations.length} locations`);
+      if (successfulGeocodingCount > 0) {
+        console.log(`Successfully geocoded ${successfulGeocodingCount} new locations`);
+      }
+      
       setLocationData(enrichedLocations);
       
       // Calculate map bounds for successfully geocoded locations
       if (enrichedLocations.length > 0) {
         calculateMapBounds(enrichedLocations);
+      } else {
+        setErrorMessage(`Unable to find coordinates for any of the ${locations.length} locations. Please check that the addresses are complete and valid.`);
       }
     } catch (error) {
       console.error('Error loading location data:', error);
+      setErrorMessage(`Failed to load location data: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setLocationData([]);
     } finally {
       setIsLoading(false);
@@ -193,6 +217,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   };
 
   const handleMapboxTokenSubmit = (token: string) => {
+    console.log('Mapbox token submitted, reloading data...');
     setMapboxToken(token);
     setNeedsMapboxToken(false);
     // This will trigger useEffect to reload data with the token
@@ -288,24 +313,45 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <div className="text-center p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-4"></div>
           <p className="font-poppins text-gray-600 text-lg mb-2">Loading map...</p>
-          <p className="font-poppins text-gray-500 text-sm">
-            {mapboxToken ? 'Geocoding locations...' : 'Checking cached locations...'}
-          </p>
+          {geocodingProgress ? (
+            <div className="space-y-2">
+              <p className="font-poppins text-gray-500 text-sm">
+                Geocoding addresses: {geocodingProgress.completed} of {geocodingProgress.total}
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-brand-blue h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${(geocodingProgress.completed / geocodingProgress.total) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          ) : (
+            <p className="font-poppins text-gray-500 text-sm">
+              {mapboxToken ? 'Getting location coordinates...' : 'Checking cached locations...'}
+            </p>
+          )}
         </div>
       </div>
     );
   }
 
-  if (locationData.length === 0) {
+  if (errorMessage || locationData.length === 0) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 ${className}`}>
         <div className="text-center p-8">
           <div className="text-gray-500 font-poppins">
             <p className="text-lg mb-2">Map Not Available</p>
-            <p className="text-sm">Unable to find coordinates for the locations</p>
-            <p className="text-xs mt-2 text-gray-400">
-              Locations may have incomplete address information
+            <p className="text-sm mb-4">
+              {errorMessage || 'Unable to find coordinates for the locations'}
             </p>
+            {!errorMessage && (
+              <div className="text-xs text-gray-400 space-y-1">
+                <p>Possible causes:</p>
+                <p>• Locations may have incomplete address information</p>
+                <p>• Mapbox geocoding failed for these addresses</p>
+                <p>• Rate limiting or API issues</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -363,9 +409,12 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       
       {/* Show success message if some locations were geocoded */}
       {locationData.length > 0 && locationData.length < locations.length && (
-        <div className="absolute top-4 left-4 z-[1000] bg-yellow-100 border border-yellow-400 rounded-lg p-3 shadow-lg">
+        <div className="absolute top-4 left-4 z-[1000] bg-yellow-100 border border-yellow-400 rounded-lg p-3 shadow-lg max-w-xs">
           <p className="font-poppins text-yellow-800 text-sm">
             Showing {locationData.length} of {locations.length} locations on map
+          </p>
+          <p className="font-poppins text-yellow-700 text-xs mt-1">
+            Some locations couldn't be geocoded
           </p>
         </div>
       )}
