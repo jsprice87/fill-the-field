@@ -55,24 +55,25 @@ export const useArchiveBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (bookingId: string) => {
-      // Archive the booking and its associated appointment
-      const { error: bookingError } = await supabase
-        .from('bookings')
-        .update({ archived_at: new Date().toISOString() })
-        .eq('id', bookingId);
-
-      if (bookingError) throw bookingError;
-
+    mutationFn: async (appointmentId: string) => {
+      console.log('Archiving appointment with ID:', appointmentId);
+      
+      // Archive the appointment
       const { error: appointmentError } = await supabase
         .from('appointments')
         .update({ archived_at: new Date().toISOString() })
-        .eq('booking_id', bookingId);
+        .eq('id', appointmentId);
 
-      if (appointmentError) throw appointmentError;
+      if (appointmentError) {
+        console.error('Error archiving appointment:', appointmentError);
+        throw appointmentError;
+      }
+
+      console.log('Appointment archived successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
       toast.success('Booking archived successfully');
     },
     onError: (error) => {
@@ -86,24 +87,25 @@ export const useUnarchiveBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (bookingId: string) => {
-      // Unarchive the booking and its associated appointment
-      const { error: bookingError } = await supabase
-        .from('bookings')
-        .update({ archived_at: null })
-        .eq('id', bookingId);
-
-      if (bookingError) throw bookingError;
-
+    mutationFn: async (appointmentId: string) => {
+      console.log('Unarchiving appointment with ID:', appointmentId);
+      
+      // Unarchive the appointment
       const { error: appointmentError } = await supabase
         .from('appointments')
         .update({ archived_at: null })
-        .eq('booking_id', bookingId);
+        .eq('id', appointmentId);
 
-      if (appointmentError) throw appointmentError;
+      if (appointmentError) {
+        console.error('Error unarchiving appointment:', appointmentError);
+        throw appointmentError;
+      }
+
+      console.log('Appointment unarchived successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
       toast.success('Booking unarchived successfully');
     },
     onError: (error) => {

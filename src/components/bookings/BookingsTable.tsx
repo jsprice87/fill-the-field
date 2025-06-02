@@ -76,21 +76,25 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
   };
 
   const handleArchiveToggle = (booking: Booking) => {
+    console.log('Archiving booking with ID:', booking.id, 'archived_at:', booking.archived_at);
+    
     if (booking.archived_at) {
-      unarchiveBooking.mutate(booking.class_schedule_id);
+      unarchiveBooking.mutate(booking.id);
     } else {
-      archiveBooking.mutate(booking.class_schedule_id);
+      archiveBooking.mutate(booking.id);
     }
   };
 
   const handleDeleteClick = (booking: Booking) => {
+    console.log('Delete clicked for booking ID:', booking.id);
     setBookingToDelete(booking);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = () => {
     if (bookingToDelete) {
-      deleteBooking.mutate(bookingToDelete.class_schedule_id, {
+      console.log('Confirming delete for booking ID:', bookingToDelete.id);
+      deleteBooking.mutate(bookingToDelete.id, {
         onSuccess: () => {
           setDeleteDialogOpen(false);
           setBookingToDelete(null);

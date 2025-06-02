@@ -8,6 +8,8 @@ export const useDeleteLead = () => {
 
   return useMutation({
     mutationFn: async (leadId: string) => {
+      console.log('Deleting lead with ID:', leadId);
+      
       // First delete associated bookings and appointments
       const { data: bookings } = await supabase
         .from('bookings')
@@ -43,6 +45,8 @@ export const useDeleteLead = () => {
         .eq('id', leadId);
 
       if (error) throw error;
+      
+      console.log('Lead deleted successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
@@ -61,20 +65,50 @@ export const useDeleteBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (bookingId: string) => {
-      // Delete appointment first
-      await supabase
+    mutationFn: async (appointmentId: string) => {
+      console.log('Deleting appointment with ID:', appointmentId);
+      
+      // Get the booking ID from the appointment
+      const { data: appointment, error: fetchError } = await supabase
+        .from('appointments')
+        .select('booking_id')
+        .eq('id', appointmentId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching appointment:', fetchError);
+        throw fetchError;
+      }
+
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      console.log('Found booking ID:', appointment.booking_id);
+
+      // Delete the appointment first
+      const { error: appointmentError } = await supabase
         .from('appointments')
         .delete()
-        .eq('booking_id', bookingId);
+        .eq('id', appointmentId);
 
-      // Delete the booking
-      const { error } = await supabase
+      if (appointmentError) {
+        console.error('Error deleting appointment:', appointmentError);
+        throw appointmentError;
+      }
+
+      // Delete the associated booking
+      const { error: bookingError } = await supabase
         .from('bookings')
         .delete()
-        .eq('id', bookingId);
+        .eq('id', appointment.booking_id);
 
-      if (error) throw error;
+      if (bookingError) {
+        console.error('Error deleting booking:', bookingError);
+        throw bookingError;
+      }
+
+      console.log('Appointment and booking deleted successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
