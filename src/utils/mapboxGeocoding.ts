@@ -1,4 +1,3 @@
-
 interface MapboxGeocodingResult {
   latitude: number;
   longitude: number;
@@ -12,7 +11,7 @@ interface Location {
 }
 
 interface CachedGeocodingData {
-  results: Map<string, MapboxGeocodingResult | null>;
+  results: Record<string, MapboxGeocodingResult | null>;
   timestamp: number;
   franchiseeId: string;
 }
@@ -49,8 +48,12 @@ const loadCachedResults = (franchiseeId: string): Map<string, MapboxGeocodingRes
       return new Map();
     }
 
-    // Convert array back to Map
-    const resultsMap = new Map(Object.entries(parsedCache.results));
+    // Convert object back to Map
+    const resultsMap = new Map<string, MapboxGeocodingResult | null>();
+    Object.entries(parsedCache.results).forEach(([key, value]) => {
+      resultsMap.set(key, value);
+    });
+    
     console.log(`Loaded ${resultsMap.size} cached geocoding results`);
     return resultsMap;
   } catch (error) {
