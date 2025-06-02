@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { batchGeocodeWithMapbox } from '@/utils/batchMapboxGeocoding';
@@ -34,6 +34,21 @@ interface InteractiveMapProps {
   onLocationSelect?: (location: any) => void;
   className?: string;
 }
+
+// Component to handle map events
+const MapEventHandler: React.FC<{ onError: (error: string) => void }> = ({ onError }) => {
+  useMapEvents({
+    tileerror: () => {
+      console.error('Map tile loading error');
+      onError('Map tiles failed to load');
+    },
+    error: () => {
+      console.error('Map error event');
+      onError('Map failed to initialize');
+    }
+  });
+  return null;
+};
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({ 
   locations, 
@@ -329,12 +344,11 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           center={[centerLat, centerLng]}
           zoom={10}
           style={{ height: '100%', width: '100%' }}
-          onError={() => handleMapError('Map failed to initialize')}
         >
+          <MapEventHandler onError={handleMapError} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            onError={() => handleMapError('Map tiles failed to load')}
           />
           {validLocations.map((location) => (
             <Marker
