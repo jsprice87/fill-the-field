@@ -55,8 +55,8 @@ const DashboardLayout = ({
           <SidebarContent>
             <div className="flex h-full flex-col">
               <div className="flex items-center gap-2 px-4 py-6">
-                <img alt="Fill The Field logo" className="h-8 w-auto" src="/lovable-uploads/06819eed-82c9-4fc0-871f-b3135a00705b.png" />
-                <span className="text-xl font-bold text-brand-navy">Fill The Field</span>
+                <img alt="Fill The Field logo" src="/lovable-uploads/06819eed-82c9-4fc0-871f-b3135a00705b.png" className="h-8 w-auto object-fill" />
+                
               </div>
               <div className="px-4 text-sm text-muted-foreground">
                 Fast Funnels for Free Trials
