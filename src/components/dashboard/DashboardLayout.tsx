@@ -1,35 +1,21 @@
-
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  Sidebar,
-  SidebarProvider,
-  SidebarContent
-} from "@/components/ui/sidebar";
-import { 
-  LayoutDashboard, 
-  Globe, 
-  MapPin, 
-  Calendar, 
-  Users, 
-  Settings, 
-  LogOut,
-  BarChart3,
-  UserCircle,
-  CreditCard
-} from "lucide-react";
+import { Sidebar, SidebarProvider, SidebarContent } from "@/components/ui/sidebar";
+import { LayoutDashboard, Globe, MapPin, Calendar, Users, Settings, LogOut, BarChart3, UserCircle, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
-
 interface DashboardLayoutProps {
   children: ReactNode;
 }
-
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+const DashboardLayout = ({
+  children
+}: DashboardLayoutProps) => {
   const navigate = useNavigate();
-  const { franchiseeSlug } = useParams();
+  const {
+    franchiseeSlug
+  } = useParams();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
@@ -51,7 +37,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       }
     }
   }, [franchiseeSlug, isAdminRoute]);
-
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -64,28 +49,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   // Use the slug or ID for navigation
   const navPrefix = isAdminRoute ? "" : `/${currentSlug || franchiseeSlug}`;
-
-  return (
-    <SidebarProvider defaultOpen={true}>
+  return <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen bg-gray-50 w-full">
         <Sidebar className="hidden md:flex">
           <SidebarContent>
             <div className="flex h-full flex-col">
               <div className="flex items-center gap-2 px-4 py-6">
-                <img 
-                  src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
-                  alt="Fill The Field logo" 
-                  className="h-8 w-auto"
-                />
+                <img alt="Fill The Field logo" className="h-8 w-auto" src="/lovable-uploads/06819eed-82c9-4fc0-871f-b3135a00705b.png" />
                 <span className="text-xl font-bold text-brand-navy">Fill The Field</span>
               </div>
               <div className="px-4 text-sm text-muted-foreground">
                 Fast Funnels for Free Trials
               </div>
               <nav className="flex-1 space-y-1 px-2 py-4">
-                {isAdminRoute ? (
-                  // Admin Navigation
-                  <>
+                {isAdminRoute ?
+              // Admin Navigation
+              <>
                     <Link to="/admin/dashboard">
                       <Button variant="ghost" className="w-full justify-start">
                         <LayoutDashboard className="mr-2 h-5 w-5" />
@@ -110,10 +89,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         Settings
                       </Button>
                     </Link>
-                  </>
-                ) : (
-                  // Franchisee Portal Navigation
-                  <>
+                  </> :
+              // Franchisee Portal Navigation
+              <>
                     <Link to={`${navPrefix}/portal/dashboard`}>
                       <Button variant="ghost" className="w-full justify-start">
                         <LayoutDashboard className="mr-2 h-5 w-5" />
@@ -150,33 +128,24 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         Landing Page
                       </Button>
                     </Link>
-                  </>
-                )}
+                  </>}
               </nav>
               <div className="border-t px-2 py-4">
-                {!isAdminRoute && (
-                  <Link to={`${navPrefix}/portal/settings`}>
+                {!isAdminRoute && <Link to={`${navPrefix}/portal/settings`}>
                     <Button variant="ghost" className="w-full justify-start">
                       <Settings className="mr-2 h-5 w-5" />
                       Settings
                     </Button>
-                  </Link>
-                )}
+                  </Link>}
                 
-                {!isAdminRoute && (
-                  <Link to={`${navPrefix}/portal/profile`}>
+                {!isAdminRoute && <Link to={`${navPrefix}/portal/profile`}>
                     <Button variant="ghost" className="w-full justify-start">
                       <UserCircle className="mr-2 h-5 w-5" />
                       Profile
                     </Button>
-                  </Link>
-                )}
+                  </Link>}
                 
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-red-500 hover:bg-red-50 hover:text-red-600"
-                  onClick={handleSignOut}
-                >
+                <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-50 hover:text-red-600" onClick={handleSignOut}>
                   <LogOut className="mr-2 h-5 w-5" />
                   Sign out
                 </Button>
@@ -187,25 +156,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex flex-1 flex-col">
           <header className="border-b bg-white shadow-sm">
             <div className="flex h-16 items-center gap-4 px-4 md:px-6">
-              {isAdminRoute ? (
-                <Link to="/admin" className="md:hidden flex items-center gap-2">
-                  <img 
-                    src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
-                    alt="Fill The Field logo" 
-                    className="h-6 w-auto"
-                  />
+              {isAdminRoute ? <Link to="/admin" className="md:hidden flex items-center gap-2">
+                  <img src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" alt="Fill The Field logo" className="h-6 w-auto" />
                   <span className="text-xl font-bold text-brand-navy">FTF Admin</span>
-                </Link>
-              ) : (
-                <Link to={`${navPrefix}/portal`} className="md:hidden flex items-center gap-2">
-                  <img 
-                    src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" 
-                    alt="Fill The Field logo" 
-                    className="h-6 w-auto"
-                  />
+                </Link> : <Link to={`${navPrefix}/portal`} className="md:hidden flex items-center gap-2">
+                  <img src="/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png" alt="Fill The Field logo" className="h-6 w-auto" />
                   <span className="text-xl font-bold text-brand-navy">FTF</span>
-                </Link>
-              )}
+                </Link>}
               <div className="ml-auto flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={handleSignOut} className="md:hidden">
                   <LogOut className="h-5 w-5" />
@@ -218,8 +175,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default DashboardLayout;
