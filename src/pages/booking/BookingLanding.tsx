@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
@@ -176,7 +175,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
               <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
             </div>
           </div>
-
+        </div>
       </section>
 
       {/* Testimonials Section */}
