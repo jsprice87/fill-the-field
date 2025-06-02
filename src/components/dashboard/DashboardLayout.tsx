@@ -6,9 +6,11 @@ import { LayoutDashboard, Globe, MapPin, Calendar, Users, Settings, LogOut, BarC
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
+
 interface DashboardLayoutProps {
   children: ReactNode;
 }
+
 const DashboardLayout = ({
   children
 }: DashboardLayoutProps) => {
@@ -55,7 +57,11 @@ const DashboardLayout = ({
           <SidebarContent>
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-center px-4 py-6">
-                <img alt="Fill The Field - Fast Funnels for Free Trials" className="w-full h-auto max-w-[200px] object-contain" src="/lovable-uploads/b271ef46-2887-49fb-9766-22f8efbd2c4b.png" />
+                <img 
+                  alt="Fill The Field - Fast Funnels for Free Trials" 
+                  className="w-full h-auto max-w-[240px] object-contain" 
+                  src="/lovable-uploads/c5e58dba-5000-47ba-a87f-3353c2c8ad0f.png" 
+                />
               </div>
               <div className="px-4 text-sm text-muted-foreground">
                 Fast Funnels for Free Trials
@@ -156,12 +162,24 @@ const DashboardLayout = ({
           <header className="border-b bg-white shadow-sm">
             <div className="flex h-16 items-center gap-4 px-4 md:px-6">
               {isAdminRoute ? <Link to="/admin" className="md:hidden flex items-center gap-2">
-                  <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Fill The Field" className="h-8 w-auto" />
+                  <img 
+                    src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" 
+                    alt="Fill The Field" 
+                    className="h-8 w-auto" 
+                  />
                 </Link> : <Link to={`${navPrefix}/portal`} className="md:hidden flex items-center gap-2">
-                  <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Fill The Field" className="h-8 w-auto" />
+                  <img 
+                    src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" 
+                    alt="Fill The Field" 
+                    className="h-8 w-auto" 
+                  />
                 </Link>}
               <div className="ml-auto flex items-center gap-4">
-                <img alt="Fill The Field Shield" className="h-8 w-8" src="/lovable-uploads/8e328e3e-a97e-4671-a294-0f3791945a8d.png" />
+                <img 
+                  alt="Fill The Field Shield" 
+                  className="h-8 w-8" 
+                  src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" 
+                />
                 <Button variant="ghost" size="icon" onClick={handleSignOut} className="md:hidden">
                   <LogOut className="h-5 w-5" />
                 </Button>
@@ -175,4 +193,5 @@ const DashboardLayout = ({
       </div>
     </SidebarProvider>;
 };
+
 export default DashboardLayout;

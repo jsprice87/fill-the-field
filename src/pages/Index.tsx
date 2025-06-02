@@ -11,10 +11,18 @@ const Index = () => {
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Fill The Field - Fast Funnels for Free Trials" className="h-12 w-auto" />
+            <img 
+              src="/lovable-uploads/c5e58dba-5000-47ba-a87f-3353c2c8ad0f.png" 
+              alt="Fill The Field - Fast Funnels for Free Trials" 
+              className="h-12 w-auto max-w-[300px]" 
+            />
           </div>
           <div className="flex items-center gap-4">
-            <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Fill The Field Shield" className="h-8 w-8" />
+            <img 
+              src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" 
+              alt="Fill The Field Shield" 
+              className="h-8 w-8" 
+            />
             <Link to="/login" className="text-gray-600 hover:text-indigo-600">
               Login
             </Link>
@@ -29,7 +37,11 @@ const Index = () => {
       <section className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
-            <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Fill The Field Shield" className="h-24 w-24 mx-auto mb-6" />
+            <img 
+              src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" 
+              alt="Fill The Field Shield" 
+              className="h-24 w-24 mx-auto mb-6" 
+            />
           </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Fill Your Trial Classes and Convert More Customers
@@ -137,7 +149,11 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16">
         <div className="bg-indigo-600 rounded-2xl p-8 md:p-12 text-center text-white relative overflow-hidden">
           <div className="absolute top-4 right-4 opacity-20">
-            <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Fill The Field Shield" className="h-16 w-16" />
+            <img 
+              src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" 
+              alt="Fill The Field Shield" 
+              className="h-16 w-16" 
+            />
           </div>
           <h2 className="text-3xl font-bold mb-4">Ready to Fill The Field?</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto">
@@ -155,7 +171,11 @@ const Index = () => {
       <footer className="bg-gray-50 border-t">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center mb-8">
-            <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Fill The Field - Fast Funnels for Free Trials" className="h-16 w-auto mx-auto mb-4" />
+            <img 
+              src="/lovable-uploads/c5e58dba-5000-47ba-a87f-3353c2c8ad0f.png" 
+              alt="Fill The Field - Fast Funnels for Free Trials" 
+              className="h-16 w-auto mx-auto mb-4 max-w-[400px]" 
+            />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
