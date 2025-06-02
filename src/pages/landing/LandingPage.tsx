@@ -38,18 +38,13 @@ const LandingPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-center mb-12">Our Programs</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-xl font-semibold mb-3">Toddler Soccer</h3>
-                <p className="text-gray-600 mb-4">Introduction to soccer basics for ages 2-4. Focus on motor skills and fun.</p>
+                <h3 className="text-xl font-semibold mb-3">Parent & Me</h3>
+                <p className="text-gray-600 mb-4">Introduction to soccer basics for ages 12-24 months. Focus on motor skills and fun.</p>
                 <Link to={`/${franchiseeId}/landing-page/book-a-class`} className="text-indigo-600 hover:underline">Learn more</Link>
               </div>
               <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-xl font-semibold mb-3">Youth Development</h3>
-                <p className="text-gray-600 mb-4">Skill-building program for ages 5-8. Technique and teamwork focus.</p>
-                <Link to={`/${franchiseeId}/landing-page/book-a-class`} className="text-indigo-600 hover:underline">Learn more</Link>
-              </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-xl font-semibold mb-3">Advanced Training</h3>
-                <p className="text-gray-600 mb-4">Competitive training for ages 9-14. Strategy and advanced skills.</p>
+                <h3 className="text-xl font-semibold mb-3">Super Soccer Stars</h3>
+                <p className="text-gray-600 mb-4">Skill-building program for ages 2-10+. Technique and teamwork focus.</p>
                 <Link to={`/${franchiseeId}/landing-page/book-a-class`} className="text-indigo-600 hover:underline">Learn more</Link>
               </div>
             </div>
@@ -62,7 +57,7 @@ const LandingPage: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between">
             <div className="mb-6 md:mb-0">
               <h3 className="text-lg font-bold mb-2">Soccer Stars</h3>
-              <p className="text-gray-300">Making soccer fun for kids since 2005</p>
+              <p className="text-gray-300">Making soccer fun for kids since 2000</p>
             </div>
             <div>
               <h4 className="font-medium mb-2">Quick Links</h4>
