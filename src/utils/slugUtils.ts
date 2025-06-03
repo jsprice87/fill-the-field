@@ -58,23 +58,44 @@ export const ensureUniqueSlug = async (baseSlug: string): Promise<string> => {
  */
 export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | null> => {
   try {
-    console.log('Resolving slug to franchisee ID:', slug);
+    console.log(`[slugUtils] Resolving slug to franchisee ID: ${slug}`);
+    console.log(`[slugUtils] Environment: ${window.location.hostname}`);
+    console.log(`[slugUtils] Supabase URL: ${supabase.supabaseUrl}`);
     
+    const startTime = Date.now();
     const { data, error } = await supabase
       .from('franchisees')
       .select('id')  // Changed from user_id to id
       .eq('slug', slug)
       .single();
     
-    if (error || !data) {
-      console.error("Error getting franchisee ID from slug:", error);
+    const endTime = Date.now();
+    console.log(`[slugUtils] Query took ${endTime - startTime}ms`);
+    
+    if (error) {
+      console.error(`[slugUtils] Error getting franchisee ID from slug:`, {
+        slug,
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
       return null;
     }
     
-    console.log('Resolved franchisee ID:', data.id);
+    if (!data) {
+      console.warn(`[slugUtils] No data returned for slug: ${slug}`);
+      return null;
+    }
+    
+    console.log(`[slugUtils] Resolved franchisee ID: ${data.id}`);
     return data.id;
   } catch (error) {
-    console.error("Error in getFranchiseeIdFromSlug:", error);
+    console.error(`[slugUtils] Exception in getFranchiseeIdFromSlug:`, {
+      slug,
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return null;
   }
 };
@@ -86,6 +107,8 @@ export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | nu
  */
 export const getSlugFromFranchiseeId = async (franchiseeId: string): Promise<string | null> => {
   try {
+    console.log(`[slugUtils] Getting slug from franchisee ID: ${franchiseeId}`);
+    
     const { data, error } = await supabase
       .from('franchisees')
       .select('slug')
@@ -93,13 +116,21 @@ export const getSlugFromFranchiseeId = async (franchiseeId: string): Promise<str
       .single();
     
     if (error || !data || !data.slug) {
-      console.error("Error getting slug from franchisee ID:", error);
+      console.error(`[slugUtils] Error getting slug from franchisee ID:`, {
+        franchiseeId,
+        error: error?.message,
+        data
+      });
       return null;
     }
     
+    console.log(`[slugUtils] Found slug: ${data.slug}`);
     return data.slug;
   } catch (error) {
-    console.error("Error in getSlugFromFranchiseeId:", error);
+    console.error(`[slugUtils] Exception in getSlugFromFranchiseeId:`, {
+      franchiseeId,
+      error: error instanceof Error ? error.message : error
+    });
     return null;
   }
 };
