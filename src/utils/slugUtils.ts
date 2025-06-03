@@ -58,78 +58,20 @@ export const ensureUniqueSlug = async (baseSlug: string): Promise<string> => {
  */
 export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | null> => {
   try {
-    console.log(`[slugUtils] === SLUG LOOKUP START ===`);
-    console.log(`[slugUtils] Input slug: "${slug}"`);
-    console.log(`[slugUtils] Slug type: ${typeof slug}`);
-    console.log(`[slugUtils] Slug length: ${slug?.length}`);
-    console.log(`[slugUtils] Environment: ${window.location.hostname}`);
-    
-    const startTime = Date.now();
-    
-    // Test the connection first
-    console.log(`[slugUtils] Testing basic Supabase connection...`);
-    const { data: testData, error: testError } = await supabase
-      .from('franchisees')
-      .select('count')
-      .limit(1);
-    
-    if (testError) {
-      console.error(`[slugUtils] 🚨 Connection test FAILED:`, testError);
-      return null;
-    }
-    console.log(`[slugUtils] ✅ Connection test passed`);
-    
-    // Now try the actual query
-    console.log(`[slugUtils] Executing slug query...`);
     const { data, error } = await supabase
       .from('franchisees')
-      .select('id, slug, company_name, subscription_status')  // More fields for debugging
+      .select('id')
       .eq('slug', slug)
       .single();
     
-    const endTime = Date.now();
-    console.log(`[slugUtils] Query completed in ${endTime - startTime}ms`);
-    
-    if (error) {
-      console.error(`[slugUtils] ❌ Query error:`, {
-        slug,
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
-      
-      // If it's a "no rows" error, that's actually expected for invalid slugs
-      if (error.code === 'PGRST116') {
-        console.log(`[slugUtils] No rows found for slug "${slug}" - this is normal for invalid slugs`);
-        return null;
-      }
-      
+    if (error || !data) {
       return null;
     }
-    
-    if (!data) {
-      console.warn(`[slugUtils] ⚠️ No data returned for slug: ${slug}`);
-      return null;
-    }
-    
-    console.log(`[slugUtils] ✅ SUCCESS: Found franchisee:`, {
-      id: data.id,
-      slug: data.slug,
-      company_name: data.company_name,
-      subscription_status: data.subscription_status
-    });
     
     return data.id;
   } catch (error) {
-    console.error(`[slugUtils] 💥 Exception in getFranchiseeIdFromSlug:`, {
-      slug,
-      error: error instanceof Error ? error.message : error,
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    console.error('Error in getFranchiseeIdFromSlug:', error);
     return null;
-  } finally {
-    console.log(`[slugUtils] === SLUG LOOKUP END ===`);
   }
 };
 
@@ -140,30 +82,19 @@ export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | nu
  */
 export const getSlugFromFranchiseeId = async (franchiseeId: string): Promise<string | null> => {
   try {
-    console.log(`[slugUtils] Getting slug from franchisee ID: ${franchiseeId}`);
-    
     const { data, error } = await supabase
       .from('franchisees')
       .select('slug')
-      .eq('id', franchiseeId)  // Changed from user_id to id for consistency
+      .eq('id', franchiseeId)
       .single();
     
     if (error || !data || !data.slug) {
-      console.error(`[slugUtils] Error getting slug from franchisee ID:`, {
-        franchiseeId,
-        error: error?.message,
-        data
-      });
       return null;
     }
     
-    console.log(`[slugUtils] Found slug: ${data.slug}`);
     return data.slug;
   } catch (error) {
-    console.error(`[slugUtils] Exception in getSlugFromFranchiseeId:`, {
-      franchiseeId,
-      error: error instanceof Error ? error.message : error
-    });
+    console.error('Error in getSlugFromFranchiseeId:', error);
     return null;
   }
 };
