@@ -141,26 +141,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         onMapError={handleMapError}
       />
       
-      <MapDebugger
-        debugInfo={state.debugInfo}
-        browserInfo={state.browserInfo}
-        validLocations={state.validLocations}
-        locations={locations}
-        containerReady={state.containerReady}
-        mapInitialized={state.mapInitialized}
-      />
-      
-      <MapDebugPanel
-        debugInfo={state.debugInfo}
-        browserInfo={state.browserInfo}
-        validLocations={state.validLocations}
-        locations={locations}
-        containerReady={state.containerReady}
-        mapInitialized={state.mapInitialized}
-        initializationStep={state.initializationStep}
-        leafletValid={state.leafletValid}
-        useFallbackMap={state.useFallbackMap}
-      />
     </div>
   );
 };
