@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Link, useParams } from "react-router-dom";
 import LocationSelector from '@/components/classes/LocationSelector';
 import GlobalDayPicker from '@/components/classes/GlobalDayPicker';
 import ScheduleGrid from '@/components/classes/ScheduleGrid';
@@ -27,6 +29,7 @@ interface PortalClassesProps {
 }
 
 const PortalClasses: React.FC<PortalClassesProps> = ({ franchiseeId: propFranchiseeId }) => {
+  const { franchiseeSlug } = useParams();
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
   const [globalDayOfWeek, setGlobalDayOfWeek] = useState<number>(1); // Monday default
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
@@ -244,12 +247,19 @@ const PortalClasses: React.FC<PortalClassesProps> = ({ franchiseeId: propFranchi
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Class Schedules</h1>
-        <Button 
-          onClick={handleSaveAll} 
-          disabled={!selectedLocationId || scheduleRows.length === 0 || isLoading}
-        >
-          {isLoading ? "Saving..." : "Save All Schedules"}
-        </Button>
+        <div className="flex gap-2">
+          <Link to={`/${franchiseeSlug}/portal/classes/list`}>
+            <Button variant="outline">
+              View All Classes
+            </Button>
+          </Link>
+          <Button 
+            onClick={handleSaveAll} 
+            disabled={!selectedLocationId || scheduleRows.length === 0 || isLoading}
+          >
+            {isLoading ? "Saving..." : "Save All Schedules"}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-4">

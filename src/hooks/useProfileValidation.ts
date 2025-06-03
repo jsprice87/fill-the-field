@@ -1,8 +1,38 @@
 
+import { useEffect } from 'react';
 import { useFranchiseeProfile } from './useFranchiseeProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useProfileValidation = () => {
-  const { data: profile, isLoading } = useFranchiseeProfile();
+  const { data: profile, isLoading, refetch, error } = useFranchiseeProfile();
+
+  // Trigger the query only when user is authenticated
+  useEffect(() => {
+    const checkAuthAndFetch = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          refetch();
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+      }
+    };
+
+    checkAuthAndFetch();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Small delay to ensure the user record is fully created
+        setTimeout(() => {
+          refetch();
+        }, 500);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [refetch]);
 
   const isProfileComplete = () => {
     if (!profile) return false;
@@ -38,6 +68,7 @@ export const useProfileValidation = () => {
     isProfileComplete: isProfileComplete(),
     missingFields: getMissingFields(),
     isLoading,
-    profile
+    profile,
+    error
   };
 };

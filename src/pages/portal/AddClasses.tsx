@@ -8,7 +8,6 @@ import { Link, useParams } from "react-router-dom";
 import LocationSelector from '@/components/classes/LocationSelector';
 import GlobalDayPicker from '@/components/classes/GlobalDayPicker';
 import ScheduleGrid from '@/components/classes/ScheduleGrid';
-import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
 
 export interface ScheduleRow {
   id?: string;
@@ -25,30 +24,25 @@ export interface ScheduleRow {
   dayOfWeek: number;
 }
 
-const AddClasses: React.FC = () => {
-  const { franchiseeId } = useParams();
+interface AddClassesProps {
+  franchiseeId?: string;
+}
+
+const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId }) => {
+  const { franchiseeSlug } = useParams();
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
   const [globalDayOfWeek, setGlobalDayOfWeek] = useState<number>(1); // Monday default
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [franchiseeDbId, setFranchiseeDbId] = useState<string | null>(null);
-  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
-
-  // Get the current slug for navigation
-  useEffect(() => {
-    if (franchiseeId) {
-      if (!franchiseeId.includes('-')) {
-        getSlugFromFranchiseeId(franchiseeId).then(slug => {
-          setCurrentSlug(slug || franchiseeId);
-        });
-      } else {
-        setCurrentSlug(franchiseeId);
-      }
-    }
-  }, [franchiseeId]);
+  const [franchiseeDbId, setFranchiseeDbId] = useState<string | null>(propFranchiseeId || null);
 
   // Get franchisee ID on component mount
   useEffect(() => {
+    if (propFranchiseeId) {
+      setFranchiseeDbId(propFranchiseeId);
+      return;
+    }
+
     const getFranchiseeId = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -76,8 +70,10 @@ const AddClasses: React.FC = () => {
       }
     };
 
-    getFranchiseeId();
-  }, []);
+    if (!propFranchiseeId) {
+      getFranchiseeId();
+    }
+  }, [propFranchiseeId]);
 
   const calculateEndTime = (startTime: string, duration: number): string => {
     if (!startTime) return '';
@@ -242,7 +238,7 @@ const AddClasses: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to={`/${currentSlug}/portal/classes`}>
+          <Link to={`/${franchiseeSlug}/portal/classes`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Classes

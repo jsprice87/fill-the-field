@@ -18,7 +18,10 @@ export const useFranchiseeProfile = () => {
 
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: false, // Don't run automatically
+    retry: false, // Don't retry on error
+    refetchOnWindowFocus: false
   });
 };
 
