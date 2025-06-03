@@ -7,6 +7,7 @@ import MapDebugger from './MapDebugger';
 import BrowserEnvironmentChecker from './BrowserEnvironmentChecker';
 import MapContainerWrapper from './MapContainerWrapper';
 import MapContent from './MapContent';
+import SimpleFallbackMap from './SimpleFallbackMap';
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -50,6 +51,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [browserInfo, setBrowserInfo] = useState<string[]>([]);
   const [mapInitialized, setMapInitialized] = useState(false);
   const [containerReady, setContainerReady] = useState(false);
+  const [useFallbackMap, setUseFallbackMap] = useState(false);
   const isMountedRef = useRef(true);
 
   // Add debug logging function
@@ -135,11 +137,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       return;
     }
 
-    if (locationsWithCoords.length < locations.length) {
-      const missingCount = locations.length - locationsWithCoords.length;
-      addDebugLog(`Warning: ${missingCount} locations are missing coordinates`);
-    }
-
     safeSetState(() => {
       setValidLocations(locationsWithCoords);
       setIsLoading(false);
@@ -149,7 +146,11 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const handleMapError = useCallback((errorMessage: string) => {
     addDebugLog(`Map error occurred: ${errorMessage}`);
     console.error('Map error:', errorMessage);
-    safeSetState(() => setMapError(errorMessage));
+    addDebugLog('Switching to fallback map');
+    safeSetState(() => {
+      setMapError(errorMessage);
+      setUseFallbackMap(true);
+    });
   }, [safeSetState, addDebugLog]);
 
   const retryMapLoad = useCallback(() => {
@@ -157,8 +158,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     safeSetState(() => {
       setMapError('');
       setError('');
-      setDebugInfo([]);
-      setBrowserInfo([]);
+      setUseFallbackMap(false);
       setMapInitialized(false);
       setContainerReady(false);
     });
@@ -171,8 +171,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   }, [addDebugLog]);
 
   const handleContainerReady = useCallback((ready: boolean) => {
+    addDebugLog(`Container ready status: ${ready}`);
     setContainerReady(ready);
-  }, []);
+  }, [addDebugLog]);
 
   useEffect(() => {
     addDebugLog('useEffect triggered for processLocations');
@@ -185,33 +186,19 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading map...</p>
-          <div className="mt-4 text-xs text-gray-500">
-            <div>Debug info:</div>
-            {debugInfo.map((info, i) => <div key={i}>{info}</div>)}
-          </div>
         </div>
       </div>
     );
   }
 
-  if (error || mapError) {
+  if (error && !useFallbackMap) {
     return (
       <div className={className} style={{ height }}>
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <MapErrorFallback 
-            error={error || mapError} 
+            error={error} 
             onRetry={retryMapLoad}
           />
-          <div className="mt-4 text-xs text-gray-600 border-t pt-2">
-            <div className="font-semibold">Debug Information:</div>
-            {debugInfo.map((info, i) => <div key={i}>{info}</div>)}
-            <div className="mt-2 font-semibold">Browser Information:</div>
-            {browserInfo.map((info, i) => <div key={i}>{info}</div>)}
-            <div className="mt-2">Valid locations found: {validLocations.length}</div>
-            <div>Total locations received: {locations?.length || 0}</div>
-            <div>Container ready: {containerReady ? 'Yes' : 'No'}</div>
-            <div>Map initialized: {mapInitialized ? 'Yes' : 'No'}</div>
-          </div>
         </div>
       </div>
     );
@@ -225,10 +212,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
             error="No locations available to display on map"
             showRetry={false}
           />
-          <div className="mt-4 text-xs text-gray-600 border-t pt-2">
-            <div className="font-semibold">Debug Information:</div>
-            {debugInfo.map((info, i) => <div key={i}>{info}</div>)}
-          </div>
         </div>
       </div>
     );
@@ -258,22 +241,37 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       <div className="relative">
         <BrowserEnvironmentChecker onReport={addBrowserInfo} />
         
-        <MapContainerWrapper
-          height={height}
-          className={className}
-          onContainerReady={handleContainerReady}
-          addDebugLog={addDebugLog}
-        >
-          <MapContent
-            validLocations={validLocations}
-            centerLat={centerLat}
-            centerLng={centerLng}
-            onLocationSelect={onLocationSelect}
-            onMapReady={handleMapReady}
-            onMapError={handleMapError}
+        {useFallbackMap ? (
+          <div className={`border rounded-lg overflow-hidden ${className}`} style={{ height }}>
+            <div className="h-full w-full">
+              <SimpleFallbackMap
+                locations={validLocations}
+                onLocationSelect={onLocationSelect}
+                addDebugLog={addDebugLog}
+              />
+            </div>
+            <div className="absolute top-2 right-2 bg-yellow-100 border border-yellow-300 px-2 py-1 rounded text-xs">
+              Fallback Map Active
+            </div>
+          </div>
+        ) : (
+          <MapContainerWrapper
+            height={height}
+            className={className}
+            onContainerReady={handleContainerReady}
             addDebugLog={addDebugLog}
-          />
-        </MapContainerWrapper>
+          >
+            <MapContent
+              validLocations={validLocations}
+              centerLat={centerLat}
+              centerLng={centerLng}
+              onLocationSelect={onLocationSelect}
+              onMapReady={handleMapReady}
+              onMapError={handleMapError}
+              addDebugLog={addDebugLog}
+            />
+          </MapContainerWrapper>
+        )}
         
         <MapDebugger
           debugInfo={debugInfo}
@@ -296,13 +294,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
             onRetry={retryMapLoad}
           />
           <div className="mt-4 text-xs text-gray-600 border-t pt-2">
-            <div className="font-semibold">Debug Information:</div>
-            {debugInfo.map((info, i) => <div key={i}>{info}</div>)}
-            <div className="mt-2 font-semibold">Browser Information:</div>
-            {browserInfo.map((info, i) => <div key={i}>{info}</div>)}
-            <div className="mt-2 text-red-600">Render Error: {String(renderError)}</div>
-            <div>Container ready: {containerReady ? 'Yes' : 'No'}</div>
-            <div>Map initialized: {mapInitialized ? 'Yes' : 'No'}</div>
+            <div className="text-red-600">Render Error: {String(renderError)}</div>
           </div>
         </div>
       </div>
