@@ -202,7 +202,7 @@ export const navItems = [
     icon: <CalendarIcon className="h-4 w-4" />,
     page: <DefaultBookingRedirect />,
   },
-  // Franchisee slug-based portal routes - FIXED: Main classes route now points to ClassesList
+  // Franchisee slug-based portal routes - KEEP requireAuth default (true)
   {
     title: "Franchisee Portal Dashboard",
     to: "/:franchiseeSlug/portal/dashboard",
@@ -269,78 +269,78 @@ export const navItems = [
     icon: <SettingsIcon className="h-4 w-4" />,
     page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalSettings /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
-  // ... keep existing code (all the public landing page routes)
+  // PUBLIC landing page routes - Add requireAuth={false}
   {
     title: "Landing Page",
     to: "/:franchiseeSlug",
     icon: <HomeIcon className="h-4 w-4" />,
-    page: <SlugResolver><LandingPage /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><LandingPage /></SlugResolver>,
   },
   {
     title: "Spanish Landing",
     to: "/:franchiseeSlug/es",
     icon: <HomeIcon className="h-4 w-4" />,
-    page: <SlugResolver><SpanishLanding /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><SpanishLanding /></SlugResolver>,
   },
   {
     title: "Find Classes",
     to: "/:franchiseeSlug/find-classes",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><FindClasses /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><FindClasses /></SlugResolver>,
   },
   {
     title: "Book Class",
     to: "/:franchiseeSlug/book",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><BookClass /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><BookClass /></SlugResolver>,
   },
   {
     title: "Confirmation",
     to: "/:franchiseeSlug/confirmation",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><Confirmation /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><Confirmation /></SlugResolver>,
   },
   {
     title: "Contact Us",
     to: "/:franchiseeSlug/contact",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><ContactUs /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><ContactUs /></SlugResolver>,
   },
   {
     title: "Booking Landing",
     to: "/:franchiseeSlug/free-trial",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><BookingLanding /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><BookingLanding /></SlugResolver>,
   },
   {
     title: "Booking Find Classes",
     to: "/:franchiseeSlug/free-trial/find-classes",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><BookingFindClasses /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><BookingFindClasses /></SlugResolver>,
   },
   {
     title: "Class Booking",
     to: "/:franchiseeSlug/free-trial/classes",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><ClassBooking /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><ClassBooking /></SlugResolver>,
   },
   {
     title: "Booking Confirmation",
     to: "/:franchiseeSlug/free-trial/booking/:bookingId",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><BookingConfirmation /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><BookingConfirmation /></SlugResolver>,
   },
   {
     title: "Thank You",
     to: "/:franchiseeSlug/thank-you",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><ThankYou /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><ThankYou /></SlugResolver>,
   },
   {
     title: "Spanish Info",
     to: "/:franchiseeSlug/spanish-info",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><SpanishInfo /></SlugResolver>,
+    page: <SlugResolver requireAuth={false}><SpanishInfo /></SlugResolver>,
   },
   {
     title: "Not Found",
