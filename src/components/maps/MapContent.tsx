@@ -59,7 +59,6 @@ const MapContent: React.FC<MapContentProps> = ({
   addDebugLog
 }) => {
   const [renderAttempts, setRenderAttempts] = useState(0);
-  const [lastError, setLastError] = useState<string>('');
 
   const handleMarkerClick = useCallback((location: Location) => {
     try {
@@ -126,10 +125,6 @@ const MapContent: React.FC<MapContentProps> = ({
           addDebugLog('MapContainer whenReady callback fired');
           onMapReady();
         }}
-        whenCreated={(mapInstance) => {
-          addDebugLog('MapContainer created successfully');
-          console.log('Map instance created:', mapInstance);
-        }}
       >
         <MapEventHandler onError={onMapError} addDebugLog={addDebugLog} />
         <TileLayer
@@ -189,7 +184,6 @@ const MapContent: React.FC<MapContentProps> = ({
     
     // Track render attempts and prevent infinite loops
     setRenderAttempts(prev => prev + 1);
-    setLastError(errorMessage);
     
     if (renderAttempts < 3) {
       // Try to render again after a delay
