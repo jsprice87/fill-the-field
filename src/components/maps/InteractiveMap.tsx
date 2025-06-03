@@ -272,14 +272,12 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           center={[centerLat, centerLng]}
           zoom={10}
           style={{ height: '100%', width: '100%' }}
-          whenCreated={() => addDebugLog('MapContainer created successfully')}
+          whenReady={() => addDebugLog('MapContainer ready successfully')}
         >
           <MapEventHandler onError={handleMapError} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            onLoad={() => addDebugLog('TileLayer loaded successfully')}
-            onError={() => addDebugLog('TileLayer failed to load')}
           />
           {validLocations.map((location) => {
             addDebugLog(`Rendering marker for: ${location.name} at ${location.latitude}, ${location.longitude}`);
