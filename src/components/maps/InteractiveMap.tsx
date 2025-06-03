@@ -1,9 +1,12 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapErrorFallback from './MapErrorFallback';
+import MapDebugger from './MapDebugger';
+import BrowserEnvironmentChecker from './BrowserEnvironmentChecker';
+import MapContainerWrapper from './MapContainerWrapper';
+import MapContent from './MapContent';
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -33,59 +36,6 @@ interface InteractiveMapProps {
   className?: string;
 }
 
-// Component to handle map events
-const MapEventHandler: React.FC<{ onError: (error: string) => void }> = ({ onError }) => {
-  useMapEvents({
-    tileerror: () => {
-      console.error('🗺️ MAP DEBUG: Tile loading error');
-      onError('Map tiles failed to load');
-    },
-    error: () => {
-      console.error('🗺️ MAP DEBUG: Map error event');
-      onError('Map failed to initialize');
-    }
-  });
-  return null;
-};
-
-// Browser environment debugging component
-const BrowserEnvDebugger: React.FC<{ onReport: (info: string) => void }> = ({ onReport }) => {
-  useEffect(() => {
-    // Check if we're in browser environment
-    const isBrowser = typeof window !== 'undefined';
-    onReport(`Browser environment: ${isBrowser}`);
-    
-    if (isBrowser) {
-      // Check Leaflet availability
-      onReport(`Leaflet available: ${typeof L !== 'undefined'}`);
-      onReport(`Leaflet version: ${L.version || 'unknown'}`);
-      
-      // Check React-Leaflet components
-      onReport(`MapContainer available: ${typeof MapContainer !== 'undefined'}`);
-      onReport(`TileLayer available: ${typeof TileLayer !== 'undefined'}`);
-      
-      // Check CSS loading
-      const leafletCSS = document.querySelector('link[href*="leaflet"]');
-      onReport(`Leaflet CSS loaded: ${!!leafletCSS}`);
-      
-      // Check window dimensions
-      onReport(`Window size: ${window.innerWidth}x${window.innerHeight}`);
-      
-      // Check if container will have dimensions
-      setTimeout(() => {
-        const mapContainers = document.querySelectorAll('.leaflet-container');
-        onReport(`Map containers found: ${mapContainers.length}`);
-        mapContainers.forEach((container, index) => {
-          const rect = container.getBoundingClientRect();
-          onReport(`Container ${index} dimensions: ${rect.width}x${rect.height}`);
-        });
-      }, 100);
-    }
-  }, [onReport]);
-  
-  return null;
-};
-
 const InteractiveMap: React.FC<InteractiveMapProps> = ({ 
   locations, 
   height = "400px",
@@ -101,7 +51,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [mapInitialized, setMapInitialized] = useState(false);
   const [containerReady, setContainerReady] = useState(false);
   const isMountedRef = useRef(true);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Add debug logging function
   const addDebugLog = useCallback((message: string) => {
@@ -114,22 +63,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     console.log(`🌐 BROWSER DEBUG: ${message}`);
     setBrowserInfo(prev => [...prev.slice(-9), message]);
   }, []);
-
-  // Check container dimensions
-  useEffect(() => {
-    const checkContainer = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        addDebugLog(`Container dimensions: ${rect.width}x${rect.height}`);
-        addDebugLog(`Container computed style height: ${getComputedStyle(containerRef.current).height}`);
-        setContainerReady(rect.width > 0 && rect.height > 0);
-      }
-    };
-
-    checkContainer();
-    const timer = setTimeout(checkContainer, 100);
-    return () => clearTimeout(timer);
-  }, [addDebugLog]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -213,22 +146,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     });
   }, [locations, safeSetState, addDebugLog]);
 
-  const handleMarkerClick = useCallback((location: Location) => {
-    try {
-      addDebugLog(`Marker clicked for location: ${location.name}`);
-      if (onLocationSelect && location) {
-        onLocationSelect({
-          id: location.id,
-          name: location.name,
-          address: `${location.address}, ${location.city}, ${location.state}`
-        });
-      }
-    } catch (error) {
-      addDebugLog(`Error handling marker click: ${error}`);
-      console.error('Error handling marker click:', error);
-    }
-  }, [onLocationSelect, addDebugLog]);
-
   const handleMapError = useCallback((errorMessage: string) => {
     addDebugLog(`Map error occurred: ${errorMessage}`);
     console.error('Map error:', errorMessage);
@@ -252,6 +169,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     addDebugLog('MapContainer ready callback triggered');
     setMapInitialized(true);
   }, [addDebugLog]);
+
+  const handleContainerReady = useCallback((ready: boolean) => {
+    setContainerReady(ready);
+  }, []);
 
   useEffect(() => {
     addDebugLog('useEffect triggered for processLocations');
@@ -333,79 +254,35 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       );
     }
 
-    addDebugLog(`Attempting to render MapContainer with ${validLocations.length} markers`);
-
     return (
-      <div style={{ height }} className={`rounded-lg overflow-hidden border ${className}`}>
-        <BrowserEnvDebugger onReport={addBrowserInfo} />
-        <div ref={containerRef} style={{ height: '100%', width: '100%', minHeight: '300px' }}>
-          {containerReady ? (
-            <MapContainer
-              center={[centerLat, centerLng]}
-              zoom={10}
-              style={{ height: '100%', width: '100%' }}
-              whenReady={handleMapReady}
-            >
-              <MapEventHandler onError={handleMapError} />
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {validLocations.map((location) => {
-                addDebugLog(`Rendering marker for: ${location.name} at ${location.latitude}, ${location.longitude}`);
-                return (
-                  <Marker
-                    key={location.id}
-                    position={[location.latitude!, location.longitude!]}
-                    eventHandlers={{
-                      click: () => handleMarkerClick(location)
-                    }}
-                  >
-                    <Popup>
-                      <div className="p-2">
-                        <h3 className="font-semibold">{location.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {location.address}<br />
-                          {location.city}, {location.state} {location.zip}
-                        </p>
-                        {onLocationSelect && (
-                          <button 
-                            onClick={() => handleMarkerClick(location)}
-                            className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
-                          >
-                            Select Location
-                          </button>
-                        )}
-                      </div>
-                    </Popup>
-                  </Marker>
-                );
-              })}
-            </MapContainer>
-          ) : (
-            <div className="h-full flex items-center justify-center bg-gray-100">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                <p className="text-gray-600">Preparing map container...</p>
-                <div className="mt-2 text-xs text-gray-500">
-                  Container ready: {containerReady ? 'Yes' : 'No'}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="relative">
+        <BrowserEnvironmentChecker onReport={addBrowserInfo} />
         
-        {/* Enhanced Debug overlay */}
-        <div className="absolute bottom-2 left-2 bg-black bg-opacity-90 text-white text-xs p-3 rounded max-w-sm max-h-48 overflow-y-auto">
-          <div className="font-bold mb-1">🗺️ Map Debug Status:</div>
-          <div>Container Ready: {containerReady ? '✅' : '❌'}</div>
-          <div>Map Initialized: {mapInitialized ? '✅' : '❌'}</div>
-          <div>Locations: {validLocations.length}</div>
-          <div className="mt-2 font-bold">Recent Logs:</div>
-          {debugInfo.slice(-3).map((info, i) => <div key={i} className="truncate">{info}</div>)}
-          <div className="mt-2 font-bold">Browser:</div>
-          {browserInfo.slice(-2).map((info, i) => <div key={i} className="truncate">{info}</div>)}
-        </div>
+        <MapContainerWrapper
+          height={height}
+          className={className}
+          onContainerReady={handleContainerReady}
+          addDebugLog={addDebugLog}
+        >
+          <MapContent
+            validLocations={validLocations}
+            centerLat={centerLat}
+            centerLng={centerLng}
+            onLocationSelect={onLocationSelect}
+            onMapReady={handleMapReady}
+            onMapError={handleMapError}
+            addDebugLog={addDebugLog}
+          />
+        </MapContainerWrapper>
+        
+        <MapDebugger
+          debugInfo={debugInfo}
+          browserInfo={browserInfo}
+          validLocations={validLocations}
+          locations={locations}
+          containerReady={containerReady}
+          mapInitialized={mapInitialized}
+        />
       </div>
     );
   } catch (renderError) {
