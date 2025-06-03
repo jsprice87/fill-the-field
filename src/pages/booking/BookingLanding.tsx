@@ -4,22 +4,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { MetaPixelProvider, useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { useFranchiseeOptional } from '@/contexts/FranchiseeContext';
 import { toast } from 'sonner';
 import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface BookingLandingProps {
-  franchiseeId?: string;
-}
-
-const BookingLandingContent: React.FC<BookingLandingProps> = ({ franchiseeId: propFranchiseeId }) => {
+const BookingLandingContent: React.FC = () => {
   const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const { createFlow } = useBookingFlow();
   const { trackEvent } = useMetaPixelTracking();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);
-
-  const resolvedFranchiseeId = propFranchiseeId;
+  
+  // Get franchisee data from context
+  const franchiseeContext = useFranchiseeOptional();
+  const franchiseeId = franchiseeContext?.franchiseeId;
 
   const handleLeadCreated = () => {
     // Track Meta Pixel Lead event
@@ -27,17 +26,17 @@ const BookingLandingContent: React.FC<BookingLandingProps> = ({ franchiseeId: pr
   };
 
   const handleFormSuccess = async (leadId: string, leadData: any) => {
-    if (!resolvedFranchiseeId || !franchiseeSlug) {
-      console.error('Missing required data for flow creation:', { resolvedFranchiseeId, franchiseeSlug });
+    if (!franchiseeId || !franchiseeSlug) {
+      console.error('Missing required data for flow creation:', { franchiseeId, franchiseeSlug });
       toast.error('Unable to start booking process. Please try again.');
       return;
     }
     
-    console.log('Form success - creating flow with lead data:', { leadId, leadData, franchiseeId: resolvedFranchiseeId });
+    console.log('Form success - creating flow with lead data:', { leadId, leadData, franchiseeId });
     
     setIsCreatingFlow(true);
     try {
-      const flowId = await createFlow(resolvedFranchiseeId, {
+      const flowId = await createFlow(franchiseeId, {
         leadId,
         leadData: {
           firstName: leadData.first_name,
@@ -58,7 +57,7 @@ const BookingLandingContent: React.FC<BookingLandingProps> = ({ franchiseeId: pr
     }
   };
 
-  if (!resolvedFranchiseeId) {
+  if (!franchiseeId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
@@ -133,7 +132,7 @@ const BookingLandingContent: React.FC<BookingLandingProps> = ({ franchiseeId: pr
                 </div>
               ) : (
                 <QuickCaptureForm 
-                  franchiseeId={resolvedFranchiseeId}
+                  franchiseeId={franchiseeId}
                   onSuccess={handleFormSuccess}
                   onLeadCreated={handleLeadCreated}
                   showTitle={true}
@@ -319,7 +318,10 @@ const BookingLandingContent: React.FC<BookingLandingProps> = ({ franchiseeId: pr
   );
 };
 
-const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId }) => {
+const BookingLanding: React.FC = () => {
+  const franchiseeContext = useFranchiseeOptional();
+  const franchiseeId = franchiseeContext?.franchiseeId;
+
   if (!franchiseeId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -333,7 +335,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId }) => {
 
   return (
     <MetaPixelProvider franchiseeId={franchiseeId}>
-      <BookingLandingContent franchiseeId={franchiseeId} />
+      <BookingLandingContent />
     </MetaPixelProvider>
   );
 };

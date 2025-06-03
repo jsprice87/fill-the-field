@@ -5,6 +5,7 @@ import { getFranchiseeIdFromSlug } from '@/utils/slugUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import { FranchiseeProvider } from '@/contexts/FranchiseeContext';
 
 interface SlugResolverProps {
   children: React.ReactNode;
@@ -13,7 +14,7 @@ interface SlugResolverProps {
 
 /**
  * Component that resolves a slug in the URL to a franchisee ID
- * and injects it into the context for child components
+ * and provides it via context to child components
  */
 const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
   const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
@@ -216,20 +217,12 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
     );
   }
 
-  // Inject resolvedId as a prop to all children
+  // Use context provider instead of prop injection
   return (
     <ErrorBoundary>
-      <React.Fragment>
-        {React.Children.map(children, (child) => {
-          // Only add props to valid React elements
-          if (React.isValidElement(child)) {
-            return React.cloneElement(child as React.ReactElement<any>, {
-              franchiseeId: resolvedId,
-            });
-          }
-          return child;
-        })}
-      </React.Fragment>
+      <FranchiseeProvider franchiseeId={resolvedId}>
+        {children}
+      </FranchiseeProvider>
     </ErrorBoundary>
   );
 };
