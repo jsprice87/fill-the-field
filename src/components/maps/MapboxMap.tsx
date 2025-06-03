@@ -37,8 +37,8 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   const markers = useRef<mapboxgl.Marker[]>([]);
   const [isMapReady, setIsMapReady] = useState(false);
 
-  // Calculate center from locations
-  const calculateCenter = () => {
+  // Calculate center from locations - return tuple [lng, lat]
+  const calculateCenter = (): [number, number] => {
     const validLocations = locations.filter(loc => 
       loc.latitude && loc.longitude && 
       !isNaN(loc.latitude) && !isNaN(loc.longitude)
