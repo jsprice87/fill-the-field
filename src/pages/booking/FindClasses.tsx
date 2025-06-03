@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,9 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
-
-// Lazy load the map component for better performance
-const InteractiveMap = lazy(() => import('@/components/maps/InteractiveMap'));
+import InteractiveMap from '@/components/maps/InteractiveMap';
 
 interface BookingLocation {
   id: string;
@@ -297,18 +295,27 @@ const FindClasses: React.FC = () => {
           </div>
         </div>
 
-        {/* Debug panel */}
-        <div className="mb-4 p-3 bg-gray-100 rounded text-xs border">
-          <div className="font-semibold mb-2">🔍 Debug Information:</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        {/* Enhanced debug panel */}
+        <div className="mb-4 p-4 bg-gray-100 rounded border">
+          <div className="font-semibold mb-3">🔍 Comprehensive Debug Information:</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div>
-              <strong>Locations loaded:</strong> {locations.length}<br />
-              <strong>With coordinates:</strong> {locations.filter(l => l.latitude && l.longitude).length}<br />
-              <strong>View mode:</strong> {viewMode}
+              <strong>Location Data:</strong><br />
+              • Total loaded: {locations.length}<br />
+              • With coordinates: {locations.filter(l => l.latitude && l.longitude).length}<br />
+              • Missing coordinates: {locations.filter(l => !l.latitude || !l.longitude).length}<br />
+              • View mode: {viewMode}
             </div>
-            <div className="text-xs">
-              <strong>Recent logs:</strong>
-              {debugInfo.slice(-3).map((info, i) => <div key={i}>{info}</div>)}
+            <div>
+              <strong>Component State:</strong><br />
+              • Loading: {isLoading ? 'Yes' : 'No'}<br />
+              • Flow loaded: {flowLoaded ? 'Yes' : 'No'}<br />
+              • Has error: {error ? 'Yes' : 'No'}<br />
+              • Franchisee: {franchiseeData?.company_name || 'None'}
+            </div>
+            <div>
+              <strong>Recent Activity:</strong><br />
+              {debugInfo.slice(-4).map((info, i) => <div key={i}>• {info}</div>)}
             </div>
           </div>
         </div>
@@ -318,12 +325,12 @@ const FindClasses: React.FC = () => {
           {/* Map View */}
           {viewMode === 'map' && (
             <div className="lg:col-span-2 mb-8 lg:mb-0">
-              <div className="h-[300px] lg:h-[600px]">
+              <div className="h-[300px] lg:h-[600px] relative">
                 <ErrorBoundary 
                   fallback={
                     <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
                       <div className="text-center">
-                        <p className="font-poppins text-gray-600 mb-4">Map is unavailable</p>
+                        <p className="font-poppins text-gray-600 mb-4">Map component failed to load</p>
                         <Button 
                           onClick={() => setViewMode('list')}
                           variant="outline"
@@ -336,22 +343,13 @@ const FindClasses: React.FC = () => {
                   }
                   onReset={handleMapError}
                 >
-                  <Suspense fallback={
-                    <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-2"></div>
-                        <p className="font-poppins text-gray-600 text-sm">Loading map...</p>
-                      </div>
-                    </div>
-                  }>
-                    <InteractiveMap
-                      locations={locations}
-                      franchiseeSlug={franchiseeSlug || ''}
-                      flowId={flowId || undefined}
-                      onLocationSelect={handleLocationSelect}
-                      className="h-full"
-                    />
-                  </Suspense>
+                  <InteractiveMap
+                    locations={locations}
+                    franchiseeSlug={franchiseeSlug || ''}
+                    flowId={flowId || undefined}
+                    onLocationSelect={handleLocationSelect}
+                    className="h-full"
+                  />
                 </ErrorBoundary>
               </div>
             </div>
@@ -376,12 +374,12 @@ const FindClasses: React.FC = () => {
                               {location.city}, {location.state} {location.zip}
                               {location.latitude && location.longitude && (
                                 <span className="text-xs text-green-600 block">
-                                  ✓ Coordinates: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                                  ✅ Map Ready: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
                                 </span>
                               )}
                               {(!location.latitude || !location.longitude) && (
                                 <span className="text-xs text-red-600 block">
-                                  ⚠ No coordinates
+                                  ❌ No coordinates - Map unavailable
                                 </span>
                               )}
                             </span>
