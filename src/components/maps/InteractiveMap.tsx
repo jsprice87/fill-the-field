@@ -3,8 +3,6 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { batchGeocodeWithMapbox } from '@/utils/batchMapboxGeocoding';
-import { supabase } from '@/integrations/supabase/client';
 import MapErrorFallback from './MapErrorFallback';
 
 // Fix for default markers in react-leaflet
@@ -56,12 +54,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   onLocationSelect,
   className = ""
 }) => {
-  const [mapboxToken, setMapboxToken] = useState<string>('');
-  const [geocodedLocations, setGeocodedLocations] = useState<Location[]>([]);
+  const [validLocations, setValidLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [mapError, setMapError] = useState<string>('');
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const isMountedRef = useRef(true);
 
   // Cleanup on unmount
@@ -78,153 +74,60 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     }
   }, []);
 
-  const loadMapboxToken = useCallback(async () => {
-    try {
-      console.log('Loading Mapbox token...');
-      
-      // Use the edge function to get the global setting
-      const { data, error } = await supabase.functions.invoke('get-global-setting', {
-        body: { setting_name: 'mapbox_public_token' }
-      });
-
-      if (error) {
-        console.log('Edge function failed, trying direct query...', error);
-        
-        // Fallback: try direct query if edge function doesn't work
-        const { data: directData, error: directError } = await supabase
-          .from('global_settings' as any)
-          .select('setting_value')
-          .eq('setting_key', 'mapbox_public_token')
-          .single();
-
-        if (directError && directError.code !== 'PGRST116') {
-          console.error('Error loading Mapbox token:', directError);
-          safeSetState(() => {
-            setError('Failed to load map configuration');
-            setIsLoading(false);
-          });
-          return;
-        }
-
-        if (directData && 'setting_value' in directData && directData.setting_value) {
-          safeSetState(() => setMapboxToken(String(directData.setting_value)));
-        } else {
-          safeSetState(() => {
-            setError('Mapbox token not configured. Please configure it in admin settings.');
-            setIsLoading(false);
-          });
-        }
-        return;
-      }
-
-      if (data) {
-        console.log('Mapbox token loaded successfully');
-        safeSetState(() => setMapboxToken(String(data)));
-      } else {
-        safeSetState(() => {
-          setError('Mapbox token not configured. Please configure it in admin settings.');
-          setIsLoading(false);
-        });
-      }
-    } catch (error) {
-      console.error('Error loading Mapbox token:', error);
-      safeSetState(() => {
-        setError('Failed to load map configuration');
-        setIsLoading(false);
-      });
-    }
-  }, [safeSetState]);
-
-  const processLocations = useCallback(async () => {
+  const processLocations = useCallback(() => {
     if (!locations || locations.length === 0) {
       console.log('No locations to process');
       safeSetState(() => {
-        setGeocodedLocations([]);
+        setValidLocations([]);
         setIsLoading(false);
       });
       return;
     }
 
-    console.log('Processing locations for geocoding:', locations.length);
+    console.log('Processing locations:', locations.length);
     safeSetState(() => {
       setIsLoading(true);
       setError('');
-      setProgress({ current: 0, total: locations.length });
     });
 
-    try {
-      // Validate location data
-      const validLocations = locations.filter(location => 
-        location && 
-        typeof location.id === 'string' && 
-        typeof location.address === 'string' &&
-        typeof location.city === 'string' &&
-        typeof location.state === 'string' &&
-        typeof location.zip === 'string'
-      );
+    // Filter locations that have valid coordinates
+    const locationsWithCoords = locations.filter(location => 
+      location && 
+      typeof location.id === 'string' && 
+      typeof location.name === 'string' && 
+      typeof location.address === 'string' &&
+      typeof location.city === 'string' &&
+      typeof location.state === 'string' &&
+      typeof location.zip === 'string' &&
+      typeof location.latitude === 'number' &&
+      typeof location.longitude === 'number' &&
+      !isNaN(location.latitude) &&
+      !isNaN(location.longitude) &&
+      isFinite(location.latitude) &&
+      isFinite(location.longitude)
+    );
 
-      if (validLocations.length === 0) {
-        safeSetState(() => {
-          setError('No valid location data found');
-          setIsLoading(false);
-        });
-        return;
-      }
+    console.log(`Found ${locationsWithCoords.length} locations with valid coordinates out of ${locations.length} total`);
 
-      // Format locations for geocoding
-      const formattedLocations = validLocations.map(location => ({
-        id: location.id,
-        address: `${location.address}, ${location.city}, ${location.state} ${location.zip}`.trim()
-      }));
-
-      console.log('Processing locations for geocoding:', formattedLocations);
-
-      const results = await batchGeocodeWithMapbox(formattedLocations, mapboxToken, (current, total) => {
-        safeSetState(() => setProgress({ current, total }));
+    if (locationsWithCoords.length === 0) {
+      safeSetState(() => {
+        setError(`No locations have coordinates yet. Please edit your locations to refresh their addresses.`);
+        setValidLocations([]);
+        setIsLoading(false);
       });
-
-      console.log('Geocoding results:', results);
-
-      // Merge geocoding results with original location data
-      const updatedLocations = validLocations.map(location => {
-        const geocoded = results.find(r => r.id === location.id);
-        if (geocoded && geocoded.coordinates) {
-          return {
-            ...location,
-            latitude: geocoded.coordinates.lat,
-            longitude: geocoded.coordinates.lng
-          };
-        }
-        return location;
-      });
-
-      const validGeocodedLocations = updatedLocations.filter(loc => 
-        loc.latitude && 
-        loc.longitude && 
-        !isNaN(loc.latitude) && 
-        !isNaN(loc.longitude) &&
-        isFinite(loc.latitude) &&
-        isFinite(loc.longitude)
-      );
-      
-      if (validGeocodedLocations.length === 0) {
-        safeSetState(() => {
-          setError(`Unable to find coordinates for any of the ${locations.length} locations. Please check that the addresses are complete and valid.`);
-          setGeocodedLocations([]);
-        });
-      } else if (validGeocodedLocations.length < locations.length) {
-        console.warn(`Only ${validGeocodedLocations.length} out of ${locations.length} locations could be geocoded`);
-        safeSetState(() => setGeocodedLocations(validGeocodedLocations));
-      } else {
-        safeSetState(() => setGeocodedLocations(validGeocodedLocations));
-      }
-    } catch (error) {
-      console.error('Error processing locations:', error);
-      safeSetState(() => setError('Failed to process location coordinates'));
-    } finally {
-      safeSetState(() => setIsLoading(false));
+      return;
     }
-  }, [locations, mapboxToken, safeSetState]);
+
+    if (locationsWithCoords.length < locations.length) {
+      const missingCount = locations.length - locationsWithCoords.length;
+      console.warn(`${missingCount} locations are missing coordinates`);
+    }
+
+    safeSetState(() => {
+      setValidLocations(locationsWithCoords);
+      setIsLoading(false);
+    });
+  }, [locations, safeSetState]);
 
   const handleMarkerClick = useCallback((location: Location) => {
     try {
@@ -250,22 +153,12 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       setMapError('');
       setError('');
     });
-    if (mapboxToken && locations.length > 0) {
-      processLocations();
-    } else {
-      loadMapboxToken();
-    }
-  }, [mapboxToken, locations, processLocations, loadMapboxToken, safeSetState]);
+    processLocations();
+  }, [processLocations, safeSetState]);
 
   useEffect(() => {
-    loadMapboxToken();
-  }, [loadMapboxToken]);
-
-  useEffect(() => {
-    if (mapboxToken && locations && locations.length > 0) {
-      processLocations();
-    }
-  }, [mapboxToken, locations, processLocations]);
+    processLocations();
+  }, [processLocations]);
 
   if (isLoading) {
     return (
@@ -273,11 +166,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading map...</p>
-          {progress.total > 0 && (
-            <p className="text-sm text-gray-500 mt-2">
-              Processing locations: {progress.current} / {progress.total}
-            </p>
-          )}
         </div>
       </div>
     );
@@ -294,7 +182,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     );
   }
 
-  if (!geocodedLocations || geocodedLocations.length === 0) {
+  if (!validLocations || validLocations.length === 0) {
     return (
       <div className={className} style={{ height }}>
         <MapErrorFallback 
@@ -306,23 +194,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   }
 
   try {
-    // Calculate map center with safety checks
-    const validLocations = geocodedLocations.filter(loc => 
-      loc.latitude && loc.longitude && 
-      !isNaN(loc.latitude) && !isNaN(loc.longitude)
-    );
-
-    if (validLocations.length === 0) {
-      return (
-        <div className={className} style={{ height }}>
-          <MapErrorFallback 
-            error="No valid coordinates found for locations"
-            onRetry={retryMapLoad}
-          />
-        </div>
-      );
-    }
-
+    // Calculate map center
     const centerLat = validLocations.reduce((sum, loc) => sum + (loc.latitude || 0), 0) / validLocations.length;
     const centerLng = validLocations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / validLocations.length;
 

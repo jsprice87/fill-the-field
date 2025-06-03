@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface LocationFormData {
   id?: string;
@@ -23,6 +25,8 @@ export interface LocationFormData {
   phone?: string | null;
   email?: string | null;
   isActive: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface LocationFormProps {
@@ -52,6 +56,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   const [formData, setFormData] = useState<LocationFormData>(
     initialData || defaultLocationData
   );
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   // Reset form when initialData changes
   useEffect(() => {
@@ -71,9 +76,60 @@ const LocationForm: React.FC<LocationFormProps> = ({
     setFormData((prev) => ({ ...prev, isActive: checked }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const geocodeAddress = async (addressData: LocationFormData): Promise<{ latitude: number; longitude: number } | null> => {
+    const fullAddress = `${addressData.address}, ${addressData.city}, ${addressData.state} ${addressData.zip}`;
+    
+    try {
+      console.log('Geocoding address:', fullAddress);
+      setIsGeocoding(true);
+
+      const { data, error } = await supabase.functions.invoke('geocode-address', {
+        body: { address: fullAddress }
+      });
+
+      if (error) {
+        console.error('Geocoding error:', error);
+        toast.error('Failed to verify address coordinates');
+        return null;
+      }
+
+      if (data && data.latitude && data.longitude) {
+        console.log('Geocoding successful:', data);
+        return {
+          latitude: data.latitude,
+          longitude: data.longitude
+        };
+      }
+
+      console.warn('No coordinates returned from geocoding service');
+      toast.warning('Could not verify address coordinates');
+      return null;
+
+    } catch (error) {
+      console.error('Geocoding request failed:', error);
+      toast.error('Address verification failed');
+      return null;
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Geocode the address before submitting
+    const coordinates = await geocodeAddress(formData);
+    
+    // Include coordinates in the form data if geocoding was successful
+    const dataToSubmit = {
+      ...formData,
+      ...(coordinates && { 
+        latitude: coordinates.latitude, 
+        longitude: coordinates.longitude 
+      })
+    };
+
+    onSubmit(dataToSubmit);
   };
 
   return (
@@ -97,6 +153,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               onChange={handleChange}
               placeholder="Soccer Stars Downtown"
               required
+              disabled={isGeocoding}
             />
           </div>
 
@@ -109,6 +166,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               onChange={handleChange}
               placeholder="123 Main St"
               required
+              disabled={isGeocoding}
             />
           </div>
 
@@ -122,6 +180,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
                 onChange={handleChange}
                 placeholder="Denver"
                 required
+                disabled={isGeocoding}
               />
             </div>
             <div className="grid gap-2">
@@ -133,6 +192,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
                 onChange={handleChange}
                 placeholder="CO"
                 required
+                disabled={isGeocoding}
               />
             </div>
           </div>
@@ -146,6 +206,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               onChange={handleChange}
               placeholder="80202"
               required
+              disabled={isGeocoding}
             />
           </div>
 
@@ -157,6 +218,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               value={formData.phone || ''}
               onChange={handleChange}
               placeholder="(303) 555-1234"
+              disabled={isGeocoding}
             />
           </div>
 
@@ -169,6 +231,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               value={formData.email || ''}
               onChange={handleChange}
               placeholder="downtown@soccerstars.com"
+              disabled={isGeocoding}
             />
           </div>
 
@@ -177,16 +240,26 @@ const LocationForm: React.FC<LocationFormProps> = ({
               id="isActive"
               checked={formData.isActive}
               onCheckedChange={handleSwitchChange}
+              disabled={isGeocoding}
             />
             <Label htmlFor="isActive">Location is active</Label>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isGeocoding}>
               Cancel
             </Button>
-            <Button type="submit">
-              {initialData?.id ? 'Update' : 'Create'} Location
+            <Button type="submit" disabled={isGeocoding}>
+              {isGeocoding ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Verifying Address...
+                </>
+              ) : (
+                <>
+                  {initialData?.id ? 'Update' : 'Create'} Location
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

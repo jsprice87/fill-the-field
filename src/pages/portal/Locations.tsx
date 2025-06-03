@@ -135,18 +135,24 @@ const PortalLocations: React.FC = () => {
       if (data.id) {
         // Update existing location
         console.log("Updating existing location:", data.id);
+        const updateData = {
+          name: data.name,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip: data.zip,
+          phone: data.phone || null,
+          email: data.email || null,
+          is_active: data.isActive,
+          ...(data.latitude && data.longitude && {
+            latitude: data.latitude,
+            longitude: data.longitude
+          })
+        };
+
         const { error } = await supabase
           .from('locations')
-          .update({
-            name: data.name,
-            address: data.address,
-            city: data.city,
-            state: data.state,
-            zip: data.zip,
-            phone: data.phone || null,
-            email: data.email || null,
-            is_active: data.isActive
-          })
+          .update(updateData)
           .eq('id', data.id);
         
         if (error) {
@@ -155,7 +161,19 @@ const PortalLocations: React.FC = () => {
         }
         
         setLocations(locations.map(loc => 
-          loc.id === data.id ? { ...loc, name: data.name, address: data.address, city: data.city, state: data.state, zip: data.zip, phone: data.phone, email: data.email, is_active: data.isActive } : loc
+          loc.id === data.id ? { 
+            ...loc, 
+            name: data.name, 
+            address: data.address, 
+            city: data.city, 
+            state: data.state, 
+            zip: data.zip, 
+            phone: data.phone, 
+            email: data.email, 
+            is_active: data.isActive,
+            latitude: data.latitude,
+            longitude: data.longitude
+          } : loc
         ));
         toast.success('Location updated successfully');
       } else {
@@ -165,19 +183,25 @@ const PortalLocations: React.FC = () => {
           franchisee_id: franchiseeId
         });
         
+        const insertData = {
+          name: data.name,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip: data.zip,
+          phone: data.phone || null,
+          email: data.email || null,
+          is_active: data.isActive,
+          franchisee_id: franchiseeId,
+          ...(data.latitude && data.longitude && {
+            latitude: data.latitude,
+            longitude: data.longitude
+          })
+        };
+
         const { data: newLocation, error } = await supabase
           .from('locations')
-          .insert({
-            name: data.name,
-            address: data.address,
-            city: data.city,
-            state: data.state,
-            zip: data.zip,
-            phone: data.phone || null,
-            email: data.email || null,
-            is_active: data.isActive,
-            franchisee_id: franchiseeId
-          })
+          .insert(insertData)
           .select();
         
         if (error) {
