@@ -1,12 +1,12 @@
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapErrorFallback from './MapErrorFallback';
 import MapDebugger from './MapDebugger';
 import MapDebugPanel from './MapDebugPanel';
 import BrowserEnvironmentChecker from './BrowserEnvironmentChecker';
-import ProgressiveMapLoader from './ProgressiveMapLoader';
+import EnhancedMapLoader from './EnhancedMapLoader';
 import { useMapState } from './MapStateManager';
 import { useMapDataProcessor } from './MapDataProcessor';
 import { useMapErrorHandler } from './MapErrorHandler';
@@ -33,6 +33,7 @@ interface Location {
 interface InteractiveMapProps {
   locations: Location[];
   height?: string;
+  aspectRatio?: number; // New prop for aspect ratio control
   franchiseeSlug?: string;
   flowId?: string;
   onLocationSelect?: (location: any) => void;
@@ -42,6 +43,7 @@ interface InteractiveMapProps {
 const InteractiveMap: React.FC<InteractiveMapProps> = ({ 
   locations, 
   height = "400px",
+  aspectRatio, // Default undefined means use height
   onLocationSelect,
   className = ""
 }) => {
@@ -88,7 +90,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   if (state.isLoading) {
     return (
-      <div className={`flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg ${className}`} style={{ height }}>
+      <div className={`flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg ${className}`} 
+           style={{ height: aspectRatio ? undefined : height }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading map...</p>
@@ -100,7 +103,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   if (state.error) {
     return (
-      <div className={className} style={{ height }}>
+      <div className={className} style={{ height: aspectRatio ? undefined : height }}>
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <MapErrorFallback 
             error={state.error} 
@@ -113,7 +116,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   if (!state.validLocations || state.validLocations.length === 0) {
     return (
-      <div className={className} style={{ height }}>
+      <div className={className} style={{ height: aspectRatio ? undefined : height }}>
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <MapErrorFallback 
             error="No locations available to display on map"
@@ -128,9 +131,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     <div className="relative">
       <BrowserEnvironmentChecker onReport={actions.addBrowserInfo} />
       
-      <ProgressiveMapLoader
-        validLocations={state.validLocations}
+      <EnhancedMapLoader
+        locations={state.validLocations}
         height={height}
+        aspectRatio={aspectRatio}
         className={className}
         onLocationSelect={onLocationSelect}
         addDebugLog={actions.addDebugLog}

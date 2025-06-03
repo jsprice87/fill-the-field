@@ -1,8 +1,10 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface SimpleMapContainerProps {
-  height: string;
+  height?: string;
+  aspectRatio?: number; // width/height ratio, e.g., 1 for square, 16/9 for widescreen
   className?: string;
   children: React.ReactNode;
   onContainerReady: (ready: boolean) => void;
@@ -11,6 +13,7 @@ interface SimpleMapContainerProps {
 
 const SimpleMapContainer: React.FC<SimpleMapContainerProps> = ({
   height,
+  aspectRatio,
   className = "",
   children,
   onContainerReady,
@@ -59,9 +62,32 @@ const SimpleMapContainer: React.FC<SimpleMapContainerProps> = ({
     return () => clearTimeout(timer);
   }, [checkAndInitContainer, addDebugLog]);
 
+  // If aspectRatio is provided, use AspectRatio component
+  if (aspectRatio) {
+    return (
+      <AspectRatio ratio={aspectRatio} className={`rounded-lg overflow-hidden border ${className}`}>
+        <div 
+          ref={containerRef} 
+          className="relative w-full h-full"
+          style={{ minHeight: '300px' }}
+        >
+          {isReady ? children : (
+            <div className="h-full flex items-center justify-center bg-gray-100">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                <p className="text-gray-600">Preparing map...</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </AspectRatio>
+    );
+  }
+
+  // Fallback to height-based container
   return (
     <div 
-      style={{ height, minHeight: '300px' }} 
+      style={{ height: height || '400px', minHeight: '300px' }} 
       className={`rounded-lg overflow-hidden border ${className}`}
     >
       <div 
