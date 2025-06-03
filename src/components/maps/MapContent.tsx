@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 
 interface Location {
@@ -58,6 +58,9 @@ const MapContent: React.FC<MapContentProps> = ({
   onMapError,
   addDebugLog
 }) => {
+  const [renderAttempts, setRenderAttempts] = useState(0);
+  const [lastError, setLastError] = useState<string>('');
+
   const handleMarkerClick = useCallback((location: Location) => {
     try {
       addDebugLog(`Marker clicked for location: ${location.name}`);
@@ -74,7 +77,44 @@ const MapContent: React.FC<MapContentProps> = ({
     }
   }, [onLocationSelect, addDebugLog]);
 
-  addDebugLog(`Attempting to render MapContainer with ${validLocations.length} markers at center: ${centerLat}, ${centerLng}`);
+  // Progressive validation before rendering
+  useEffect(() => {
+    addDebugLog('MapContent: Starting progressive validation...');
+    
+    // Validate center coordinates
+    if (isNaN(centerLat) || isNaN(centerLng) || !isFinite(centerLat) || !isFinite(centerLng)) {
+      const error = `Invalid center coordinates: ${centerLat}, ${centerLng}`;
+      addDebugLog(`❌ ${error}`);
+      onMapError(error);
+      return;
+    }
+    
+    // Validate locations
+    if (!validLocations || validLocations.length === 0) {
+      const error = 'No valid locations provided';
+      addDebugLog(`❌ ${error}`);
+      onMapError(error);
+      return;
+    }
+    
+    // Check for location coordinate validity
+    const invalidLocations = validLocations.filter(loc => 
+      !loc.latitude || !loc.longitude || 
+      isNaN(loc.latitude) || isNaN(loc.longitude) ||
+      !isFinite(loc.latitude) || !isFinite(loc.longitude)
+    );
+    
+    if (invalidLocations.length === validLocations.length) {
+      const error = 'All locations have invalid coordinates';
+      addDebugLog(`❌ ${error}`);
+      onMapError(error);
+      return;
+    }
+    
+    addDebugLog('✅ Progressive validation passed');
+  }, [centerLat, centerLng, validLocations, onMapError, addDebugLog]);
+
+  addDebugLog(`Attempting to render MapContainer (attempt ${renderAttempts + 1}) with ${validLocations.length} markers at center: ${centerLat}, ${centerLng}`);
 
   try {
     return (
@@ -86,48 +126,81 @@ const MapContent: React.FC<MapContentProps> = ({
           addDebugLog('MapContainer whenReady callback fired');
           onMapReady();
         }}
+        whenCreated={(mapInstance) => {
+          addDebugLog('MapContainer created successfully');
+          console.log('Map instance created:', mapInstance);
+        }}
       >
         <MapEventHandler onError={onMapError} addDebugLog={addDebugLog} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          eventHandlers={{
+            loading: () => addDebugLog('TileLayer loading started'),
+            load: () => addDebugLog('TileLayer loaded successfully'),
+            tileerror: (e) => {
+              addDebugLog(`TileLayer tile error: ${e.error}`);
+              console.error('TileLayer tile error:', e);
+            }
+          }}
         />
-        {validLocations.map((location) => {
-          addDebugLog(`Rendering marker for: ${location.name} at ${location.latitude}, ${location.longitude}`);
-          return (
-            <Marker
-              key={location.id}
-              position={[location.latitude!, location.longitude!]}
-              eventHandlers={{
-                click: () => handleMarkerClick(location)
-              }}
-            >
-              <Popup>
-                <div className="p-2">
-                  <h3 className="font-semibold">{location.name}</h3>
-                  <p className="text-sm text-gray-600">
-                    {location.address}<br />
-                    {location.city}, {location.state} {location.zip}
-                  </p>
-                  {onLocationSelect && (
-                    <button 
-                      onClick={() => handleMarkerClick(location)}
-                      className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
-                    >
-                      Select Location
-                    </button>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
+        {validLocations
+          .filter(location => 
+            location.latitude && location.longitude && 
+            !isNaN(location.latitude) && !isNaN(location.longitude) &&
+            isFinite(location.latitude) && isFinite(location.longitude)
+          )
+          .map((location) => {
+            addDebugLog(`Rendering marker for: ${location.name} at ${location.latitude}, ${location.longitude}`);
+            return (
+              <Marker
+                key={location.id}
+                position={[location.latitude!, location.longitude!]}
+                eventHandlers={{
+                  click: () => handleMarkerClick(location)
+                }}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-semibold">{location.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      {location.address}<br />
+                      {location.city}, {location.state} {location.zip}
+                    </p>
+                    {onLocationSelect && (
+                      <button 
+                        onClick={() => handleMarkerClick(location)}
+                        className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                      >
+                        Select Location
+                      </button>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
       </MapContainer>
     );
   } catch (renderError) {
-    addDebugLog(`MapContent render error: ${renderError}`);
+    const errorMessage = `MapContent render error: ${renderError}`;
+    addDebugLog(errorMessage);
     console.error('MapContent render error:', renderError);
-    onMapError(`Map rendering failed: ${renderError}`);
+    
+    // Track render attempts and prevent infinite loops
+    setRenderAttempts(prev => prev + 1);
+    setLastError(errorMessage);
+    
+    if (renderAttempts < 3) {
+      // Try to render again after a delay
+      setTimeout(() => {
+        addDebugLog(`Retrying MapContent render (attempt ${renderAttempts + 2})`);
+      }, 1000);
+    } else {
+      addDebugLog('Max render attempts reached, failing over to fallback');
+      onMapError(`Map rendering failed after ${renderAttempts + 1} attempts: ${renderError}`);
+    }
+    
     return null;
   }
 };

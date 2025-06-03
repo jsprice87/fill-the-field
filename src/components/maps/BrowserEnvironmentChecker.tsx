@@ -1,6 +1,5 @@
 
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 
 interface BrowserEnvironmentCheckerProps {
@@ -18,13 +17,19 @@ const BrowserEnvironmentChecker: React.FC<BrowserEnvironmentCheckerProps> = ({ o
       onReport(`Leaflet available: ${typeof L !== 'undefined'}`);
       onReport(`Leaflet version: ${L.version || 'unknown'}`);
       
-      // Check React-Leaflet components
-      onReport(`MapContainer available: ${typeof MapContainer !== 'undefined'}`);
-      onReport(`TileLayer available: ${typeof TileLayer !== 'undefined'}`);
+      // Check React-Leaflet components availability by checking if they exist on window
+      const hasReactLeaflet = typeof window !== 'undefined' && 
+        document.querySelector('script[src*="react-leaflet"]') !== null ||
+        window.React !== undefined; // Basic check
+      onReport(`React-Leaflet context available: ${hasReactLeaflet}`);
       
       // Check CSS loading
-      const leafletCSS = document.querySelector('link[href*="leaflet"]');
+      const leafletCSS = document.querySelector('link[href*="leaflet"], style[data-styled*="leaflet"]');
       onReport(`Leaflet CSS loaded: ${!!leafletCSS}`);
+      
+      // Check for any existing leaflet containers
+      const existingContainers = document.querySelectorAll('.leaflet-container');
+      onReport(`Existing leaflet containers: ${existingContainers.length}`);
       
       // Check window dimensions
       onReport(`Window size: ${window.innerWidth}x${window.innerHeight}`);

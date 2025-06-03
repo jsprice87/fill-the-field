@@ -8,6 +8,8 @@ import BrowserEnvironmentChecker from './BrowserEnvironmentChecker';
 import MapContainerWrapper from './MapContainerWrapper';
 import MapContent from './MapContent';
 import SimpleFallbackMap from './SimpleFallbackMap';
+import MapErrorBoundary from './MapErrorBoundary';
+import LeafletValidator from './LeafletValidator';
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -52,6 +54,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [mapInitialized, setMapInitialized] = useState(false);
   const [containerReady, setContainerReady] = useState(false);
   const [useFallbackMap, setUseFallbackMap] = useState(false);
+  const [leafletValid, setLeafletValid] = useState(false);
+  const [validationIssues, setValidationIssues] = useState<string[]>([]);
+  const [initializationStep, setInitializationStep] = useState<string>('starting');
   const isMountedRef = useRef(true);
 
   // Add debug logging function
@@ -69,6 +74,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   // Cleanup on unmount
   useEffect(() => {
     addDebugLog('Map component mounted');
+    setInitializationStep('mounted');
     return () => {
       addDebugLog('Map component unmounting');
       isMountedRef.current = false;
@@ -82,14 +88,35 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     }
   }, []);
 
+  // Handle Leaflet validation
+  const handleLeafletValidation = useCallback((isValid: boolean, issues: string[]) => {
+    addDebugLog(`Leaflet validation result: ${isValid ? 'VALID' : 'INVALID'}`);
+    if (issues.length > 0) {
+      addDebugLog(`Validation issues: ${issues.join(', ')}`);
+    }
+    
+    setLeafletValid(isValid);
+    setValidationIssues(issues);
+    setInitializationStep(isValid ? 'leaflet-valid' : 'leaflet-invalid');
+    
+    if (!isValid) {
+      // If Leaflet validation fails, switch to fallback immediately
+      addDebugLog('Leaflet validation failed, switching to fallback map');
+      setUseFallbackMap(true);
+      setError(`Leaflet validation failed: ${issues.join(', ')}`);
+    }
+  }, [addDebugLog]);
+
   const processLocations = useCallback(() => {
     addDebugLog(`Processing ${locations?.length || 0} locations`);
+    setInitializationStep('processing-locations');
     
     if (!locations || locations.length === 0) {
       addDebugLog('No locations to process');
       safeSetState(() => {
         setValidLocations([]);
         setIsLoading(false);
+        setInitializationStep('no-locations');
       });
       return;
     }
@@ -133,6 +160,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         setError(errorMsg);
         setValidLocations([]);
         setIsLoading(false);
+        setInitializationStep('no-valid-locations');
       });
       return;
     }
@@ -140,6 +168,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     safeSetState(() => {
       setValidLocations(locationsWithCoords);
       setIsLoading(false);
+      setInitializationStep('locations-processed');
     });
   }, [locations, safeSetState, addDebugLog]);
 
@@ -150,6 +179,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     safeSetState(() => {
       setMapError(errorMessage);
       setUseFallbackMap(true);
+      setInitializationStep('fallback-active');
     });
   }, [safeSetState, addDebugLog]);
 
@@ -161,6 +191,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       setUseFallbackMap(false);
       setMapInitialized(false);
       setContainerReady(false);
+      setLeafletValid(false);
+      setValidationIssues([]);
+      setInitializationStep('retrying');
     });
     processLocations();
   }, [processLocations, safeSetState, addDebugLog]);
@@ -168,11 +201,13 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const handleMapReady = useCallback(() => {
     addDebugLog('MapContainer ready callback triggered');
     setMapInitialized(true);
+    setInitializationStep('map-ready');
   }, [addDebugLog]);
 
   const handleContainerReady = useCallback((ready: boolean) => {
     addDebugLog(`Container ready status: ${ready}`);
     setContainerReady(ready);
+    setInitializationStep(ready ? 'container-ready' : 'container-failed');
   }, [addDebugLog]);
 
   useEffect(() => {
@@ -186,6 +221,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading map...</p>
+          <div className="mt-2 text-xs text-gray-500">Step: {initializationStep}</div>
         </div>
       </div>
     );
@@ -240,8 +276,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     return (
       <div className="relative">
         <BrowserEnvironmentChecker onReport={addBrowserInfo} />
+        <LeafletValidator onValidation={handleLeafletValidation} addDebugLog={addDebugLog} />
         
-        {useFallbackMap ? (
+        {useFallbackMap || !leafletValid ? (
           <div className={`border rounded-lg overflow-hidden ${className}`} style={{ height }}>
             <div className="h-full w-full">
               <SimpleFallbackMap
@@ -251,7 +288,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
               />
             </div>
             <div className="absolute top-2 right-2 bg-yellow-100 border border-yellow-300 px-2 py-1 rounded text-xs">
-              Fallback Map Active
+              {!leafletValid ? `Leaflet Issues: ${validationIssues.join(', ')}` : 'Fallback Map Active'}
             </div>
           </div>
         ) : (
@@ -261,15 +298,17 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
             onContainerReady={handleContainerReady}
             addDebugLog={addDebugLog}
           >
-            <MapContent
-              validLocations={validLocations}
-              centerLat={centerLat}
-              centerLng={centerLng}
-              onLocationSelect={onLocationSelect}
-              onMapReady={handleMapReady}
-              onMapError={handleMapError}
-              addDebugLog={addDebugLog}
-            />
+            <MapErrorBoundary onError={handleMapError} addDebugLog={addDebugLog}>
+              <MapContent
+                validLocations={validLocations}
+                centerLat={centerLat}
+                centerLng={centerLng}
+                onLocationSelect={onLocationSelect}
+                onMapReady={handleMapReady}
+                onMapError={handleMapError}
+                addDebugLog={addDebugLog}
+              />
+            </MapErrorBoundary>
           </MapContainerWrapper>
         )}
         
@@ -281,6 +320,16 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           containerReady={containerReady}
           mapInitialized={mapInitialized}
         />
+        
+        {/* Enhanced debug info overlay */}
+        <div className="absolute bottom-16 left-2 bg-blue-900 bg-opacity-90 text-white text-xs p-2 rounded max-w-xs">
+          <div className="font-bold">🔧 Init Status:</div>
+          <div>Step: {initializationStep}</div>
+          <div>Leaflet: {leafletValid ? '✅' : '❌'}</div>
+          <div>Container: {containerReady ? '✅' : '❌'}</div>
+          <div>Map: {mapInitialized ? '✅' : '❌'}</div>
+          <div>Fallback: {useFallbackMap ? '🔄' : '❌'}</div>
+        </div>
       </div>
     );
   } catch (renderError) {
@@ -295,6 +344,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           />
           <div className="mt-4 text-xs text-gray-600 border-t pt-2">
             <div className="text-red-600">Render Error: {String(renderError)}</div>
+            <div>Init Step: {initializationStep}</div>
           </div>
         </div>
       </div>
