@@ -4,13 +4,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapErrorFallback from './MapErrorFallback';
 import MapDebugger from './MapDebugger';
-import BrowserEnvironmentChecker from './BrowserEnvironmentChecker';
-import MapContainerWrapper from './MapContainerWrapper';
-import MapContent from './MapContent';
-import SimpleFallbackMap from './SimpleFallbackMap';
-import MapErrorBoundary from './MapErrorBoundary';
-import LeafletValidator from './LeafletValidator';
 import MapDebugPanel from './MapDebugPanel';
+import BrowserEnvironmentChecker from './BrowserEnvironmentChecker';
+import ProgressiveMapLoader from './ProgressiveMapLoader';
 import { useMapState } from './MapStateManager';
 import { useMapDataProcessor } from './MapDataProcessor';
 import { useMapErrorHandler } from './MapErrorHandler';
@@ -61,7 +57,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     setInitializationStep: actions.setInitializationStep
   });
 
-  const { handleMapError, retryMapLoad, handleLeafletValidation } = useMapErrorHandler({
+  const { handleMapError, retryMapLoad } = useMapErrorHandler({
     addDebugLog: actions.addDebugLog,
     safeSetState: actions.safeSetState,
     setMapError: actions.setMapError,
@@ -77,28 +73,16 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   // Cleanup on unmount
   useEffect(() => {
-    actions.addDebugLog('Map component mounted');
+    actions.addDebugLog('InteractiveMap component mounted');
     actions.setInitializationStep('mounted');
     return () => {
-      actions.addDebugLog('Map component unmounting');
+      actions.addDebugLog('InteractiveMap component unmounting');
       actions.isMountedRef.current = false;
     };
   }, [actions]);
 
-  const handleMapReady = useCallback(() => {
-    actions.addDebugLog('MapContainer ready callback triggered');
-    actions.setMapInitialized(true);
-    actions.setInitializationStep('map-ready');
-  }, [actions]);
-
-  const handleContainerReady = useCallback((ready: boolean) => {
-    actions.addDebugLog(`Container ready status: ${ready}`);
-    actions.setContainerReady(ready);
-    actions.setInitializationStep(ready ? 'container-ready' : 'container-failed');
-  }, [actions]);
-
   useEffect(() => {
-    actions.addDebugLog('useEffect triggered for processLocations');
+    actions.addDebugLog('Processing locations...');
     processLocations();
   }, [processLocations, actions]);
 
@@ -114,7 +98,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     );
   }
 
-  if (state.error && !state.useFallbackMap) {
+  if (state.error) {
     return (
       <div className={className} style={{ height }}>
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -140,105 +124,41 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     );
   }
 
-  try {
-    // Calculate map center
-    const centerLat = state.validLocations.reduce((sum, loc) => sum + (loc.latitude || 0), 0) / state.validLocations.length;
-    const centerLng = state.validLocations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / state.validLocations.length;
-
-    actions.addDebugLog(`Calculated center: ${centerLat}, ${centerLng}`);
-
-    // Validate calculated center
-    if (isNaN(centerLat) || isNaN(centerLng) || !isFinite(centerLat) || !isFinite(centerLng)) {
-      actions.addDebugLog(`Invalid center coordinates: lat=${centerLat}, lng=${centerLng}`);
-      return (
-        <div className={className} style={{ height }}>
-          <MapErrorFallback 
-            error="Unable to calculate map center"
-            onRetry={retryMapLoad}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative">
-        <BrowserEnvironmentChecker onReport={actions.addBrowserInfo} />
-        <LeafletValidator onValidation={handleLeafletValidation} addDebugLog={actions.addDebugLog} />
-        
-        {state.useFallbackMap || !state.leafletValid ? (
-          <div className={`border rounded-lg overflow-hidden ${className}`} style={{ height }}>
-            <div className="h-full w-full">
-              <SimpleFallbackMap
-                locations={state.validLocations}
-                onLocationSelect={onLocationSelect}
-                addDebugLog={actions.addDebugLog}
-              />
-            </div>
-            <div className="absolute top-2 right-2 bg-yellow-100 border border-yellow-300 px-2 py-1 rounded text-xs">
-              {!state.leafletValid ? `Leaflet Issues: ${state.validationIssues.join(', ')}` : 'Fallback Map Active'}
-            </div>
-          </div>
-        ) : (
-          <MapContainerWrapper
-            height={height}
-            className={className}
-            onContainerReady={handleContainerReady}
-            addDebugLog={actions.addDebugLog}
-          >
-            <MapErrorBoundary onError={handleMapError} addDebugLog={actions.addDebugLog}>
-              <MapContent
-                validLocations={state.validLocations}
-                centerLat={centerLat}
-                centerLng={centerLng}
-                onLocationSelect={onLocationSelect}
-                onMapReady={handleMapReady}
-                onMapError={handleMapError}
-                addDebugLog={actions.addDebugLog}
-              />
-            </MapErrorBoundary>
-          </MapContainerWrapper>
-        )}
-        
-        <MapDebugger
-          debugInfo={state.debugInfo}
-          browserInfo={state.browserInfo}
-          validLocations={state.validLocations}
-          locations={locations}
-          containerReady={state.containerReady}
-          mapInitialized={state.mapInitialized}
-        />
-        
-        <MapDebugPanel
-          debugInfo={state.debugInfo}
-          browserInfo={state.browserInfo}
-          validLocations={state.validLocations}
-          locations={locations}
-          containerReady={state.containerReady}
-          mapInitialized={state.mapInitialized}
-          initializationStep={state.initializationStep}
-          leafletValid={state.leafletValid}
-          useFallbackMap={state.useFallbackMap}
-        />
-      </div>
-    );
-  } catch (renderError) {
-    actions.addDebugLog(`Render error: ${renderError}`);
-    console.error('Error rendering map:', renderError);
-    return (
-      <div className={className} style={{ height }}>
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <MapErrorFallback 
-            error="Map rendering failed"
-            onRetry={retryMapLoad}
-          />
-          <div className="mt-4 text-xs text-gray-600 border-t pt-2">
-            <div className="text-red-600">Render Error: {String(renderError)}</div>
-            <div>Init Step: {state.initializationStep}</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div className="relative">
+      <BrowserEnvironmentChecker onReport={actions.addBrowserInfo} />
+      
+      <ProgressiveMapLoader
+        validLocations={state.validLocations}
+        height={height}
+        className={className}
+        onLocationSelect={onLocationSelect}
+        addDebugLog={actions.addDebugLog}
+        onMapError={handleMapError}
+      />
+      
+      <MapDebugger
+        debugInfo={state.debugInfo}
+        browserInfo={state.browserInfo}
+        validLocations={state.validLocations}
+        locations={locations}
+        containerReady={state.containerReady}
+        mapInitialized={state.mapInitialized}
+      />
+      
+      <MapDebugPanel
+        debugInfo={state.debugInfo}
+        browserInfo={state.browserInfo}
+        validLocations={state.validLocations}
+        locations={locations}
+        containerReady={state.containerReady}
+        mapInitialized={state.mapInitialized}
+        initializationStep={state.initializationStep}
+        leafletValid={state.leafletValid}
+        useFallbackMap={state.useFallbackMap}
+      />
+    </div>
+  );
 };
 
 export default InteractiveMap;
