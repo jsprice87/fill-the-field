@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
+import { MetaPixelProvider, useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
@@ -10,13 +12,19 @@ interface BookingLandingProps {
   franchiseeId?: string;
 }
 
-const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranchiseeId }) => {
+const BookingLandingContent: React.FC<BookingLandingProps> = ({ franchiseeId: propFranchiseeId }) => {
   const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const { createFlow } = useBookingFlow();
+  const { trackEvent } = useMetaPixelTracking();
   const [isCreatingFlow, setIsCreatingFlow] = useState(false);
 
   const resolvedFranchiseeId = propFranchiseeId;
+
+  const handleLeadCreated = () => {
+    // Track Meta Pixel Lead event
+    trackEvent('Lead');
+  };
 
   const handleFormSuccess = async (leadId: string, leadData: any) => {
     if (!resolvedFranchiseeId || !franchiseeSlug) {
@@ -127,6 +135,7 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
                 <QuickCaptureForm 
                   franchiseeId={resolvedFranchiseeId}
                   onSuccess={handleFormSuccess}
+                  onLeadCreated={handleLeadCreated}
                   showTitle={true}
                 />
               )}
@@ -307,6 +316,25 @@ const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranc
         </div>
       </footer>
     </div>
+  );
+};
+
+const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId }) => {
+  if (!franchiseeId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Account Not Found</h1>
+          <p className="font-poppins text-brand-grey">The requested account could not be found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <MetaPixelProvider franchiseeId={franchiseeId}>
+      <BookingLandingContent franchiseeId={franchiseeId} />
+    </MetaPixelProvider>
   );
 };
 

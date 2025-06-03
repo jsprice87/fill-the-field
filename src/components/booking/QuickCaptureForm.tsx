@@ -12,12 +12,14 @@ interface QuickCaptureFormProps {
   franchiseeId: string;
   onSuccess?: (leadId: string, leadData: any) => void;
   showTitle?: boolean;
+  onLeadCreated?: () => void; // New prop for Meta Pixel tracking
 }
 
 export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   franchiseeId,
   onSuccess,
-  showTitle = false
+  showTitle = false,
+  onLeadCreated
 }) => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -81,6 +83,11 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
       console.log('Lead created successfully:', lead);
       toast.success('Information saved! Let\'s find classes near you.');
+      
+      // Track Meta Pixel Lead event
+      if (onLeadCreated) {
+        onLeadCreated();
+      }
       
       if (onSuccess) {
         onSuccess(lead.id, lead);
