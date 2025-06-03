@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export const useDeleteLead = () => {
+export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = false) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -47,21 +47,43 @@ export const useDeleteLead = () => {
       if (error) throw error;
       
       console.log('Lead deleted successfully');
+      return leadId;
+    },
+    onMutate: async (leadId: string) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['leads', franchiseeId, includeArchived] });
+      
+      // Snapshot the previous value
+      const previousLeads = queryClient.getQueryData(['leads', franchiseeId, includeArchived]);
+      
+      // Optimistically update to remove the lead
+      queryClient.setQueryData(['leads', franchiseeId, includeArchived], (old: any) => {
+        if (!old) return old;
+        return old.filter((lead: any) => lead.id !== leadId);
+      });
+      
+      // Return a context object with the snapshotted value
+      return { previousLeads };
+    },
+    onError: (err, leadId, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousLeads) {
+        queryClient.setQueryData(['leads', franchiseeId, includeArchived], context.previousLeads);
+      }
+      console.error('Error deleting lead:', err);
+      toast.error('Failed to delete lead');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-stats', franchiseeId] });
       toast.success('Lead deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Error deleting lead:', error);
-      toast.error('Failed to delete lead');
     },
   });
 };
 
-export const useDeleteBooking = () => {
+export const useDeleteBooking = (franchiseeId?: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -109,15 +131,44 @@ export const useDeleteBooking = () => {
       }
 
       console.log('Appointment and booking deleted successfully');
+      return appointmentId;
+    },
+    onMutate: async (appointmentId: string) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['bookings', franchiseeId] });
+      
+      // Snapshot the previous value
+      const previousBookings = queryClient.getQueryData(['bookings', franchiseeId, false]);
+      const previousArchivedBookings = queryClient.getQueryData(['bookings', franchiseeId, true]);
+      
+      // Optimistically update to remove the booking
+      queryClient.setQueryData(['bookings', franchiseeId, false], (old: any) => {
+        if (!old) return old;
+        return old.filter((booking: any) => booking.id !== appointmentId);
+      });
+      
+      queryClient.setQueryData(['bookings', franchiseeId, true], (old: any) => {
+        if (!old) return old;
+        return old.filter((booking: any) => booking.id !== appointmentId);
+      });
+      
+      return { previousBookings, previousArchivedBookings };
+    },
+    onError: (err, appointmentId, context) => {
+      // Roll back on error
+      if (context?.previousBookings) {
+        queryClient.setQueryData(['bookings', franchiseeId, false], context.previousBookings);
+      }
+      if (context?.previousArchivedBookings) {
+        queryClient.setQueryData(['bookings', franchiseeId, true], context.previousArchivedBookings);
+      }
+      console.error('Error deleting booking:', err);
+      toast.error('Failed to delete booking');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings', franchiseeId] });
+      queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
       toast.success('Booking deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Error deleting booking:', error);
-      toast.error('Failed to delete booking');
     },
   });
 };

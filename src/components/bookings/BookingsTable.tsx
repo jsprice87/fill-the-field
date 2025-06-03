@@ -3,6 +3,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Baby, Search, Archive, Trash2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import StatusSelect from '../leads/StatusSelect';
 import StatusBadge from '../leads/StatusBadge';
 import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
@@ -38,12 +40,16 @@ interface BookingsTableProps {
 }
 
 const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, showArchived }) => {
+  const [searchParams] = useSearchParams();
+  const { data: franchiseeData } = useFranchiseeData();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
 
-  const archiveBooking = useArchiveBooking();
-  const unarchiveBooking = useUnarchiveBooking();
-  const deleteBooking = useDeleteBooking();
+  const includeArchived = searchParams.get('archived') === 'true';
+
+  const archiveBooking = useArchiveBooking(franchiseeData?.id, includeArchived);
+  const unarchiveBooking = useUnarchiveBooking(franchiseeData?.id, includeArchived);
+  const deleteBooking = useDeleteBooking(franchiseeData?.id);
 
   const formatAge = (birthDateString: string, ageNumber: number) => {
     if (birthDateString) {

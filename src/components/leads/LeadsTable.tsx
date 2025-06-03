@@ -3,8 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Phone, Mail, MapPin, Calendar, Search, Archive, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lead } from '@/hooks/useLeads';
+import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import StatusSelect from './StatusSelect';
 import { useArchiveLead, useUnarchiveLead } from '@/hooks/useArchiveActions';
 import { useDeleteLead } from '@/hooks/useDeleteActions';
@@ -18,12 +19,16 @@ interface LeadsTableProps {
 
 const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchived }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { data: franchiseeData } = useFranchiseeData();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
 
-  const archiveLead = useArchiveLead();
-  const unarchiveLead = useUnarchiveLead();
-  const deleteLead = useDeleteLead();
+  const includeArchived = searchParams.get('archived') === 'true';
+
+  const archiveLead = useArchiveLead(franchiseeData?.id, includeArchived);
+  const unarchiveLead = useUnarchiveLead(franchiseeData?.id, includeArchived);
+  const deleteLead = useDeleteLead(franchiseeData?.id, includeArchived);
 
   const getStatusBadge = (status: string) => {
     const variants = {
