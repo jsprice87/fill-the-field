@@ -202,7 +202,7 @@ export const navItems = [
     icon: <CalendarIcon className="h-4 w-4" />,
     page: <DefaultBookingRedirect />,
   },
-  // Franchisee slug-based portal routes - these are what the login system redirects to
+  // Franchisee slug-based portal routes - FIXED: Main classes route now points to ClassesList
   {
     title: "Franchisee Portal Dashboard",
     to: "/:franchiseeSlug/portal/dashboard",
@@ -237,7 +237,7 @@ export const navItems = [
     title: "Franchisee Portal Classes",
     to: "/:franchiseeSlug/portal/classes",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalClasses /></DashboardLayout></ProtectedRoute></SlugResolver>,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><ClassesList /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   {
     title: "Franchisee Classes List",

@@ -22,8 +22,10 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
   useEffect(() => {
     const resolveSlug = async () => {
       try {
+        console.log('SlugResolver: Starting resolution for slug:', franchiseeSlug);
+        
         if (!franchiseeSlug) {
-          console.error('No franchiseeSlug in URL parameters');
+          console.error('SlugResolver: No franchiseeSlug in URL parameters');
           toast.error('Invalid URL - missing franchisee identifier');
           navigate('/login');
           return;
@@ -32,21 +34,25 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
         // Check if franchiseeSlug is a UUID (meaning it's not a slug)
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (uuidPattern.test(franchiseeSlug)) {
-          console.log('Detected UUID in URL, checking for corresponding slug...');
+          console.log('SlugResolver: Detected UUID in URL, checking for corresponding slug...');
           
           // It's already a UUID, but let's check if there's a slug for it
           const { data: { session } } = await supabase.auth.getSession();
           
           // Only redirect if this is the currently logged in user
           if (session?.user && session.user.id === franchiseeSlug) {
-            const { data } = await supabase
+            const { data, error } = await supabase
               .from('franchisees')
               .select('slug')
               .eq('user_id', franchiseeSlug)
               .single();
               
+            if (error) {
+              console.error('SlugResolver: Error fetching franchisee data:', error);
+            }
+            
             if (data?.slug) {
-              console.log('Found slug for UUID, redirecting to slug-based URL');
+              console.log('SlugResolver: Found slug for UUID, redirecting to slug-based URL');
               // Redirect to the slug-based URL
               const path = window.location.pathname.replace(franchiseeSlug, data.slug);
               navigate(path, { replace: true });
@@ -55,25 +61,52 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
           }
           
           // If no slug found or not the current user, just use the ID
-          console.log('Using UUID as franchisee ID');
+          console.log('SlugResolver: Using UUID as franchisee ID');
           setResolvedId(franchiseeSlug);
         } else {
-          console.log('Resolving slug to franchisee ID:', franchiseeSlug);
+          console.log('SlugResolver: Resolving slug to franchisee ID:', franchiseeSlug);
           // It's a slug, resolve it to a franchisee ID
           const id = await getFranchiseeIdFromSlug(franchiseeSlug);
           
           if (id) {
-            console.log('Successfully resolved slug to ID:', id);
+            console.log('SlugResolver: Successfully resolved slug to ID:', id);
             setResolvedId(id);
           } else {
-            // Invalid slug
-            console.error('Failed to resolve slug:', franchiseeSlug);
+            // Invalid slug - check if user is authenticated and has a franchisee record
+            console.error('SlugResolver: Failed to resolve slug:', franchiseeSlug);
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+              console.log('SlugResolver: User is authenticated, checking for franchisee record...');
+              
+              const { data: franchisee, error } = await supabase
+                .from('franchisees')
+                .select('id, slug')
+                .eq('user_id', session.user.id)
+                .single();
+              
+              if (franchisee && !error) {
+                console.log('SlugResolver: Found franchisee record:', franchisee);
+                
+                if (franchisee.slug && franchisee.slug !== franchiseeSlug) {
+                  console.log('SlugResolver: Redirecting to correct slug:', franchisee.slug);
+                  const path = window.location.pathname.replace(franchiseeSlug, franchisee.slug);
+                  navigate(path, { replace: true });
+                  return;
+                } else {
+                  console.log('SlugResolver: Using franchisee ID directly');
+                  setResolvedId(franchisee.id);
+                  return;
+                }
+              }
+            }
+            
             toast.error('Invalid account URL - franchisee not found');
             navigate('/login');
           }
         }
       } catch (error) {
-        console.error('Error resolving slug:', error);
+        console.error('SlugResolver: Error resolving slug:', error);
         toast.error('Error loading account information');
         navigate('/login');
       } finally {

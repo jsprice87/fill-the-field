@@ -28,10 +28,14 @@ interface ClassWithDetails {
   }[];
 }
 
+interface ClassesListProps {
+  franchiseeId?: string;
+}
+
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const ClassesList: React.FC = () => {
-  const { franchiseeId } = useParams();
+const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeId }) => {
+  const { franchiseeSlug } = useParams();
   const [classes, setClasses] = useState<ClassWithDetails[]>([]);
   const [filteredClasses, setFilteredClasses] = useState<ClassWithDetails[]>([]);
   const [locations, setLocations] = useState<{id: string, name: string}[]>([]);
@@ -39,23 +43,69 @@ const ClassesList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
+  const [currentFranchiseeId, setCurrentFranchiseeId] = useState<string | null>(propFranchiseeId || null);
+
+  console.log('ClassesList: Rendered with props franchiseeId:', propFranchiseeId);
+  console.log('ClassesList: URL franchiseeSlug:', franchiseeSlug);
 
   // Get the current slug for navigation
   useEffect(() => {
-    if (franchiseeId) {
-      if (!franchiseeId.includes('-')) {
-        getSlugFromFranchiseeId(franchiseeId).then(slug => {
-          setCurrentSlug(slug || franchiseeId);
+    if (franchiseeSlug) {
+      if (!franchiseeSlug.includes('-')) {
+        getSlugFromFranchiseeId(franchiseeSlug).then(slug => {
+          setCurrentSlug(slug || franchiseeSlug);
         });
       } else {
-        setCurrentSlug(franchiseeId);
+        setCurrentSlug(franchiseeSlug);
       }
     }
-  }, [franchiseeId]);
+  }, [franchiseeSlug]);
+
+  // Set franchisee ID from props or fetch from session
+  useEffect(() => {
+    if (propFranchiseeId) {
+      console.log('ClassesList: Using franchiseeId from props:', propFranchiseeId);
+      setCurrentFranchiseeId(propFranchiseeId);
+      return;
+    }
+
+    const getFranchiseeId = async () => {
+      try {
+        console.log('ClassesList: Getting franchisee ID from session...');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          toast.error("Authentication required");
+          return;
+        }
+
+        const { data: franchisee, error } = await supabase
+          .from('franchisees')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (error || !franchisee) {
+          console.error("ClassesList: Error fetching franchisee:", error);
+          toast.error("Unable to find franchisee account");
+          return;
+        }
+        
+        console.log('ClassesList: Found franchiseeId from session:', franchisee.id);
+        setCurrentFranchiseeId(franchisee.id);
+      } catch (error) {
+        console.error("ClassesList: Error getting franchisee:", error);
+        toast.error("Failed to authenticate");
+      }
+    };
+
+    getFranchiseeId();
+  }, [propFranchiseeId]);
 
   useEffect(() => {
-    loadClassesAndLocations();
-  }, []);
+    if (currentFranchiseeId) {
+      loadClassesAndLocations();
+    }
+  }, [currentFranchiseeId]);
 
   useEffect(() => {
     filterClasses();
@@ -63,34 +113,18 @@ const ClassesList: React.FC = () => {
 
   const loadClassesAndLocations = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        toast.error("Authentication required");
-        return;
-      }
-
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .single();
-      
-      if (franchiseeError || !franchisee) {
-        console.error("Error fetching franchisee:", franchiseeError);
-        toast.error("Unable to find franchisee account");
-        return;
-      }
+      console.log('ClassesList: Loading data for franchiseeId:', currentFranchiseeId);
 
       // Load locations
       const { data: locationsData, error: locationsError } = await supabase
         .from('locations')
         .select('id, name')
-        .eq('franchisee_id', franchisee.id)
+        .eq('franchisee_id', currentFranchiseeId)
         .eq('is_active', true)
         .order('name');
 
       if (locationsError) {
-        console.error("Error loading locations:", locationsError);
+        console.error("ClassesList: Error loading locations:", locationsError);
         toast.error("Failed to load locations");
         return;
       }
@@ -117,15 +151,17 @@ const ClassesList: React.FC = () => {
             end_time
           )
         `)
-        .eq('locations.franchisee_id', franchisee.id)
+        .eq('locations.franchisee_id', currentFranchiseeId)
         .eq('is_active', true)
         .order('name');
 
       if (classesError) {
-        console.error("Error loading classes:", classesError);
+        console.error("ClassesList: Error loading classes:", classesError);
         toast.error("Failed to load classes");
         return;
       }
+
+      console.log('ClassesList: Loaded classes:', classesData);
 
       const formattedClasses: ClassWithDetails[] = (classesData || []).map(cls => ({
         id: cls.id,
@@ -143,7 +179,7 @@ const ClassesList: React.FC = () => {
 
       setClasses(formattedClasses);
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("ClassesList: Error loading data:", error);
       toast.error("Failed to load class data");
     } finally {
       setIsLoading(false);
