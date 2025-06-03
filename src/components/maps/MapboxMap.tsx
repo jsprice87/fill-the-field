@@ -206,8 +206,8 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
         className="w-full h-full rounded-lg border border-gray-200"
         style={{ minHeight: '300px' }}
       />
-      <style jsx>{`
-        :global(.location-hover-popup .mapboxgl-popup-content) {
+      <style>{`
+        .location-hover-popup .mapboxgl-popup-content {
           border-radius: 8px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
           border: 1px solid #e5e7eb;
@@ -215,7 +215,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
           max-width: 250px;
         }
         
-        :global(.location-hover-popup .mapboxgl-popup-tip) {
+        .location-hover-popup .mapboxgl-popup-tip {
           border-top-color: #e5e7eb;
         }
       `}</style>
