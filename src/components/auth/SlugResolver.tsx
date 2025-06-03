@@ -180,7 +180,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
       <ErrorBoundary>
         <div className="min-h-screen flex items-center justify-center bg-white">
           <div className="text-center">
-            <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Page Not Found</h1>
+            <h1 className="font-agrandir text-2xl text-brand-navy mb-2">No Findy Page</h1>
             <p className="font-poppins text-brand-grey mb-4">The requested page could not be found.</p>
             {/* Show debug info when needed */}
             {(window.location.hostname === 'localhost' || window.location.search.includes('debug=true')) && (
