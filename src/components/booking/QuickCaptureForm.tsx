@@ -62,6 +62,10 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     setIsSubmitting(true);
 
     try {
+      // Check current user session for debugging
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('Current user session:', { user: user?.id || 'anonymous', userError });
+
       // Validate franchiseeId
       if (!franchiseeId) {
         throw new Error('Missing franchisee information');
@@ -78,6 +82,9 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         status: 'new' as LeadStatus
       };
 
+      console.log('Attempting to create lead with data:', leadData);
+      console.log('User context:', user ? 'authenticated' : 'anonymous');
+
       const { data: lead, error: leadError } = await supabase
         .from('leads')
         .insert(leadData)
@@ -85,7 +92,13 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         .single();
 
       if (leadError) {
-        console.error('Error creating lead:', leadError);
+        console.error('Detailed error creating lead:', {
+          error: leadError,
+          message: leadError.message,
+          details: leadError.details,
+          hint: leadError.hint,
+          code: leadError.code
+        });
         console.error('Lead data attempted:', leadData);
         throw new Error(`Failed to save lead: ${leadError.message}`);
       }
@@ -94,6 +107,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         throw new Error('Lead was not created - no data returned');
       }
 
+      console.log('Lead created successfully:', lead);
       toast.success('Information saved! Let\'s find classes near you.');
       
       // Track Meta Pixel Lead event
