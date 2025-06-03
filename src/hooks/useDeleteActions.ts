@@ -18,7 +18,7 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
 
       if (bookingsError) {
         console.error('Error fetching bookings for lead:', bookingsError);
-        throw bookingsError;
+        throw new Error(`Failed to fetch bookings: ${bookingsError.message}`);
       }
 
       if (bookings && bookings.length > 0) {
@@ -26,54 +26,63 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
         const bookingIds = bookings.map(b => b.id);
         
         // Delete appointments first
-        const { error: appointmentsError } = await supabase
+        const { error: appointmentsError, count: appointmentsCount } = await supabase
           .from('appointments')
           .delete()
-          .in('booking_id', bookingIds);
+          .in('booking_id', bookingIds)
+          .select('*', { count: 'exact', head: true });
 
         if (appointmentsError) {
           console.error('Error deleting appointments:', appointmentsError);
-          throw appointmentsError;
+          throw new Error(`Failed to delete appointments: ${appointmentsError.message}`);
         }
-        console.log('Appointments deleted successfully');
+        console.log('Appointments deleted successfully, count:', appointmentsCount);
 
         // Delete bookings
-        const { error: bookingDeleteError } = await supabase
+        const { error: bookingDeleteError, count: bookingsDeleteCount } = await supabase
           .from('bookings')
           .delete()
-          .eq('lead_id', leadId);
+          .eq('lead_id', leadId)
+          .select('*', { count: 'exact', head: true });
 
         if (bookingDeleteError) {
           console.error('Error deleting bookings:', bookingDeleteError);
-          throw bookingDeleteError;
+          throw new Error(`Failed to delete bookings: ${bookingDeleteError.message}`);
         }
-        console.log('Bookings deleted successfully');
+        console.log('Bookings deleted successfully, count:', bookingsDeleteCount);
       }
 
       // Delete lead notes
-      const { error: notesError } = await supabase
+      const { error: notesError, count: notesCount } = await supabase
         .from('lead_notes')
         .delete()
-        .eq('lead_id', leadId);
+        .eq('lead_id', leadId)
+        .select('*', { count: 'exact', head: true });
 
       if (notesError) {
         console.error('Error deleting lead notes:', notesError);
-        throw notesError;
+        throw new Error(`Failed to delete lead notes: ${notesError.message}`);
       }
-      console.log('Lead notes deleted successfully');
+      console.log('Lead notes deleted successfully, count:', notesCount);
 
       // Finally delete the lead
-      const { error: leadError } = await supabase
+      const { error: leadError, count: leadCount } = await supabase
         .from('leads')
         .delete()
-        .eq('id', leadId);
+        .eq('id', leadId)
+        .select('*', { count: 'exact', head: true });
 
       if (leadError) {
         console.error('Error deleting lead:', leadError);
-        throw leadError;
+        throw new Error(`Failed to delete lead: ${leadError.message}`);
+      }
+
+      if (leadCount === 0) {
+        console.error('No lead was deleted - this may indicate a permissions issue');
+        throw new Error('Lead could not be deleted. You may not have permission to delete this lead.');
       }
       
-      console.log('Lead deleted successfully from database');
+      console.log('Lead deleted successfully from database, count:', leadCount);
       return leadId;
     },
     onMutate: async (leadId: string) => {
@@ -104,13 +113,14 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
         queryClient.setQueryData(['leads', franchiseeId, includeArchived], context.previousLeads);
       }
       
-      toast.error('Failed to delete lead');
+      // Show specific error message
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete lead';
+      toast.error(errorMessage);
     },
     onSuccess: () => {
       console.log('Lead deletion successful, invalidating related queries');
       
       // Only invalidate queries that we didn't optimistically update
-      // DO NOT invalidate the current leads query since we already optimistically updated it
       queryClient.invalidateQueries({ queryKey: ['lead-stats', franchiseeId] });
       
       // Invalidate bookings queries since they might reference this lead
@@ -137,7 +147,7 @@ export const useDeleteBooking = (franchiseeId?: string) => {
 
       if (fetchError) {
         console.error('Error fetching appointment:', fetchError);
-        throw fetchError;
+        throw new Error(`Failed to fetch appointment: ${fetchError.message}`);
       }
 
       if (!appointment) {
@@ -147,29 +157,39 @@ export const useDeleteBooking = (franchiseeId?: string) => {
       console.log('Found booking ID:', appointment.booking_id);
 
       // Delete the appointment first
-      const { error: appointmentError } = await supabase
+      const { error: appointmentError, count: appointmentCount } = await supabase
         .from('appointments')
         .delete()
-        .eq('id', appointmentId);
+        .eq('id', appointmentId)
+        .select('*', { count: 'exact', head: true });
 
       if (appointmentError) {
         console.error('Error deleting appointment:', appointmentError);
-        throw appointmentError;
+        throw new Error(`Failed to delete appointment: ${appointmentError.message}`);
       }
-      console.log('Appointment deleted successfully');
+
+      if (appointmentCount === 0) {
+        throw new Error('Appointment could not be deleted - it may not exist or you may not have permission');
+      }
+      console.log('Appointment deleted successfully, count:', appointmentCount);
 
       // Delete the associated booking
-      const { error: bookingError } = await supabase
+      const { error: bookingError, count: bookingCount } = await supabase
         .from('bookings')
         .delete()
-        .eq('id', appointment.booking_id);
+        .eq('id', appointment.booking_id)
+        .select('*', { count: 'exact', head: true });
 
       if (bookingError) {
         console.error('Error deleting booking:', bookingError);
-        throw bookingError;
+        throw new Error(`Failed to delete booking: ${bookingError.message}`);
       }
 
-      console.log('Booking deleted successfully from database');
+      if (bookingCount === 0) {
+        throw new Error('Booking could not be deleted - it may not exist or you may not have permission');
+      }
+
+      console.log('Booking deleted successfully from database, count:', bookingCount);
       return appointmentId;
     },
     onMutate: async (appointmentId: string) => {
@@ -207,7 +227,9 @@ export const useDeleteBooking = (franchiseeId?: string) => {
         queryClient.setQueryData(['bookings', franchiseeId, true], context.previousArchivedBookings);
       }
       
-      toast.error('Failed to delete booking');
+      // Show specific error message
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete booking';
+      toast.error(errorMessage);
     },
     onSuccess: () => {
       console.log('Booking deletion successful, invalidating related queries');
