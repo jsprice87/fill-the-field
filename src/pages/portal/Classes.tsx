@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -23,17 +22,28 @@ export interface ScheduleRow {
   dayOfWeek: number;
 }
 
-const PortalClasses: React.FC = () => {
+interface PortalClassesProps {
+  franchiseeId?: string;
+}
+
+const PortalClasses: React.FC<PortalClassesProps> = ({ franchiseeId: propFranchiseeId }) => {
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
   const [globalDayOfWeek, setGlobalDayOfWeek] = useState<number>(1); // Monday default
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
+  const [currentFranchiseeId, setCurrentFranchiseeId] = useState<string | null>(propFranchiseeId || null);
 
-  // Get franchisee ID on component mount
+  // Get franchisee ID on component mount if not provided via props
   useEffect(() => {
+    if (propFranchiseeId) {
+      console.log('Using franchiseeId from props:', propFranchiseeId);
+      setCurrentFranchiseeId(propFranchiseeId);
+      return;
+    }
+
     const getFranchiseeId = async () => {
       try {
+        console.log('Getting franchisee ID from session...');
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
           toast.error("Authentication required");
@@ -52,7 +62,8 @@ const PortalClasses: React.FC = () => {
           return;
         }
         
-        setFranchiseeId(franchisee.id);
+        console.log('Found franchiseeId from session:', franchisee.id);
+        setCurrentFranchiseeId(franchisee.id);
       } catch (error) {
         console.error("Error getting franchisee:", error);
         toast.error("Failed to authenticate");
@@ -60,7 +71,15 @@ const PortalClasses: React.FC = () => {
     };
 
     getFranchiseeId();
-  }, []);
+  }, [propFranchiseeId]);
+
+  // Update franchiseeId when prop changes
+  useEffect(() => {
+    if (propFranchiseeId && propFranchiseeId !== currentFranchiseeId) {
+      console.log('Updating franchiseeId from props:', propFranchiseeId);
+      setCurrentFranchiseeId(propFranchiseeId);
+    }
+  }, [propFranchiseeId, currentFranchiseeId]);
 
   const calculateEndTime = (startTime: string, duration: number): string => {
     if (!startTime) return '';
@@ -235,7 +254,7 @@ const PortalClasses: React.FC = () => {
 
       <div className="space-y-4">
         <LocationSelector
-          franchiseeId={franchiseeId}
+          franchiseeId={currentFranchiseeId}
           selectedLocationId={selectedLocationId}
           onLocationChange={setSelectedLocationId}
         />

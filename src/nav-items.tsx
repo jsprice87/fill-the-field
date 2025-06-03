@@ -36,6 +36,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SlugResolver from "./components/auth/SlugResolver";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DefaultBookingRedirect from "./pages/booking/DefaultBookingRedirect";
+import PortalRedirect from "./components/auth/PortalRedirect";
 
 export const navItems = [
   {
@@ -66,138 +67,74 @@ export const navItems = [
       </ProtectedRoute>
     ),
   },
+  // Portal redirects - these redirect to slug-based URLs
   {
-    title: "Portal Dashboard",
+    title: "Portal Dashboard Redirect",
     to: "/portal/dashboard",
     icon: <HomeIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <PortalDashboard />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Portal Leads",
+    title: "Portal Leads Redirect",
     to: "/portal/leads",
     icon: <UsersIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <PortalLeads />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Lead Detail",
+    title: "Portal Lead Detail Redirect",
     to: "/portal/leads/:leadId",
     icon: <UserIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <LeadDetail />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Portal Bookings",
+    title: "Portal Bookings Redirect",
     to: "/portal/bookings",
     icon: <CalendarIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <PortalBookings />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Portal Locations",
+    title: "Portal Locations Redirect",
     to: "/portal/locations",
     icon: <MapPinIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <PortalLocations />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Portal Classes",
+    title: "Portal Classes Redirect",
     to: "/portal/classes",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <PortalClasses />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Classes List",
+    title: "Classes List Redirect",
     to: "/portal/classes/list",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <ClassesList />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Add Classes",
+    title: "Add Classes Redirect",
     to: "/portal/classes/add",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <AddClasses />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Edit Class",
+    title: "Edit Class Redirect",
     to: "/portal/classes/edit/:classId",
     icon: <BookOpenIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <EditClass />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Portal Profile",
+    title: "Portal Profile Redirect",
     to: "/portal/profile",
     icon: <UserIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <PortalProfile />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
   {
-    title: "Portal Settings",
+    title: "Portal Settings Redirect",
     to: "/portal/settings",
     icon: <SettingsIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <PortalSettings />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
+  // Admin routes (these stay as-is since they don't use slugs)
   {
     title: "Admin Dashboard",
     to: "/admin/dashboard",
@@ -332,6 +269,7 @@ export const navItems = [
     icon: <SettingsIcon className="h-4 w-4" />,
     page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalSettings /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
+  // ... keep existing code (all the public landing page routes)
   {
     title: "Landing Page",
     to: "/:franchiseeSlug",

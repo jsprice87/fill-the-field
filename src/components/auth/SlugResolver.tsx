@@ -22,11 +22,18 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
   useEffect(() => {
     const resolveSlug = async () => {
       try {
-        if (!franchiseeSlug) return;
+        if (!franchiseeSlug) {
+          console.error('No franchiseeSlug in URL parameters');
+          toast.error('Invalid URL - missing franchisee identifier');
+          navigate('/login');
+          return;
+        }
 
         // Check if franchiseeSlug is a UUID (meaning it's not a slug)
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (uuidPattern.test(franchiseeSlug)) {
+          console.log('Detected UUID in URL, checking for corresponding slug...');
+          
           // It's already a UUID, but let's check if there's a slug for it
           const { data: { session } } = await supabase.auth.getSession();
           
@@ -39,6 +46,7 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
               .single();
               
             if (data?.slug) {
+              console.log('Found slug for UUID, redirecting to slug-based URL');
               // Redirect to the slug-based URL
               const path = window.location.pathname.replace(franchiseeSlug, data.slug);
               navigate(path, { replace: true });
@@ -47,22 +55,27 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
           }
           
           // If no slug found or not the current user, just use the ID
+          console.log('Using UUID as franchisee ID');
           setResolvedId(franchiseeSlug);
         } else {
+          console.log('Resolving slug to franchisee ID:', franchiseeSlug);
           // It's a slug, resolve it to a franchisee ID
           const id = await getFranchiseeIdFromSlug(franchiseeSlug);
           
           if (id) {
+            console.log('Successfully resolved slug to ID:', id);
             setResolvedId(id);
           } else {
             // Invalid slug
-            toast.error('Invalid account URL');
+            console.error('Failed to resolve slug:', franchiseeSlug);
+            toast.error('Invalid account URL - franchisee not found');
             navigate('/login');
           }
         }
       } catch (error) {
         console.error('Error resolving slug:', error);
         toast.error('Error loading account information');
+        navigate('/login');
       } finally {
         setIsLoading(false);
       }
@@ -75,6 +88,17 @@ const SlugResolver = ({ children }: SlugResolverProps) => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!resolvedId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Account Not Found</h2>
+          <p className="text-gray-600">The requested franchisee account could not be found.</p>
+        </div>
       </div>
     );
   }
