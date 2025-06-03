@@ -26,63 +26,60 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
         const bookingIds = bookings.map(b => b.id);
         
         // Delete appointments first
-        const { error: appointmentsError, count: appointmentsCount } = await supabase
+        const { error: appointmentsError } = await supabase
           .from('appointments')
           .delete()
-          .in('booking_id', bookingIds)
-          .select('*', { count: 'exact', head: true });
+          .in('booking_id', bookingIds);
 
         if (appointmentsError) {
           console.error('Error deleting appointments:', appointmentsError);
           throw new Error(`Failed to delete appointments: ${appointmentsError.message}`);
         }
-        console.log('Appointments deleted successfully, count:', appointmentsCount);
+        console.log('Appointments deleted successfully');
 
         // Delete bookings
-        const { error: bookingDeleteError, count: bookingsDeleteCount } = await supabase
+        const { error: bookingDeleteError } = await supabase
           .from('bookings')
           .delete()
-          .eq('lead_id', leadId)
-          .select('*', { count: 'exact', head: true });
+          .eq('lead_id', leadId);
 
         if (bookingDeleteError) {
           console.error('Error deleting bookings:', bookingDeleteError);
           throw new Error(`Failed to delete bookings: ${bookingDeleteError.message}`);
         }
-        console.log('Bookings deleted successfully, count:', bookingsDeleteCount);
+        console.log('Bookings deleted successfully');
       }
 
       // Delete lead notes
-      const { error: notesError, count: notesCount } = await supabase
+      const { error: notesError } = await supabase
         .from('lead_notes')
         .delete()
-        .eq('lead_id', leadId)
-        .select('*', { count: 'exact', head: true });
+        .eq('lead_id', leadId);
 
       if (notesError) {
         console.error('Error deleting lead notes:', notesError);
         throw new Error(`Failed to delete lead notes: ${notesError.message}`);
       }
-      console.log('Lead notes deleted successfully, count:', notesCount);
+      console.log('Lead notes deleted successfully');
 
       // Finally delete the lead
-      const { error: leadError, count: leadCount } = await supabase
+      const { error: leadError, data: deletedLead } = await supabase
         .from('leads')
         .delete()
         .eq('id', leadId)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (leadError) {
         console.error('Error deleting lead:', leadError);
         throw new Error(`Failed to delete lead: ${leadError.message}`);
       }
 
-      if (leadCount === 0) {
+      if (!deletedLead || deletedLead.length === 0) {
         console.error('No lead was deleted - this may indicate a permissions issue');
         throw new Error('Lead could not be deleted. You may not have permission to delete this lead.');
       }
       
-      console.log('Lead deleted successfully from database, count:', leadCount);
+      console.log('Lead deleted successfully from database');
       return leadId;
     },
     onMutate: async (leadId: string) => {
@@ -157,39 +154,39 @@ export const useDeleteBooking = (franchiseeId?: string) => {
       console.log('Found booking ID:', appointment.booking_id);
 
       // Delete the appointment first
-      const { error: appointmentError, count: appointmentCount } = await supabase
+      const { error: appointmentError, data: deletedAppointment } = await supabase
         .from('appointments')
         .delete()
         .eq('id', appointmentId)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (appointmentError) {
         console.error('Error deleting appointment:', appointmentError);
         throw new Error(`Failed to delete appointment: ${appointmentError.message}`);
       }
 
-      if (appointmentCount === 0) {
+      if (!deletedAppointment || deletedAppointment.length === 0) {
         throw new Error('Appointment could not be deleted - it may not exist or you may not have permission');
       }
-      console.log('Appointment deleted successfully, count:', appointmentCount);
+      console.log('Appointment deleted successfully');
 
       // Delete the associated booking
-      const { error: bookingError, count: bookingCount } = await supabase
+      const { error: bookingError, data: deletedBooking } = await supabase
         .from('bookings')
         .delete()
         .eq('id', appointment.booking_id)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (bookingError) {
         console.error('Error deleting booking:', bookingError);
         throw new Error(`Failed to delete booking: ${bookingError.message}`);
       }
 
-      if (bookingCount === 0) {
+      if (!deletedBooking || deletedBooking.length === 0) {
         throw new Error('Booking could not be deleted - it may not exist or you may not have permission');
       }
 
-      console.log('Booking deleted successfully from database, count:', bookingCount);
+      console.log('Booking deleted successfully from database');
       return appointmentId;
     },
     onMutate: async (appointmentId: string) => {
