@@ -58,44 +58,78 @@ export const ensureUniqueSlug = async (baseSlug: string): Promise<string> => {
  */
 export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | null> => {
   try {
-    console.log(`[slugUtils] Resolving slug to franchisee ID: ${slug}`);
+    console.log(`[slugUtils] === SLUG LOOKUP START ===`);
+    console.log(`[slugUtils] Input slug: "${slug}"`);
+    console.log(`[slugUtils] Slug type: ${typeof slug}`);
+    console.log(`[slugUtils] Slug length: ${slug?.length}`);
     console.log(`[slugUtils] Environment: ${window.location.hostname}`);
     
     const startTime = Date.now();
+    
+    // Test the connection first
+    console.log(`[slugUtils] Testing basic Supabase connection...`);
+    const { data: testData, error: testError } = await supabase
+      .from('franchisees')
+      .select('count')
+      .limit(1);
+    
+    if (testError) {
+      console.error(`[slugUtils] 🚨 Connection test FAILED:`, testError);
+      return null;
+    }
+    console.log(`[slugUtils] ✅ Connection test passed`);
+    
+    // Now try the actual query
+    console.log(`[slugUtils] Executing slug query...`);
     const { data, error } = await supabase
       .from('franchisees')
-      .select('id')  // Changed from user_id to id
+      .select('id, slug, company_name, subscription_status')  // More fields for debugging
       .eq('slug', slug)
       .single();
     
     const endTime = Date.now();
-    console.log(`[slugUtils] Query took ${endTime - startTime}ms`);
+    console.log(`[slugUtils] Query completed in ${endTime - startTime}ms`);
     
     if (error) {
-      console.error(`[slugUtils] Error getting franchisee ID from slug:`, {
+      console.error(`[slugUtils] ❌ Query error:`, {
         slug,
-        error: error.message,
+        message: error.message,
         code: error.code,
         details: error.details,
         hint: error.hint
       });
+      
+      // If it's a "no rows" error, that's actually expected for invalid slugs
+      if (error.code === 'PGRST116') {
+        console.log(`[slugUtils] No rows found for slug "${slug}" - this is normal for invalid slugs`);
+        return null;
+      }
+      
       return null;
     }
     
     if (!data) {
-      console.warn(`[slugUtils] No data returned for slug: ${slug}`);
+      console.warn(`[slugUtils] ⚠️ No data returned for slug: ${slug}`);
       return null;
     }
     
-    console.log(`[slugUtils] Resolved franchisee ID: ${data.id}`);
+    console.log(`[slugUtils] ✅ SUCCESS: Found franchisee:`, {
+      id: data.id,
+      slug: data.slug,
+      company_name: data.company_name,
+      subscription_status: data.subscription_status
+    });
+    
     return data.id;
   } catch (error) {
-    console.error(`[slugUtils] Exception in getFranchiseeIdFromSlug:`, {
+    console.error(`[slugUtils] 💥 Exception in getFranchiseeIdFromSlug:`, {
       slug,
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined
     });
     return null;
+  } finally {
+    console.log(`[slugUtils] === SLUG LOOKUP END ===`);
   }
 };
 
