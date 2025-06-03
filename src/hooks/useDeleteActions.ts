@@ -8,48 +8,77 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
 
   return useMutation({
     mutationFn: async (leadId: string) => {
-      console.log('Deleting lead with ID:', leadId);
+      console.log('Starting lead deletion process for ID:', leadId);
       
       // First delete associated bookings and appointments
-      const { data: bookings } = await supabase
+      const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
         .select('id')
         .eq('lead_id', leadId);
 
+      if (bookingsError) {
+        console.error('Error fetching bookings for lead:', bookingsError);
+        throw bookingsError;
+      }
+
       if (bookings && bookings.length > 0) {
+        console.log('Found bookings to delete:', bookings.length);
         const bookingIds = bookings.map(b => b.id);
         
         // Delete appointments first
-        await supabase
+        const { error: appointmentsError } = await supabase
           .from('appointments')
           .delete()
           .in('booking_id', bookingIds);
 
+        if (appointmentsError) {
+          console.error('Error deleting appointments:', appointmentsError);
+          throw appointmentsError;
+        }
+        console.log('Appointments deleted successfully');
+
         // Delete bookings
-        await supabase
+        const { error: bookingDeleteError } = await supabase
           .from('bookings')
           .delete()
           .eq('lead_id', leadId);
+
+        if (bookingDeleteError) {
+          console.error('Error deleting bookings:', bookingDeleteError);
+          throw bookingDeleteError;
+        }
+        console.log('Bookings deleted successfully');
       }
 
       // Delete lead notes
-      await supabase
+      const { error: notesError } = await supabase
         .from('lead_notes')
         .delete()
         .eq('lead_id', leadId);
 
+      if (notesError) {
+        console.error('Error deleting lead notes:', notesError);
+        throw notesError;
+      }
+      console.log('Lead notes deleted successfully');
+
       // Finally delete the lead
-      const { error } = await supabase
+      const { error: leadError } = await supabase
         .from('leads')
         .delete()
         .eq('id', leadId);
 
-      if (error) throw error;
+      if (leadError) {
+        console.error('Error deleting lead:', leadError);
+        throw leadError;
+      }
       
-      console.log('Lead deleted successfully');
+      console.log('Lead deleted successfully from database');
       return leadId;
     },
     onMutate: async (leadId: string) => {
+      console.log('Starting optimistic update for lead deletion:', leadId);
+      
       // Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ['leads', franchiseeId, includeArchived] });
       
@@ -59,25 +88,34 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
       // Optimistically update to remove the lead
       queryClient.setQueryData(['leads', franchiseeId, includeArchived], (old: any) => {
         if (!old) return old;
-        return old.filter((lead: any) => lead.id !== leadId);
+        const filtered = old.filter((lead: any) => lead.id !== leadId);
+        console.log('Optimistically removed lead, new count:', filtered.length);
+        return filtered;
       });
       
       // Return a context object with the snapshotted value
       return { previousLeads };
     },
     onError: (err, leadId, context) => {
+      console.error('Lead deletion failed, rolling back optimistic update:', err);
+      
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousLeads) {
         queryClient.setQueryData(['leads', franchiseeId, includeArchived], context.previousLeads);
       }
-      console.error('Error deleting lead:', err);
+      
       toast.error('Failed to delete lead');
     },
     onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      console.log('Lead deletion successful, invalidating related queries');
+      
+      // Only invalidate queries that we didn't optimistically update
+      // DO NOT invalidate the current leads query since we already optimistically updated it
       queryClient.invalidateQueries({ queryKey: ['lead-stats', franchiseeId] });
+      
+      // Invalidate bookings queries since they might reference this lead
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      
       toast.success('Lead deleted successfully');
     },
   });
@@ -88,7 +126,7 @@ export const useDeleteBooking = (franchiseeId?: string) => {
 
   return useMutation({
     mutationFn: async (appointmentId: string) => {
-      console.log('Deleting appointment with ID:', appointmentId);
+      console.log('Starting booking deletion process for appointment ID:', appointmentId);
       
       // Get the booking ID from the appointment
       const { data: appointment, error: fetchError } = await supabase
@@ -118,6 +156,7 @@ export const useDeleteBooking = (franchiseeId?: string) => {
         console.error('Error deleting appointment:', appointmentError);
         throw appointmentError;
       }
+      console.log('Appointment deleted successfully');
 
       // Delete the associated booking
       const { error: bookingError } = await supabase
@@ -130,18 +169,21 @@ export const useDeleteBooking = (franchiseeId?: string) => {
         throw bookingError;
       }
 
-      console.log('Appointment and booking deleted successfully');
+      console.log('Booking deleted successfully from database');
       return appointmentId;
     },
     onMutate: async (appointmentId: string) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['bookings', franchiseeId] });
+      console.log('Starting optimistic update for booking deletion:', appointmentId);
       
-      // Snapshot the previous value
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['bookings', franchiseeId, false] });
+      await queryClient.cancelQueries({ queryKey: ['bookings', franchiseeId, true] });
+      
+      // Snapshot the previous values
       const previousBookings = queryClient.getQueryData(['bookings', franchiseeId, false]);
       const previousArchivedBookings = queryClient.getQueryData(['bookings', franchiseeId, true]);
       
-      // Optimistically update to remove the booking
+      // Optimistically update to remove the booking from both views
       queryClient.setQueryData(['bookings', franchiseeId, false], (old: any) => {
         if (!old) return old;
         return old.filter((booking: any) => booking.id !== appointmentId);
@@ -155,6 +197,8 @@ export const useDeleteBooking = (franchiseeId?: string) => {
       return { previousBookings, previousArchivedBookings };
     },
     onError: (err, appointmentId, context) => {
+      console.error('Booking deletion failed, rolling back optimistic update:', err);
+      
       // Roll back on error
       if (context?.previousBookings) {
         queryClient.setQueryData(['bookings', franchiseeId, false], context.previousBookings);
@@ -162,12 +206,15 @@ export const useDeleteBooking = (franchiseeId?: string) => {
       if (context?.previousArchivedBookings) {
         queryClient.setQueryData(['bookings', franchiseeId, true], context.previousArchivedBookings);
       }
-      console.error('Error deleting booking:', err);
+      
       toast.error('Failed to delete booking');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings', franchiseeId] });
+      console.log('Booking deletion successful, invalidating related queries');
+      
+      // Only invalidate related queries, not the ones we optimistically updated
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
+      
       toast.success('Booking deleted successfully');
     },
   });
