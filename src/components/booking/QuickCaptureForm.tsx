@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
+
+type LeadStatus = Database['public']['Enums']['lead_status'];
 
 interface QuickCaptureFormProps {
   franchiseeId: string;
@@ -72,7 +75,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         phone: formData.phone,
         zip: formData.zip,
         source: 'free_trial_booking',
-        status: 'new'
+        status: 'new' as LeadStatus
       };
 
       const { data: lead, error: leadError } = await supabase
