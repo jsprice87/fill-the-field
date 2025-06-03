@@ -60,7 +60,6 @@ export const getFranchiseeIdFromSlug = async (slug: string): Promise<string | nu
   try {
     console.log(`[slugUtils] Resolving slug to franchisee ID: ${slug}`);
     console.log(`[slugUtils] Environment: ${window.location.hostname}`);
-    console.log(`[slugUtils] Supabase URL: ${supabase.supabaseUrl}`);
     
     const startTime = Date.now();
     const { data, error } = await supabase

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Toaster />
-      <Tooltip.Provider>
+      <TooltipProvider>
         <div className="min-h-screen flex flex-col">
           <BrowserRouter>
             <Routes>
@@ -21,7 +22,7 @@ function App() {
             </Routes>
           </BrowserRouter>
         </div>
-      </Tooltip.Provider>
+      </TooltipProvider>
       {/* Add network health check for debugging */}
       <NetworkHealthCheck />
     </QueryClientProvider>
