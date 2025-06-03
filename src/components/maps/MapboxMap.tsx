@@ -135,12 +135,16 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
         </div>
       `);
 
+      // Set the popup to the marker (but don't show it yet)
       marker.setPopup(popup);
 
       const markerElement = marker.getElement();
       let hoverTimeout: NodeJS.Timeout;
 
-      // Add hover functionality
+      // Add CSS class for hover styling instead of direct manipulation
+      markerElement.classList.add('mapbox-marker-interactive');
+
+      // Add hover functionality using Mapbox's popup methods
       markerElement.addEventListener('mouseenter', () => {
         // Clear any existing timeout
         if (hoverTimeout) {
@@ -149,13 +153,13 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
         
         // Show popup with slight delay to prevent flickering
         hoverTimeout = setTimeout(() => {
-          popup.addTo(map.current!);
+          if (marker.getPopup()) {
+            marker.getPopup().addTo(map.current!);
+          }
         }, 100);
         
-        // Add hover styling
-        markerElement.style.transform = 'scale(1.1)';
-        markerElement.style.transition = 'transform 0.2s ease';
-        markerElement.style.cursor = 'pointer';
+        // Add hover styling via CSS class
+        markerElement.classList.add('marker-hover');
       });
 
       markerElement.addEventListener('mouseleave', () => {
@@ -164,11 +168,13 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
           clearTimeout(hoverTimeout);
         }
         
-        // Hide popup
-        popup.remove();
+        // Hide popup using Mapbox's method
+        if (marker.getPopup()) {
+          marker.getPopup().remove();
+        }
         
-        // Reset hover styling
-        markerElement.style.transform = 'scale(1)';
+        // Remove hover styling
+        markerElement.classList.remove('marker-hover');
       });
 
       // Add click handler for location selection
@@ -207,6 +213,15 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
         style={{ minHeight: '300px' }}
       />
       <style>{`
+        .mapbox-marker-interactive {
+          cursor: pointer;
+          transition: transform 0.2s ease;
+        }
+        
+        .mapbox-marker-interactive.marker-hover {
+          transform: scale(1.1);
+        }
+        
         .location-hover-popup .mapboxgl-popup-content {
           border-radius: 8px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
