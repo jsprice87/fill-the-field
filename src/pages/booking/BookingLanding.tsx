@@ -32,8 +32,6 @@ const BookingLandingContent: React.FC = () => {
       return;
     }
     
-    console.log('Form success - creating flow with lead data:', { leadId, leadData, franchiseeId });
-    
     setIsCreatingFlow(true);
     try {
       const flowId = await createFlow(franchiseeId, {
@@ -47,7 +45,6 @@ const BookingLandingContent: React.FC = () => {
         }
       });
       
-      console.log('Flow created successfully:', flowId);
       navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
     } catch (error) {
       console.error('Error creating flow:', error);

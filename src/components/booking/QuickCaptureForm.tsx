@@ -12,7 +12,7 @@ interface QuickCaptureFormProps {
   franchiseeId: string;
   onSuccess?: (leadId: string, leadData: any) => void;
   showTitle?: boolean;
-  onLeadCreated?: () => void; // New prop for Meta Pixel tracking
+  onLeadCreated?: () => void;
 }
 
 export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
@@ -59,29 +59,38 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      console.log('Starting form submission with franchisee ID:', franchiseeId);
+      // Validate franchiseeId
+      if (!franchiseeId) {
+        throw new Error('Missing franchisee information');
+      }
+
+      const leadData = {
+        franchisee_id: franchiseeId,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        zip: formData.zip,
+        source: 'free_trial_booking',
+        status: 'new'
+      };
 
       const { data: lead, error: leadError } = await supabase
         .from('leads')
-        .insert({
-          franchisee_id: franchiseeId,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          zip: formData.zip,
-          source: 'free_trial_booking',
-          status: 'new'
-        })
+        .insert(leadData)
         .select()
         .single();
 
       if (leadError) {
         console.error('Error creating lead:', leadError);
-        throw leadError;
+        console.error('Lead data attempted:', leadData);
+        throw new Error(`Failed to save lead: ${leadError.message}`);
       }
 
-      console.log('Lead created successfully:', lead);
+      if (!lead) {
+        throw new Error('Lead was not created - no data returned');
+      }
+
       toast.success('Information saved! Let\'s find classes near you.');
       
       // Track Meta Pixel Lead event
@@ -95,7 +104,8 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
     } catch (error) {
       console.error('Error in form submission:', error);
-      toast.error('Failed to save information. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to save information: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
