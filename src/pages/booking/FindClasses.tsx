@@ -38,12 +38,21 @@ const FindClasses: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   const [flowLoaded, setFlowLoaded] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  // Add debug logging
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    console.log(`🔍 FIND CLASSES DEBUG [${timestamp}]: ${message}`);
+    setDebugInfo(prev => [...prev.slice(-9), `${timestamp}: ${message}`]);
+  };
 
   useEffect(() => {
-    console.log('FindClasses: useEffect triggered', { flowId, franchiseeSlug });
+    addDebugLog('FindClasses component mounted');
+    addDebugLog(`Parameters: franchiseeSlug=${franchiseeSlug}, flowId=${flowId}`);
     
     if (!flowId) {
-      console.log('No flow ID found, redirecting to landing');
+      addDebugLog('No flow ID found, redirecting to landing');
       navigate(`/${franchiseeSlug}/free-trial`);
       return;
     }
@@ -53,25 +62,25 @@ const FindClasses: React.FC = () => {
 
   const loadData = async () => {
     if (!franchiseeSlug || !flowId) {
-      console.error('Missing required parameters:', { franchiseeSlug, flowId });
+      addDebugLog('Missing required parameters');
       setError('Missing required parameters');
       setIsLoading(false);
       return;
     }
     
-    console.log('Loading data for FindClasses', { franchiseeSlug, flowId });
+    addDebugLog('Starting data load process');
     setIsLoading(true);
     setError('');
     
     try {
       // Load flow data first
-      console.log('Loading flow data...');
+      addDebugLog('Loading flow data...');
       await loadFlow(flowId);
       setFlowLoaded(true);
-      console.log('Flow data loaded');
+      addDebugLog('Flow data loaded successfully');
 
       // Get franchisee by slug
-      console.log('Loading franchisee data...');
+      addDebugLog(`Loading franchisee data for slug: ${franchiseeSlug}`);
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('*')
@@ -79,15 +88,15 @@ const FindClasses: React.FC = () => {
         .single();
 
       if (franchiseeError || !franchisee) {
-        console.error('Franchisee error:', franchiseeError);
+        addDebugLog(`Franchisee error: ${franchiseeError?.message || 'Not found'}`);
         throw new Error('Franchisee not found');
       }
 
-      console.log('Franchisee loaded:', franchisee.company_name);
+      addDebugLog(`Franchisee loaded: ${franchisee.company_name} (ID: ${franchisee.id})`);
       setFranchiseeData(franchisee);
 
       // Load locations for this franchisee
-      console.log('Loading locations...');
+      addDebugLog('Loading locations...');
       const { data: locationsData, error: locationsError } = await supabase
         .from('locations')
         .select('*')
@@ -96,36 +105,56 @@ const FindClasses: React.FC = () => {
         .order('name');
 
       if (locationsError) {
-        console.error('Locations error:', locationsError);
+        addDebugLog(`Locations error: ${locationsError.message}`);
         throw locationsError;
       }
 
-      console.log('Locations loaded:', locationsData?.length || 0, 'locations');
+      addDebugLog(`Raw locations data: ${JSON.stringify(locationsData)}`);
       
       // Convert database locations to BookingLocation format with validation
       const convertedLocations: BookingLocation[] = (locationsData || [])
-        .filter(loc => loc && loc.id && loc.name && loc.address && loc.city && loc.state && loc.zip)
-        .map(loc => ({
-          id: loc.id,
-          name: loc.name,
-          address: loc.address,
-          city: loc.city,
-          state: loc.state,
-          zip: loc.zip,
-          phone: loc.phone,
-          email: loc.email,
-          latitude: loc.latitude ? parseFloat(loc.latitude.toString()) : undefined,
-          longitude: loc.longitude ? parseFloat(loc.longitude.toString()) : undefined
-        }))
-        .filter(loc => 
+        .filter(loc => {
+          const isValid = loc && loc.id && loc.name && loc.address && loc.city && loc.state && loc.zip;
+          if (!isValid) {
+            addDebugLog(`Filtering out invalid location: ${JSON.stringify(loc)}`);
+          }
+          return isValid;
+        })
+        .map(loc => {
+          const converted = {
+            id: loc.id,
+            name: loc.name,
+            address: loc.address,
+            city: loc.city,
+            state: loc.state,
+            zip: loc.zip,
+            phone: loc.phone,
+            email: loc.email,
+            latitude: loc.latitude ? parseFloat(loc.latitude.toString()) : undefined,
+            longitude: loc.longitude ? parseFloat(loc.longitude.toString()) : undefined
+          };
+          
+          addDebugLog(`Converted location: ${converted.name} - lat: ${converted.latitude}, lng: ${converted.longitude}`);
+          return converted;
+        })
+        .filter(loc => {
           // Additional validation for converted locations
-          typeof loc.id === 'string' && 
-          typeof loc.name === 'string' && 
-          typeof loc.address === 'string'
-        );
+          const isValid = typeof loc.id === 'string' && 
+            typeof loc.name === 'string' && 
+            typeof loc.address === 'string';
+          
+          if (!isValid) {
+            addDebugLog(`Filtering out invalid converted location: ${JSON.stringify(loc)}`);
+          }
+          return isValid;
+        });
+      
+      addDebugLog(`Final converted locations: ${convertedLocations.length} locations`);
+      addDebugLog(`Locations with coordinates: ${convertedLocations.filter(l => l.latitude && l.longitude).length}`);
       
       setLocations(convertedLocations);
     } catch (error) {
+      addDebugLog(`Error during data load: ${error}`);
       console.error('Error loading data:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
       setError(errorMessage);
@@ -134,23 +163,24 @@ const FindClasses: React.FC = () => {
       navigate(`/${franchiseeSlug}/free-trial`);
     } finally {
       setIsLoading(false);
+      addDebugLog('Data load process completed');
     }
   };
 
   const handleLocationSelect = async (location: BookingLocation) => {
+    addDebugLog(`Location selected: ${location.name} (ID: ${location.id})`);
+    
     if (!flowId) {
-      console.error('No flow ID available for location selection');
+      addDebugLog('No flow ID available for location selection');
       toast.error('Session expired. Please start over.');
       return;
     }
 
     if (!location || !location.id || !location.name) {
-      console.error('Invalid location data:', location);
+      addDebugLog(`Invalid location data: ${JSON.stringify(location)}`);
       toast.error('Invalid location data. Please try again.');
       return;
     }
-    
-    console.log('Selecting location:', location.id, location.name);
     
     try {
       // Update flow with selected location
@@ -162,9 +192,10 @@ const FindClasses: React.FC = () => {
         }
       });
       
-      console.log('Location updated in flow, navigating to booking page');
+      addDebugLog('Location updated in flow, navigating to booking page');
       navigate(`/${franchiseeSlug}/free-trial/classes?flow=${flowId}`);
     } catch (error) {
+      addDebugLog(`Error updating flow: ${error}`);
       console.error('Error updating flow:', error);
       toast.error('Failed to select location. Please try again.');
     }
@@ -176,7 +207,7 @@ const FindClasses: React.FC = () => {
   };
 
   const handleMapError = () => {
-    console.log('Map failed, switching to list view');
+    addDebugLog('Map failed, switching to list view');
     setViewMode('list');
     toast.info('Map is unavailable, showing list view');
   };
@@ -188,6 +219,10 @@ const FindClasses: React.FC = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
           <p className="font-poppins text-gray-600">Loading locations...</p>
+          <div className="mt-4 text-xs text-gray-500 max-w-md">
+            <div className="font-semibold">Debug Info:</div>
+            {debugInfo.slice(-3).map((info, i) => <div key={i}>{info}</div>)}
+          </div>
         </div>
       </div>
     );
@@ -206,6 +241,10 @@ const FindClasses: React.FC = () => {
           >
             Start Over
           </Button>
+          <div className="mt-4 text-xs text-gray-500 text-left">
+            <div className="font-semibold">Debug Info:</div>
+            {debugInfo.map((info, i) => <div key={i}>{info}</div>)}
+          </div>
         </div>
       </div>
     );
@@ -255,6 +294,22 @@ const FindClasses: React.FC = () => {
               <Map className="h-4 w-4 mr-2" />
               Map
             </Button>
+          </div>
+        </div>
+
+        {/* Debug panel */}
+        <div className="mb-4 p-3 bg-gray-100 rounded text-xs border">
+          <div className="font-semibold mb-2">🔍 Debug Information:</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+              <strong>Locations loaded:</strong> {locations.length}<br />
+              <strong>With coordinates:</strong> {locations.filter(l => l.latitude && l.longitude).length}<br />
+              <strong>View mode:</strong> {viewMode}
+            </div>
+            <div className="text-xs">
+              <strong>Recent logs:</strong>
+              {debugInfo.slice(-3).map((info, i) => <div key={i}>{info}</div>)}
+            </div>
           </div>
         </div>
 
@@ -319,6 +374,16 @@ const FindClasses: React.FC = () => {
                             <span className="font-poppins">
                               {location.address}<br />
                               {location.city}, {location.state} {location.zip}
+                              {location.latitude && location.longitude && (
+                                <span className="text-xs text-green-600 block">
+                                  ✓ Coordinates: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                                </span>
+                              )}
+                              {(!location.latitude || !location.longitude) && (
+                                <span className="text-xs text-red-600 block">
+                                  ⚠ No coordinates
+                                </span>
+                              )}
                             </span>
                           </div>
                           {location.phone && (
