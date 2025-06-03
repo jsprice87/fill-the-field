@@ -34,19 +34,6 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
     const resolveSlug = async () => {
       try {
         addDebugLog(`Starting resolution for slug: ${franchiseeSlug}, requireAuth: ${requireAuth}`);
-        addDebugLog(`Environment: ${window.location.hostname}, userAgent: ${navigator.userAgent.substring(0, 50)}...`);
-        
-        // Test Supabase connection
-        try {
-          const { data, error } = await supabase.from('franchisees').select('count').limit(1);
-          if (error) {
-            addDebugLog(`Supabase connection test failed: ${error.message}`);
-          } else {
-            addDebugLog('Supabase connection test successful');
-          }
-        } catch (dbError) {
-          addDebugLog(`Supabase connection test error: ${dbError}`);
-        }
         
         if (!franchiseeSlug) {
           addDebugLog('No franchiseeSlug in URL parameters');
@@ -62,9 +49,9 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
         // Check if franchiseeSlug is a UUID (meaning it's not a slug)
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (uuidPattern.test(franchiseeSlug)) {
-          addDebugLog('Detected UUID in URL, checking for corresponding slug...');
+          addDebugLog('Detected UUID in URL, using as franchisee ID');
           
-          // It's already a UUID, but let's check if there's a slug for it
+          // For authenticated routes, check if there's a slug for this UUID and redirect if possible
           if (requireAuth) {
             const { data: { session } } = await supabase.auth.getSession();
             
@@ -76,13 +63,8 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
                 .eq('user_id', franchiseeSlug)
                 .single();
                 
-              if (error) {
-                addDebugLog(`Error fetching franchisee data: ${error.message}`);
-              }
-              
-              if (data?.slug) {
+              if (!error && data?.slug) {
                 addDebugLog('Found slug for UUID, redirecting to slug-based URL');
-                // Redirect to the slug-based URL
                 const path = window.location.pathname.replace(franchiseeSlug, data.slug);
                 navigate(path, { replace: true });
                 return;
@@ -90,8 +72,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
             }
           }
           
-          // If no slug found or not the current user, just use the ID
-          addDebugLog('Using UUID as franchisee ID');
+          // Use the UUID as franchisee ID directly
           setResolvedId(franchiseeSlug);
         } else {
           addDebugLog(`Resolving slug to franchisee ID: ${franchiseeSlug}`);
@@ -102,7 +83,6 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
             addDebugLog(`Successfully resolved slug to ID: ${id}`);
             setResolvedId(id);
           } else {
-            // Invalid slug - handle differently for public vs authenticated routes
             addDebugLog(`Failed to resolve slug: ${franchiseeSlug}`);
             
             if (requireAuth) {
@@ -136,7 +116,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
               toast.error('Invalid account URL - franchisee not found');
               navigate('/login');
             } else {
-              // For public routes, just show an error state instead of redirecting
+              // For public routes, show error state instead of redirecting
               addDebugLog('Public route with invalid slug - showing error state');
               setIsPublicError(true);
             }
@@ -181,7 +161,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
       <ErrorBoundary>
         <div className="min-h-screen flex items-center justify-center bg-white">
           <div className="text-center">
-            <h1 className="font-agrandir text-2xl text-brand-navy mb-2">No Findy Page</h1>
+            <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Page Not Found</h1>
             <p className="font-poppins text-brand-grey mb-4">The requested page could not be found.</p>
             {/* Show debug info when needed */}
             {(window.location.hostname === 'localhost' || window.location.search.includes('debug=true')) && (
@@ -217,7 +197,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
     );
   }
 
-  // Use context provider instead of prop injection
+  // Use context provider to pass franchisee ID to children
   return (
     <ErrorBoundary>
       <FranchiseeProvider franchiseeId={resolvedId}>
