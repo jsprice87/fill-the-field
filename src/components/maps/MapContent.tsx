@@ -39,8 +39,11 @@ const MapEventHandler: React.FC<{ onError: (error: string) => void; addDebugLog:
     load: () => {
       addDebugLog('Map load event fired');
     },
-    ready: () => {
-      addDebugLog('Map ready event fired');
+    zoomend: () => {
+      addDebugLog('Map zoom ended');
+    },
+    moveend: () => {
+      addDebugLog('Map move ended');
     }
   });
   return null;
@@ -88,12 +91,6 @@ const MapContent: React.FC<MapContentProps> = ({
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          onLoading={() => addDebugLog('TileLayer loading started')}
-          onLoad={() => addDebugLog('TileLayer loaded successfully')}
-          onTileError={(e) => {
-            addDebugLog(`TileLayer error: ${e.error}`);
-            console.error('TileLayer error:', e);
-          }}
         />
         {validLocations.map((location) => {
           addDebugLog(`Rendering marker for: ${location.name} at ${location.latitude}, ${location.longitude}`);
