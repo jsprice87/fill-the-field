@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
@@ -149,86 +148,119 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
 
     setIsLoading(true);
     
+    const results = {
+      successful: [] as string[],
+      failed: [] as { className: string; error: string }[]
+    };
+    
     try {
-      // Create separate classes for each row
+      // Process each class individually with its own error handling
       for (const [index, row] of scheduleRows.entries()) {
-        console.log(`Creating class ${index + 1}: ${row.className}`);
-        
-        // Create the class
-        const { data: classData, error: classError } = await supabase
-          .from('classes')
-          .insert({
-            location_id: selectedLocationId,
-            name: row.className,
-            class_name: row.className,
-            description: `${row.className} - Soccer class for kids`,
-            duration_minutes: row.duration,
-            max_capacity: row.capacity,
-            min_age: row.minAge,
-            max_age: row.maxAge,
-            is_active: true
-          })
-          .select()
-          .single();
+        try {
+          console.log(`Creating class ${index + 1}: ${row.className}`);
+          
+          // Create the class
+          const { data: classData, error: classError } = await supabase
+            .from('classes')
+            .insert({
+              location_id: selectedLocationId,
+              name: row.className,
+              class_name: row.className,
+              description: `${row.className} - Soccer class for kids`,
+              duration_minutes: row.duration,
+              max_capacity: row.capacity,
+              min_age: row.minAge,
+              max_age: row.maxAge,
+              is_active: true
+            })
+            .select()
+            .single();
 
-        if (classError) {
-          console.error(`Error creating class ${index + 1}:`, classError);
-          throw classError;
-        }
-
-        console.log(`Created class ${index + 1}:`, classData);
-
-        // Create the schedule for this class
-        const { data: scheduleData, error: scheduleError } = await supabase
-          .from('class_schedules')
-          .insert({
-            class_id: classData.id,
-            start_time: row.timeStart,
-            end_time: row.timeEnd,
-            date_start: row.dateStart || null,
-            date_end: row.dateEnd || null,
-            day_of_week: row.dayOfWeek,
-            current_bookings: 0,
-            is_active: true
-          })
-          .select()
-          .single();
-
-        if (scheduleError) {
-          console.error(`Error creating schedule for class ${index + 1}:`, scheduleError);
-          throw scheduleError;
-        }
-
-        console.log(`Created schedule for class ${index + 1}:`, scheduleData);
-
-        // Handle override dates if any
-        if (row.overrideDates.length > 0) {
-          const exceptionInserts = row.overrideDates.map(date => ({
-            class_schedule_id: scheduleData.id,
-            exception_date: date,
-            is_cancelled: true
-          }));
-
-          const { error: exceptionError } = await supabase
-            .from('schedule_exceptions')
-            .insert(exceptionInserts);
-
-          if (exceptionError) {
-            console.error(`Error creating exceptions for class ${index + 1}:`, exceptionError);
-            throw exceptionError;
+          if (classError) {
+            console.error(`Error creating class ${index + 1}:`, classError);
+            throw new Error(`Failed to create class: ${classError.message}`);
           }
+
+          console.log(`Created class ${index + 1}:`, classData);
+
+          // Create the schedule for this class
+          const { data: scheduleData, error: scheduleError } = await supabase
+            .from('class_schedules')
+            .insert({
+              class_id: classData.id,
+              start_time: row.timeStart,
+              end_time: row.timeEnd,
+              date_start: row.dateStart || null,
+              date_end: row.dateEnd || null,
+              day_of_week: row.dayOfWeek,
+              current_bookings: 0,
+              is_active: true
+            })
+            .select()
+            .single();
+
+          if (scheduleError) {
+            console.error(`Error creating schedule for class ${index + 1}:`, scheduleError);
+            throw new Error(`Failed to create schedule: ${scheduleError.message}`);
+          }
+
+          console.log(`Created schedule for class ${index + 1}:`, scheduleData);
+
+          // Handle override dates if any
+          if (row.overrideDates.length > 0) {
+            const exceptionInserts = row.overrideDates.map(date => ({
+              class_schedule_id: scheduleData.id,
+              exception_date: date,
+              is_cancelled: true
+            }));
+
+            const { error: exceptionError } = await supabase
+              .from('schedule_exceptions')
+              .insert(exceptionInserts);
+
+            if (exceptionError) {
+              console.error(`Error creating exceptions for class ${index + 1}:`, exceptionError);
+              throw new Error(`Failed to create override dates: ${exceptionError.message}`);
+            }
+          }
+
+          // If we get here, the class was created successfully
+          results.successful.push(row.className);
+          
+        } catch (error) {
+          console.error(`Failed to create class ${index + 1} (${row.className}):`, error);
+          results.failed.push({
+            className: row.className,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
         }
       }
 
-      toast.success(`Successfully created ${scheduleRows.length} class schedules!`);
-      
-      // Reset form
-      setScheduleRows([]);
-      setSelectedLocationId('');
+      // Provide comprehensive feedback to the user
+      if (results.successful.length > 0 && results.failed.length === 0) {
+        toast.success(`Successfully created ${results.successful.length} class schedule${results.successful.length > 1 ? 's' : ''}!`);
+        // Reset form only if all classes saved successfully
+        setScheduleRows([]);
+        setSelectedLocationId('');
+      } else if (results.successful.length > 0 && results.failed.length > 0) {
+        toast.success(`${results.successful.length} class${results.successful.length > 1 ? 'es' : ''} created successfully`);
+        toast.error(`${results.failed.length} class${results.failed.length > 1 ? 'es' : ''} failed to save: ${results.failed.map(f => f.className).join(', ')}`);
+        
+        // Remove successful classes from the form
+        setScheduleRows(scheduleRows.filter(row => 
+          results.failed.some(failed => failed.className === row.className)
+        ));
+      } else {
+        toast.error(`All classes failed to save. Please check your input and try again.`);
+        // Show detailed error for the first failed class
+        if (results.failed.length > 0) {
+          console.error('First error details:', results.failed[0].error);
+        }
+      }
       
     } catch (error) {
-      console.error("Error saving schedules:", error);
-      toast.error("Failed to save schedules. Please try again.");
+      console.error("Unexpected error during save:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
