@@ -120,27 +120,66 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
         .setLngLat([location.longitude!, location.latitude!])
         .addTo(map.current!);
 
-      // Add click handler
-      marker.getElement().addEventListener('click', () => {
+      // Create popup with location info
+      const popup = new mapboxgl.Popup({
+        offset: 25,
+        closeButton: false,
+        closeOnClick: false,
+        className: 'location-hover-popup'
+      }).setHTML(`
+        <div class="p-3">
+          <h3 class="font-bold text-sm text-gray-900">${location.name}</h3>
+          <p class="text-xs text-gray-600 mt-1">${location.address}</p>
+          <p class="text-xs text-gray-600">${location.city}, ${location.state}</p>
+          <p class="text-xs text-blue-600 mt-2 font-medium">Click to select this location</p>
+        </div>
+      `);
+
+      marker.setPopup(popup);
+
+      const markerElement = marker.getElement();
+      let hoverTimeout: NodeJS.Timeout;
+
+      // Add hover functionality
+      markerElement.addEventListener('mouseenter', () => {
+        // Clear any existing timeout
+        if (hoverTimeout) {
+          clearTimeout(hoverTimeout);
+        }
+        
+        // Show popup with slight delay to prevent flickering
+        hoverTimeout = setTimeout(() => {
+          popup.addTo(map.current!);
+        }, 100);
+        
+        // Add hover styling
+        markerElement.style.transform = 'scale(1.1)';
+        markerElement.style.transition = 'transform 0.2s ease';
+        markerElement.style.cursor = 'pointer';
+      });
+
+      markerElement.addEventListener('mouseleave', () => {
+        // Clear timeout if mouse leaves before popup shows
+        if (hoverTimeout) {
+          clearTimeout(hoverTimeout);
+        }
+        
+        // Hide popup
+        popup.remove();
+        
+        // Reset hover styling
+        markerElement.style.transform = 'scale(1)';
+      });
+
+      // Add click handler for location selection
+      markerElement.addEventListener('click', (e) => {
+        e.stopPropagation();
         addDebugLog(`Marker clicked: ${location.name}`);
         if (onLocationSelect) {
           onLocationSelect(location);
         }
       });
 
-      // Add popup with location info
-      const popup = new mapboxgl.Popup({
-        offset: 25,
-        closeButton: false
-      }).setHTML(`
-        <div class="p-3">
-          <h3 class="font-bold text-sm">${location.name}</h3>
-          <p class="text-xs text-gray-600">${location.address}</p>
-          <p class="text-xs text-gray-600">${location.city}, ${location.state}</p>
-        </div>
-      `);
-
-      marker.setPopup(popup);
       markers.current.push(marker);
     });
 
@@ -167,6 +206,19 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
         className="w-full h-full rounded-lg border border-gray-200"
         style={{ minHeight: '300px' }}
       />
+      <style jsx>{`
+        :global(.location-hover-popup .mapboxgl-popup-content) {
+          border-radius: 8px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          border: 1px solid #e5e7eb;
+          padding: 0;
+          max-width: 250px;
+        }
+        
+        :global(.location-hover-popup .mapboxgl-popup-tip) {
+          border-top-color: #e5e7eb;
+        }
+      `}</style>
     </AspectRatio>
   );
 };
