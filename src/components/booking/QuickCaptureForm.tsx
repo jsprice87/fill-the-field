@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { setupLeadPolicies } from '@/utils/setupLeadPolicies';
 import type { Database } from '@/integrations/supabase/types';
 
 type LeadStatus = Database['public']['Enums']['lead_status'];
@@ -33,6 +34,20 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [policiesSetup, setPoliciesSetup] = useState(false);
+
+  // Set up RLS policies on component mount
+  useEffect(() => {
+    const initializePolicies = async () => {
+      const success = await setupLeadPolicies();
+      setPoliciesSetup(success);
+      if (!success) {
+        console.warn('Lead policies setup failed - form may not work properly');
+      }
+    };
+    
+    initializePolicies();
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
