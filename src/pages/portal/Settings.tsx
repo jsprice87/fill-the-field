@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,7 @@ import TimezoneSettingsCard from '@/components/portal/TimezoneSettingsCard';
 import BusinessInformationCard from '@/components/portal/BusinessInformationCard';
 import CustomWaiverCard from '@/components/portal/CustomWaiverCard';
 import MetaPixelCard from '@/components/portal/MetaPixelCard';
+import WebhookIntegrationsCard from '@/components/portal/WebhookIntegrationsCard';
 
 const Settings: React.FC = () => {
   const { data: settings, isLoading } = useFranchiseeSettings();
@@ -142,6 +144,9 @@ const Settings: React.FC = () => {
 
         {/* Meta Pixel Tracking */}
         <MetaPixelCard />
+
+        {/* Workflow Integrations */}
+        <WebhookIntegrationsCard />
 
         {/* Custom Waiver */}
         <CustomWaiverCard />
