@@ -1,4 +1,4 @@
-import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon } from "lucide-react";
+import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon, HelpCircleIcon } from "lucide-react";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -14,6 +14,7 @@ import AddClasses from "./pages/portal/AddClasses";
 import EditClass from "./pages/portal/EditClass";
 import PortalProfile from "./pages/portal/Profile";
 import PortalSettings from "./pages/portal/Settings";
+import PortalHelp from "./pages/portal/Help";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUserManagement from "./pages/admin/UserManagement";
 import AdminTransactions from "./pages/admin/Transactions";
@@ -268,6 +269,12 @@ export const navItems = [
     to: "/:franchiseeSlug/portal/settings",
     icon: <SettingsIcon className="h-4 w-4" />,
     page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalSettings /></DashboardLayout></ProtectedRoute></SlugResolver>,
+  },
+  {
+    title: "Franchisee Portal Help",
+    to: "/:franchiseeSlug/portal/help",
+    icon: <HelpCircleIcon className="h-4 w-4" />,
+    page: <SlugResolver><ProtectedRoute><DashboardLayout><PortalHelp /></DashboardLayout></ProtectedRoute></SlugResolver>,
   },
   // PUBLIC landing page routes - Add requireAuth={false}
   {

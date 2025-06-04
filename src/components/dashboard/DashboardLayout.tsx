@@ -1,9 +1,8 @@
-
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarProvider, SidebarContent } from "@/components/ui/sidebar";
-import { LayoutDashboard, Globe, MapPin, Calendar, Users, Settings, LogOut, BarChart3, UserCircle, CreditCard } from "lucide-react";
+import { LayoutDashboard, Globe, MapPin, Calendar, Users, Settings, LogOut, BarChart3, UserCircle, CreditCard, HelpCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
@@ -151,6 +150,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <Button variant="ghost" className="w-full justify-start">
                       <UserCircle className="mr-2 h-5 w-5" />
                       Profile
+                    </Button>
+                  </Link>
+                )}
+                
+                {!isAdminRoute && (
+                  <Link to={`${navPrefix}/portal/help`}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <HelpCircle className="mr-2 h-5 w-5" />
+                      Help
                     </Button>
                   </Link>
                 )}
