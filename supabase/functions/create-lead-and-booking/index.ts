@@ -5,6 +5,30 @@ import { corsHeaders } from '../_shared/cors.ts'
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
+// Helper function to trigger webhook in background
+const triggerWebhook = async (franchiseeId: string, eventType: string, data: any) => {
+  try {
+    const response = await fetch(`${supabaseUrl.replace('/rest/v1', '')}/functions/v1/send-webhook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceKey}`
+      },
+      body: JSON.stringify({
+        franchiseeId,
+        eventType,
+        data
+      })
+    })
+
+    if (!response.ok) {
+      console.error('Failed to trigger webhook:', await response.text())
+    }
+  } catch (error) {
+    console.error('Error triggering webhook:', error)
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -41,8 +65,19 @@ Deno.serve(async (req) => {
     const leadId = leadInsertData.id
     console.log('Lead created successfully with ID:', leadId)
 
+    // Trigger lead_created webhook in background
+    const leadWebhookData = {
+      ...leadData,
+      id: leadId
+    }
+    
+    // Use background task to avoid blocking the response
+    const leadWebhookPromise = triggerWebhook(franchiseeId, 'lead_created', leadWebhookData)
+
     // Step 2: Create booking if bookingData is provided
     let bookingId = null
+    let bookingWebhookPromise = null
+    
     if (bookingData) {
       // Ensure the booking uses the real lead ID
       const bookingPayload = {
@@ -65,9 +100,18 @@ Deno.serve(async (req) => {
 
       bookingId = bookingInsertData.id
       console.log('Booking created successfully with ID:', bookingId)
+
+      // Trigger booking_created webhook in background
+      const bookingWebhookData = {
+        ...bookingPayload,
+        id: bookingId,
+        lead: leadWebhookData
+      }
+      
+      bookingWebhookPromise = triggerWebhook(franchiseeId, 'booking_created', bookingWebhookData)
     }
 
-    // Return success response with both IDs
+    // Return success response immediately (webhooks run in background)
     const response = {
       success: true,
       leadId,
@@ -76,6 +120,15 @@ Deno.serve(async (req) => {
     }
 
     console.log('Operation completed successfully:', response)
+
+    // Wait for webhook delivery attempts to complete in background
+    // This won't block the response but ensures webhooks are triggered
+    Promise.all([
+      leadWebhookPromise,
+      bookingWebhookPromise
+    ].filter(Boolean)).catch(error => {
+      console.error('Webhook delivery error:', error)
+    })
 
     return new Response(JSON.stringify(response), {
       status: 200,

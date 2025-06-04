@@ -776,6 +776,51 @@ export type Database = {
           },
         ]
       }
+      webhook_logs: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          event_type: string
+          franchisee_id: string
+          id: string
+          payload: Json
+          response_body: string | null
+          response_status: number | null
+          updated_at: string
+          webhook_url: string
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type: string
+          franchisee_id: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          response_status?: number | null
+          updated_at?: string
+          webhook_url: string
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          franchisee_id?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          response_status?: number | null
+          updated_at?: string
+          webhook_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
