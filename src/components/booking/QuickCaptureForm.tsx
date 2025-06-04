@@ -78,28 +78,28 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         status: 'new' as LeadStatus
       };
 
-      console.log('Inserting lead data:', leadData);
+      console.log('Calling Edge Function with lead data:', leadData);
 
-      // Insert the lead and capture the real UUID
-      // Use .select('id') to only get the ID field, avoiding full row RLS issues
-      const { data: leadResponse, error: leadError } = await supabase
-        .from('leads')
-        .insert(leadData)
-        .select('id')
-        .single();
+      // Call the Edge Function to create lead and booking
+      const { data: functionResponse, error: functionError } = await supabase.functions.invoke('create-lead-and-booking', {
+        body: {
+          leadData,
+          franchiseeId
+        }
+      });
 
-      if (leadError) {
-        console.error('Error creating lead:', leadError);
-        throw new Error(`Failed to save lead: ${leadError.message}`);
+      if (functionError) {
+        console.error('Error calling create-lead-and-booking function:', functionError);
+        throw new Error(`Failed to create lead: ${functionError.message}`);
       }
 
-      if (!leadResponse?.id) {
-        console.error('No lead ID returned from insert');
-        throw new Error('Failed to get lead ID from database');
+      if (!functionResponse?.success) {
+        console.error('Function returned error:', functionResponse);
+        throw new Error(functionResponse?.error || 'Unknown error occurred');
       }
 
-      const realLeadId = leadResponse.id;
-      console.log('Lead created successfully with ID:', realLeadId);
+      const { leadId } = functionResponse;
+      console.log('Lead created successfully with ID:', leadId);
 
       toast.success('Information saved! Let\'s find classes near you.');
       
@@ -111,10 +111,10 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
       // Pass the real lead ID and data to the success callback
       if (onSuccess) {
         const leadDataWithId = {
-          id: realLeadId,
+          id: leadId,
           ...leadData
         };
-        onSuccess(realLeadId, leadDataWithId);
+        onSuccess(leadId, leadDataWithId);
       }
 
     } catch (error) {
