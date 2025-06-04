@@ -78,15 +78,28 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         status: 'new' as LeadStatus
       };
 
-      // Insert without selecting to avoid RLS violation for anonymous users
-      const { error: leadError } = await supabase
+      console.log('Inserting lead data:', leadData);
+
+      // Insert the lead and capture the real UUID
+      // Use .select('id') to only get the ID field, avoiding full row RLS issues
+      const { data: leadResponse, error: leadError } = await supabase
         .from('leads')
-        .insert(leadData);
+        .insert(leadData)
+        .select('id')
+        .single();
 
       if (leadError) {
         console.error('Error creating lead:', leadError);
         throw new Error(`Failed to save lead: ${leadError.message}`);
       }
+
+      if (!leadResponse?.id) {
+        console.error('No lead ID returned from insert');
+        throw new Error('Failed to get lead ID from database');
+      }
+
+      const realLeadId = leadResponse.id;
+      console.log('Lead created successfully with ID:', realLeadId);
 
       toast.success('Information saved! Let\'s find classes near you.');
       
@@ -95,14 +108,13 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         onLeadCreated();
       }
       
-      // Generate a placeholder ID since we don't get the actual ID back
-      // The actual lead was created successfully in the database
+      // Pass the real lead ID and data to the success callback
       if (onSuccess) {
-        const placeholderLeadData = {
-          id: 'placeholder-' + Date.now(),
+        const leadDataWithId = {
+          id: realLeadId,
           ...leadData
         };
-        onSuccess(placeholderLeadData.id, placeholderLeadData);
+        onSuccess(realLeadId, leadDataWithId);
       }
 
     } catch (error) {
