@@ -45,12 +45,16 @@ export const useTestWebhook = () => {
 
     if (!franchisee) throw new Error('Franchisee not found');
 
-    // Call the send-webhook function directly
-    const response = await fetch(`${supabase.supabaseUrl.replace('/rest/v1', '')}/functions/v1/send-webhook`, {
+    // Get the session token for authorization
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('No active session');
+
+    // Call the send-webhook function directly using the correct URL
+    const response = await fetch('https://ojowhfojaswbbuefxaae.supabase.co/functions/v1/send-webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabase.supabaseKey}`
+        'Authorization': `Bearer ${session.access_token}`
       },
       body: JSON.stringify({
         franchiseeId: franchisee.id,
