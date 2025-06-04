@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
 
     console.log('Creating lead and booking for franchisee:', franchiseeId)
     console.log('Lead data:', leadData)
+    console.log('Booking data:', bookingData)
 
     // Step 1: Insert the lead with service role privileges
     const { data: leadInsertData, error: leadError } = await supabase
