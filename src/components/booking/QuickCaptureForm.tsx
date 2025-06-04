@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,15 +77,23 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         status: 'new' as LeadStatus
       };
 
-      // Insert without selecting to avoid RLS violation for anonymous users
-      const { error: leadError } = await supabase
+      // Insert and get the minimal response with ID to avoid RLS violation
+      const { data, error: leadError } = await supabase
         .from('leads')
-        .insert(leadData);
+        .insert(leadData)
+        .select('id')
+        .single();
 
       if (leadError) {
         console.error('Error creating lead:', leadError);
         throw new Error(`Failed to save lead: ${leadError.message}`);
       }
+
+      if (!data || !data.id) {
+        throw new Error('Lead was created but ID was not returned');
+      }
+
+      console.log('Lead created with ID:', data.id);
 
       toast.success('Information saved! Let\'s find classes near you.');
       
@@ -95,14 +102,13 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         onLeadCreated();
       }
       
-      // Generate a placeholder ID since we don't get the actual ID back
-      // The actual lead was created successfully in the database
+      // Use the real lead ID from the database
       if (onSuccess) {
-        const placeholderLeadData = {
-          id: 'placeholder-' + Date.now(),
+        const leadDataWithId = {
+          id: data.id,
           ...leadData
         };
-        onSuccess(placeholderLeadData.id, placeholderLeadData);
+        onSuccess(data.id, leadDataWithId);
       }
 
     } catch (error) {
