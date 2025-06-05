@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -188,7 +187,7 @@ const ClassBooking: React.FC = () => {
 
       const { error: bookingError } = await supabase
         .from('bookings')
-        .insert(bookingData, { returning: 'minimal' });
+        .insert(bookingData);
 
       if (bookingError) {
         console.error('Booking creation error:', bookingError);
@@ -230,7 +229,7 @@ const ClassBooking: React.FC = () => {
             selected_date: participant.selectedDate,
             health_conditions: participant.healthConditions,
             age_override: participant.ageOverride
-          }, { returning: 'minimal' })
+          })
       );
 
       const appointmentResults = await Promise.all(appointmentPromises);
