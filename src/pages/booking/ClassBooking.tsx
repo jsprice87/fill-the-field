@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -168,40 +169,58 @@ const ClassBooking: React.FC = () => {
     }
 
     try {
-      // Create the booking record
-      const { data: booking, error: bookingError } = await supabase
+      // Create the booking record with minimal returning to avoid SELECT issue
+      const bookingData = {
+        lead_id: leadId,
+        class_schedule_id: participants[0].classScheduleId,
+        parent_first_name: parentInfo.firstName,
+        parent_last_name: parentInfo.lastName,
+        parent_email: parentInfo.email,
+        parent_phone: parentInfo.phone,
+        parent_zip: parentInfo.zip,
+        parent_relationship: parentInfo.relationship,
+        waiver_accepted: flowData.waiverAccepted,
+        waiver_accepted_at: flowData.waiverAccepted ? new Date().toISOString() : null,
+        communication_permission: flowData.communicationPermission,
+        marketing_permission: flowData.marketingPermission,
+        child_speaks_english: flowData.childSpeaksEnglish
+      };
+
+      const { error: bookingError } = await supabase
         .from('bookings')
-        .insert({
-          lead_id: leadId,
-          class_schedule_id: participants[0].classScheduleId,
-          parent_first_name: parentInfo.firstName,
-          parent_last_name: parentInfo.lastName,
-          parent_email: parentInfo.email,
-          parent_phone: parentInfo.phone,
-          parent_zip: parentInfo.zip,
-          parent_relationship: parentInfo.relationship,
-          waiver_accepted: flowData.waiverAccepted,
-          waiver_accepted_at: flowData.waiverAccepted ? new Date().toISOString() : null,
-          communication_permission: flowData.communicationPermission,
-          marketing_permission: flowData.marketingPermission,
-          child_speaks_english: flowData.childSpeaksEnglish
-        })
-        .select()
-        .single();
+        .insert(bookingData, { returning: 'minimal' });
 
       if (bookingError) {
         console.error('Booking creation error:', bookingError);
         throw bookingError;
       }
 
-      console.log('Booking created:', booking);
+      console.log('Booking created successfully');
+
+      // Since we can't get the booking ID from the insert, we'll need to query for it
+      // using the lead_id to find the most recent booking
+      const { data: recentBooking, error: findError } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (findError || !recentBooking) {
+        console.error('Error finding booking:', findError);
+        throw new Error('Booking was created but could not be retrieved');
+      }
+
+      const bookingId = recentBooking.id;
+      console.log('Found booking ID:', bookingId);
 
       // Create appointment records for each participant
       const appointmentPromises = participants.map(participant => 
         supabase
           .from('appointments')
           .insert({
-            booking_id: booking.id,
+            booking_id: bookingId,
             participant_name: `${participant.firstName} ${participant.lastName}`,
             participant_age: participant.age,
             participant_birth_date: participant.birthDate,
@@ -211,7 +230,7 @@ const ClassBooking: React.FC = () => {
             selected_date: participant.selectedDate,
             health_conditions: participant.healthConditions,
             age_override: participant.ageOverride
-          })
+          }, { returning: 'minimal' })
       );
 
       const appointmentResults = await Promise.all(appointmentPromises);
@@ -246,7 +265,7 @@ const ClassBooking: React.FC = () => {
         console.log('Lead status not updated - was manually set by user');
       }
 
-      navigate(`/${franchiseeSlug}/free-trial/booking/${booking.id}`);
+      navigate(`/${franchiseeSlug}/free-trial/booking/${bookingId}`);
       
     } catch (error) {
       console.error('Error creating booking:', error);
