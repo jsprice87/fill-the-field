@@ -332,6 +332,12 @@ export const navItems = [
     page: <SlugResolver requireAuth={false}><ClassBooking /></SlugResolver>,
   },
   {
+    title: "Free Trial Confirmation",
+    to: "/:franchiseeSlug/free-trial/confirmation",
+    icon: <CalendarIcon className="h-4 w-4" />,
+    page: <SlugResolver requireAuth={false}><BookingConfirmation /></SlugResolver>,
+  },
+  {
     title: "Booking Confirmation",
     to: "/:franchiseeSlug/free-trial/booking/:bookingId",
     icon: <CalendarIcon className="h-4 w-4" />,
