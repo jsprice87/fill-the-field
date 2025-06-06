@@ -71,7 +71,8 @@ const BookingConfirmation: React.FC = () => {
 
   const loadBookingData = async () => {
     try {
-      const bookingReference = searchParams.get('booking_reference');
+      // Accept both 'ref' and 'booking_reference' query params for backward compatibility
+      const bookingReference = searchParams.get('booking_reference') || searchParams.get('ref');
       console.log('Looking for booking with reference:', bookingReference);
       
       if (!bookingReference) {
@@ -98,13 +99,16 @@ const BookingConfirmation: React.FC = () => {
 
       setFranchiseeData(franchisee);
 
-      // Get franchisee settings
+      // Get franchisee settings with the new RLS policy
       const { data: settings, error: settingsError } = await supabase
         .from('franchisee_settings')
         .select('*')
         .eq('franchisee_id', franchisee.id);
 
-      if (!settingsError && settings) {
+      if (settingsError) {
+        console.error('Error fetching settings:', settingsError);
+        // Don't throw here, settings are optional
+      } else if (settings) {
         const settingsMap = settings.reduce((acc, setting) => {
           acc[setting.setting_key] = setting.setting_value;
           return acc;
@@ -112,8 +116,7 @@ const BookingConfirmation: React.FC = () => {
         setFranchiseeSettings(settingsMap);
       }
 
-      // Get booking details using booking_reference query parameter
-      // This will work with the RLS policy for anonymous users
+      // Get booking details using the updated RLS policy
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .select(`

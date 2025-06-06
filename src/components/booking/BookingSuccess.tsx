@@ -48,12 +48,12 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
 
   const handleViewConfirmation = () => {
     // Navigate to confirmation page with booking_reference as URL parameter
-    const confirmationUrl = `/${franchiseeSlug}/booking/confirmation?ref=${encodeURIComponent(bookingData.booking_reference)}`;
+    const confirmationUrl = `/${franchiseeSlug}/booking/confirmation?booking_reference=${encodeURIComponent(bookingData.booking_reference)}`;
     navigate(confirmationUrl);
   };
 
   const handleShare = async () => {
-    const confirmationUrl = `${window.location.origin}/${franchiseeSlug}/booking/confirmation?ref=${encodeURIComponent(bookingData.booking_reference)}`;
+    const confirmationUrl = `${window.location.origin}/${franchiseeSlug}/booking/confirmation?booking_reference=${encodeURIComponent(bookingData.booking_reference)}`;
     const message = `Great news! I just booked a free soccer trial for ${bookingData.appointments[0]?.participant_name} at Soccer Stars!\n\nView the booking: ${confirmationUrl}`;
 
     if (navigator.share) {
