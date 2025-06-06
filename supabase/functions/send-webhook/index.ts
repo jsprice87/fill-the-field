@@ -29,6 +29,18 @@ Deno.serve(async (req) => {
 
     console.log('Processing webhook delivery for franchisee:', franchiseeId, 'event:', eventType)
 
+    // Get franchisee details including company name
+    const { data: franchisee, error: franchiseeError } = await supabase
+      .from('franchisees')
+      .select('company_name')
+      .eq('id', franchiseeId)
+      .single()
+
+    if (franchiseeError) {
+      console.error('Error fetching franchisee details:', franchiseeError)
+      throw new Error(`Failed to fetch franchisee details: ${franchiseeError.message}`)
+    }
+
     // Get webhook settings for the franchisee
     const { data: settings, error: settingsError } = await supabase
       .from('franchisee_settings')
@@ -60,15 +72,17 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Prepare the webhook payload
+    // Prepare the webhook payload in the exact required format
     const webhookPayload = {
       event_type: eventType,
       timestamp: new Date().toISOString(),
       franchisee_id: franchiseeId,
+      franchisee_name: franchisee.company_name,
       data: data
     }
 
     console.log('Sending webhook to:', webhookUrl)
+    console.log('Webhook payload:', JSON.stringify(webhookPayload, null, 2))
 
     // Prepare headers
     const headers: Record<string, string> = {

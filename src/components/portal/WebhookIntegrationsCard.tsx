@@ -5,25 +5,27 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Webhook, ExternalLink, HelpCircle, Send, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Webhook, ExternalLink, HelpCircle, Send, Clock, CheckCircle, XCircle, User, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
-import { useWebhookLogs, useTestWebhook } from '@/hooks/useWebhookLogs';
+import { useWebhookLogs, useTestLeadWebhook, useTestBookingWebhook } from '@/hooks/useWebhookLogs';
 import { toast } from 'sonner';
 
 const WebhookIntegrationsCard: React.FC = () => {
   const { franchiseeSlug } = useParams();
   const { data: settings, isLoading } = useFranchiseeSettings();
   const { data: webhookLogs, refetch: refetchLogs } = useWebhookLogs(5);
-  const testWebhook = useTestWebhook();
+  const testLeadWebhook = useTestLeadWebhook();
+  const testBookingWebhook = useTestBookingWebhook();
   const updateSetting = useUpdateFranchiseeSetting();
   
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookAuthHeader, setWebhookAuthHeader] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [urlValidationError, setUrlValidationError] = useState('');
-  const [isTestingWebhook, setIsTestingWebhook] = useState(false);
+  const [isTestingLead, setIsTestingLead] = useState(false);
+  const [isTestingBooking, setIsTestingBooking] = useState(false);
 
   // Initialize local state when settings load
   useEffect(() => {
@@ -91,7 +93,7 @@ const WebhookIntegrationsCard: React.FC = () => {
     }
   };
 
-  const handleTestWebhook = async () => {
+  const handleTestLeadWebhook = async () => {
     if (!webhookUrl.trim()) {
       toast.error('Please configure a webhook URL first');
       return;
@@ -102,20 +104,48 @@ const WebhookIntegrationsCard: React.FC = () => {
       return;
     }
 
-    setIsTestingWebhook(true);
+    setIsTestingLead(true);
     try {
-      const result = await testWebhook();
+      const result = await testLeadWebhook();
       if (result.success) {
-        toast.success('Test webhook sent successfully!');
+        toast.success('Test lead webhook sent successfully!');
       } else {
-        toast.error(`Test webhook failed: ${result.error_message}`);
+        toast.error(`Test lead webhook failed: ${result.error_message}`);
       }
       refetchLogs();
     } catch (error) {
-      console.error('Test webhook error:', error);
-      toast.error(`Test webhook failed: ${error.message}`);
+      console.error('Test lead webhook error:', error);
+      toast.error(`Test lead webhook failed: ${error.message}`);
     } finally {
-      setIsTestingWebhook(false);
+      setIsTestingLead(false);
+    }
+  };
+
+  const handleTestBookingWebhook = async () => {
+    if (!webhookUrl.trim()) {
+      toast.error('Please configure a webhook URL first');
+      return;
+    }
+
+    if (hasUnsavedChanges) {
+      toast.error('Please save your webhook settings before testing');
+      return;
+    }
+
+    setIsTestingBooking(true);
+    try {
+      const result = await testBookingWebhook();
+      if (result.success) {
+        toast.success('Test booking webhook sent successfully!');
+      } else {
+        toast.error(`Test booking webhook failed: ${result.error_message}`);
+      }
+      refetchLogs();
+    } catch (error) {
+      console.error('Test booking webhook error:', error);
+      toast.error(`Test booking webhook failed: ${error.message}`);
+    } finally {
+      setIsTestingBooking(false);
     }
   };
 
@@ -210,16 +240,6 @@ const WebhookIntegrationsCard: React.FC = () => {
               </Button>
             )}
             
-            <Button
-              onClick={handleTestWebhook}
-              disabled={isTestingWebhook || !webhookUrl.trim() || hasUnsavedChanges}
-              variant="outline"
-              className="flex-1"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              {isTestingWebhook ? 'Testing...' : 'Test Webhook'}
-            </Button>
-            
             <Link 
               to={`/${franchiseeSlug}/portal/help`}
               className="flex-1"
@@ -229,6 +249,35 @@ const WebhookIntegrationsCard: React.FC = () => {
                 Documentation
               </Button>
             </Link>
+          </div>
+
+          {/* Test Webhook Buttons */}
+          <div className="space-y-3 pt-4 border-t">
+            <h4 className="font-medium text-sm text-gray-700">Test Webhooks</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                onClick={handleTestLeadWebhook}
+                disabled={isTestingLead || !webhookUrl.trim() || hasUnsavedChanges}
+                variant="outline"
+                className="w-full"
+              >
+                <User className="h-4 w-4 mr-2" />
+                {isTestingLead ? 'Testing...' : 'Test New Lead'}
+              </Button>
+              
+              <Button
+                onClick={handleTestBookingWebhook}
+                disabled={isTestingBooking || !webhookUrl.trim() || hasUnsavedChanges}
+                variant="outline"
+                className="w-full"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                {isTestingBooking ? 'Testing...' : 'Test New Booking'}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500">
+              Test buttons send properly formatted webhook payloads with mock data to validate your integration.
+            </p>
           </div>
         </div>
 

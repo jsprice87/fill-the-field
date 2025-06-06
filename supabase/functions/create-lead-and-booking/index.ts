@@ -75,10 +75,13 @@ Deno.serve(async (req) => {
     const leadId = leadInsertData.id
     console.log('Lead created successfully with ID:', leadId)
 
-    // Trigger lead_created webhook in background
+    // Trigger lead_created webhook with simplified data structure
     const leadWebhookData = {
-      ...leadData,
-      id: leadId
+      first_name: leadData.first_name,
+      last_name: leadData.last_name,
+      email: leadData.email,
+      phone: leadData.phone,
+      zip: leadData.zip
     }
     
     // Use background task to avoid blocking the response
@@ -119,10 +122,6 @@ Deno.serve(async (req) => {
       bookingId = bookingInsertData.id
       actualBookingReference = bookingInsertData.booking_reference
       
-      // LOG: Reference immediately after booking insert
-      console.log('🔍 BOOKING INSERT RESULT - Full data:', JSON.stringify(bookingInsertData, null, 2))
-      console.log('🔍 BOOKING INSERT RESULT - Stored reference:', actualBookingReference)
-      
       console.log('Booking created successfully with ID:', bookingId, 'and reference:', actualBookingReference)
 
       // Step 3: Create appointment records if appointments are provided
@@ -144,6 +143,41 @@ Deno.serve(async (req) => {
         }
 
         console.log('All appointments created successfully')
+
+        // Get class schedule details for webhook
+        const { data: classSchedule, error: classError } = await supabase
+          .from('class_schedules')
+          .select(`
+            id,
+            classes (
+              class_name,
+              locations (
+                name
+              )
+            )
+          `)
+          .eq('id', bookingDataWithoutAppointments.class_schedule_id)
+          .single()
+
+        if (classError) {
+          console.error('Error fetching class schedule:', classError)
+        }
+
+        // Format booking webhook data according to required structure
+        const participantNames = appointments.map((apt: any) => apt.participant_name).join(', ')
+        const firstAppointment = appointments[0]
+        
+        const bookingWebhookData = {
+          booking_reference: actualBookingReference,
+          class_schedule_name: classSchedule?.classes?.class_name || 'Unknown Class',
+          class_date: firstAppointment?.selected_date || '',
+          class_time: firstAppointment?.class_time || '',
+          participant_names: participantNames,
+          parent_first_name: bookingDataWithoutAppointments.parent_first_name,
+          parent_last_name: bookingDataWithoutAppointments.parent_last_name
+        }
+        
+        bookingWebhookPromise = triggerWebhook(franchiseeId, 'booking_created', bookingWebhookData)
       }
 
       // Only update lead status to booked_upcoming if it hasn't been manually set
@@ -166,16 +200,6 @@ Deno.serve(async (req) => {
       } else {
         console.log('Lead status not updated - was manually set by user')
       }
-
-      // Trigger booking_created webhook in background
-      const bookingWebhookData = {
-        ...bookingDataWithoutAppointments,
-        id: bookingId,
-        lead: leadWebhookData,
-        appointments: appointments || []
-      }
-      
-      bookingWebhookPromise = triggerWebhook(franchiseeId, 'booking_created', bookingWebhookData)
     }
 
     // Return success response immediately (webhooks run in background)
@@ -183,13 +207,9 @@ Deno.serve(async (req) => {
       success: true,
       leadId,
       bookingId,
-      bookingReference: actualBookingReference, // Use the actual stored reference
+      bookingReference: actualBookingReference,
       message: 'Lead and booking created successfully'
     }
-
-    // LOG: Reference immediately before returning response
-    console.log('🔍 RESPONSE DATA - Full response:', JSON.stringify(response, null, 2))
-    console.log('🔍 RESPONSE DATA - Returning reference:', actualBookingReference)
 
     console.log('Operation completed successfully:', response)
 
