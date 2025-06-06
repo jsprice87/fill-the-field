@@ -14,9 +14,16 @@ export const useFranchiseeProfile = () => {
         .from('franchisees')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle missing records
 
       if (error) throw error;
+      
+      // If no franchisee record exists, this indicates a serious issue
+      if (!data) {
+        console.error('No franchisee record found for authenticated user:', user.id);
+        throw new Error('Profile not found - please contact support or re-register');
+      }
+      
       return data;
     },
     enabled: false, // Don't run automatically

@@ -14,9 +14,15 @@ export const useFranchiseeData = () => {
         .from('franchisees')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single
 
       if (error) throw error;
+      
+      if (!data) {
+        console.error('No franchisee record found for user:', user.id);
+        throw new Error('Profile not found - please contact support or re-register');
+      }
+      
       return data;
     }
   });

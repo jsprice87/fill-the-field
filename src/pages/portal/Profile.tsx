@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -23,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Profile: React.FC = () => {
-  const { data: profile, isLoading, error } = useFranchiseeProfile();
+  const { data: profile, isLoading, error, refetch } = useFranchiseeProfile();
   const updateProfile = useUpdateFranchiseeProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -38,6 +37,11 @@ const Profile: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  // Trigger the query when component mounts
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   React.useEffect(() => {
     if (profile) {
@@ -146,12 +150,56 @@ const Profile: React.FC = () => {
     );
   }
 
-  if (error || !profile) {
+  if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Missing profile information</h2>
-          <p className="text-red-600">Please update your profile to continue using the platform.</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">Account Setup Issue</h2>
+          <p className="text-red-600 mb-4">
+            {error.message.includes('Profile not found') 
+              ? 'Your account setup is incomplete. This usually happens if there was an issue during registration.'
+              : 'There was an error loading your profile information.'
+            }
+          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-red-600">
+              Please try one of the following solutions:
+            </p>
+            <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
+              <li>Log out and log back in</li>
+              <li>Clear your browser cache and try again</li>
+              <li>If the issue persists, please contact support</li>
+            </ul>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => supabase.auth.signOut()}
+              className="text-red-600 border-red-600 hover:bg-red-50"
+            >
+              Log Out
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.reload()}
+              className="text-red-600 border-red-600 hover:bg-red-50"
+            >
+              Refresh Page
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="p-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-yellow-800 mb-2">Profile Not Found</h2>
+          <p className="text-yellow-600">
+            No profile information found for your account. Please contact support.
+          </p>
         </div>
       </div>
     );
