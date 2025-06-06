@@ -4,6 +4,34 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useEnsureFranchiseeProfile } from './useEnsureFranchiseeProfile';
 
+// Session storage key for safety net check
+const SAFETY_NET_KEY = 'franchisee_profile_ensured';
+
+const hasSessionSafetyNetRun = (): boolean => {
+  try {
+    const ensured = sessionStorage.getItem(SAFETY_NET_KEY);
+    return ensured === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const markSessionSafetyNetRun = (): void => {
+  try {
+    sessionStorage.setItem(SAFETY_NET_KEY, 'true');
+  } catch {
+    // Ignore storage errors
+  }
+};
+
+const clearSessionSafetyNet = (): void => {
+  try {
+    sessionStorage.removeItem(SAFETY_NET_KEY);
+  } catch {
+    // Ignore storage errors
+  }
+};
+
 export const useFranchiseeProfile = () => {
   const ensureFranchiseeProfile = useEnsureFranchiseeProfile();
   const queryClient = useQueryClient();
@@ -11,9 +39,11 @@ export const useFranchiseeProfile = () => {
   return useQuery({
     queryKey: ['franchisee-profile'],
     queryFn: async () => {
+      console.log('useFranchiseeProfile: Starting query');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Try to get existing franchisee record first
       const { data, error } = await supabase
         .from('franchisees')
         .select('*')
@@ -22,12 +52,20 @@ export const useFranchiseeProfile = () => {
 
       if (error) throw error;
       
-      // If no franchisee record exists, use the safety net to create one
-      if (!data) {
-        console.log('No franchisee record found, triggering safety net...');
+      // If franchisee exists, mark safety net as run and return
+      if (data) {
+        markSessionSafetyNetRun();
+        console.log('useFranchiseeProfile: Found existing franchisee record');
+        return data;
+      }
+      
+      // If no franchisee record and safety net hasn't run this session
+      if (!hasSessionSafetyNetRun()) {
+        console.log('useFranchiseeProfile: No record found, triggering safety net...');
         
         try {
           const result = await ensureFranchiseeProfile.mutateAsync('profile_query');
+          markSessionSafetyNetRun();
           
           if (result?.franchisee) {
             // Invalidate and refetch to get the fresh data
@@ -40,11 +78,14 @@ export const useFranchiseeProfile = () => {
         }
       }
       
-      return data;
+      // If safety net already ran this session but still no record, something's wrong
+      throw new Error('Profile not found. Please try refreshing the page or contact support.');
     },
-    enabled: false, // Don't run automatically
-    retry: false, // Don't retry on error
-    refetchOnWindowFocus: false
+    staleTime: 10 * 60 * 1000, // 10 minutes - generous stale time to prevent automatic refetches
+    gcTime: 15 * 60 * 1000, // 15 minutes garbage collection time
+    retry: 1, // Only retry once to prevent loops
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: false, // Don't automatically refetch on mount
   });
 };
 
@@ -85,4 +126,9 @@ export const useUpdateFranchiseeProfile = () => {
       console.error('Profile update error:', error);
     }
   });
+};
+
+// Clear safety net cache on sign out
+export const clearFranchiseeProfileCache = () => {
+  clearSessionSafetyNet();
 };

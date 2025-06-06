@@ -2,29 +2,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useFranchiseeProfile } from './useFranchiseeProfile';
 
 export const useFranchiseeData = () => {
+  const { data: profile, isLoading: isProfileLoading, error: profileError } = useFranchiseeProfile();
+
   return useQuery({
     queryKey: ['franchisee-data'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase
-        .from('franchisees')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle(); // Use maybeSingle instead of single
-
-      if (error) throw error;
-      
-      if (!data) {
-        console.error('No franchisee record found for user:', user.id);
-        throw new Error('Profile not found - please contact support or re-register');
-      }
-      
-      return data;
-    }
+      if (!profile) throw new Error('No franchisee profile found');
+      return profile; // Return the same data from the profile hook
+    },
+    enabled: !!profile, // Only run when profile is available
+    staleTime: 10 * 60 * 1000, // 10 minutes stale time
+    initialData: profile, // Use profile data as initial data
   });
 };
 
@@ -57,6 +48,7 @@ export const useUpdateFranchiseeData = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['franchisee-data'] });
+      queryClient.invalidateQueries({ queryKey: ['franchisee-profile'] });
       toast.success('Business information updated successfully');
     },
     onError: (error) => {

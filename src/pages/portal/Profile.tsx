@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Profile: React.FC = () => {
-  const { data: profile, isLoading, error, refetch } = useFranchiseeProfile();
+  const { data: profile, isLoading, error } = useFranchiseeProfile();
   const updateProfile = useUpdateFranchiseeProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -38,11 +38,7 @@ const Profile: React.FC = () => {
     confirmPassword: ''
   });
 
-  // Trigger the query when component mounts
-  React.useEffect(() => {
-    refetch();
-  }, [refetch]);
-
+  // Remove the manual refetch call since the query is now enabled by default
   React.useEffect(() => {
     if (profile) {
       setFormData({

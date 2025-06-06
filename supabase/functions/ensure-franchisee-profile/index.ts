@@ -86,25 +86,31 @@ serve(async (req) => {
 
     console.log(`Ensuring franchisee profile for user ${user.id} from ${sourcePath}`);
 
-    // First, try to find existing franchisee record
-    const { data: existingFranchisee, error: selectError } = await supabaseAdmin
+    // FAST-RETURN GUARD: Quick check if franchisee already exists (< 10ms)
+    const startTime = Date.now();
+    const { data: existingFranchisee, error: quickCheckError } = await supabaseAdmin
       .from('franchisees')
-      .select('*')
+      .select('id, slug, company_name, contact_name, email')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (selectError) {
-      throw selectError;
+    const quickCheckTime = Date.now() - startTime;
+    console.log(`Quick franchisee check took ${quickCheckTime}ms`);
+
+    if (quickCheckError) {
+      throw quickCheckError;
     }
 
-    // If franchisee already exists, return it
+    // If franchisee already exists, return immediately
     if (existingFranchisee) {
-      console.log(`Franchisee profile already exists for user ${user.id}`);
+      console.log(`Franchisee profile already exists for user ${user.id} (fast return in ${quickCheckTime}ms)`);
       return new Response(
         JSON.stringify({ 
           success: true, 
           franchisee: existingFranchisee,
-          created: false 
+          created: false,
+          fastReturn: true,
+          checkTime: quickCheckTime
         }),
         { 
           status: 200, 
@@ -179,13 +185,15 @@ serve(async (req) => {
         success: true
       });
 
-    console.log(`Created franchisee profile for user ${user.id} with slug ${newFranchisee.slug}`);
+    const totalTime = Date.now() - startTime;
+    console.log(`Created franchisee profile for user ${user.id} with slug ${newFranchisee.slug} in ${totalTime}ms`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         franchisee: newFranchisee,
-        created: true 
+        created: true,
+        totalTime
       }),
       { 
         status: 200, 

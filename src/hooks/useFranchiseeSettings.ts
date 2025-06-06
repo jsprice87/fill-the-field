@@ -2,27 +2,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useFranchiseeProfile } from './useFranchiseeProfile';
 
 export const useFranchiseeSettings = () => {
+  const { data: profile, isLoading: isProfileLoading } = useFranchiseeProfile();
+
   return useQuery({
     queryKey: ['franchisee-settings'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      // First get the franchisee_id
-      const { data: franchisee } = await supabase
-        .from('franchisees')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!franchisee) throw new Error('Franchisee not found');
+      if (!profile?.id) throw new Error('No franchisee profile found');
 
       const { data, error } = await supabase
         .from('franchisee_settings')
         .select('*')
-        .eq('franchisee_id', franchisee.id);
+        .eq('franchisee_id', profile.id);
 
       if (error) throw error;
 
@@ -33,38 +26,26 @@ export const useFranchiseeSettings = () => {
       }, {} as Record<string, string>);
 
       return settingsMap;
-    }
+    },
+    enabled: !!profile?.id, // Only run when we have a franchisee ID
+    staleTime: 5 * 60 * 1000, // 5 minutes stale time
   });
 };
 
 export const useUpdateFranchiseeSetting = () => {
   const queryClient = useQueryClient();
+  const { data: profile } = useFranchiseeProfile();
 
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
       console.log('Updating setting:', key, value);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      // Get franchisee_id
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (franchiseeError) {
-        console.error('Franchisee lookup error:', franchiseeError);
-        throw franchiseeError;
-      }
-
-      if (!franchisee) throw new Error('Franchisee not found');
+      if (!profile?.id) throw new Error('No franchisee profile found');
 
       const { data, error } = await supabase
         .from('franchisee_settings')
         .upsert({
-          franchisee_id: franchisee.id,
+          franchisee_id: profile.id,
           setting_key: key,
           setting_value: value
         }, {
