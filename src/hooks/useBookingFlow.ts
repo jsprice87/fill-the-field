@@ -31,6 +31,7 @@ export interface LeadData {
 }
 
 export interface BookingFlowData {
+  franchiseeId?: string;
   leadId?: string;
   leadData?: LeadData;
   selectedLocation?: LocationData;
@@ -56,13 +57,19 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
       // Generate flow ID
       const newFlowId = crypto.randomUUID();
 
+      // Include franchiseeId in the initial data
+      const dataWithFranchiseeId = {
+        ...initialData,
+        franchiseeId
+      };
+
       // Create flow record with proper Json type casting
       const { error: flowError } = await supabase
         .from('booking_flows')
         .insert({
           flow_id: newFlowId,
           franchisee_id: franchiseeId, // Use the franchisee ID directly
-          state_data: initialData as any
+          state_data: dataWithFranchiseeId as any
         });
 
       if (flowError) {
@@ -71,7 +78,7 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
       }
 
       setCurrentFlowId(newFlowId);
-      setFlowData(initialData);
+      setFlowData(dataWithFranchiseeId);
       
       console.log('Flow created successfully with ID:', newFlowId);
       return newFlowId;
@@ -89,7 +96,7 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
     try {
       const { data: flow, error } = await supabase
         .from('booking_flows')
-        .select('state_data, expires_at')
+        .select('state_data, expires_at, franchisee_id')
         .eq('flow_id', flowIdToLoad)
         .gt('expires_at', new Date().toISOString())
         .single();
@@ -101,6 +108,12 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
       setCurrentFlowId(flowIdToLoad);
       // Cast the Json type back to our BookingFlowData interface
       const stateData = (flow.state_data as any) || {};
+      
+      // Ensure franchiseeId is included from the database record if not in state_data
+      if (!stateData.franchiseeId && flow.franchisee_id) {
+        stateData.franchiseeId = flow.franchisee_id;
+      }
+      
       setFlowData(stateData);
       
       return stateData;
@@ -171,6 +184,13 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
       loadFlow(flowId).catch(console.error);
     }
   }, [flowId, currentFlowId, loadFlow]);
+
+  // Initialize franchiseeId if provided but not in flowData
+  useEffect(() => {
+    if (franchiseeId && flowData && !flowData.franchiseeId) {
+      setFlowData(prev => ({ ...prev, franchiseeId }));
+    }
+  }, [franchiseeId, flowData]);
 
   return {
     flowData,
