@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe } from 'lucide-react';
@@ -53,31 +53,45 @@ interface FranchiseeSettings {
 }
 
 const BookingConfirmation: React.FC = () => {
-  const { franchiseeSlug, bookingId } = useParams();
+  const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
   const [franchiseeSettings, setFranchiseeSettings] = useState<FranchiseeSettings>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!franchiseeSlug || !bookingId) {
+    if (!franchiseeSlug) {
       navigate('/');
       return;
     }
     loadBookingData();
-  }, [franchiseeSlug, bookingId]);
+  }, [franchiseeSlug]);
 
   const loadBookingData = async () => {
     try {
-      // Get franchisee by slug
+      const bookingReference = searchParams.get('ref');
+      
+      if (!bookingReference) {
+        throw new Error('Booking reference not found');
+      }
+
+      console.log('Loading booking with reference:', bookingReference);
+
+      // Get franchisee by slug first
       const { data: franchisee, error: franchiseeError } = await supabase
         .from('franchisees')
         .select('*')
         .eq('slug', franchiseeSlug)
-        .single();
+        .maybeSingle();
 
-      if (franchiseeError || !franchisee) {
+      if (franchiseeError) {
+        console.error('Error fetching franchisee:', franchiseeError);
+        throw new Error('Franchisee not found');
+      }
+
+      if (!franchisee) {
         throw new Error('Franchisee not found');
       }
 
@@ -97,7 +111,8 @@ const BookingConfirmation: React.FC = () => {
         setFranchiseeSettings(settingsMap);
       }
 
-      // Get booking details
+      // Get booking details using booking_reference query parameter
+      // This will work with the RLS policy for anonymous users
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .select(`
@@ -116,13 +131,19 @@ const BookingConfirmation: React.FC = () => {
             )
           )
         `)
-        .eq('id', bookingId)
-        .single();
+        .eq('booking_reference', bookingReference)
+        .maybeSingle();
 
-      if (bookingError || !bookingData) {
+      if (bookingError) {
+        console.error('Error fetching booking:', bookingError);
+        throw new Error('Failed to load booking details');
+      }
+
+      if (!bookingData) {
         throw new Error('Booking not found');
       }
 
+      console.log('Booking loaded successfully:', bookingData);
       setBooking(bookingData);
     } catch (error) {
       console.error('Error loading booking:', error);

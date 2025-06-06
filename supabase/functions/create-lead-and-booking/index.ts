@@ -5,6 +5,16 @@ import { corsHeaders } from '../_shared/cors.ts'
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
+// Helper function to generate secure booking reference (10 random alphanumeric chars)
+const generateBookingReference = (): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 10; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 // Helper function to trigger webhook in background
 const triggerWebhook = async (franchiseeId: string, eventType: string, data: any) => {
   try {
@@ -79,10 +89,14 @@ Deno.serve(async (req) => {
     let bookingWebhookPromise = null
     
     if (bookingData) {
-      // Ensure the booking uses the real lead ID
+      // Generate secure booking reference
+      const bookingReference = generateBookingReference()
+      
+      // Ensure the booking uses the real lead ID and generated reference
       const bookingPayload = {
         ...bookingData,
-        lead_id: leadId
+        lead_id: leadId,
+        booking_reference: bookingReference
       }
 
       console.log('Creating booking with payload:', bookingPayload)
@@ -90,7 +104,7 @@ Deno.serve(async (req) => {
       const { data: bookingInsertData, error: bookingError } = await supabase
         .from('bookings')
         .insert(bookingPayload)
-        .select('id')
+        .select('id, booking_reference')
         .single()
 
       if (bookingError) {
@@ -99,7 +113,7 @@ Deno.serve(async (req) => {
       }
 
       bookingId = bookingInsertData.id
-      console.log('Booking created successfully with ID:', bookingId)
+      console.log('Booking created successfully with ID:', bookingId, 'and reference:', bookingInsertData.booking_reference)
 
       // Trigger booking_created webhook in background
       const bookingWebhookData = {
