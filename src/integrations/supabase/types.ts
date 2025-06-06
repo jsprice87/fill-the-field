@@ -703,6 +703,50 @@ export type Database = {
           },
         ]
       }
+      profile_creation_audit: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          franchisee_id: string | null
+          generated_slug: string | null
+          id: string
+          source_path: string
+          success: boolean | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          franchisee_id?: string | null
+          generated_slug?: string | null
+          id?: string
+          source_path: string
+          success?: boolean | null
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          franchisee_id?: string | null
+          generated_slug?: string | null
+          id?: string
+          source_path?: string
+          success?: boolean | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_creation_audit_franchisee_id_fkey"
+            columns: ["franchisee_id"]
+            isOneToOne: false
+            referencedRelation: "franchisees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       program_suggestions: {
         Row: {
           comment: string | null

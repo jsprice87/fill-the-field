@@ -94,17 +94,23 @@ const Login = () => {
           // Redirect admin users to admin dashboard
           navigate("/admin/dashboard");
         } else {
-          // For regular users, get the slug from the franchisee table
-          const slug = await getSlugFromFranchiseeId(data.user.id);
+          // For regular users, the ProtectedRoute will handle profile creation
+          // and the safety net will ensure they have a franchisee record
           
-          if (slug) {
-            // If slug exists, use it in the URL
-            navigate(`/${slug}/portal/dashboard`);
-          } else {
-            // If no slug exists (should be rare), create a temporary one
-            // and redirect to using the user ID with a notice
-            toast.warning("Missing profile information. Please update your profile.");
-            navigate(`/${data.user.id}/portal/dashboard`);
+          // Try to get the slug, but don't block on it since the safety net will handle it
+          try {
+            const slug = await getSlugFromFranchiseeId(data.user.id);
+            
+            if (slug) {
+              navigate(`/${slug}/portal/dashboard`);
+            } else {
+              // Use a temporary redirect, the safety net will create the profile
+              navigate(`/temp-redirect/portal/dashboard`);
+            }
+          } catch (error) {
+            console.error('Error getting slug during login:', error);
+            // Fallback to a safe route, the safety net will handle profile creation
+            navigate(`/profile-setup/portal/dashboard`);
           }
         }
       }

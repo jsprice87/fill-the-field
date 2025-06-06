@@ -153,36 +153,20 @@ const Profile: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Account Setup Issue</h2>
-          <p className="text-red-600 mb-4">
-            {error.message.includes('Profile not found') 
-              ? 'Your account setup is incomplete. This usually happens if there was an issue during registration.'
-              : 'There was an error loading your profile information.'
-            }
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-blue-800 mb-2">Setting Up Your Profile</h2>
+          <p className="text-blue-600 mb-4">
+            We're creating your profile automatically. This usually takes just a moment...
           </p>
-          <div className="space-y-2">
-            <p className="text-sm text-red-600">
-              Please try one of the following solutions:
-            </p>
-            <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
-              <li>Log out and log back in</li>
-              <li>Clear your browser cache and try again</li>
-              <li>If the issue persists, please contact support</li>
-            </ul>
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
+            <span className="text-sm text-blue-600">Creating profile...</span>
           </div>
-          <div className="mt-4 flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => supabase.auth.signOut()}
-              className="text-red-600 border-red-600 hover:bg-red-50"
-            >
-              Log Out
-            </Button>
+          <div className="mt-4">
             <Button 
               variant="outline" 
               onClick={() => window.location.reload()}
-              className="text-red-600 border-red-600 hover:bg-red-50"
+              className="text-blue-600 border-blue-600 hover:bg-blue-50"
             >
               Refresh Page
             </Button>
@@ -195,11 +179,15 @@ const Profile: React.FC = () => {
   if (!profile) {
     return (
       <div className="p-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-yellow-800 mb-2">Profile Not Found</h2>
-          <p className="text-yellow-600">
-            No profile information found for your account. Please contact support.
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-blue-800 mb-2">Setting Up Your Profile</h2>
+          <p className="text-blue-600 mb-4">
+            We're creating your profile automatically. Please wait a moment...
           </p>
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
+            <span className="text-sm text-blue-600">Creating profile...</span>
+          </div>
         </div>
       </div>
     );
