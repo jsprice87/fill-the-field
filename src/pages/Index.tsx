@@ -12,7 +12,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-4">
             
-            <Link to="/login" className="text-gray-600 hover:text-indigo-600">
+            <Link to="/login" className="flex items-center h-full text-gray-600 hover:text-indigo-600">
               Login
             </Link>
             <Link to="/register">
