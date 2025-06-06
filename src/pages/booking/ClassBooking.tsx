@@ -168,9 +168,33 @@ const ClassBooking: React.FC = () => {
     }
 
     try {
-      // Create the booking record with minimal returning to avoid SELECT issue
+      // Prepare lead data (this should already exist, but we pass it for completeness)
+      const leadData = {
+        franchisee_id: flowData.franchiseeId,
+        first_name: parentInfo.firstName,
+        last_name: parentInfo.lastName,
+        email: parentInfo.email,
+        phone: parentInfo.phone,
+        zip: parentInfo.zip,
+        source: 'free_trial_booking',
+        status: 'new'
+      };
+
+      // Prepare appointments data from participants
+      const appointments = participants.map(participant => ({
+        participant_name: `${participant.firstName} ${participant.lastName}`,
+        participant_age: participant.age,
+        participant_birth_date: participant.birthDate,
+        class_schedule_id: participant.classScheduleId,
+        class_name: participant.className,
+        class_time: participant.classTime,
+        selected_date: participant.selectedDate,
+        health_conditions: participant.healthConditions,
+        age_override: participant.ageOverride
+      }));
+
+      // Prepare booking data with appointments
       const bookingData = {
-        lead_id: leadId,
         class_schedule_id: participants[0].classScheduleId,
         parent_first_name: parentInfo.firstName,
         parent_last_name: parentInfo.lastName,
@@ -182,89 +206,43 @@ const ClassBooking: React.FC = () => {
         waiver_accepted_at: flowData.waiverAccepted ? new Date().toISOString() : null,
         communication_permission: flowData.communicationPermission,
         marketing_permission: flowData.marketingPermission,
-        child_speaks_english: flowData.childSpeaksEnglish
+        child_speaks_english: flowData.childSpeaksEnglish,
+        appointments: appointments
       };
 
-      const { error: bookingError } = await supabase
-        .from('bookings')
-        .insert(bookingData);
+      console.log('Calling create-lead-and-booking edge function with:', {
+        leadData,
+        bookingData,
+        franchiseeId: flowData.franchiseeId
+      });
 
-      if (bookingError) {
-        console.error('Booking creation error:', bookingError);
-        throw bookingError;
-      }
-
-      console.log('Booking created successfully');
-
-      // Since we can't get the booking ID from the insert, we'll need to query for it
-      // using the lead_id to find the most recent booking
-      const { data: recentBooking, error: findError } = await supabase
-        .from('bookings')
-        .select('id')
-        .eq('lead_id', leadId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (findError || !recentBooking) {
-        console.error('Error finding booking:', findError);
-        throw new Error('Booking was created but could not be retrieved');
-      }
-
-      const bookingId = recentBooking.id;
-      console.log('Found booking ID:', bookingId);
-
-      // Create appointment records for each participant
-      const appointmentPromises = participants.map(participant => 
-        supabase
-          .from('appointments')
-          .insert({
-            booking_id: bookingId,
-            participant_name: `${participant.firstName} ${participant.lastName}`,
-            participant_age: participant.age,
-            participant_birth_date: participant.birthDate,
-            class_schedule_id: participant.classScheduleId,
-            class_name: participant.className,
-            class_time: participant.classTime,
-            selected_date: participant.selectedDate,
-            health_conditions: participant.healthConditions,
-            age_override: participant.ageOverride
-          })
-      );
-
-      const appointmentResults = await Promise.all(appointmentPromises);
-      
-      for (const result of appointmentResults) {
-        if (result.error) {
-          console.error('Appointment creation error:', result.error);
-          throw result.error;
+      // Call the edge function to create lead and booking atomically
+      const { data: result, error: functionError } = await supabase.functions.invoke('create-lead-and-booking', {
+        body: {
+          leadData,
+          bookingData,
+          franchiseeId: flowData.franchiseeId
         }
+      });
+
+      if (functionError) {
+        console.error('Edge function error:', functionError);
+        throw new Error(`Function call failed: ${functionError.message}`);
       }
 
-      console.log('All appointments created successfully');
+      if (!result.success) {
+        console.error('Edge function returned error:', result.error);
+        throw new Error(result.error || 'Failed to create booking');
+      }
 
-      // Only update lead status to booked_upcoming if it hasn't been manually set
-      const { data: leadData, error: leadFetchError } = await supabase
-        .from('leads')
-        .select('status_manually_set')
-        .eq('id', leadId)
-        .single();
+      console.log('Booking created successfully:', result);
 
-      if (leadFetchError) {
-        console.error('Error fetching lead data:', leadFetchError);
-      } else if (!leadData.status_manually_set) {
-        // Only update status if it hasn't been manually set
-        await supabase
-          .from('leads')
-          .update({ status: 'booked_upcoming' })
-          .eq('id', leadId);
-        
-        console.log('Lead status updated to booked_upcoming (automatic)');
+      // Navigate to confirmation page using booking_reference
+      if (result.bookingReference) {
+        navigate(`/${franchiseeSlug}/free-trial/confirmation?booking_reference=${result.bookingReference}`);
       } else {
-        console.log('Lead status not updated - was manually set by user');
+        throw new Error('No booking reference returned from function');
       }
-
-      navigate(`/${franchiseeSlug}/free-trial/booking/${bookingId}`);
       
     } catch (error) {
       console.error('Error creating booking:', error);

@@ -86,11 +86,12 @@ Deno.serve(async (req) => {
 
     // Step 2: Create booking if bookingData is provided
     let bookingId = null
+    let bookingReference = null
     let bookingWebhookPromise = null
     
     if (bookingData) {
       // Generate secure booking reference
-      const bookingReference = generateBookingReference()
+      bookingReference = generateBookingReference()
       
       // Ensure the booking uses the real lead ID and generated reference
       const bookingPayload = {
@@ -99,11 +100,14 @@ Deno.serve(async (req) => {
         booking_reference: bookingReference
       }
 
-      console.log('Creating booking with payload:', bookingPayload)
+      // Remove appointments from booking payload as they'll be inserted separately
+      const { appointments, ...bookingDataWithoutAppointments } = bookingPayload
+
+      console.log('Creating booking with payload:', bookingDataWithoutAppointments)
 
       const { data: bookingInsertData, error: bookingError } = await supabase
         .from('bookings')
-        .insert(bookingPayload)
+        .insert(bookingDataWithoutAppointments)
         .select('id, booking_reference')
         .single()
 
@@ -115,11 +119,54 @@ Deno.serve(async (req) => {
       bookingId = bookingInsertData.id
       console.log('Booking created successfully with ID:', bookingId, 'and reference:', bookingInsertData.booking_reference)
 
+      // Step 3: Create appointment records if appointments are provided
+      if (appointments && appointments.length > 0) {
+        const appointmentPayloads = appointments.map((appointment: any) => ({
+          ...appointment,
+          booking_id: bookingId
+        }))
+
+        console.log('Creating appointments:', appointmentPayloads)
+
+        const { error: appointmentsError } = await supabase
+          .from('appointments')
+          .insert(appointmentPayloads)
+
+        if (appointmentsError) {
+          console.error('Error creating appointments:', appointmentsError)
+          throw new Error(`Failed to create appointments: ${appointmentsError.message}`)
+        }
+
+        console.log('All appointments created successfully')
+      }
+
+      // Only update lead status to booked_upcoming if it hasn't been manually set
+      const { data: leadData, error: leadFetchError } = await supabase
+        .from('leads')
+        .select('status_manually_set')
+        .eq('id', leadId)
+        .single()
+
+      if (leadFetchError) {
+        console.error('Error fetching lead data:', leadFetchError)
+      } else if (!leadData.status_manually_set) {
+        // Only update status if it hasn't been manually set
+        await supabase
+          .from('leads')
+          .update({ status: 'booked_upcoming' })
+          .eq('id', leadId)
+        
+        console.log('Lead status updated to booked_upcoming (automatic)')
+      } else {
+        console.log('Lead status not updated - was manually set by user')
+      }
+
       // Trigger booking_created webhook in background
       const bookingWebhookData = {
-        ...bookingPayload,
+        ...bookingDataWithoutAppointments,
         id: bookingId,
-        lead: leadWebhookData
+        lead: leadWebhookData,
+        appointments: appointments || []
       }
       
       bookingWebhookPromise = triggerWebhook(franchiseeId, 'booking_created', bookingWebhookData)
@@ -130,6 +177,7 @@ Deno.serve(async (req) => {
       success: true,
       leadId,
       bookingId,
+      bookingReference,
       message: 'Lead and booking created successfully'
     }
 
