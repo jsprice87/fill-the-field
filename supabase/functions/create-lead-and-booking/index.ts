@@ -86,18 +86,18 @@ Deno.serve(async (req) => {
 
     // Step 2: Create booking if bookingData is provided
     let bookingId = null
-    let bookingReference = null
+    let actualBookingReference = null
     let bookingWebhookPromise = null
     
     if (bookingData) {
-      // Generate secure booking reference
-      bookingReference = generateBookingReference()
+      // Generate secure booking reference as fallback
+      const fallbackBookingReference = generateBookingReference()
       
       // Ensure the booking uses the real lead ID and generated reference
       const bookingPayload = {
         ...bookingData,
         lead_id: leadId,
-        booking_reference: bookingReference
+        booking_reference: fallbackBookingReference
       }
 
       // Remove appointments from booking payload as they'll be inserted separately
@@ -117,7 +117,13 @@ Deno.serve(async (req) => {
       }
 
       bookingId = bookingInsertData.id
-      console.log('Booking created successfully with ID:', bookingId, 'and reference:', bookingInsertData.booking_reference)
+      actualBookingReference = bookingInsertData.booking_reference
+      
+      // LOG: Reference immediately after booking insert
+      console.log('🔍 BOOKING INSERT RESULT - Full data:', JSON.stringify(bookingInsertData, null, 2))
+      console.log('🔍 BOOKING INSERT RESULT - Stored reference:', actualBookingReference)
+      
+      console.log('Booking created successfully with ID:', bookingId, 'and reference:', actualBookingReference)
 
       // Step 3: Create appointment records if appointments are provided
       if (appointments && appointments.length > 0) {
@@ -177,9 +183,13 @@ Deno.serve(async (req) => {
       success: true,
       leadId,
       bookingId,
-      bookingReference,
+      bookingReference: actualBookingReference, // Use the actual stored reference
       message: 'Lead and booking created successfully'
     }
+
+    // LOG: Reference immediately before returning response
+    console.log('🔍 RESPONSE DATA - Full response:', JSON.stringify(response, null, 2))
+    console.log('🔍 RESPONSE DATA - Returning reference:', actualBookingReference)
 
     console.log('Operation completed successfully:', response)
 
