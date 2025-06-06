@@ -71,7 +71,8 @@ const BookingConfirmation: React.FC = () => {
 
   const loadBookingData = async () => {
     try {
-      const bookingReference = searchParams.get('ref');
+      const bookingReference = searchParams.get('booking_reference');
+      console.log('Looking for booking with reference:', bookingReference);
       
       if (!bookingReference) {
         throw new Error('Booking reference not found');
