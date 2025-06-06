@@ -277,6 +277,10 @@ const ClassBooking: React.FC = () => {
         }
       });
 
+      // LOG: Full result from edge function
+      console.log('🔍 EDGE FUNCTION RESULT - Full JSON:', JSON.stringify(result, null, 2));
+      console.log('🔍 EDGE FUNCTION RESULT - bookingReference value:', result?.bookingReference);
+
       if (functionError) {
         console.error('Edge function error:', functionError);
         throw new Error(`Function call failed: ${functionError.message}`);
@@ -291,7 +295,13 @@ const ClassBooking: React.FC = () => {
 
       // Navigate to confirmation page using booking_reference
       if (result.bookingReference) {
-        navigate(`/${franchiseeSlug}/free-trial/confirmation?booking_reference=${result.bookingReference}`);
+        const navigationUrl = `/${franchiseeSlug}/free-trial/confirmation?booking_reference=${result.bookingReference}`;
+        
+        // LOG: URL being navigated to
+        console.log('🚀 NAVIGATING TO URL:', navigationUrl);
+        console.log('🚀 BOOKING REFERENCE IN URL:', result.bookingReference);
+        
+        navigate(navigationUrl);
       } else {
         throw new Error('No booking reference returned from function');
       }
