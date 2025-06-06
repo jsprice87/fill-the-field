@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,11 +29,20 @@ interface ClassSchedule {
   };
 }
 
+interface FranchiseeData {
+  id: string;
+  company_name: string;
+  slug: string;
+}
+
 const ClassBooking: React.FC = () => {
   const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const flowId = searchParams.get('flow');
+  
+  const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
+  const [franchiseeLoading, setFranchiseeLoading] = useState(true);
   
   const { 
     flowData, 
@@ -42,7 +52,7 @@ const ClassBooking: React.FC = () => {
     removeParticipant, 
     getParticipantCountForClass,
     isLoading: flowLoading 
-  } = useBookingFlow(flowId || undefined, franchiseeSlug);
+  } = useBookingFlow(flowId || undefined, franchiseeData?.id);
   
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,8 +62,48 @@ const ClassBooking: React.FC = () => {
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+  // First, resolve the franchisee slug to get the ID
   useEffect(() => {
-    console.log('ClassBooking: useEffect triggered', { flowId, franchiseeSlug, flowLoaded });
+    const resolveFranchiseeId = async () => {
+      if (!franchiseeSlug) {
+        console.log('No franchisee slug found, redirecting to landing');
+        navigate('/');
+        return;
+      }
+
+      console.log('Resolving franchisee slug to ID:', franchiseeSlug);
+      setFranchiseeLoading(true);
+      
+      try {
+        const { data: franchisee, error } = await supabase
+          .from('franchisees')
+          .select('id, company_name, slug')
+          .eq('slug', franchiseeSlug)
+          .single();
+
+        if (error || !franchisee) {
+          console.error('Error resolving franchisee:', error);
+          toast.error('Franchisee not found');
+          navigate('/');
+          return;
+        }
+
+        console.log('Franchisee resolved:', franchisee);
+        setFranchiseeData(franchisee);
+      } catch (error) {
+        console.error('Error resolving franchisee:', error);
+        toast.error('Failed to load franchisee information');
+        navigate('/');
+      } finally {
+        setFranchiseeLoading(false);
+      }
+    };
+
+    resolveFranchiseeId();
+  }, [franchiseeSlug, navigate]);
+
+  useEffect(() => {
+    console.log('ClassBooking: useEffect triggered', { flowId, franchiseeId: franchiseeData?.id, flowLoaded });
     
     if (!flowId) {
       console.log('No flow ID found, redirecting to landing');
@@ -61,8 +111,10 @@ const ClassBooking: React.FC = () => {
       return;
     }
 
-    loadFlowData();
-  }, [flowId, franchiseeSlug]);
+    if (franchiseeData?.id && !flowLoaded) {
+      loadFlowData();
+    }
+  }, [flowId, franchiseeData?.id]);
 
   useEffect(() => {
     console.log('ClassBooking: Flow data effect', { flowLoaded, selectedLocation: flowData.selectedLocation });
@@ -77,9 +129,9 @@ const ClassBooking: React.FC = () => {
   }, [flowLoaded, flowData.selectedLocation]);
 
   const loadFlowData = async () => {
-    if (!flowId) return;
+    if (!flowId || !franchiseeData?.id) return;
     
-    console.log('Loading flow data for ID:', flowId);
+    console.log('Loading flow data for ID:', flowId, 'with franchisee ID:', franchiseeData.id);
     setIsLoading(true);
     
     try {
@@ -160,9 +212,9 @@ const ClassBooking: React.FC = () => {
     const parentInfo = flowData.parentGuardianInfo;
     const leadId = flowData.leadId;
 
-    console.log('Continue to confirmation:', { participants: participants.length, parentInfo: !!parentInfo, leadId });
+    console.log('Continue to confirmation:', { participants: participants.length, parentInfo: !!parentInfo, leadId, franchiseeId: franchiseeData?.id });
 
-    if (!parentInfo || !leadId || participants.length === 0) {
+    if (!parentInfo || !franchiseeData?.id || participants.length === 0) {
       toast.error('Missing required information');
       return;
     }
@@ -170,7 +222,7 @@ const ClassBooking: React.FC = () => {
     try {
       // Prepare lead data (this should already exist, but we pass it for completeness)
       const leadData = {
-        franchisee_id: flowData.franchiseeId,
+        franchisee_id: franchiseeData.id,
         first_name: parentInfo.firstName,
         last_name: parentInfo.lastName,
         email: parentInfo.email,
@@ -213,7 +265,7 @@ const ClassBooking: React.FC = () => {
       console.log('Calling create-lead-and-booking edge function with:', {
         leadData,
         bookingData,
-        franchiseeId: flowData.franchiseeId
+        franchiseeId: franchiseeData.id
       });
 
       // Call the edge function to create lead and booking atomically
@@ -221,7 +273,7 @@ const ClassBooking: React.FC = () => {
         body: {
           leadData,
           bookingData,
-          franchiseeId: flowData.franchiseeId
+          franchiseeId: franchiseeData.id
         }
       });
 
@@ -314,14 +366,16 @@ const ClassBooking: React.FC = () => {
     return canConfirm;
   };
 
-  // Show loading state while flow is being loaded or classes are being fetched
-  if (isLoading || flowLoading || !flowLoaded) {
+  // Show loading state while franchisee is being resolved or flow is being loaded
+  if (franchiseeLoading || isLoading || flowLoading || !flowLoaded || !franchiseeData) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
           <p className="font-poppins text-gray-600">
-            {!flowLoaded ? 'Loading booking session...' : 'Loading classes...'}
+            {franchiseeLoading ? 'Loading franchisee information...' : 
+             !flowLoaded ? 'Loading booking session...' : 
+             'Loading classes...'}
           </p>
         </div>
       </div>
