@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -74,6 +73,8 @@ export default {
 				anton: ['Anton', 'sans-serif'],
 				agrandir: ['Inter', 'sans-serif'], // Using Inter as Agrandir substitute
 				poppins: ['Poppins', 'sans-serif'],
+				montserrat: ['Montserrat', 'sans-serif'],
+				'barlow-condensed': ['Barlow Condensed', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
