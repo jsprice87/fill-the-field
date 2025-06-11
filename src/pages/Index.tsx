@@ -8,7 +8,7 @@ const Index = () => {
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" src="/lovable-uploads/806d37a0-2b5e-45e8-9fe2-e7bf8e2408c5.png" />
+            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" src="/lovable-uploads/e3cf56c2-382c-4adf-9415-bb8e39efbf9f.png" />
           </div>
           <div className="flex items-center gap-4">
             
