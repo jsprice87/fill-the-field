@@ -1,3 +1,4 @@
+
 import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon, HelpCircleIcon } from "lucide-react";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
@@ -38,6 +39,7 @@ import SlugResolver from "./components/auth/SlugResolver";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DefaultBookingRedirect from "./pages/booking/DefaultBookingRedirect";
 import PortalRedirect from "./components/auth/PortalRedirect";
+import { Navigate } from "react-router-dom";
 
 export const navItems = [
   {
@@ -193,78 +195,93 @@ export const navItems = [
     icon: <CalendarIcon className="h-4 w-4" />,
     page: <DefaultBookingRedirect />,
   },
-  // Franchisee slug-based portal routes - KEEP requireAuth default (true)
+  // Franchisee slug-based portal routes - NESTED STRUCTURE
   {
-    title: "Franchisee Portal Dashboard",
-    to: "/:franchiseeSlug/portal/dashboard",
+    title: "Franchisee Portal",
+    to: "/:franchiseeSlug/portal",
     icon: <HomeIcon className="h-4 w-4" />,
     page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Portal Leads",
-    to: "/:franchiseeSlug/portal/leads",
-    icon: <UsersIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Lead Detail",
-    to: "/:franchiseeSlug/portal/leads/:leadId",
-    icon: <UserIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Portal Bookings",
-    to: "/:franchiseeSlug/portal/bookings",
-    icon: <CalendarIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Portal Locations",
-    to: "/:franchiseeSlug/portal/locations",
-    icon: <MapPinIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Portal Classes",
-    to: "/:franchiseeSlug/portal/classes",
-    icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Classes List",
-    to: "/:franchiseeSlug/portal/classes/list",
-    icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Add Classes",
-    to: "/:franchiseeSlug/portal/classes/add",
-    icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Edit Class",
-    to: "/:franchiseeSlug/portal/classes/edit/:classId",
-    icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Portal Profile",
-    to: "/:franchiseeSlug/portal/profile",
-    icon: <UserIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Portal Settings",
-    to: "/:franchiseeSlug/portal/settings",
-    icon: <SettingsIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
-  },
-  {
-    title: "Franchisee Portal Help",
-    to: "/:franchiseeSlug/portal/help",
-    icon: <HelpCircleIcon className="h-4 w-4" />,
-    page: <SlugResolver><ProtectedRoute><DashboardLayout /></ProtectedRoute></SlugResolver>,
+    children: [
+      {
+        title: "Portal Dashboard",
+        to: "",
+        index: true,
+        icon: <HomeIcon className="h-4 w-4" />,
+        page: <PortalDashboard />,
+      },
+      {
+        title: "Portal Bookings",
+        to: "bookings",
+        icon: <CalendarIcon className="h-4 w-4" />,
+        page: <PortalBookings />,
+      },
+      {
+        title: "Portal Leads",
+        to: "leads",
+        icon: <UsersIcon className="h-4 w-4" />,
+        page: <PortalLeads />,
+      },
+      {
+        title: "Lead Detail",
+        to: "leads/:leadId",
+        icon: <UserIcon className="h-4 w-4" />,
+        page: <LeadDetail />,
+      },
+      {
+        title: "Portal Locations",
+        to: "locations",
+        icon: <MapPinIcon className="h-4 w-4" />,
+        page: <PortalLocations />,
+      },
+      {
+        title: "Portal Classes",
+        to: "classes",
+        icon: <BookOpenIcon className="h-4 w-4" />,
+        page: <PortalClasses />,
+      },
+      {
+        title: "Classes List",
+        to: "classes/list",
+        icon: <BookOpenIcon className="h-4 w-4" />,
+        page: <ClassesList />,
+      },
+      {
+        title: "Add Classes",
+        to: "classes/add",
+        icon: <BookOpenIcon className="h-4 w-4" />,
+        page: <AddClasses />,
+      },
+      {
+        title: "Edit Class",
+        to: "classes/edit/:classId",
+        icon: <BookOpenIcon className="h-4 w-4" />,
+        page: <EditClass />,
+      },
+      {
+        title: "Portal Profile",
+        to: "profile",
+        icon: <UserIcon className="h-4 w-4" />,
+        page: <PortalProfile />,
+      },
+      {
+        title: "Portal Settings",
+        to: "settings",
+        icon: <SettingsIcon className="h-4 w-4" />,
+        page: <PortalSettings />,
+      },
+      {
+        title: "Portal Help",
+        to: "help",
+        icon: <HelpCircleIcon className="h-4 w-4" />,
+        page: <PortalHelp />,
+      },
+      {
+        title: "Portal Fallback",
+        to: "*",
+        icon: <HomeIcon className="h-4 w-4" />,
+        page: <Navigate to="." replace />,
+      },
+    ],
   },
   // PUBLIC landing page routes - Add requireAuth={false}
   {

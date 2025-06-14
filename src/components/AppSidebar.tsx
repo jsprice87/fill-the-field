@@ -15,14 +15,14 @@ import { HomeIcon, UsersIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UserIcon, 
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 
 const portalMenuItems = [
-  { title: 'Dashboard', url: '/portal/dashboard', icon: HomeIcon },
-  { title: 'Leads', url: '/portal/leads', icon: UsersIcon },
-  { title: 'Bookings', url: '/portal/bookings', icon: CalendarIcon },
-  { title: 'Locations', url: '/portal/locations', icon: MapPinIcon },
-  { title: 'Classes', url: '/portal/classes', icon: BookOpenIcon },
-  { title: 'Profile', url: '/portal/profile', icon: UserIcon },
-  { title: 'Settings', url: '/portal/settings', icon: SettingsIcon },
-  { title: 'Help', url: '/portal/help', icon: HelpCircleIcon },
+  { title: 'Dashboard', url: '.', icon: HomeIcon },
+  { title: 'Leads', url: 'leads', icon: UsersIcon },
+  { title: 'Bookings', url: 'bookings', icon: CalendarIcon },
+  { title: 'Locations', url: 'locations', icon: MapPinIcon },
+  { title: 'Classes', url: 'classes', icon: BookOpenIcon },
+  { title: 'Profile', url: 'profile', icon: UserIcon },
+  { title: 'Settings', url: 'settings', icon: SettingsIcon },
+  { title: 'Help', url: 'help', icon: HelpCircleIcon },
 ];
 
 export function AppSidebar() {
@@ -33,11 +33,22 @@ export function AppSidebar() {
   const isPortalSection = location.pathname.startsWith('/portal') || location.pathname.includes('/portal');
   
   const handleNavigation = (url: string) => {
-    if (isPortalSection && franchiseeData?.slug) {
-      navigate(`/${franchiseeData.slug}${url}`);
+    if (url === '.') {
+      // For dashboard, navigate to the current portal base path
+      const basePath = location.pathname.split('/portal')[0] + '/portal';
+      navigate(basePath);
     } else {
+      // For other items, use relative navigation
       navigate(url);
     }
+  };
+
+  const isActiveRoute = (url: string) => {
+    if (url === '.') {
+      // Dashboard is active when we're at the exact portal path
+      return location.pathname.endsWith('/portal');
+    }
+    return location.pathname.includes(url);
   };
 
   if (!isPortalSection) {
@@ -55,7 +66,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     onClick={() => handleNavigation(item.url)}
-                    isActive={location.pathname.includes(item.url)}
+                    isActive={isActiveRoute(item.url)}
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
