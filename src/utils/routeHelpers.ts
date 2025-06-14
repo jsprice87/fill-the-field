@@ -19,6 +19,7 @@ export function createNestedRoutes(navItems: NavItem[]): RouteObject[] {
 
     if (item.index) {
       route.index = true;
+      // Remove the path when it's an index route
       delete route.path;
     }
 
