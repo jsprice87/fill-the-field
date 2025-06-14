@@ -11,6 +11,9 @@ interface WebhookPayload {
   data: any
 }
 
+// Sleep function for retry delays
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -27,19 +30,7 @@ Deno.serve(async (req) => {
 
     const { franchiseeId, eventType, data }: WebhookPayload = await req.json()
 
-    console.log('Processing webhook delivery for franchisee:', franchiseeId, 'event:', eventType)
-
-    // Get franchisee details including company name
-    const { data: franchisee, error: franchiseeError } = await supabase
-      .from('franchisees')
-      .select('company_name')
-      .eq('id', franchiseeId)
-      .single()
-
-    if (franchiseeError) {
-      console.error('Error fetching franchisee details:', franchiseeError)
-      throw new Error(`Failed to fetch franchisee details: ${franchiseeError.message}`)
-    }
+    console.log('Processing unified webhook delivery for franchisee:', franchiseeId, 'event:', eventType)
 
     // Get webhook settings for the franchisee
     const { data: settings, error: settingsError } = await supabase
@@ -72,22 +63,13 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Prepare the webhook payload in the exact required format
-    const webhookPayload = {
-      event_type: eventType,
-      timestamp: new Date().toISOString(),
-      franchisee_id: franchiseeId,
-      franchisee_name: franchisee.company_name,
-      data: data
-    }
-
-    console.log('Sending webhook to:', webhookUrl)
-    console.log('Webhook payload:', JSON.stringify(webhookPayload, null, 2))
+    console.log('Sending unified webhook to:', webhookUrl)
+    console.log('Unified webhook payload:', JSON.stringify(data, null, 2))
 
     // Prepare headers
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'User-Agent': 'SoccerStars-Webhook/1.0'
+      'User-Agent': 'SoccerStars-Webhook/2.0'
     }
 
     if (authHeader) {
@@ -98,64 +80,85 @@ Deno.serve(async (req) => {
     let responseBody: string | null = null
     let errorMessage: string | null = null
     let deliveredAt: string | null = null
+    let attemptCount = 0
 
-    try {
-      // Send webhook with 5-second timeout
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000)
+    // Retry logic with exponential backoff: 200ms, 400ms, 800ms
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      attemptCount = attempt
+      
+      try {
+        console.log(`Webhook delivery attempt ${attempt}/3`)
+        
+        // Apply timeout of 5 seconds per attempt
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(webhookPayload),
-        signal: controller.signal
-      })
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(data),
+          signal: controller.signal
+        })
 
-      clearTimeout(timeoutId)
+        clearTimeout(timeoutId)
 
-      responseStatus = response.status
-      responseBody = await response.text()
+        responseStatus = response.status
+        responseBody = await response.text()
 
-      if (response.ok) {
-        deliveredAt = new Date().toISOString()
-        console.log('Webhook delivered successfully:', responseStatus)
-      } else {
-        errorMessage = `HTTP ${responseStatus}: ${responseBody}`
-        console.error('Webhook delivery failed:', errorMessage)
+        if (response.ok) {
+          deliveredAt = new Date().toISOString()
+          console.log(`Webhook delivered successfully on attempt ${attempt}, status:`, responseStatus)
+          break
+        } else {
+          errorMessage = `HTTP ${responseStatus}: ${responseBody}`
+          console.error(`Webhook delivery failed on attempt ${attempt}:`, errorMessage)
+        }
+
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          errorMessage = `Webhook delivery timed out after 5 seconds (attempt ${attempt})`
+        } else {
+          errorMessage = `Network error (attempt ${attempt}): ${error.message}`
+        }
+        console.error(errorMessage)
       }
 
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        errorMessage = 'Webhook delivery timed out after 5 seconds'
-      } else {
-        errorMessage = `Network error: ${error.message}`
+      // Wait before next attempt (except on last attempt)
+      if (attempt < 3) {
+        const delayMs = 2 ** attempt * 200 // 200ms, 400ms, 800ms
+        console.log(`Waiting ${delayMs}ms before retry...`)
+        await sleep(delayMs)
       }
-      console.error('Webhook delivery error:', errorMessage)
     }
 
-    // Log the webhook attempt
+    // Log the webhook attempt with all details
     const { error: logError } = await supabase
       .from('webhook_logs')
       .insert({
         franchisee_id: franchiseeId,
         event_type: eventType,
         webhook_url: webhookUrl,
-        payload: webhookPayload,
+        payload: data,
         response_status: responseStatus,
         response_body: responseBody,
         error_message: errorMessage,
-        delivered_at: deliveredAt
+        delivered_at: deliveredAt,
+        attempt_count: attemptCount
       })
 
     if (logError) {
       console.error('Error logging webhook attempt:', logError)
     }
 
+    const success = deliveredAt !== null
+    console.log(`Webhook delivery ${success ? 'succeeded' : 'failed'} after ${attemptCount} attempts`)
+
     return new Response(JSON.stringify({
-      success: deliveredAt !== null,
+      success,
       delivered_at: deliveredAt,
       response_status: responseStatus,
-      error_message: errorMessage
+      error_message: errorMessage,
+      attempt_count: attemptCount
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

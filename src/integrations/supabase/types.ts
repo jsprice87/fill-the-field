@@ -338,6 +338,7 @@ export type Database = {
       franchisees: {
         Row: {
           address: string | null
+          business_email: string | null
           city: string | null
           company_name: string
           contact_name: string
@@ -346,6 +347,7 @@ export type Database = {
           id: string
           logo_url: string | null
           phone: string | null
+          sender_name: string | null
           slug: string | null
           state: string | null
           subscription_end_date: string | null
@@ -358,6 +360,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          business_email?: string | null
           city?: string | null
           company_name: string
           contact_name: string
@@ -366,6 +369,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          sender_name?: string | null
           slug?: string | null
           state?: string | null
           subscription_end_date?: string | null
@@ -378,6 +382,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          business_email?: string | null
           city?: string | null
           company_name?: string
           contact_name?: string
@@ -386,6 +391,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          sender_name?: string | null
           slug?: string | null
           state?: string | null
           subscription_end_date?: string | null

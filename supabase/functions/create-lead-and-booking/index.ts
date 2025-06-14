@@ -15,27 +15,49 @@ const generateBookingReference = (): string => {
   return result;
 }
 
-// Helper function to trigger webhook in background
-const triggerWebhook = async (franchiseeId: string, eventType: string, data: any) => {
+// Helper function to trigger unified webhook
+const triggerUnifiedWebhook = async (leadId: string, bookingId?: string) => {
   try {
-    const response = await fetch(`${supabaseUrl.replace('/rest/v1', '')}/functions/v1/send-webhook`, {
+    console.log('Triggering unified webhook for leadId:', leadId, 'bookingId:', bookingId)
+    
+    // Build unified payload
+    const payloadResponse = await fetch(`${supabaseUrl.replace('/rest/v1', '')}/functions/v1/build-unified-webhook-payload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceKey}`
+      },
+      body: JSON.stringify({ leadId, bookingId })
+    })
+
+    if (!payloadResponse.ok) {
+      throw new Error(`Failed to build payload: ${await payloadResponse.text()}`)
+    }
+
+    const payload = await payloadResponse.json()
+
+    // Send webhook
+    const webhookResponse = await fetch(`${supabaseUrl.replace('/rest/v1', '')}/functions/v1/send-webhook`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${supabaseServiceKey}`
       },
       body: JSON.stringify({
-        franchiseeId,
-        eventType,
-        data
+        franchiseeId: payload.franchisee_id,
+        eventType: payload.event_type,
+        data: payload
       })
     })
 
-    if (!response.ok) {
-      console.error('Failed to trigger webhook:', await response.text())
+    if (!webhookResponse.ok) {
+      console.error('Failed to send unified webhook:', await webhookResponse.text())
+    } else {
+      console.log('Unified webhook sent successfully')
     }
+
   } catch (error) {
-    console.error('Error triggering webhook:', error)
+    console.error('Error triggering unified webhook:', error)
   }
 }
 
@@ -75,22 +97,9 @@ Deno.serve(async (req) => {
     const leadId = leadInsertData.id
     console.log('Lead created successfully with ID:', leadId)
 
-    // Trigger lead_created webhook with simplified data structure
-    const leadWebhookData = {
-      first_name: leadData.first_name,
-      last_name: leadData.last_name,
-      email: leadData.email,
-      phone: leadData.phone,
-      zip: leadData.zip
-    }
-    
-    // Use background task to avoid blocking the response
-    const leadWebhookPromise = triggerWebhook(franchiseeId, 'lead_created', leadWebhookData)
-
     // Step 2: Create booking if bookingData is provided
     let bookingId = null
     let actualBookingReference = null
-    let bookingWebhookPromise = null
     
     if (bookingData) {
       // Generate secure booking reference as fallback
@@ -143,45 +152,10 @@ Deno.serve(async (req) => {
         }
 
         console.log('All appointments created successfully')
-
-        // Get class schedule details for webhook
-        const { data: classSchedule, error: classError } = await supabase
-          .from('class_schedules')
-          .select(`
-            id,
-            classes (
-              class_name,
-              locations (
-                name
-              )
-            )
-          `)
-          .eq('id', bookingDataWithoutAppointments.class_schedule_id)
-          .single()
-
-        if (classError) {
-          console.error('Error fetching class schedule:', classError)
-        }
-
-        // Format booking webhook data according to required structure
-        const participantNames = appointments.map((apt: any) => apt.participant_name).join(', ')
-        const firstAppointment = appointments[0]
-        
-        const bookingWebhookData = {
-          booking_reference: actualBookingReference,
-          class_schedule_name: classSchedule?.classes?.class_name || 'Unknown Class',
-          class_date: firstAppointment?.selected_date || '',
-          class_time: firstAppointment?.class_time || '',
-          participant_names: participantNames,
-          parent_first_name: bookingDataWithoutAppointments.parent_first_name,
-          parent_last_name: bookingDataWithoutAppointments.parent_last_name
-        }
-        
-        bookingWebhookPromise = triggerWebhook(franchiseeId, 'booking_created', bookingWebhookData)
       }
 
       // Only update lead status to booked_upcoming if it hasn't been manually set
-      const { data: leadData, error: leadFetchError } = await supabase
+      const { data: leadDataCheck, error: leadFetchError } = await supabase
         .from('leads')
         .select('status_manually_set')
         .eq('id', leadId)
@@ -189,7 +163,7 @@ Deno.serve(async (req) => {
 
       if (leadFetchError) {
         console.error('Error fetching lead data:', leadFetchError)
-      } else if (!leadData.status_manually_set) {
+      } else if (!leadDataCheck.status_manually_set) {
         // Only update status if it hasn't been manually set
         await supabase
           .from('leads')
@@ -213,13 +187,11 @@ Deno.serve(async (req) => {
 
     console.log('Operation completed successfully:', response)
 
-    // Wait for webhook delivery attempts to complete in background
-    // This won't block the response but ensures webhooks are triggered
-    Promise.all([
-      leadWebhookPromise,
-      bookingWebhookPromise
-    ].filter(Boolean)).catch(error => {
-      console.error('Webhook delivery error:', error)
+    // Trigger unified webhook in background
+    // For leads only: event_type = "newLead", booking block empty
+    // For bookings: event_type = "newBooking", full booking block
+    triggerUnifiedWebhook(leadId, bookingId || undefined).catch(error => {
+      console.error('Background webhook error:', error)
     })
 
     return new Response(JSON.stringify(response), {

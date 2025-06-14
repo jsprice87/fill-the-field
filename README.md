@@ -1,73 +1,155 @@
-# Welcome to your Lovable project
 
-## Project info
+# Soccer Stars Management Platform
 
-**URL**: https://lovable.dev/projects/f6683478-1489-4ddb-9e51-aed65a422be1
+A comprehensive management platform for Soccer Stars franchisees to manage leads, bookings, classes, and locations.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Lead Management**: Track and manage potential customers
+- **Booking System**: Handle class bookings and appointments
+- **Class Scheduling**: Manage class schedules and capacity
+- **Location Management**: Organize multiple facility locations
+- **Unified Webhook System**: Real-time notifications for leads and bookings
 
-**Use Lovable**
+## Webhook System
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f6683478-1489-4ddb-9e51-aed65a422be1) and start prompting.
+The platform includes a unified webhook system that sends real-time notifications to external systems (like n8n workflows) when new leads are created or bookings are completed.
 
-Changes made via Lovable will be committed automatically to this repo.
+### Webhook Events
 
-**Use your preferred IDE**
+The system sends two types of events:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **newLead**: Triggered when a lead is created (no booking yet)
+2. **newBooking**: Triggered when a booking is completed
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Webhook Payload Schema
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```json
+{
+  "event_type": "newLead" | "newBooking",
+  "timestamp": "2025-06-07T21:05:00Z",
+  "franchisee_id": "uuid",
+  "franchisee_name": "South Denver Soccer Stars",
+  "sender_name": "South Denver Soccer Stars",
+  "business_email": "southdenver@soccerstars.com",
+  "lead": {
+    "id": "uuid",
+    "first_name": "Cortney",
+    "last_name": "Price",
+    "email": "test@example.com",
+    "phone": "303-123-4567",
+    "zip": "80110"
+  },
+  "booking": {
+    "id": "uuid",
+    "booking_reference": "ABC12345",
+    "class_name": "Soccer Stars – Minis",
+    "class_date": "2025-06-12",
+    "class_time": "09:30",
+    "location_name": "Harvard Gulch Park",
+    "location_address": "550 E. Iliff Ave, Denver CO",
+    "participants": [
+      { "name": "Ada Price", "age": 4, "dob": "2021-01-20" }
+    ],
+    "parent_first": "Cortney",
+    "parent_last": "Price"
+  }
+}
 ```
 
-**Edit a file directly in GitHub**
+**Note**: For `newLead` events, the booking block contains empty strings and arrays since no booking exists yet.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Webhook QA Testing
 
-**Use GitHub Codespaces**
+#### Test newLead Event
+```bash
+curl -X POST https://your-n8n-webhook-endpoint.com/webhook \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-token" \
+  -d '{
+    "event_type": "newLead",
+    "timestamp": "2025-06-07T21:05:00Z",
+    "franchisee_id": "test-franchisee-id",
+    "franchisee_name": "Test Soccer Stars",
+    "sender_name": "Test Soccer Stars",
+    "business_email": "test@soccerstars.com",
+    "lead": {
+      "id": "test-lead-id",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john@example.com",
+      "phone": "555-1234",
+      "zip": "12345"
+    },
+    "booking": {
+      "id": "",
+      "booking_reference": "",
+      "class_name": "",
+      "class_date": "",
+      "class_time": "",
+      "location_name": "",
+      "location_address": "",
+      "participants": [],
+      "parent_first": "",
+      "parent_last": ""
+    }
+  }'
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+#### Test newBooking Event
+```bash
+curl -X POST https://your-n8n-webhook-endpoint.com/webhook \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-token" \
+  -d '{
+    "event_type": "newBooking",
+    "timestamp": "2025-06-07T21:05:00Z",
+    "franchisee_id": "test-franchisee-id",
+    "franchisee_name": "Test Soccer Stars",
+    "sender_name": "Test Soccer Stars",
+    "business_email": "test@soccerstars.com",
+    "lead": {
+      "id": "test-lead-id",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john@example.com",
+      "phone": "555-1234",
+      "zip": "12345"
+    },
+    "booking": {
+      "id": "test-booking-id",
+      "booking_reference": "ABC12345",
+      "class_name": "Soccer Stars - Minis",
+      "class_date": "2025-06-12",
+      "class_time": "09:30",
+      "location_name": "Harvard Gulch Park",
+      "location_address": "550 E. Iliff Ave, Denver CO",
+      "participants": [
+        { "name": "Ada Doe", "age": 4, "dob": "2021-01-20" }
+      ],
+      "parent_first": "John",
+      "parent_last": "Doe"
+    }
+  }'
+```
 
-## What technologies are used for this project?
+## Environment Variables
 
-This project is built with:
+Copy `.env.example` to `.env` and configure the following variables:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- `SUPABASE_URL`: Your Supabase project URL
+- `SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
+- `MAPBOX_PUBLIC_TOKEN`: Your Mapbox public token
+- `WEBHOOK_URL`: Your webhook endpoint URL (for n8n or other integrations)
 
-## How can I deploy this project?
+## Development
 
-Simply open [Lovable](https://lovable.dev/projects/f6683478-1489-4ddb-9e51-aed65a422be1) and click on Share -> Publish.
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Configure environment variables
+4. Start development server: `npm run dev`
 
-## Can I connect a custom domain to my Lovable project?
+## Deployment
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The application is deployed automatically when changes are pushed to the main branch.
