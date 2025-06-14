@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import TestUrlToggle from "@/components/ui/TestUrlToggle";
 
 interface WebhookTestControlsProps {
   useTestUrl: boolean;
@@ -11,6 +10,7 @@ interface WebhookTestControlsProps {
   onSendTestWebhook: (type: 'newLead' | 'newBooking') => void;
   selectedUrl: string;
   isUrlValid: (url: string) => boolean;
+  currentTestWebhookUrl: string;
 }
 
 export default function WebhookTestControls({
@@ -21,21 +21,16 @@ export default function WebhookTestControls({
   onSendTestWebhook,
   selectedUrl,
   isUrlValid,
+  currentTestWebhookUrl,
 }: WebhookTestControlsProps) {
   return (
     <div className="pt-4 border-t">
-      <div className="flex items-center space-x-2 mb-2">
-        <Switch
-          id="use-test-url"
+      <div className="mb-4">
+        <TestUrlToggle
           checked={useTestUrl}
-          onCheckedChange={setUseTestUrl}
+          disabled={!currentTestWebhookUrl}
+          onChange={setUseTestUrl}
         />
-        <Label htmlFor="use-test-url" className="text-sm font-medium">
-          Use Test URL
-        </Label>
-        <span className="text-xs text-gray-500">
-          ({useTestUrl ? 'Test' : 'Production'} URL selected)
-        </span>
       </div>
       
       <p className="text-xs text-gray-500 mb-4">

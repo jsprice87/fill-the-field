@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from "@/hooks/useFranchiseeSettings";
@@ -173,6 +172,7 @@ export default function WebhookIntegrationsCard() {
             onSendTestWebhook={handleSendTestWebhook}
             selectedUrl={getSelectedUrl()}
             isUrlValid={isUrlValid}
+            currentTestWebhookUrl={currentTestWebhookUrl}
           />
 
           <WebhookActivity
