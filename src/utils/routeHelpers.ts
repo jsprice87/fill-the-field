@@ -12,7 +12,7 @@ interface NavItem {
 
 export function createNestedRoutes(navItems: NavItem[]): RouteObject[] {
   return navItems.map((item) => {
-    const route: RouteObject = {
+    const route: Partial<RouteObject> = {
       path: item.to,
       element: item.page,
     };
@@ -27,6 +27,6 @@ export function createNestedRoutes(navItems: NavItem[]): RouteObject[] {
       route.children = createNestedRoutes(item.children);
     }
 
-    return route;
+    return route as RouteObject;
   });
 }

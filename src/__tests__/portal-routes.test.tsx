@@ -1,5 +1,5 @@
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi } from 'vitest';
@@ -62,12 +62,12 @@ const renderWithProviders = (component: React.ReactElement) => {
 
 describe('Portal Routes', () => {
   it('renders Portal Dashboard content', () => {
-    renderWithProviders(<PortalDashboard />);
-    expect(screen.getByRole('heading', { name: /dashboard/i })).toBeInTheDocument();
+    const { getByRole } = renderWithProviders(<PortalDashboard />);
+    expect(getByRole('heading', { name: /dashboard/i })).toBeDefined();
   });
 
   it('renders Portal Bookings content', () => {
-    renderWithProviders(<PortalBookings />);
-    expect(screen.getByRole('heading', { name: /bookings/i })).toBeInTheDocument();
+    const { getByRole } = renderWithProviders(<PortalBookings />);
+    expect(getByRole('heading', { name: /bookings/i })).toBeDefined();
   });
 });
