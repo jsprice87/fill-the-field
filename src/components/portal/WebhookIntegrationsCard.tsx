@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useFranchiseeSettings } from "@/hooks/useFranchiseeSettings";
+import { useFranchiseeSettings, useUpdateFranchiseeSetting } from "@/hooks/useFranchiseeSettings";
 import { useFranchiseeData } from "@/hooks/useFranchiseeData";
 import { useWebhookLogs } from "@/hooks/useWebhookLogs";
 import { Badge } from "@/components/ui/badge";
@@ -13,29 +13,30 @@ import { CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
 
 export default function WebhookIntegrationsCard() {
   const { data: franchiseeData } = useFranchiseeData();
-  const { data: settings, updateSetting } = useFranchiseeSettings(franchiseeData?.id);
+  const { data: settings } = useFranchiseeSettings();
+  const updateSetting = useUpdateFranchiseeSetting();
   const { data: webhookLogs } = useWebhookLogs(franchiseeData?.id);
 
   const [webhookUrl, setWebhookUrl] = useState("");
   const [authHeader, setAuthHeader] = useState("");
 
   // Get current settings
-  const currentWebhookUrl = settings?.find(s => s.setting_key === 'webhook_url')?.setting_value || '';
-  const currentAuthHeader = settings?.find(s => s.setting_key === 'webhook_auth_header')?.setting_value || '';
+  const currentWebhookUrl = settings?.webhook_url ?? '';
+  const currentAuthHeader = settings?.webhook_auth_header ?? '';
 
   const handleSaveWebhook = async () => {
     if (!franchiseeData?.id) return;
 
     try {
       await updateSetting.mutateAsync({
-        setting_key: 'webhook_url',
-        setting_value: webhookUrl
+        key: 'webhook_url',
+        value: webhookUrl
       });
 
       if (authHeader) {
         await updateSetting.mutateAsync({
-          setting_key: 'webhook_auth_header',
-          setting_value: authHeader
+          key: 'webhook_auth_header',
+          value: authHeader
         });
       }
 
