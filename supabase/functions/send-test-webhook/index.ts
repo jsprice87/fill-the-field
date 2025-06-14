@@ -30,6 +30,10 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Check if this is likely an n8n test URL
+    const isTestUrl = url.includes('/webhook-test/') || url.includes('test')
+    console.log('URL analysis:', { url, isTestUrl })
+
     // Generate mock unified webhook payload
     const mockPayload = {
       event_type: type,
@@ -74,6 +78,11 @@ Deno.serve(async (req) => {
     }
 
     console.log('Sending test webhook payload to:', url)
+    console.log('Parsed URL components:', {
+      origin: new URL(url).origin,
+      pathname: new URL(url).pathname,
+      search: new URL(url).search
+    })
     console.log('Test payload:', JSON.stringify(mockPayload, null, 2))
 
     // Send the webhook
@@ -99,11 +108,23 @@ Deno.serve(async (req) => {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
+    } else if (response.status === 404 && isTestUrl) {
+      // Special handling for 404 on test URLs
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'webhook_not_listening',
+        status: response.status,
+        response: responseText
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
     } else {
       return new Response(JSON.stringify({
         success: false,
         error: `HTTP ${response.status}: ${responseText}`,
-        status: response.status
+        status: response.status,
+        response: responseText
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

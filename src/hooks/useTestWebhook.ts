@@ -27,9 +27,14 @@ export const useTestWebhook = () => {
     },
     onSuccess: (data) => {
       if (data?.success) {
-        toast.success('Test webhook sent successfully');
+        const eventType = data.type === 'newLead' ? 'lead' : 'booking';
+        toast.success(`Test ${eventType} webhook sent successfully ✔︎`);
+      } else if (data?.error === 'webhook_not_listening') {
+        toast.error('Workflow not listening – press ▶︎ Execute Workflow in n8n and try again');
       } else {
-        toast.error(`Test webhook failed: ${data?.error || 'Unknown error'}`);
+        const statusInfo = data?.status ? ` (HTTP ${data.status})` : '';
+        const errorMsg = data?.response || data?.error || 'Unknown error';
+        toast.error(`Test webhook failed${statusInfo}: ${errorMsg}`);
       }
     },
     onError: (error) => {
