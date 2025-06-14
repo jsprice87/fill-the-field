@@ -1,0 +1,83 @@
+
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+
+interface WebhookUrlFieldsProps {
+  testWebhookUrl: string;
+  prodWebhookUrl: string;
+  authHeader: string;
+  currentTestWebhookUrl: string;
+  currentProdWebhookUrl: string;
+  currentAuthHeader: string;
+  testUrlError: string;
+  prodUrlError: string;
+  setTestWebhookUrl: (value: string) => void;
+  setProdWebhookUrl: (value: string) => void;
+  setAuthHeader: (value: string) => void;
+  onTestUrlBlur: (value: string) => void;
+  onProdUrlBlur: (value: string) => void;
+  onAuthHeaderBlur: (value: string) => void;
+}
+
+export default function WebhookUrlFields({
+  testWebhookUrl,
+  prodWebhookUrl,
+  authHeader,
+  currentTestWebhookUrl,
+  currentProdWebhookUrl,
+  currentAuthHeader,
+  testUrlError,
+  prodUrlError,
+  setTestWebhookUrl,
+  setProdWebhookUrl,
+  setAuthHeader,
+  onTestUrlBlur,
+  onProdUrlBlur,
+  onAuthHeaderBlur,
+}: WebhookUrlFieldsProps) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="test-webhook-url">Test Webhook URL</Label>
+        <Input
+          id="test-webhook-url"
+          value={testWebhookUrl || currentTestWebhookUrl}
+          onChange={(e) => setTestWebhookUrl(e.target.value)}
+          onBlur={(e) => onTestUrlBlur(e.target.value)}
+          placeholder="https://your-test-webhook-endpoint.com/webhook-test/..."
+          error={!!testUrlError}
+        />
+        {testUrlError && (
+          <p className="text-sm text-red-600 mt-1">{testUrlError}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="prod-webhook-url">Production Webhook URL</Label>
+        <Input
+          id="prod-webhook-url"
+          value={prodWebhookUrl || currentProdWebhookUrl}
+          onChange={(e) => setProdWebhookUrl(e.target.value)}
+          onBlur={(e) => onProdUrlBlur(e.target.value)}
+          placeholder="https://your-production-webhook-endpoint.com/webhook/..."
+          error={!!prodUrlError}
+        />
+        {prodUrlError && (
+          <p className="text-sm text-red-600 mt-1">{prodUrlError}</p>
+        )}
+      </div>
+      
+      <div>
+        <Label htmlFor="auth-header">Authorization Header (Optional)</Label>
+        <Input
+          id="auth-header"
+          value={authHeader || currentAuthHeader}
+          onChange={(e) => setAuthHeader(e.target.value)}
+          onBlur={(e) => onAuthHeaderBlur(e.target.value)}
+          placeholder="Bearer your-token-here"
+          type="password"
+        />
+      </div>
+    </div>
+  );
+}
