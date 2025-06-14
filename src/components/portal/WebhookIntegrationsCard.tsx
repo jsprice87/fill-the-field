@@ -3,50 +3,120 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from "@/hooks/useFranchiseeSettings";
 import { useFranchiseeData } from "@/hooks/useFranchiseeData";
 import { useWebhookLogs } from "@/hooks/useWebhookLogs";
+import { useTestWebhook } from "@/hooks/useTestWebhook";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, Clock, ExternalLink, Rocket } from "lucide-react";
 
 export default function WebhookIntegrationsCard() {
   const { data: franchiseeData } = useFranchiseeData();
   const { data: settings } = useFranchiseeSettings();
   const updateSetting = useUpdateFranchiseeSetting();
   const { data: webhookLogs } = useWebhookLogs(franchiseeData?.id);
+  const testWebhook = useTestWebhook();
 
-  const [webhookUrl, setWebhookUrl] = useState("");
+  const [testWebhookUrl, setTestWebhookUrl] = useState("");
+  const [prodWebhookUrl, setProdWebhookUrl] = useState("");
   const [authHeader, setAuthHeader] = useState("");
+  const [useTestUrl, setUseTestUrl] = useState(false);
+  const [testUrlError, setTestUrlError] = useState("");
+  const [prodUrlError, setProdUrlError] = useState("");
 
   // Get current settings
-  const currentWebhookUrl = settings?.webhook_url ?? '';
+  const currentTestWebhookUrl = settings?.webhook_url_test ?? '';
+  const currentProdWebhookUrl = settings?.webhook_url_prod ?? '';
   const currentAuthHeader = settings?.webhook_auth_header ?? '';
 
-  const handleSaveWebhook = async () => {
-    if (!franchiseeData?.id) return;
+  // URL validation function
+  const validateUrl = (url: string): boolean => {
+    if (!url) return true; // Empty is valid
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
 
+  const handleTestUrlBlur = async (value: string) => {
+    if (value === currentTestWebhookUrl) return;
+    
+    if (value && !validateUrl(value)) {
+      setTestUrlError("Please enter a valid http:// or https:// URL");
+      return;
+    }
+    
+    setTestUrlError("");
     try {
       await updateSetting.mutateAsync({
-        key: 'webhook_url',
-        value: webhookUrl
+        key: 'webhook_url_test',
+        value: value
       });
-
-      if (authHeader) {
-        await updateSetting.mutateAsync({
-          key: 'webhook_auth_header',
-          value: authHeader
-        });
-      }
-
-      toast.success('Webhook settings saved successfully');
-      setWebhookUrl("");
-      setAuthHeader("");
     } catch (error) {
-      toast.error('Failed to save webhook settings');
-      console.error('Error saving webhook settings:', error);
+      console.error('Error saving test webhook URL:', error);
     }
+  };
+
+  const handleProdUrlBlur = async (value: string) => {
+    if (value === currentProdWebhookUrl) return;
+    
+    if (value && !validateUrl(value)) {
+      setProdUrlError("Please enter a valid http:// or https:// URL");
+      return;
+    }
+    
+    setProdUrlError("");
+    try {
+      await updateSetting.mutateAsync({
+        key: 'webhook_url_prod',
+        value: value
+      });
+    } catch (error) {
+      console.error('Error saving production webhook URL:', error);
+    }
+  };
+
+  const handleAuthHeaderBlur = async (value: string) => {
+    if (value === currentAuthHeader) return;
+    
+    try {
+      await updateSetting.mutateAsync({
+        key: 'webhook_auth_header',
+        value: value
+      });
+    } catch (error) {
+      console.error('Error saving auth header:', error);
+    }
+  };
+
+  const getSelectedUrl = () => {
+    return useTestUrl ? 
+      (testWebhookUrl || currentTestWebhookUrl) : 
+      (prodWebhookUrl || currentProdWebhookUrl);
+  };
+
+  const isUrlValid = (url: string) => {
+    return url && validateUrl(url);
+  };
+
+  const canSendTest = () => {
+    const selectedUrl = getSelectedUrl();
+    return isUrlValid(selectedUrl) && !testWebhook.isPending;
+  };
+
+  const handleSendTestWebhook = (type: 'newLead' | 'newBooking') => {
+    const selectedUrl = getSelectedUrl();
+    if (!selectedUrl) {
+      toast.error('Please enter a webhook URL first');
+      return;
+    }
+
+    testWebhook.mutate({ type, url: selectedUrl });
   };
 
   const recentLogs = webhookLogs?.slice(0, 5) || [];
@@ -76,13 +146,33 @@ export default function WebhookIntegrationsCard() {
       <CardContent className="space-y-6">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="webhook-url">Webhook URL</Label>
+            <Label htmlFor="test-webhook-url">Test Webhook URL</Label>
             <Input
-              id="webhook-url"
-              value={webhookUrl || currentWebhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://your-webhook-endpoint.com/webhook"
+              id="test-webhook-url"
+              value={testWebhookUrl || currentTestWebhookUrl}
+              onChange={(e) => setTestWebhookUrl(e.target.value)}
+              onBlur={(e) => handleTestUrlBlur(e.target.value)}
+              placeholder="https://your-test-webhook-endpoint.com/webhook"
+              error={!!testUrlError}
             />
+            {testUrlError && (
+              <p className="text-sm text-red-600 mt-1">{testUrlError}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="prod-webhook-url">Production Webhook URL</Label>
+            <Input
+              id="prod-webhook-url"
+              value={prodWebhookUrl || currentProdWebhookUrl}
+              onChange={(e) => setProdWebhookUrl(e.target.value)}
+              onBlur={(e) => handleProdUrlBlur(e.target.value)}
+              placeholder="https://your-production-webhook-endpoint.com/webhook"
+              error={!!prodUrlError}
+            />
+            {prodUrlError && (
+              <p className="text-sm text-red-600 mt-1">{prodUrlError}</p>
+            )}
           </div>
           
           <div>
@@ -91,20 +181,67 @@ export default function WebhookIntegrationsCard() {
               id="auth-header"
               value={authHeader || currentAuthHeader}
               onChange={(e) => setAuthHeader(e.target.value)}
+              onBlur={(e) => handleAuthHeaderBlur(e.target.value)}
               placeholder="Bearer your-token-here"
               type="password"
             />
           </div>
 
-          <Button 
-            onClick={handleSaveWebhook}
-            disabled={updateSetting.isPending}
-          >
-            {updateSetting.isPending ? 'Saving...' : 'Save Webhook Settings'}
-          </Button>
+          <div className="pt-4 border-t">
+            <div className="flex items-center space-x-2 mb-4">
+              <Switch
+                id="use-test-url"
+                checked={useTestUrl}
+                onCheckedChange={setUseTestUrl}
+              />
+              <Label htmlFor="use-test-url" className="text-sm font-medium">
+                Use Test URL
+              </Label>
+              <span className="text-xs text-gray-500">
+                ({useTestUrl ? 'Test' : 'Production'} URL selected)
+              </span>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSendTestWebhook('newLead')}
+                disabled={!canSendTest()}
+                className="flex items-center gap-2"
+              >
+                {testWebhook.isPending ? (
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                ) : (
+                  <Rocket className="w-4 h-4" />
+                )}
+                Send Test Lead Webhook
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSendTestWebhook('newBooking')}
+                disabled={!canSendTest()}
+                className="flex items-center gap-2"
+              >
+                {testWebhook.isPending ? (
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                ) : (
+                  <Rocket className="w-4 h-4" />
+                )}
+                Send Test Booking Webhook
+              </Button>
+            </div>
+
+            {!canSendTest() && getSelectedUrl() && (
+              <p className="text-sm text-gray-500 mt-2">
+                Please enter a valid URL to enable test buttons
+              </p>
+            )}
+          </div>
         </div>
 
-        {currentWebhookUrl && (
+        {(currentTestWebhookUrl || currentProdWebhookUrl) && (
           <div className="pt-4 border-t">
             <h4 className="font-medium text-sm mb-3">Recent Webhook Activity</h4>
             {recentLogs.length > 0 ? (
