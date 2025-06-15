@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Phone, Mail, MapPin, Calendar, Search } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lead } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
@@ -12,6 +12,9 @@ import { useArchiveLead, useUnarchiveLead } from '@/hooks/useArchiveActions';
 import { useDeleteLead } from '@/hooks/useDeleteActions';
 import DeleteConfirmationDialog from '@/components/shared/DeleteConfirmationDialog';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
+import LeadInfoCell from './LeadInfoCell';
+import LeadContactCell from './LeadContactCell';
+import LeadsTableEmpty from './LeadsTableEmpty';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -99,36 +102,11 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
   };
 
   if (leads.length === 0) {
-    if (searchQuery) {
-      return (
-        <div className="text-center p-8">
-          <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="font-agrandir text-xl text-brand-navy mb-2">No results for "{searchQuery}"</h3>
-          <p className="font-poppins text-gray-600">
-            Try adjusting your search terms or clear the search to see all leads.
-          </p>
-        </div>
-      );
-    }
-
     return (
-      <div className="text-center p-8">
-        <Phone className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="font-agrandir text-xl text-brand-navy mb-2">
-          {showArchived ? 'No Archived Leads' : 'No Leads Yet'}
-        </h3>
-        <p className="font-poppins text-gray-600 mb-6">
-          {showArchived 
-            ? 'No leads have been archived yet.'
-            : 'When users sign up through your landing page, they\'ll appear here.'
-          }
-        </p>
-        {!showArchived && (
-          <Button className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins">
-            Share Your Landing Page
-          </Button>
-        )}
-      </div>
+      <LeadsTableEmpty 
+        searchQuery={searchQuery} 
+        showArchived={showArchived} 
+      />
     );
   }
 
@@ -156,41 +134,20 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                   className={`hover:bg-muted/50 ${lead.archived_at ? 'opacity-60 bg-gray-50' : ''}`}
                 >
                   <TableCell className="whitespace-nowrap">
-                    <div className="space-y-1">
-                      <div className="font-agrandir font-medium text-brand-navy flex items-center gap-2">
-                        {lead.first_name} {lead.last_name}
-                        {lead.archived_at && (
-                          <Badge variant="secondary" className="text-xs">Archived</Badge>
-                        )}
-                      </div>
-                      <div className="md:hidden text-sm text-gray-600 space-y-1">
-                        <div className="flex items-center">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {lead.email}
-                        </div>
-                        <div className="flex items-center">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {lead.phone}
-                        </div>
-                      </div>
-                      {lead.notes && (
-                        <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-1">
-                          {lead.notes}
-                        </div>
-                      )}
-                    </div>
+                    <LeadInfoCell
+                      firstName={lead.first_name}
+                      lastName={lead.last_name}
+                      email={lead.email}
+                      phone={lead.phone}
+                      notes={lead.notes}
+                      archivedAt={lead.archived_at}
+                    />
                   </TableCell>
                   <TableCell className="hidden md:table-cell whitespace-nowrap">
-                    <div className="space-y-1 text-sm">
-                      <div className="flex items-center text-gray-600">
-                        <Mail className="h-3 w-3 mr-1" />
-                        {lead.email}
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Phone className="h-3 w-3 mr-1" />
-                        {lead.phone}
-                      </div>
-                    </div>
+                    <LeadContactCell
+                      email={lead.email}
+                      phone={lead.phone}
+                    />
                   </TableCell>
                   <TableCell className="hidden lg:table-cell whitespace-nowrap">
                     <div className="flex items-center text-gray-600">
