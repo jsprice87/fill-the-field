@@ -29,11 +29,13 @@ const PortalBookings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Bookings</h1>
+      <div className="h-full flex flex-col">
+        <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold tracking-tight">Bookings</h1>
+          </div>
         </div>
-        <div className="flex items-center justify-center p-8">
+        <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy"></div>
         </div>
       </div>
@@ -45,115 +47,122 @@ const PortalBookings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">
-          {includeArchived ? 'All Bookings' : 'Bookings'}
-        </h1>
-        
-        <div className="flex items-center gap-4">
-          <ArchiveToggle />
+    <div className="h-full flex flex-col">
+      {/* Sticky Header with Stats and Controls */}
+      <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold tracking-tight">
+            {includeArchived ? 'All Bookings' : 'Bookings'}
+          </h1>
           
-          {/* Location Filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locations.map((location) => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="flex items-center gap-4">
+            <ArchiveToggle />
+            
+            {/* Location Filter */}
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location.id} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Search Input */}
-          <SearchInput
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder={getSearchPlaceholder()}
-            className="w-64"
-          />
+            {/* Search Input */}
+            <SearchInput
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder={getSearchPlaceholder()}
+              className="w-64"
+            />
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{finalBookings.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {searchQuery || selectedLocationId !== 'all' || includeArchived
+                  ? 'Current filter' 
+                  : 'All locations'
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {finalBookings.filter(booking => booking.status === 'booked_upcoming').length}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Ready to attend
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Need Status</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {finalBookings.filter(booking => {
+                  const today = new Date();
+                  const bookingDate = new Date(booking.selected_date || '');
+                  return bookingDate < today && booking.status === 'booked_upcoming';
+                }).length}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Past date, needs update
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Locations</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{locations.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Active locations
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{finalBookings.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {searchQuery || selectedLocationId !== 'all' || includeArchived
-                ? 'Current filter' 
-                : 'All locations'
-              }
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {finalBookings.filter(booking => booking.status === 'booked_upcoming').length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Ready to attend
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Need Status</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {finalBookings.filter(booking => {
-                const today = new Date();
-                const bookingDate = new Date(booking.selected_date || '');
-                return bookingDate < today && booking.status === 'booked_upcoming';
-              }).length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Past date, needs update
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Locations</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{locations.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Active locations
-            </p>
-          </CardContent>
-        </Card>
+      {/* Scrollable Table Area */}
+      <div className="flex-1 overflow-auto px-6 pb-6">
+        <div className="mt-6">
+          <BookingsTable 
+            bookings={finalBookings} 
+            searchQuery={searchQuery} 
+            showArchived={includeArchived}
+          />
+        </div>
       </div>
-
-      {/* Bookings Table */}
-      <BookingsTable 
-        bookings={finalBookings} 
-        searchQuery={searchQuery} 
-        showArchived={includeArchived}
-      />
     </div>
   );
 };

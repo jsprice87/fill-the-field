@@ -37,13 +37,13 @@ const DashboardLayout = () => {
         data-section={sectionType}
       >
         <AppSidebar />
-        <div className="ml-64 flex-1 flex flex-col overflow-x-auto">
-          <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative z-10">
             <div className="flex h-14 items-center gap-4 px-4">
               <SidebarTrigger />
             </div>
           </div>
-          <main className="flex-1 p-6">
+          <main className="flex-1 overflow-hidden">
             <Outlet />
           </main>
         </div>
