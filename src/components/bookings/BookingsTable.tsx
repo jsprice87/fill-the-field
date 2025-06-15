@@ -2,18 +2,17 @@
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Baby, Search } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
-import StatusSelect from '../leads/StatusSelect';
-import StatusBadge from '../leads/StatusBadge';
 import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
 import { useDeleteBooking } from '@/hooks/useDeleteActions';
 import DeleteConfirmationDialog from '@/components/shared/DeleteConfirmationDialog';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
-import type { Database } from '@/integrations/supabase/types';
-
-type LeadStatus = Database['public']['Enums']['lead_status'];
+import StatusCell from './StatusCell';
+import ParticipantCell from './ParticipantCell';
+import DateTimeCell from './DateTimeCell';
+import BookingsTableEmpty from './BookingsTableEmpty';
 
 interface Booking {
   id: string;
@@ -52,36 +51,6 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
   const unarchiveBooking = useUnarchiveBooking(franchiseeData?.id, includeArchived);
   const deleteBooking = useDeleteBooking(franchiseeData?.id);
 
-  const formatAge = (birthDateString: string, ageNumber: number) => {
-    if (birthDateString) {
-      const birthDate = new Date(birthDateString);
-      const today = new Date();
-      
-      let years = today.getFullYear() - birthDate.getFullYear();
-      let months = today.getMonth() - birthDate.getMonth();
-      
-      if (months < 0) {
-        years--;
-        months += 12;
-      }
-      
-      if (years > 0) {
-        return months > 0 ? `${years}Y ${months}M` : `${years}Y`;
-      } else {
-        return `${months}M`;
-      }
-    }
-    return `${ageNumber}Y`;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   const handleArchiveToggle = (booking: Booking) => {
     console.log('Archiving booking with ID:', booking.id, 'archived_at:', booking.archived_at);
     
@@ -111,32 +80,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
   };
 
   if (bookings.length === 0) {
-    if (searchQuery) {
-      return (
-        <div className="text-center p-8">
-          <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="font-agrandir text-xl text-brand-navy mb-2">No results for "{searchQuery}"</h3>
-          <p className="font-poppins text-gray-600">
-            Try adjusting your search terms or clear the search to see all bookings.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="text-center p-8">
-        <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="font-agrandir text-xl text-brand-navy mb-2">
-          {showArchived ? 'No Archived Bookings' : 'No Bookings Yet'}
-        </h3>
-        <p className="font-poppins text-gray-600">
-          {showArchived 
-            ? 'No bookings have been archived yet.'
-            : 'When people book classes through your landing page, they\'ll appear here.'
-          }
-        </p>
-      </div>
-    );
+    return <BookingsTableEmpty searchQuery={searchQuery} showArchived={showArchived} />;
   }
 
   return (
@@ -170,13 +114,11 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <div className="space-y-1">
-                      <div className="font-medium">{booking.participant_name}</div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Baby className="h-3 w-3 mr-1" />
-                        {formatAge(booking.participant_birth_date, booking.participant_age)}
-                      </div>
-                    </div>
+                    <ParticipantCell
+                      participantName={booking.participant_name}
+                      participantBirthDate={booking.participant_birth_date}
+                      participantAge={booking.participant_age}
+                    />
                   </TableCell>
                   <TableCell className="hidden md:table-cell whitespace-nowrap">
                     <div className="flex items-center text-gray-600">
@@ -188,30 +130,19 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                     <div className="text-sm">{booking.class_name}</div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <div className="space-y-1">
-                      <div className="text-sm font-medium">{formatDate(booking.selected_date)}</div>
-                      <div className="text-xs text-gray-600">{booking.class_time}</div>
-                      <div className="md:hidden text-xs text-gray-600 mt-1">
-                        <div className="flex items-center">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {booking.location_name}
-                        </div>
-                        <div className="lg:hidden mt-1">{booking.class_name}</div>
-                      </div>
-                    </div>
+                    <DateTimeCell
+                      selectedDate={booking.selected_date}
+                      classTime={booking.class_time}
+                      locationName={booking.location_name}
+                      className={booking.class_name}
+                    />
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-2">
-                      <StatusBadge 
-                        leadId={booking.lead_id}
-                        bookingDate={booking.selected_date}
-                        fallbackStatus={booking.status}
-                      />
-                      <StatusSelect 
-                        leadId={booking.lead_id}
-                        currentStatus={booking.status as LeadStatus}
-                      />
-                    </div>
+                    <StatusCell
+                      leadId={booking.lead_id}
+                      bookingDate={booking.selected_date}
+                      fallbackStatus={booking.status}
+                    />
                   </TableCell>
                   <TableCell>
                     <TableRowMenu
