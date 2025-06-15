@@ -7,6 +7,10 @@ interface TestWebhookRequest {
 }
 
 Deno.serve(async (req) => {
+  // DEPRECATION WARNING - This function is deprecated and will be removed
+  console.warn('⚠️ DEPRECATED: send-test-webhook function is deprecated. Use send-webhook with x-webhook-mode: test header instead.')
+  console.warn('⚠️ This function will be removed after 2025-06-22. Please update your clients.')
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -16,6 +20,7 @@ Deno.serve(async (req) => {
     const { type, url }: TestWebhookRequest = await req.json()
 
     console.log('Processing test webhook request:', { type, url })
+    console.warn('⚠️ This is a deprecated test webhook call - please migrate to send-webhook')
 
     // Validate URL
     try {
@@ -90,7 +95,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'SoccerStars-Test-Webhook/1.0'
+        'User-Agent': 'SoccerStars-Test-Webhook/1.0-DEPRECATED'
       },
       body: JSON.stringify(mockPayload)
     })

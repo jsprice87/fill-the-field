@@ -835,6 +835,7 @@ export type Database = {
           event_type: string
           franchisee_id: string
           id: string
+          is_test: boolean
           payload: Json
           response_body: string | null
           response_status: number | null
@@ -849,6 +850,7 @@ export type Database = {
           event_type: string
           franchisee_id: string
           id?: string
+          is_test?: boolean
           payload: Json
           response_body?: string | null
           response_status?: number | null
@@ -863,6 +865,7 @@ export type Database = {
           event_type?: string
           franchisee_id?: string
           id?: string
+          is_test?: boolean
           payload?: Json
           response_body?: string | null
           response_status?: number | null
