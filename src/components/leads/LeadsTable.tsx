@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,6 +46,10 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
     navigate(`/portal/leads/${leadId}`);
   };
 
+  const handleCall = (phone: string) => {
+    window.open(`tel:${phone}`, '_self');
+  };
+
   const handleArchiveToggle = (lead: Lead) => {
     if (lead.archived_at) {
       unarchiveLead.mutate(lead.id);
@@ -84,7 +87,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
     <>
       <div className="border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <Table className="min-w-[950px]">
+          <Table className="min-w-[820px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="font-agrandir w-64">Lead</TableHead>
@@ -93,7 +96,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                 <TableHead className="font-agrandir w-28">Status</TableHead>
                 <TableHead className="font-agrandir hidden md:table-cell w-32">Source</TableHead>
                 <TableHead className="font-agrandir hidden lg:table-cell w-32">Created</TableHead>
-                <TableHead className="font-agrandir w-40">Actions</TableHead>
                 <TableHead className="font-agrandir w-12">Menu</TableHead>
               </TableRow>
             </TableHeader>
@@ -145,21 +147,9 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1 flex-wrap">
-                      <Button size="sm" variant="outline" className="text-xs">
-                        Call
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        className="bg-brand-red hover:bg-brand-red/90 text-white text-xs"
-                        onClick={() => handleViewLead(lead.id)}
-                      >
-                        View
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <TableRowMenu
+                      onCall={handleCall}
+                      phone={lead.phone}
                       onEdit={() => handleViewLead(lead.id)}
                       onArchiveToggle={() => handleArchiveToggle(lead)}
                       onDelete={() => handleDeleteClick(lead)}
