@@ -21,7 +21,6 @@ import AdminUserManagement from "./pages/admin/UserManagement";
 import AdminTransactions from "./pages/admin/Transactions";
 import AdminGlobalSettings from "./pages/admin/GlobalSettings";
 import AdminSettings from "./pages/admin/Settings";
-import LandingPage from "./pages/landing/LandingPage";
 import SpanishLanding from "./pages/landing/SpanishLanding";
 import FindClasses from "./pages/landing/FindClasses";
 import BookClass from "./pages/landing/BookClass";
@@ -195,6 +194,13 @@ export const navItems = [
     icon: <CalendarIcon className="h-4 w-4" />,
     page: <DefaultBookingRedirect />,
   },
+  // Legacy landing page redirect - redirects /:franchiseeSlug to /:franchiseeSlug/free-trial
+  {
+    title: "Legacy Landing Page Redirect",
+    to: "/:franchiseeSlug",
+    icon: <HomeIcon className="h-4 w-4" />,
+    page: <SlugResolver requireAuth={false}><Navigate to="free-trial" replace /></SlugResolver>,
+  },
   // Franchisee slug-based portal routes - NESTED STRUCTURE
   {
     title: "Franchisee Portal",
@@ -284,12 +290,6 @@ export const navItems = [
     ],
   },
   // PUBLIC landing page routes - Add requireAuth={false}
-  {
-    title: "Landing Page",
-    to: "/:franchiseeSlug",
-    icon: <HomeIcon className="h-4 w-4" />,
-    page: <SlugResolver requireAuth={false}><LandingPage /></SlugResolver>,
-  },
   {
     title: "Spanish Landing",
     to: "/:franchiseeSlug/es",

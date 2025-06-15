@@ -37,8 +37,8 @@ export function AppSidebar() {
 
   const isPortalSection = location.pathname.startsWith('/portal') || location.pathname.includes('/portal');
   
-  // Construct the public landing page URL
-  const landingPageUrl = franchiseeSlug ? `${window.location.origin}/${franchiseeSlug}` : '';
+  // Construct the public landing page URL - now points to /free-trial/
+  const landingPageUrl = franchiseeSlug ? `${window.location.origin}/${franchiseeSlug}/free-trial/` : '';
 
   const handleNavigation = (url: string) => {
     if (url === '.') {
