@@ -1,4 +1,6 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from "@/hooks/useFranchiseeSettings";
 import { useFranchiseeData } from "@/hooks/useFranchiseeData";
@@ -7,7 +9,6 @@ import { useTestWebhook } from "@/hooks/useTestWebhook";
 import { ExternalLink } from "lucide-react";
 import TestWebhookModal from "./TestWebhookModal";
 import WebhookUrlFields from "./WebhookUrlFields";
-import WebhookTestControls from "./WebhookTestControls";
 import WebhookActivity from "./WebhookActivity";
 
 export default function WebhookIntegrationsCard() {
@@ -20,7 +21,6 @@ export default function WebhookIntegrationsCard() {
   const [testWebhookUrl, setTestWebhookUrl] = useState("");
   const [prodWebhookUrl, setProdWebhookUrl] = useState("");
   const [authHeader, setAuthHeader] = useState("");
-  const [useTestUrl, setUseTestUrl] = useState(false);
   const [testUrlError, setTestUrlError] = useState("");
   const [prodUrlError, setProdUrlError] = useState("");
   const [showTestModal, setShowTestModal] = useState(false);
@@ -93,41 +93,23 @@ export default function WebhookIntegrationsCard() {
     }
   };
 
-  const getSelectedUrl = () => {
-    return useTestUrl ? 
-      (testWebhookUrl || currentTestWebhookUrl) : 
-      (prodWebhookUrl || currentProdWebhookUrl);
-  };
-
-  const isUrlValid = (url: string) => {
-    return url && validateUrl(url);
-  };
-
   const canSendTest = () => {
-    const selectedUrl = getSelectedUrl();
-    return isUrlValid(selectedUrl) && !testWebhook.isPending;
+    return currentTestWebhookUrl && validateUrl(currentTestWebhookUrl) && !testWebhook.isPending;
   };
 
   const handleSendTestWebhook = (type: 'newLead' | 'newBooking') => {
-    const selectedUrl = getSelectedUrl();
-    if (!selectedUrl) {
+    if (!currentTestWebhookUrl) {
       return;
     }
 
-    if (useTestUrl) {
-      // Show confirmation modal for test URL
-      setPendingTestType(type);
-      setShowTestModal(true);
-    } else {
-      // Send directly to production URL
-      testWebhook.mutate({ type, url: selectedUrl });
-    }
+    // Show confirmation modal for test URL
+    setPendingTestType(type);
+    setShowTestModal(true);
   };
 
   const handleConfirmTest = () => {
-    const selectedUrl = getSelectedUrl();
-    if (pendingTestType && selectedUrl) {
-      testWebhook.mutate({ type: pendingTestType, url: selectedUrl });
+    if (pendingTestType) {
+      testWebhook.mutate({ type: pendingTestType });
     }
     setShowTestModal(false);
     setPendingTestType(null);
@@ -143,7 +125,7 @@ export default function WebhookIntegrationsCard() {
           </CardTitle>
           <CardDescription>
             Configure webhook URLs to receive real-time notifications for new leads and bookings.
-            The webhook will automatically send unified events when leads are created or bookings are completed.
+            Production URL processes live bookings and leads. Test URL is used only by the buttons below.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -164,16 +146,62 @@ export default function WebhookIntegrationsCard() {
             onAuthHeaderBlur={handleAuthHeaderBlur}
           />
 
-          <WebhookTestControls
-            useTestUrl={useTestUrl}
-            setUseTestUrl={setUseTestUrl}
-            canSendTest={canSendTest()}
-            isTestPending={testWebhook.isPending}
-            onSendTestWebhook={handleSendTestWebhook}
-            selectedUrl={getSelectedUrl()}
-            isUrlValid={isUrlValid}
-            currentTestWebhookUrl={currentTestWebhookUrl}
-          />
+          <div className="pt-4 border-t">
+            <h4 className="font-medium text-sm mb-3">Test Webhook Buttons</h4>
+            <p className="text-xs text-gray-500 mb-4">
+              💡 n8n test URLs accept exactly 1 request after you press 'Execute Workflow'. Production URLs listen continuously.
+            </p>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSendTestWebhook('newLead')}
+                disabled={!canSendTest()}
+                className="flex items-center gap-2"
+                title={!currentTestWebhookUrl ? "Enter a Test Webhook URL in Settings to enable this button" : undefined}
+              >
+                {testWebhook.isPending ? (
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+                  </svg>
+                )}
+                Send Test Lead Webhook
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSendTestWebhook('newBooking')}
+                disabled={!canSendTest()}
+                className="flex items-center gap-2"
+                title={!currentTestWebhookUrl ? "Enter a Test Webhook URL in Settings to enable this button" : undefined}
+              >
+                {testWebhook.isPending ? (
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 2v4"/>
+                    <path d="M16 2v4"/>
+                    <rect width="18" height="18" x="3" y="4" rx="2"/>
+                    <path d="M3 10h18"/>
+                    <path d="m9 16 2 2 4-4"/>
+                  </svg>
+                )}
+                Send Test Booking Webhook
+              </Button>
+            </div>
+
+            {!currentTestWebhookUrl && (
+              <p className="text-sm text-gray-500 mt-2">
+                Enter a Test Webhook URL above to enable test buttons
+              </p>
+            )}
+          </div>
 
           <WebhookActivity
             webhookLogs={webhookLogs}

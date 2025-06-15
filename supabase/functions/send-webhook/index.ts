@@ -9,7 +9,6 @@ interface WebhookPayload {
   franchiseeId: string
   eventType: string
   data: any
-  mode?: string // Optional mode override from headers
 }
 
 // Sleep function for retry delays
@@ -30,9 +29,7 @@ Deno.serve(async (req) => {
     })
 
     // Check for mode override in headers (for test webhook calls)
-    const modeHeader = req.headers.get('x-webhook-mode')
-    const defaultMode = Deno.env.get('WEBHOOK_MODE') ?? 'production'
-    const mode = modeHeader || defaultMode
+    const mode = req.headers.get('x-webhook-mode') ?? 'production'
     const isTest = mode === 'test'
 
     console.log('Processing webhook delivery with mode:', mode, isTest ? '(test)' : '(production)')
@@ -41,40 +38,65 @@ Deno.serve(async (req) => {
 
     console.log('Processing unified webhook delivery for franchisee:', franchiseeId, 'event:', eventType)
 
+    // Load webhook URLs from franchisee settings with cache control
+    const { data: settings, error: settingsError } = await supabase
+      .from('franchisee_settings')
+      .select('setting_key, setting_value')
+      .eq('franchisee_id', franchiseeId)
+      .in('setting_key', ['webhook_url_prod', 'webhook_url_test'])
+      .then(result => {
+        // Add cache control header to prevent stale data
+        if (result.data) {
+          const settingsMap = result.data.reduce((acc, setting) => {
+            acc[setting.setting_key] = setting.setting_value
+            return acc
+          }, {} as Record<string, string>)
+          return { data: settingsMap, error: result.error }
+        }
+        return result
+      })
+
+    if (settingsError) {
+      console.error('Error fetching webhook settings:', settingsError)
+      throw new Error(`Failed to load webhook settings: ${settingsError.message}`)
+    }
+
     // Determine target URL based on mode
     let webhookUrl: string | null = null
     
     if (isTest) {
-      webhookUrl = Deno.env.get('WEBHOOK_TEST_URL')
+      webhookUrl = settings?.webhook_url_test || null
       if (!webhookUrl) {
-        throw new Error('send-webhook: test URL not set in WEBHOOK_TEST_URL')
+        console.error('Test webhook requested but webhook_url_test is not configured for franchisee:', franchiseeId)
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'no_webhook_url',
+          message: 'Test webhook URL not configured'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
       }
     } else {
-      // Production mode - use global prod URL
-      webhookUrl = Deno.env.get('WEBHOOK_PROD_URL')
+      // Production mode - use franchisee URL or global fallback
+      webhookUrl = settings?.webhook_url_prod
+      
       if (!webhookUrl) {
-        throw new Error('send-webhook: production URL not set in WEBHOOK_PROD_URL')
+        webhookUrl = Deno.env.get('WEBHOOK_PROD_URL')
+        if (webhookUrl) {
+          console.warn('Using global fallback URL for franchisee:', franchiseeId, 'URL:', webhookUrl)
+        } else {
+          console.error('No production webhook URL configured for franchisee:', franchiseeId)
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'no_webhook_url',
+            message: 'Production webhook URL not configured'
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
       }
-
-      // Check for per-franchisee webhook_url override and warn if found
-      const { data: settings, error: settingsError } = await supabase
-        .from('franchisee_settings')
-        .select('setting_key, setting_value')
-        .eq('franchisee_id', franchiseeId)
-        .eq('setting_key', 'webhook_url')
-
-      if (settingsError) {
-        console.error('Error fetching webhook settings:', settingsError)
-      } else if (settings && settings.length > 0 && settings[0].setting_value) {
-        console.warn('⚠️ Per-franchisee webhook_url detected but ignored in production mode:', settings[0].setting_value)
-        console.warn('⚠️ Using global production URL instead:', webhookUrl)
-      }
-    }
-
-    // Guard against accidental test URL in production mode
-    if (!isTest && webhookUrl.includes('/webhook-test/')) {
-      console.warn('⚠️ Production mode but test URL detected – switching to prod URL')
-      webhookUrl = Deno.env.get('WEBHOOK_PROD_URL')!
     }
 
     console.log('➡️ send-webhook posting to:', webhookUrl)
@@ -87,18 +109,8 @@ Deno.serve(async (req) => {
     }
 
     // Check for auth header setting (only applies to production webhooks)
-    let authHeader: string | null = null
-    if (!isTest) {
-      const { data: authSettings, error: authError } = await supabase
-        .from('franchisee_settings')
-        .select('setting_value')
-        .eq('franchisee_id', franchiseeId)
-        .eq('setting_key', 'webhook_auth_header')
-
-      if (!authError && authSettings && authSettings.length > 0 && authSettings[0].setting_value) {
-        authHeader = authSettings[0].setting_value
-        headers['Authorization'] = authHeader
-      }
+    if (!isTest && settings?.webhook_auth_header) {
+      headers['Authorization'] = settings.webhook_auth_header
     }
 
     let responseStatus: number | null = null
@@ -107,12 +119,14 @@ Deno.serve(async (req) => {
     let deliveredAt: string | null = null
     let attemptCount = 0
 
-    // Retry logic with exponential backoff: 200ms, 400ms, 800ms
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    // Retry logic: production mode gets 3 attempts, test mode gets 1
+    const maxAttempts = isTest ? 1 : 3
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       attemptCount = attempt
       
       try {
-        console.log(`Webhook delivery attempt ${attempt}/3`)
+        console.log(`Webhook delivery attempt ${attempt}/${maxAttempts}`)
         
         // Apply timeout of 5 seconds per attempt
         const controller = new AbortController()
@@ -137,6 +151,12 @@ Deno.serve(async (req) => {
         } else {
           errorMessage = `HTTP ${responseStatus}: ${responseBody}`
           console.error(`Webhook delivery failed on attempt ${attempt}:`, errorMessage)
+          
+          // For test mode, don't retry on 404 (workflow not listening)
+          if (isTest && responseStatus === 404) {
+            console.log('Test webhook received 404 - workflow not listening, not retrying')
+            break
+          }
         }
 
       } catch (error) {
@@ -149,7 +169,7 @@ Deno.serve(async (req) => {
       }
 
       // Wait before next attempt (except on last attempt)
-      if (attempt < 3) {
+      if (attempt < maxAttempts) {
         const delayMs = 2 ** attempt * 200 // 200ms, 400ms, 800ms
         console.log(`Waiting ${delayMs}ms before retry...`)
         await sleep(delayMs)
@@ -178,6 +198,20 @@ Deno.serve(async (req) => {
 
     const success = deliveredAt !== null
     console.log(`Webhook delivery ${success ? 'succeeded' : 'failed'} after ${attemptCount} attempts`)
+
+    // Special handling for test mode 404s
+    if (isTest && responseStatus === 404) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'webhook_not_listening',
+        response_status: responseStatus,
+        response_body: responseBody,
+        is_test: true
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
     return new Response(JSON.stringify({
       success,

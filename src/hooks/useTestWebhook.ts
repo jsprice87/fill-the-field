@@ -2,25 +2,31 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useFranchiseeProfile } from './useFranchiseeProfile';
 
 interface TestWebhookPayload {
   type: 'newLead' | 'newBooking';
-  url?: string; // Optional - kept for backwards compatibility but will be ignored
 }
 
 export const useTestWebhook = () => {
+  const { data: profile } = useFranchiseeProfile();
+
   return useMutation({
     mutationFn: async (payload: TestWebhookPayload) => {
+      if (!profile?.id) {
+        throw new Error('No franchisee profile found');
+      }
+
       console.log('Sending test webhook via send-webhook function:', payload);
       
       // Create a mock unified webhook payload for testing
       const mockPayload = {
         event_type: payload.type,
         timestamp: new Date().toISOString(),
-        franchisee_id: "test-franchisee-id",
-        franchisee_name: "Test Soccer Stars",
-        sender_name: "Test Soccer Stars",
-        business_email: "test@soccerstars.com",
+        franchisee_id: profile.id,
+        franchisee_name: profile.company_name || "Test Soccer Stars",
+        sender_name: profile.sender_name || profile.company_name || "Test Soccer Stars",
+        business_email: profile.business_email || "",
         lead: {
           id: "test-lead-id",
           first_name: "John",
@@ -59,7 +65,7 @@ export const useTestWebhook = () => {
       // Call the unified send-webhook function with test mode header
       const { data, error } = await supabase.functions.invoke('send-webhook', {
         body: {
-          franchiseeId: "test-franchisee-id",
+          franchiseeId: profile.id,
           eventType: payload.type,
           data: mockPayload
         },
@@ -78,11 +84,12 @@ export const useTestWebhook = () => {
     },
     onSuccess: (data) => {
       if (data?.success) {
-        const eventType = data.is_test ? 'test ' : '';
-        const webhookType = data.event_type || 'webhook';
-        toast.success(`${eventType}${webhookType} sent successfully ✔︎`);
+        const webhookType = data.event_type || payload.type;
+        toast.success(`Test ${webhookType} webhook sent successfully ✔︎`);
       } else if (data?.error === 'webhook_not_listening') {
         toast.error('Workflow not listening – press ▶︎ Execute Workflow in n8n and try again');
+      } else if (data?.error === 'no_webhook_url') {
+        toast.error('Add a Test Webhook URL in Settings to enable test webhooks');
       } else {
         const statusInfo = data?.response_status ? ` (HTTP ${data.response_status})` : '';
         const errorMsg = data?.response_body || data?.error_message || 'Unknown error';

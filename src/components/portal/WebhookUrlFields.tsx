@@ -50,6 +50,9 @@ export default function WebhookUrlFields({
         {testUrlError && (
           <p className="text-sm text-red-600 mt-1">{testUrlError}</p>
         )}
+        <p className="text-sm text-gray-500 mt-1">
+          Used only by the test buttons below. n8n must be in 'Execute Workflow' mode.
+        </p>
       </div>
 
       <div>
@@ -65,6 +68,9 @@ export default function WebhookUrlFields({
         {prodUrlError && (
           <p className="text-sm text-red-600 mt-1">{prodUrlError}</p>
         )}
+        <p className="text-sm text-gray-500 mt-1">
+          Processes live bookings and leads automatically.
+        </p>
       </div>
       
       <div>
@@ -77,6 +83,9 @@ export default function WebhookUrlFields({
           placeholder="Bearer your-token-here"
           type="password"
         />
+        <p className="text-sm text-gray-500 mt-1">
+          Only applied to production webhook calls.
+        </p>
       </div>
     </div>
   );
