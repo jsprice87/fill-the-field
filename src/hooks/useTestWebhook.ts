@@ -82,9 +82,9 @@ export const useTestWebhook = () => {
       console.log('Test webhook response:', data);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       if (data?.success) {
-        const webhookType = data.event_type || payload.type;
+        const webhookType = data.event_type || variables.type;
         toast.success(`Test ${webhookType} webhook sent successfully ✔︎`);
       } else if (data?.error === 'webhook_not_listening') {
         toast.error('Workflow not listening – press ▶︎ Execute Workflow in n8n and try again');
