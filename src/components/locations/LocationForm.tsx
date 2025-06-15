@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -11,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { StatusToggle } from "@/components/ui/StatusToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -72,7 +71,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSwitchChange = (checked: boolean) => {
+  const handleStatusToggleChange = (checked: boolean) => {
     setFormData((prev) => ({ ...prev, isActive: checked }));
   };
 
@@ -235,14 +234,14 @@ const LocationForm: React.FC<LocationFormProps> = ({
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
+          <div className="grid gap-2">
+            <Label htmlFor="isActive">Status</Label>
+            <StatusToggle
               id="isActive"
               checked={formData.isActive}
-              onCheckedChange={handleSwitchChange}
               disabled={isGeocoding}
+              onChange={handleStatusToggleChange}
             />
-            <Label htmlFor="isActive">Location is active</Label>
           </div>
 
           <DialogFooter>

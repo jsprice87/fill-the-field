@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Archive } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -24,16 +23,17 @@ const ArchiveToggle: React.FC<ArchiveToggleProps> = ({ className }) => {
   };
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
+    <div className={`flex items-center space-x-3 ${className}`}>
       <Archive className="h-4 w-4 text-muted-foreground" />
       <Switch
         id="archive-toggle"
         checked={showArchived}
         onCheckedChange={handleToggle}
+        aria-label="Archive toggle"
       />
-      <Label htmlFor="archive-toggle" className="text-sm font-medium">
-        Show Archived
-      </Label>
+      <span className="text-sm font-medium text-gray-900">
+        {showArchived ? 'Show Archived' : 'Show Active'}
+      </span>
     </div>
   );
 };
