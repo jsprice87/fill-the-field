@@ -9,10 +9,10 @@ import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveAction
 import { useDeleteBooking } from '@/hooks/useDeleteActions';
 import DeleteConfirmationDialog from '@/components/shared/DeleteConfirmationDialog';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
-import StatusCell from './StatusCell';
 import ParticipantCell from './ParticipantCell';
 import DateTimeCell from './DateTimeCell';
 import BookingsTableEmpty from './BookingsTableEmpty';
+import StatusBadgeSelector from '@/components/ui/StatusBadgeSelector';
 
 interface Booking {
   id: string;
@@ -95,7 +95,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                 <TableHead className="font-agrandir hidden md:table-cell w-40">Location</TableHead>
                 <TableHead className="font-agrandir hidden lg:table-cell w-40">Class</TableHead>
                 <TableHead className="font-agrandir w-32">Date/Time</TableHead>
-                <TableHead className="font-agrandir w-40">Status</TableHead>
+                <TableHead className="font-agrandir w-28">Status</TableHead>
                 <TableHead className="font-agrandir w-12">Menu</TableHead>
               </TableRow>
             </TableHeader>
@@ -138,10 +138,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                     />
                   </TableCell>
                   <TableCell>
-                    <StatusCell
-                      leadId={booking.lead_id}
-                      bookingDate={booking.selected_date}
-                      fallbackStatus={booking.status}
+                    <StatusBadgeSelector
+                      id={booking.id}
+                      entity="booking"
+                      status={booking.status as any}
                     />
                   </TableCell>
                   <TableCell>
