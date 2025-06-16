@@ -1,5 +1,6 @@
 
 /* Animation System - Fill the Field Design System */
+/* Keyframe animations only - motion rules moved to motion.css */
 
 @layer base {
   /* Focus styles for accessibility */
@@ -43,66 +44,42 @@
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
 /* Animation Utility Classes */
 .fade-in {
-  @apply animate-[fade-in_0.3s_ease-out];
+  animation: fade-in var(--duration-page, 300ms) var(--easing-ui, ease-out);
 }
 
 .slide-up {
-  @apply animate-[slide-up_0.3s_ease-out];
+  animation: slide-up var(--duration-page, 300ms) var(--easing-ui, ease-out);
 }
 
 .scale-in {
-  @apply animate-[scale-in_0.2s_ease-out];
+  animation: scale-in var(--duration-ui, 200ms) var(--easing-ui, ease-out);
 }
 
-/* Loading States */
-.loading-shimmer {
-  @apply bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite];
-}
-
-.dark .loading-shimmer {
-  @apply from-gray-700 via-gray-600 to-gray-700;
-}
-
+/* Legacy loading states (keeping for compatibility) */
 .loading-pulse {
-  @apply animate-pulse bg-gray-200 dark:bg-gray-700;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .loading-spinner {
-  @apply animate-spin rounded-full border-2 border-gray-300 border-t-primary-500;
+  animation: spin 1s linear infinite;
+  border: 2px solid rgb(243 244 246);
+  border-top-color: rgb(16 185 129);
+  border-radius: 50%;
 }
 
-/* Motion - respect prefers-reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  .ui-hover {
-    @apply hover:transform-none hover:opacity-100 hover:shadow-none;
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
   }
-  
-  .interactive-card {
-    @apply hover:transform-none hover:shadow-none;
+  50% {
+    opacity: .5;
   }
-  
-  .interactive-button {
-    @apply hover:transform-none hover:shadow-none;
-  }
-  
-  .interactive-input {
-    @apply focus:transform-none focus:shadow-none;
-  }
-  
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

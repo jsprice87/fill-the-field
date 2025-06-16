@@ -28,7 +28,7 @@ const PortalLeads: React.FC = () => {
           </div>
         </div>
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-500 border-t-transparent"></div>
+          <div className="loading-spinner h-8 w-8"></div>
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ const PortalLeads: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col fade-in">
       {/* Sticky Header with Stats and Controls */}
       <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
         <div className="flex items-center justify-between mb-6">
@@ -60,14 +60,14 @@ const PortalLeads: React.FC = () => {
               value={searchTerm}
               onChange={handleSearchChange}
               placeholder={getSearchPlaceholder()}
-              className="w-64"
+              className="w-64 interactive-input"
             />
           </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="interactive-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Total Leads</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -87,7 +87,7 @@ const PortalLeads: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="interactive-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">New Leads</CardTitle>
               <UserPlus className="h-4 w-4 text-muted-foreground" />
@@ -105,7 +105,7 @@ const PortalLeads: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="interactive-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Conversion Rate</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -118,7 +118,7 @@ const PortalLeads: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="interactive-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Needs Follow-up</CardTitle>
               <Phone className="h-4 w-4 text-muted-foreground" />

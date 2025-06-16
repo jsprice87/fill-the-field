@@ -1,0 +1,155 @@
+
+/* Motion System - Fill the Field Design System */
+/* Centralized motion rules with accessibility support */
+
+@layer base {
+  /* Motion Duration Tokens */
+  :root {
+    --duration-ui: 200ms;
+    --duration-page: 300ms;
+    --duration-slow: 500ms;
+    --easing-ui: cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Respect user motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration-ui: 0.01ms;
+      --duration-page: 0.01ms;
+      --duration-slow: 0.01ms;
+    }
+    
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Sidebar Motion */
+.sidebar-motion {
+  transition: width var(--duration-ui) var(--easing-ui),
+              transform var(--duration-ui) var(--easing-ui);
+}
+
+.sidebar-content-motion {
+  transition: opacity var(--duration-ui) var(--easing-ui);
+}
+
+/* Interactive Element Motion */
+.ui-hover {
+  transition: all var(--duration-ui) var(--easing-ui);
+}
+
+.ui-hover:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.ui-pressed {
+  transition: transform 75ms var(--easing-ui);
+}
+
+.ui-pressed:active {
+  transform: scale(0.95);
+}
+
+.ui-focus {
+  transition: box-shadow var(--duration-ui) var(--easing-ui);
+}
+
+/* Card and Container Motion */
+.interactive-card {
+  transition: all var(--duration-ui) var(--easing-ui);
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Button Motion */
+.interactive-button {
+  transition: all var(--duration-ui) var(--easing-ui);
+}
+
+.interactive-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Input Motion */
+.interactive-input {
+  transition: all var(--duration-ui) var(--easing-ui);
+}
+
+.interactive-input:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 0 2px rgb(16 185 129 / 0.2);
+}
+
+/* Table Row Motion */
+.hover-row {
+  transition: background-color var(--duration-ui) var(--easing-ui);
+}
+
+/* Loading Motion */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(243 244 246) 0%,
+    rgb(229 231 235) 50%,
+    rgb(243 244 246) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.dark .loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(55 65 81) 0%,
+    rgb(75 85 99) 50%,
+    rgb(55 65 81) 100%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Page Transition Motion */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-page) var(--easing-ui),
+              transform var(--duration-page) var(--easing-ui);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity var(--duration-page) var(--easing-ui),
+              transform var(--duration-page) var(--easing-ui);
+}

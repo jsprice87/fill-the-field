@@ -1,41 +1,93 @@
 
 /* Interactive Elements - Fill the Field Design System */
+/* Using centralized motion tokens from motion.css */
 
 /* Enhanced Interaction States */
 .ui-hover {
-  @apply transition-all duration-ui ease-ui hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md;
+  transition: all var(--duration-ui, 200ms) var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.ui-hover:hover {
+  opacity: 0.9;
+  transform: translateY(-0.5px);
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.1);
 }
 
 .ui-pressed {
-  @apply active:scale-95 active:duration-75;
+  transition: transform 75ms var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.ui-pressed:active {
+  transform: scale(0.95);
 }
 
 .ui-focus {
-  @apply focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-2;
+  transition: box-shadow var(--duration-ui, 200ms) var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.ui-focus:focus-visible {
+  outline: 2px solid rgb(16 185 129);
+  outline-offset: 2px;
 }
 
 .ui-disabled {
-  @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Interactive Element Classes */
 .interactive-card {
-  @apply transition-all duration-ui ease-ui hover:shadow-lg hover:-translate-y-1 cursor-pointer;
+  transition: all var(--duration-ui, 200ms) var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+  cursor: pointer;
+}
+
+.interactive-card:hover {
+  box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transform: translateY(-1px);
 }
 
 .interactive-button {
-  @apply transition-all duration-ui ease-ui hover:shadow-md hover:-translate-y-0.5 active:scale-95 active:duration-75;
+  transition: all var(--duration-ui, 200ms) var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.interactive-button:hover {
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.1);
+  transform: translateY(-0.5px);
 }
 
 .interactive-input {
-  @apply transition-all duration-ui ease-ui focus:scale-[1.02] focus:shadow-md;
+  transition: all var(--duration-ui, 200ms) var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.interactive-input:focus {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.1);
 }
 
 /* Hover Effects for Lists and Tables */
 .hover-row {
-  @apply transition-all duration-ui ease-ui hover:bg-gray-50 hover:shadow-sm dark:hover:bg-gray-800;
+  transition: all var(--duration-ui, 200ms) var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.hover-row:hover {
+  background-color: rgb(249 250 251);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.dark .hover-row:hover {
+  background-color: rgb(55 65 81);
 }
 
 .hover-item {
-  @apply transition-all duration-ui ease-ui hover:bg-gray-100 hover:scale-[1.02] dark:hover:bg-gray-700;
+  transition: all var(--duration-ui, 200ms) var(--easing-ui, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.hover-item:hover {
+  background-color: rgb(243 244 246);
+  transform: scale(1.02);
+}
+
+.dark .hover-item:hover {
+  background-color: rgb(75 85 99);
 }
