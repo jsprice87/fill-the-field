@@ -6,12 +6,12 @@ export type { ButtonProps } from '../mantine/Button';
 export { Input, TextInput } from '../mantine/TextInput';
 export type { InputProps } from '../mantine/TextInput';
 
-// Move WIP components to _wip folder later - for now just commenting out
-// export { Textarea } from '../mantine/Textarea';
-// export type { TextareaProps } from '../mantine/Textarea';
+// 🔓 UNCOMMENTED these lines as instructed
+export { Textarea } from '../mantine/Textarea';
+export type { TextareaProps } from '../mantine/Textarea';
 
-// export { Badge } from '../mantine/Badge';
-// export type { BadgeProps } from '../mantine/Badge';
+export { Badge } from '../mantine/Badge';
+export type { BadgeProps } from '../mantine/Badge';
 
 // Still using shadcn/ui - will be migrated in future phases
 export * from './card';
@@ -65,3 +65,7 @@ export * from './toast';
 export { Toaster } from './toaster';
 export { toast } from './sonner';
 export * from './use-toast';
+
+// ➕ ENSURE these exports exist (SearchInput and TableRowMenu)
+export { default as SearchInput } from '../shared/SearchInput';
+export { TableRowMenu } from './TableRowMenu';
