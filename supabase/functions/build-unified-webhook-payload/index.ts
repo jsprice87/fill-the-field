@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
           id,
           company_name,
           sender_name,
+          email,
           business_email
         )
       `)
@@ -56,6 +57,16 @@ Deno.serve(async (req) => {
     const franchisee = leadData.franchisees
     const eventType = bookingId ? 'newBooking' : 'newLead'
 
+    // Fix business email logic - use franchisees.email first, then fallback to business_email, then [MISSING]
+    const businessEmail = 
+      franchisee?.email?.trim() ||
+      franchisee?.business_email?.trim() ||
+      '[MISSING]';
+
+    if (businessEmail === '[MISSING]') {
+      console.warn('missing_business_email', { franchiseeId: franchisee.id });
+    }
+
     // Base payload structure
     const payload = {
       event_type: eventType,
@@ -63,7 +74,7 @@ Deno.serve(async (req) => {
       franchisee_id: franchisee.id,
       franchisee_name: franchisee.company_name,
       sender_name: franchisee.sender_name || franchisee.company_name,
-      business_email: franchisee.business_email || '',
+      business_email: businessEmail,
       lead: {
         id: leadData.id,
         first_name: leadData.first_name,
