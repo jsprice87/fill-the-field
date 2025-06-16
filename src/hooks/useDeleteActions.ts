@@ -122,8 +122,6 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
       
       // Invalidate bookings queries since they might reference this lead
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      
-      toast.success('Lead deleted successfully');
     },
   });
 };
@@ -233,8 +231,17 @@ export const useDeleteBooking = (franchiseeId?: string) => {
       
       // Only invalidate related queries, not the ones we optimistically updated
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
-      
-      toast.success('Booking deleted successfully');
     },
   });
+};
+
+// Legacy exports for backwards compatibility
+export const useDeleteActions = () => {
+  const deleteLead = useDeleteLead();
+  const deleteBooking = useDeleteBooking();
+
+  return {
+    deleteLead: deleteLead.mutateAsync,
+    deleteBooking: deleteBooking.mutateAsync,
+  };
 };

@@ -4,8 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Edit, Trash2, Archive, ArchiveRestore, Eye } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useArchiveActions } from '@/hooks/useArchiveActions';
-import { useDeleteActions } from '@/hooks/useDeleteActions';
+import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
+import { useDeleteBooking } from '@/hooks/useDeleteActions';
 import { useStatusMutation } from '@/hooks/useStatusMutation';
 import { toast } from 'sonner';
 import DateTimeCell from './DateTimeCell';
@@ -55,9 +55,10 @@ interface BookingsTableProps {
 }
 
 const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, showArchived = false }) => {
-  const { archiveBooking, unarchiveBooking } = useArchiveActions();
-  const { deleteBooking } = useDeleteActions();
-  const { updateBookingStatus } = useStatusMutation();
+  const archiveBooking = useArchiveBooking();
+  const unarchiveBooking = useUnarchiveBooking();
+  const deleteBooking = useDeleteBooking();
+  const statusMutation = useStatusMutation();
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
@@ -88,7 +89,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
     
     try {
       const promises = Array.from(selectedBookings).map(id => 
-        showArchived ? unarchiveBooking(id) : archiveBooking(id)
+        showArchived ? unarchiveBooking.mutateAsync(id) : archiveBooking.mutateAsync(id)
       );
       await Promise.all(promises);
       
@@ -102,7 +103,11 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
 
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
     try {
-      await updateBookingStatus(bookingId, newStatus as Booking['status']);
+      await statusMutation.mutateAsync({
+        leadId: bookingId,
+        status: newStatus as any,
+        bookingDate: bookings.find(b => b.id === bookingId)?.selected_date || ''
+      });
       toast.success('Booking status updated successfully');
     } catch (error) {
       console.error('Error updating booking status:', error);
@@ -116,10 +121,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
       if (!booking) return;
 
       if (booking.archived_at) {
-        await unarchiveBooking(bookingId);
+        await unarchiveBooking.mutateAsync(bookingId);
         toast.success('Booking unarchived successfully');
       } else {
-        await archiveBooking(bookingId);
+        await archiveBooking.mutateAsync(bookingId);
         toast.success('Booking archived successfully');
       }
     } catch (error) {
@@ -134,7 +139,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
     }
 
     try {
-      await deleteBooking(bookingId);
+      await deleteBooking.mutateAsync(bookingId);
       toast.success('Booking deleted successfully');
     } catch (error) {
       console.error('Error deleting booking:', error);
@@ -217,7 +222,14 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                 </div>
               </TableCell>
               <TableCell>
-                <ParticipantCell participants={booking.participants} />
+                <div className="space-y-1">
+                  {booking.participants.map((participant, index) => (
+                    <div key={participant.id} className="text-sm">
+                      <span className="font-medium">{participant.first_name}</span>
+                      <span className="text-muted-foreground ml-2">({participant.age})</span>
+                    </div>
+                  ))}
+                </div>
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
@@ -230,17 +242,23 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                 </div>
               </TableCell>
               <TableCell>
-                <DateTimeCell 
-                  selectedDate={booking.selected_date}
-                  startTime={booking.class_schedules?.start_time}
-                  endTime={booking.class_schedules?.end_time}
-                />
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">
+                    {booking.selected_date ? new Date(booking.selected_date).toLocaleDateString() : 'N/A'}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {booking.class_schedules?.start_time && booking.class_schedules?.end_time
+                      ? `${booking.class_schedules.start_time} - ${booking.class_schedules.end_time}`
+                      : 'Time not set'
+                    }
+                  </div>
+                </div>
               </TableCell>
               <TableCell>
                 <StatusCell 
-                  status={booking.status}
-                  bookingId={booking.id}
-                  onStatusChange={handleStatusChange}
+                  leadId={booking.id}
+                  bookingDate={booking.selected_date || ''}
+                  fallbackStatus={booking.status}
                 />
               </TableCell>
               <TableCell>

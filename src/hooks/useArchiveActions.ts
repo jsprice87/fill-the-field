@@ -54,7 +54,6 @@ export const useArchiveLead = (franchiseeId?: string, includeArchived: boolean =
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
       queryClient.invalidateQueries({ queryKey: ['lead-stats', franchiseeId] });
-      toast.success('Lead archived successfully');
     },
   });
 };
@@ -110,7 +109,6 @@ export const useUnarchiveLead = (franchiseeId?: string, includeArchived: boolean
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
       queryClient.invalidateQueries({ queryKey: ['lead-stats', franchiseeId] });
-      toast.success('Lead unarchived successfully');
     },
   });
 };
@@ -174,7 +172,6 @@ export const useArchiveBooking = (franchiseeId?: string, includeArchived: boolea
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', franchiseeId] });
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
-      toast.success('Booking archived successfully');
     },
   });
 };
@@ -238,7 +235,21 @@ export const useUnarchiveBooking = (franchiseeId?: string, includeArchived: bool
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', franchiseeId] });
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
-      toast.success('Booking unarchived successfully');
     },
   });
+};
+
+// Legacy exports for backwards compatibility
+export const useArchiveActions = () => {
+  const archiveLead = useArchiveLead();
+  const unarchiveLead = useUnarchiveLead();
+  const archiveBooking = useArchiveBooking();
+  const unarchiveBooking = useUnarchiveBooking();
+
+  return {
+    archiveLead: archiveLead.mutateAsync,
+    unarchiveLead: unarchiveLead.mutateAsync,
+    archiveBooking: archiveBooking.mutateAsync,
+    unarchiveBooking: unarchiveBooking.mutateAsync,
+  };
 };

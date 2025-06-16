@@ -4,8 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Edit, Trash2, Archive, ArchiveRestore, Eye, Phone, Mail } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useArchiveActions } from '@/hooks/useArchiveActions';
-import { useDeleteActions } from '@/hooks/useDeleteActions';
+import { useArchiveLead, useUnarchiveLead } from '@/hooks/useArchiveActions';
+import { useDeleteLead } from '@/hooks/useDeleteActions';
 import { toast } from 'sonner';
 import LeadContactCell from './LeadContactCell';
 import LeadInfoCell from './LeadInfoCell';
@@ -38,8 +38,9 @@ interface LeadsTableProps {
 }
 
 const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchived = false }) => {
-  const { archiveLead, unarchiveLead } = useArchiveActions();
-  const { deleteLead } = useDeleteActions();
+  const archiveLead = useArchiveLead();
+  const unarchiveLead = useUnarchiveLead();
+  const deleteLead = useDeleteLead();
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
@@ -70,7 +71,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
     
     try {
       const promises = Array.from(selectedLeads).map(id => 
-        showArchived ? unarchiveLead(id) : archiveLead(id)
+        showArchived ? unarchiveLead.mutateAsync(id) : archiveLead.mutateAsync(id)
       );
       await Promise.all(promises);
       
@@ -88,10 +89,10 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
       if (!lead) return;
 
       if (lead.archived_at) {
-        await unarchiveLead(leadId);
+        await unarchiveLead.mutateAsync(leadId);
         toast.success('Lead unarchived successfully');
       } else {
-        await archiveLead(leadId);
+        await archiveLead.mutateAsync(leadId);
         toast.success('Lead archived successfully');
       }
     } catch (error) {
@@ -106,7 +107,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
     }
 
     try {
-      await deleteLead(leadId);
+      await deleteLead.mutateAsync(leadId);
       toast.success('Lead deleted successfully');
     } catch (error) {
       console.error('Error deleting lead:', error);
@@ -187,7 +188,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                 <LeadInfoCell 
                   firstName={lead.first_name}
                   lastName={lead.last_name}
-                  zip={lead.zip}
                   notes={lead.notes}
                 />
               </TableCell>
@@ -205,7 +205,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
               <TableCell>
                 <StatusSelect 
                   leadId={lead.id}
-                  currentStatus={lead.status}
+                  currentStatus={lead.status as any}
                 />
               </TableCell>
               <TableCell>
