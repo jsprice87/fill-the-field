@@ -3,9 +3,9 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LeadsTable } from '@/components/leads/LeadsTable';
-import { LeadsTableEmpty } from '@/components/leads/LeadsTableEmpty';
-import { ArchiveToggle } from '@/components/shared/ArchiveToggle';
+import LeadsTable from '@/components/leads/LeadsTable';
+import LeadsTableEmpty from '@/components/leads/LeadsTableEmpty';
+import ArchiveToggle from '@/components/shared/ArchiveToggle';
 import AdvancedSearchInput from '@/components/shared/AdvancedSearchInput';
 import StatusFilter from '@/components/shared/StatusFilter';
 import DateRangeFilter from '@/components/shared/DateRangeFilter';
@@ -15,7 +15,7 @@ import { useAdvancedSearch } from '@/hooks/useAdvancedSearch';
 import type { Lead, LeadStatus } from '@/types';
 
 const Leads: React.FC = () => {
-  const { franchiseeData } = useFranchiseeData();
+  const franchiseeData = useFranchiseeData();
   const [includeArchived, setIncludeArchived] = React.useState(false);
   
   const { data: leads = [], isLoading, error } = useLeads(

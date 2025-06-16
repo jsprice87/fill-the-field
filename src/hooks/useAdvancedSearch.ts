@@ -33,8 +33,8 @@ export const useAdvancedSearch = <T>(
     currentSort: defaultSort
   });
 
-  // Debounced search term
-  const debouncedSearchTerm = useDebounce(searchState.searchTerm, 300);
+  // Debounced search term - fix the type issue
+  const debouncedSearchTerm = useDebounce(searchState.searchTerm, 300) as string;
 
   // Search functions
   const updateSearchTerm = useCallback((term: string) => {
@@ -67,7 +67,7 @@ export const useAdvancedSearch = <T>(
     let filtered = [...data];
 
     // Apply search filter
-    if (debouncedSearchTerm.trim()) {
+    if (typeof debouncedSearchTerm === 'string' && debouncedSearchTerm.trim()) {
       const searchLower = debouncedSearchTerm.toLowerCase();
       filtered = filtered.filter(item =>
         searchFields.some(field => {
@@ -138,7 +138,7 @@ export const useAdvancedSearch = <T>(
   }, [data, debouncedSearchTerm, searchState, searchFields]);
 
   const hasActiveFilters = 
-    debouncedSearchTerm.trim().length > 0 ||
+    typeof debouncedSearchTerm === 'string' && debouncedSearchTerm.trim().length > 0 ||
     searchState.selectedStatuses.length > 0 ||
     searchState.dateRange.from ||
     searchState.dateRange.to;
