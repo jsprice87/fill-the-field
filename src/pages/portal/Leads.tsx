@@ -24,7 +24,7 @@ const PortalLeads: React.FC = () => {
       <div className="h-full flex flex-col">
         <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-background border-b">
           <div className="flex items-center justify-between">
-            <h1 className="text-h1">Leads</h1>
+            <h1 className="text-h1 text-gray-900 dark:text-gray-50">Leads</h1>
           </div>
         </div>
         <div className="flex-1 flex items-center justify-center">
@@ -43,9 +43,17 @@ const PortalLeads: React.FC = () => {
       {/* Sticky Header with Stats and Controls */}
       <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-background border-b">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-h1">
-            {includeArchived ? 'All Leads' : 'Leads'}
-          </h1>
+          <div className="space-y-1">
+            <h1 className="text-h1 text-gray-900 dark:text-gray-50">
+              {includeArchived ? 'All Leads' : 'Leads'}
+            </h1>
+            <p className="text-body-sm text-muted-foreground">
+              {includeArchived 
+                ? 'Manage all leads including archived records' 
+                : 'Manage your active leads and follow-ups'
+              }
+            </p>
+          </div>
           <div className="flex items-center gap-4">
             <ArchiveToggle />
             <SearchInput
@@ -61,11 +69,11 @@ const PortalLeads: React.FC = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">Total Leads</CardTitle>
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Total Leads</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-h1 font-bold">
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">
                 {searchQuery ? filteredLeads.length : (stats?.totalLeads || 0)}
               </div>
               <p className="text-body-sm text-muted-foreground">
@@ -81,11 +89,11 @@ const PortalLeads: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">New Leads</CardTitle>
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">New Leads</CardTitle>
               <UserPlus className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-h1 font-bold">
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">
                 {searchQuery 
                   ? filteredLeads.filter(lead => lead.status === 'new').length
                   : (stats?.newLeads || 0)
@@ -99,11 +107,11 @@ const PortalLeads: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">Conversion Rate</CardTitle>
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Conversion Rate</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-h1 font-bold">{stats?.conversionRate || 0}%</div>
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">{stats?.conversionRate || 0}%</div>
               <p className="text-body-sm text-muted-foreground">
                 Leads to bookings
               </p>
@@ -112,11 +120,11 @@ const PortalLeads: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">Needs Follow-up</CardTitle>
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Needs Follow-up</CardTitle>
               <Phone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-h1 font-bold">
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">
                 {(searchQuery ? filteredLeads : leads).filter(lead => 
                   ['new', 'follow_up'].includes(lead.status)
                 ).length}

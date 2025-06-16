@@ -97,6 +97,7 @@
     font-family: 'Inter', ui-sans-serif, system-ui;
     font-size: 16px; /* body-lg base size */
     line-height: 1.5;
+    font-weight: 400;
   }
 
   /* Exclude /free-trial/ from design system */
@@ -104,17 +105,60 @@
     /* Apply design system globally except free-trial */
   }
 
-  /* Headings following design system */
-  h1:not(.brand-preserved) {
-    @apply text-h1 text-gray-900 dark:text-gray-50;
+  /* Typography hierarchy - Global heading styles */
+  h1, .text-h1 {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-size: 30px;
+    line-height: 36px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
   
-  h2:not(.brand-preserved) {
-    @apply text-h2 text-gray-900 dark:text-gray-50;
+  h2, .text-h2 {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
   
-  h3:not(.brand-preserved) {
-    @apply text-h3 text-gray-900 dark:text-gray-50;
+  h3, .text-h3 {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  /* Body text styles */
+  .text-body-lg {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+
+  .text-body-sm {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+
+  .text-code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 500;
+  }
+
+  /* Preserve brand styles for specific sections */
+  .brand-preserved,
+  [data-preserve-brand] h1,
+  [data-preserve-brand] h2,
+  [data-preserve-brand] h3,
+  [data-preserve-brand] h4,
+  [data-preserve-brand] h5,
+  [data-preserve-brand] h6 {
+    /* Preserve existing brand typography */
   }
 
   /* Portal and Admin sections use design system by default */
@@ -128,6 +172,32 @@
   [data-section="admin"] h1, [data-section="admin"] h2, [data-section="admin"] h3, [data-section="admin"] h4, [data-section="admin"] h5, [data-section="admin"] h6 {
     font-family: 'Inter', ui-sans-serif, system-ui;
     font-weight: 600;
+  }
+
+  /* Improved text contrast and readability */
+  p {
+    color: rgb(55 65 81); /* gray-700 */
+  }
+
+  .dark p {
+    color: rgb(209 213 219); /* gray-300 */
+  }
+
+  /* Link styles */
+  a {
+    color: rgb(16 185 129); /* primary-500 */
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: rgb(5 150 105); /* primary-600 */
+    text-decoration: underline;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    outline: 2px solid rgb(16 185 129);
+    outline-offset: 2px;
   }
 }
 
@@ -175,6 +245,38 @@
 
 .ui-disabled {
   @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Content spacing for better readability */
+.prose {
+  line-height: 1.6;
+}
+
+.prose h1 {
+  margin-bottom: 0.5em;
+}
+
+.prose h2 {
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+}
+
+.prose h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose p {
+  margin-bottom: 1em;
+}
+
+.prose ul, .prose ol {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin-bottom: 0.25em;
 }
 
 /* Motion - respect prefers-reduced-motion */
