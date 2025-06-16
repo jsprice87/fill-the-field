@@ -105,47 +105,58 @@ const AdminUserManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">User Management</h1>
-        <p className="text-muted-foreground">
-          Manage all franchisees and their accounts
-        </p>
+    <div className="h-full flex flex-col">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+        <div>
+          <h1 className="text-2xl font-bold">User Management</h1>
+          <p className="text-muted-foreground">
+            Manage all franchisees and their accounts
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Franchisees ({filteredFranchisees.length})</CardTitle>
-          <CardDescription>
-            {isLoading ? 'Loading franchisees...' : `Showing ${filteredFranchisees.length} of ${franchisees.length} franchisees`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <UserManagementFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            tierFilter={tierFilter}
-            onTierFilterChange={setTierFilter}
-            onRefresh={() => refetch()}
-            onExport={handleExport}
-          />
+      {/* Scrollable Content Area */}
+      <div className="flex-1 px-6 pb-6 overflow-auto">
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Franchisees ({filteredFranchisees.length})</CardTitle>
+              <CardDescription>
+                {isLoading ? 'Loading franchisees...' : `Showing ${filteredFranchisees.length} of ${franchisees.length} franchisees`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <UserManagementFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                tierFilter={tierFilter}
+                onTierFilterChange={setTierFilter}
+                onRefresh={() => refetch()}
+                onExport={handleExport}
+              />
 
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="text-muted-foreground">Loading franchisees...</div>
-            </div>
-          ) : (
-            <FranchiseesTable
-              franchisees={filteredFranchisees}
-              onViewUser={handleViewUser}
-              onEditUser={handleEditUser}
-              onDeleteUser={handleDeleteUser}
-            />
-          )}
-        </CardContent>
-      </Card>
+              {/* Table with max height and scrolling */}
+              <div className="max-h-[calc(100vh-400px)] overflow-auto">
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="text-muted-foreground">Loading franchisees...</div>
+                  </div>
+                ) : (
+                  <FranchiseesTable
+                    franchisees={filteredFranchisees}
+                    onViewUser={handleViewUser}
+                    onEditUser={handleEditUser}
+                    onDeleteUser={handleDeleteUser}
+                  />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <UserDetailsModal
         isOpen={isModalOpen}

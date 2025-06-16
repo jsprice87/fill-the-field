@@ -30,7 +30,7 @@ const PortalBookings: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex flex-col">
-        <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+        <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold tracking-tight">Bookings</h1>
           </div>
@@ -49,7 +49,7 @@ const PortalBookings: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Sticky Header with Stats and Controls */}
-      <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+      <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold tracking-tight">
             {includeArchived ? 'All Bookings' : 'Bookings'}
@@ -153,9 +153,9 @@ const PortalBookings: React.FC = () => {
         </div>
       </div>
 
-      {/* Scrollable Table Area */}
-      <div className="flex-1 overflow-auto px-6 pb-6">
-        <div className="mt-6">
+      {/* Scrollable Table Area with max height */}
+      <div className="flex-1 px-6 pb-6">
+        <div className="mt-6 h-full max-h-[calc(100vh-500px)] overflow-auto">
           <BookingsTable 
             bookings={finalBookings} 
             searchQuery={searchQuery} 
