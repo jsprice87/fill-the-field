@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Phone, Mail, MapPin, Calendar, Baby, User, Plus, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -381,13 +382,17 @@ const LeadDetail: React.FC = () => {
               <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Add Note */}
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Add a note..."
+              {/* Add Note with Enhanced Textarea */}
+              <div className="space-y-4">
+                <EnhancedTextarea
+                  label="Add a note"
+                  placeholder="Enter your note here..."
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
                   rows={3}
+                  maxLength={500}
+                  showCharacterCount
+                  hint="Add important details about this lead"
                 />
                 <Button
                   onClick={handleAddNote}
@@ -396,7 +401,7 @@ const LeadDetail: React.FC = () => {
                   size="sm"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Note
+                  {addNoteMutation.isPending ? 'Adding...' : 'Add Note'}
                 </Button>
               </div>
 
