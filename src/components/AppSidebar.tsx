@@ -1,17 +1,22 @@
 
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { HomeIcon, UsersIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UserIcon, SettingsIcon, HelpCircleIcon, Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { HomeIcon, UsersIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UserIcon, SettingsIcon, HelpCircleIcon, Globe, Moon, Sun } from 'lucide-react';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { CopyButton } from '@/components/ui/CopyButton';
 
@@ -32,6 +37,7 @@ const secondaryMenuItems = [
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
   const { data: franchiseeData } = useFranchiseeData();
 
@@ -65,12 +71,36 @@ export function AppSidebar() {
     return location.pathname.includes(url);
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   if (!isPortalSection) {
     return null;
   }
 
   return (
-    <Sidebar className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-zinc-900 z-50 flex flex-col">
+    <Sidebar 
+      variant="sidebar" 
+      collapsible="icon"
+      className="border-r"
+    >
+      <SidebarHeader className="border-b border-sidebar-border">
+        <div className="flex flex-col gap-2 px-2 py-2">
+          <div className="flex items-center gap-2 px-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <span className="text-sm font-semibold">FTF</span>
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">Fill the Field</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {franchiseeData?.business_name || 'Portal'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Portal</SidebarGroupLabel>
@@ -81,6 +111,8 @@ export function AppSidebar() {
                   <SidebarMenuButton 
                     onClick={() => handleNavigation(item.url)}
                     isActive={isActiveRoute(item.url)}
+                    tooltip={item.title}
+                    className="ui-hover ui-pressed ui-focus"
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
@@ -92,7 +124,8 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={handleLandingPageNavigation}
-                  className="flex items-center justify-between pr-2"
+                  tooltip="Landing Page"
+                  className="flex items-center justify-between pr-2 ui-hover ui-pressed ui-focus"
                 >
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4" />
@@ -101,7 +134,7 @@ export function AppSidebar() {
                   {landingPageUrl && (
                     <CopyButton 
                       url={landingPageUrl}
-                      className="ml-auto"
+                      className="ml-auto h-4 w-4 opacity-50 hover:opacity-100"
                     />
                   )}
                 </SidebarMenuButton>
@@ -110,27 +143,52 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Spacer to push secondary items to bottom */}
-        <div className="mt-auto">
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {secondaryMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      onClick={() => handleNavigation(item.url)}
-                      isActive={isActiveRoute(item.url)}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </div>
+        <SidebarSeparator />
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Account</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {secondaryMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    onClick={() => handleNavigation(item.url)}
+                    isActive={isActiveRoute(item.url)}
+                    tooltip={item.title}
+                    className="ui-hover ui-pressed ui-focus"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t border-sidebar-border">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="w-full justify-start gap-2 ui-hover ui-pressed ui-focus"
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+              <span className="group-data-[collapsible=icon]:hidden">
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </span>
+            </Button>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
