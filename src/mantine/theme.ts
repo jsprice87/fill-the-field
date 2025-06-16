@@ -157,7 +157,3 @@ export const theme: MantineThemeOverride = createTheme({
   }
 });
 
-
-export const mantineEmotionCache = createEmotionCache({ 
-  key: 'ftf' 
-});
