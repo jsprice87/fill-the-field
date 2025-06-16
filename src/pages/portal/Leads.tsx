@@ -22,13 +22,13 @@ const PortalLeads: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex flex-col">
-        <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+        <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-background border-b">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
+            <h1 className="text-h1">Leads</h1>
           </div>
         </div>
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-500 border-t-transparent"></div>
         </div>
       </div>
     );
@@ -41,9 +41,9 @@ const PortalLeads: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Sticky Header with Stats and Controls */}
-      <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+      <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-background border-b">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-h1">
             {includeArchived ? 'All Leads' : 'Leads'}
           </h1>
           <div className="flex items-center gap-4">
@@ -61,14 +61,14 @@ const PortalLeads: React.FC = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+              <CardTitle className="text-body-sm font-medium">Total Leads</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-h1 font-bold">
                 {searchQuery ? filteredLeads.length : (stats?.totalLeads || 0)}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 {searchQuery 
                   ? `Matching "${searchQuery}"` 
                   : includeArchived 
@@ -81,17 +81,17 @@ const PortalLeads: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">New Leads</CardTitle>
+              <CardTitle className="text-body-sm font-medium">New Leads</CardTitle>
               <UserPlus className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-h1 font-bold">
                 {searchQuery 
                   ? filteredLeads.filter(lead => lead.status === 'new').length
                   : (stats?.newLeads || 0)
                 }
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 Awaiting contact
               </p>
             </CardContent>
@@ -99,12 +99,12 @@ const PortalLeads: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+              <CardTitle className="text-body-sm font-medium">Conversion Rate</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.conversionRate || 0}%</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-h1 font-bold">{stats?.conversionRate || 0}%</div>
+              <p className="text-body-sm text-muted-foreground">
                 Leads to bookings
               </p>
             </CardContent>
@@ -112,16 +112,16 @@ const PortalLeads: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Needs Follow-up</CardTitle>
+              <CardTitle className="text-body-sm font-medium">Needs Follow-up</CardTitle>
               <Phone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-h1 font-bold">
                 {(searchQuery ? filteredLeads : leads).filter(lead => 
                   ['new', 'follow_up'].includes(lead.status)
                 ).length}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 Action required
               </p>
             </CardContent>
