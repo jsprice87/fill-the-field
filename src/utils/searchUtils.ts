@@ -20,22 +20,21 @@ export const useSearchQuery = (paramName: string = 'q') => {
   return { query, setQuery };
 };
 
-// Debounce utility
-export const useDebounce = <T extends (...args: any[]) => void>(
-  callback: T,
-  delay: number
-): T => {
-  const timeoutRef = React.useRef<NodeJS.Timeout>();
+// Fixed debounce utility for values
+export const useDebounce = <T>(value: T, delay: number): T => {
+  const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
 
-  return React.useCallback(
-    ((...args: Parameters<T>) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => callback(...args), delay);
-    }) as T,
-    [callback, delay]
-  );
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 };
 
 // Search filtering functions

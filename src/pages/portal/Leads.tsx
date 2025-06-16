@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ import { useAdvancedSearch } from '@/hooks/useAdvancedSearch';
 import type { Lead, LeadStatus } from '@/types';
 
 const Leads: React.FC = () => {
-  const franchiseeData = useFranchiseeData();
+  const { data: franchiseeData } = useFranchiseeData();
   const [includeArchived, setIncludeArchived] = React.useState(false);
   
   const { data: leads = [], isLoading, error } = useLeads(
@@ -154,10 +153,7 @@ const Leads: React.FC = () => {
                 </span>
               )}
             </CardTitle>
-            <ArchiveToggle 
-              includeArchived={includeArchived}
-              onToggle={setIncludeArchived}
-            />
+            <ArchiveToggle />
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
