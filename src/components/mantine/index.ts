@@ -1,13 +1,24 @@
 
-// Mantine component stubs for migration
-// These initially re-export Mantine components with our theme
-// Will be enhanced with proper prop mapping in Phase 2
+// Mantine component exports for Phase 2
+// These components have been migrated from shadcn/ui to Mantine
 
 export { Button } from './Button';
-export { Card } from './Card';
+export type { ButtonProps } from './Button';
 
-// TODO: Add more component stubs as migration progresses:
-// export { TextInput } from './TextInput';
+export { Input } from './TextInput';
+export type { InputProps } from './TextInput';
+
+export { Textarea } from './Textarea';
+export type { TextareaProps } from './Textarea';
+
+export { Badge } from './Badge';
+export type { BadgeProps } from './Badge';
+
+// Re-export Mantine Card from existing stub
+export { Card } from './Card';
+export type { CardProps } from './Card';
+
+// TODO: Add more components as they are migrated in future phases:
 // export { Select } from './Select';
 // export { Modal } from './Modal';
 // export { Menu } from './Menu';

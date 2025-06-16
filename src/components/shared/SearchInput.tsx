@@ -1,8 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
+import { TextInput, ActionIcon } from '@mantine/core';
 import { X, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface SearchInputProps {
@@ -43,29 +42,25 @@ const SearchInput: React.FC<SearchInputProps> = ({
   };
 
   return (
-    <div className={cn("relative", className)}>
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-      <Input
-        ref={inputRef}
-        type="text"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="pl-10 pr-10"
-        aria-label={placeholder}
-      />
-      {value && (
-        <Button
-          variant="ghost"
+    <TextInput
+      ref={inputRef}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      leftSection={<Search size={16} />}
+      rightSection={value ? (
+        <ActionIcon
+          variant="transparent"
           size="sm"
           onClick={handleClear}
-          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
           aria-label="Clear search"
         >
-          <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-        </Button>
-      )}
-    </div>
+          <X size={16} />
+        </ActionIcon>
+      ) : null}
+      className={cn(className)}
+      aria-label={placeholder}
+    />
   );
 };
 

@@ -1,0 +1,80 @@
+
+{
+  "phase": 2,
+  "lastUpdated": "2025-01-16",
+  "components": {
+    "Button": {
+      "status": "DONE",
+      "mantineComponent": "@mantine/core/Button + ActionIcon",
+      "location": "src/components/mantine/Button.tsx",
+      "notes": "Includes variant mapping and soccer variants preserved"
+    },
+    "Input": {
+      "status": "DONE", 
+      "mantineComponent": "@mantine/core/TextInput",
+      "location": "src/components/mantine/TextInput.tsx",
+      "notes": "Soccer variant preserved, loading state handled"
+    },
+    "Textarea": {
+      "status": "DONE",
+      "mantineComponent": "@mantine/core/Textarea", 
+      "location": "src/components/mantine/Textarea.tsx",
+      "notes": "Direct mapping"
+    },
+    "Badge": {
+      "status": "DONE",
+      "mantineComponent": "@mantine/core/Badge",
+      "location": "src/components/mantine/Badge.tsx", 
+      "notes": "Variant mapping complete"
+    },
+    "SearchInput": {
+      "status": "DONE",
+      "mantineComponent": "@mantine/core/TextInput + ActionIcon",
+      "location": "src/components/shared/SearchInput.tsx",
+      "notes": "Custom wrapper using Mantine primitives"
+    },
+    "TableRowMenu": {
+      "status": "DONE",
+      "mantineComponent": "@mantine/core/Menu + ActionIcon", 
+      "location": "src/components/ui/TableRowMenu.tsx",
+      "notes": "Custom wrapper using Mantine primitives"
+    },
+    "Card": {
+      "status": "STUB",
+      "mantineComponent": "@mantine/core/Card",
+      "location": "src/components/mantine/Card.tsx",
+      "notes": "Initial stub from Phase 0, needs full implementation"
+    },
+    "Select": {
+      "status": "PENDING",
+      "mantineComponent": "@mantine/core/Select",
+      "location": "TBD",
+      "notes": "High-risk component for Phase 3+"
+    },
+    "Table": {
+      "status": "PENDING", 
+      "mantineComponent": "@mantine/core/Table + ScrollArea",
+      "location": "TBD",
+      "notes": "High-risk component - sticky headers + scroll behavior"
+    },
+    "Dialog": {
+      "status": "PENDING",
+      "mantineComponent": "@mantine/core/Modal",
+      "location": "TBD", 
+      "notes": "High-risk component - focus management"
+    },
+    "StatusBadgeSelector": {
+      "status": "PENDING",
+      "mantineComponent": "@mantine/core/Menu + Badge",
+      "location": "TBD",
+      "notes": "High-risk custom component for Phase 3+"
+    }
+  },
+  "summary": {
+    "total": 47,
+    "done": 6,
+    "pending": 41,
+    "phase2Target": 6,
+    "phase2Complete": true
+  }
+}

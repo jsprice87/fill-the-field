@@ -2,14 +2,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, ColorSchemeScript } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import App from './App';
 import './index.css';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import { theme } from './mantine-theme';
+import { theme, mantineEmotionCache } from './mantine/theme';
 import { updateFranchiseeSlugs } from './scripts/updateFranchiseeSlugs';
 
 const queryClient = new QueryClient();
@@ -28,18 +28,23 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
+    <ColorSchemeScript defaultColorScheme="light" />
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme} defaultColorScheme="light">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <MantineProvider 
+          theme={theme} 
+          emotionCache={mantineEmotionCache}
+          defaultColorScheme="light"
         >
           <Notifications />
           <App />
-        </ThemeProvider>
-      </MantineProvider>
+        </MantineProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

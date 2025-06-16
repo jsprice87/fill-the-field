@@ -1,14 +1,7 @@
 
 import React from 'react';
 import { MoreVertical, Phone, Edit, Archive, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ActionIcon, Menu } from '@mantine/core';
 
 interface TableRowMenuProps {
   onCall?: (phone: string) => void;
@@ -34,46 +27,54 @@ export const TableRowMenu: React.FC<TableRowMenuProps> = ({
   deleteLabel = "Delete"
 }) => {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
+    <Menu position="bottom-end" withArrow>
+      <Menu.Target>
+        <ActionIcon 
+          variant="subtle" 
+          size="sm"
           disabled={isLoading}
           aria-label="Actions menu"
-          aria-haspopup="menu"
         >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
+          <MoreVertical size={16} />
+        </ActionIcon>
+      </Menu.Target>
+
+      <Menu.Dropdown>
         {onCall && phone && (
-          <DropdownMenuItem onSelect={() => onCall(phone)}>
-            <Phone className="h-4 w-4 mr-2" />
+          <Menu.Item
+            leftSection={<Phone size={16} />}
+            onClick={() => onCall(phone)}
+          >
             Call
-          </DropdownMenuItem>
+          </Menu.Item>
         )}
         {onEdit && (
-          <DropdownMenuItem onSelect={onEdit}>
-            <Edit className="h-4 w-4 mr-2" />
+          <Menu.Item
+            leftSection={<Edit size={16} />}
+            onClick={onEdit}
+          >
             {editLabel}
-          </DropdownMenuItem>
+          </Menu.Item>
         )}
-        {(onCall && phone) || onEdit ? <DropdownMenuSeparator /> : null}
+        {((onCall && phone) || onEdit) && <Menu.Divider />}
         {onArchiveToggle && (
-          <DropdownMenuItem onSelect={onArchiveToggle}>
-            <Archive className="h-4 w-4 mr-2" />
+          <Menu.Item
+            leftSection={<Archive size={16} />}
+            onClick={onArchiveToggle}
+          >
             {isArchived ? 'Unarchive' : 'Archive'}
-          </DropdownMenuItem>
+          </Menu.Item>
         )}
         {onDelete && (
-          <DropdownMenuItem onSelect={onDelete} className="text-red-600 focus:text-red-600">
-            <Trash2 className="h-4 w-4 mr-2" />
+          <Menu.Item
+            leftSection={<Trash2 size={16} />}
+            onClick={onDelete}
+            color="red"
+          >
             {deleteLabel}
-          </DropdownMenuItem>
+          </Menu.Item>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </Menu.Dropdown>
+    </Menu>
   );
 };
