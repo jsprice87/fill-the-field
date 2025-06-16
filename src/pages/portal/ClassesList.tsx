@@ -279,13 +279,24 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-64">Loading classes...</div>;
+    return (
+      <div className="h-full flex flex-col">
+        <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+          <div className="flex items-center justify-between">
+            <h1 className="text-h1 text-gray-900 dark:text-gray-50">Classes</h1>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="loading-spinner h-8 w-8"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="h-full flex flex-col">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+      {/* Sticky Header with Sidebar Clearance */}
+      <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-1">
             <h1 className="text-h1 text-gray-900 dark:text-gray-50">Classes</h1>
@@ -299,13 +310,14 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
                 variant="destructive"
                 size="sm"
                 onClick={handleBulkDelete}
+                className="motion-safe:transition-all motion-safe:duration-200"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete ({selectedClasses.size})
               </Button>
             )}
             <Link to={`/${currentSlug}/portal/classes/add`}>
-              <Button>
+              <Button className="motion-safe:transition-all motion-safe:duration-200">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Classes
               </Button>
@@ -338,10 +350,10 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </header>
 
-      {/* Scrollable Content Area */}
-      <div className="flex-1 px-6 pb-6 overflow-auto">
+      {/* Table Container with Proper Overflow */}
+      <div className="table-container px-6 pb-6">
         <div className="mt-6">
           {filteredClasses.length === 0 ? (
             <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -353,7 +365,7 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
               </p>
             </div>
           ) : (
-            <div className="max-h-[calc(100vh-400px)] overflow-auto border rounded-lg">
+            <div className="border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -382,6 +394,7 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
                       className={`
                         ${selectedClasses.has(classItem.id) ? 'bg-primary-50 dark:bg-primary-900/20' : ''}
                         ${hoveredRow === classItem.id ? 'bg-gray-50 dark:bg-gray-800' : ''}
+                        motion-safe:transition-colors motion-safe:duration-200
                       `}
                       onMouseEnter={() => setHoveredRow(classItem.id)}
                       onMouseLeave={() => setHoveredRow(null)}

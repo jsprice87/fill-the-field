@@ -32,13 +32,13 @@ const PortalBookings: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex flex-col">
-        <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+        <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-tight">Bookings</h1>
+            <h1 className="text-h1 text-gray-900 dark:text-gray-50">Bookings</h1>
           </div>
-        </div>
+        </header>
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy"></div>
+          <div className="loading-spinner h-8 w-8"></div>
         </div>
       </div>
     );
@@ -50,10 +50,10 @@ const PortalBookings: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Sticky Header with Stats and Controls */}
-      <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-white dark:bg-black border-b">
+      {/* Sticky Header with Sidebar Clearance */}
+      <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-h1 text-gray-900 dark:text-gray-50">
             {includeArchived ? 'All Bookings' : 'Bookings'}
           </h1>
           
@@ -88,16 +88,16 @@ const PortalBookings: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+        {/* Responsive Stats Cards */}
+        <div className="metric-grid">
+          <Card className="motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+              <CardTitle className="text-body-sm font-medium">Total Bookings</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{finalBookings.length}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-h1 font-bold">{finalBookings.length}</div>
+              <p className="text-body-sm text-muted-foreground">
                 {searchQuery || selectedLocationId !== 'all' || includeArchived
                   ? 'Current filter' 
                   : 'All locations'
@@ -106,58 +106,58 @@ const PortalBookings: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
+              <CardTitle className="text-body-sm font-medium">Upcoming</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-h1 font-bold">
                 {finalBookings.filter(booking => booking.status === 'booked_upcoming').length}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 Ready to attend
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Need Status</CardTitle>
+              <CardTitle className="text-body-sm font-medium">Need Status</CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-h1 font-bold">
                 {finalBookings.filter(booking => {
                   const today = new Date();
                   const bookingDate = new Date(booking.selected_date || '');
                   return bookingDate < today && booking.status === 'booked_upcoming';
                 }).length}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 Past date, needs update
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Locations</CardTitle>
+              <CardTitle className="text-body-sm font-medium">Locations</CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{locations.length}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-h1 font-bold">{locations.length}</div>
+              <p className="text-body-sm text-muted-foreground">
                 Active locations
               </p>
             </CardContent>
           </Card>
         </div>
-      </div>
+      </header>
 
-      {/* Scrollable Table Area with max height */}
-      <div className="flex-1 px-6 pb-6">
-        <div className="mt-6 h-full max-h-[calc(100vh-500px)] overflow-auto">
+      {/* Table Container with Proper Overflow */}
+      <div className="table-container px-6 pb-6">
+        <div className="mt-6">
           <BookingsTable 
             bookings={finalBookings} 
             searchQuery={searchQuery} 

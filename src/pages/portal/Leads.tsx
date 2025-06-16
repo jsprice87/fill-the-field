@@ -22,11 +22,11 @@ const PortalLeads: React.FC = () => {
   if (isLoading) {
     return (
       <div className="h-full flex flex-col">
-        <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+        <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
           <div className="flex items-center justify-between">
             <h1 className="text-h1 text-gray-900 dark:text-gray-50">Leads</h1>
           </div>
-        </div>
+        </header>
         <div className="flex-1 flex items-center justify-center">
           <div className="loading-spinner h-8 w-8"></div>
         </div>
@@ -40,8 +40,8 @@ const PortalLeads: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col fade-in">
-      {/* Sticky Header with Stats and Controls */}
-      <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+      {/* Sticky Header with Sidebar Clearance */}
+      <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-1">
             <h1 className="text-h1 text-gray-900 dark:text-gray-50">
@@ -65,9 +65,9 @@ const PortalLeads: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="interactive-card">
+        {/* Responsive Stats Cards */}
+        <div className="metric-grid">
+          <Card className="interactive-card motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Total Leads</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -87,7 +87,7 @@ const PortalLeads: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="interactive-card">
+          <Card className="interactive-card motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">New Leads</CardTitle>
               <UserPlus className="h-4 w-4 text-muted-foreground" />
@@ -105,7 +105,7 @@ const PortalLeads: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="interactive-card">
+          <Card className="interactive-card motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Conversion Rate</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -118,7 +118,7 @@ const PortalLeads: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="interactive-card">
+          <Card className="interactive-card motion-safe:transition-all motion-safe:duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Needs Follow-up</CardTitle>
               <Phone className="h-4 w-4 text-muted-foreground" />
@@ -135,11 +135,11 @@ const PortalLeads: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </header>
 
-      {/* Scrollable Table Area with max height */}
-      <div className="flex-1 px-6 pb-6">
-        <div className="mt-6 h-full max-h-[calc(100vh-500px)] overflow-auto">
+      {/* Table Container with Proper Overflow */}
+      <div className="table-container px-6 pb-6">
+        <div className="mt-6">
           <LeadsTable 
             leads={filteredLeads} 
             searchQuery={searchQuery} 

@@ -1,0 +1,43 @@
+
+/* Layout System - Sidebar and Table Layout Utilities */
+
+:root {
+  --sidebar-w-lg: 240px;
+  --sidebar-w-icon: 72px;
+}
+
+/* Sidebar-aware padding utilities */
+.pl-sidebar {
+  padding-left: var(--sidebar-w-lg);
+}
+
+@media (max-width: 1023px) {
+  .pl-sidebar {
+    padding-left: var(--sidebar-w-icon);
+  }
+}
+
+/* Table container utilities for proper overflow handling */
+.table-container {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 10rem); /* ~40 spacing units */
+}
+
+@media (min-width: 1024px) {
+  .table-container {
+    max-height: calc(100vh - 8rem); /* ~32 spacing units */
+  }
+}
+
+/* Responsive metric card grid */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1.5rem;
+}
+
+.metric-grid > * {
+  min-width: 0; /* Prevent overflow */
+}
