@@ -1,0 +1,105 @@
+
+{
+  "migrationProgress": {
+    "phase0": {
+      "status": "in-progress",
+      "description": "Environment Bootstrap",
+      "tasks": [
+        { "name": "Add Mantine dependencies", "status": "completed" },
+        { "name": "Create mantine-theme.ts", "status": "completed" },
+        { "name": "Update main.tsx with MantineProvider", "status": "completed" },
+        { "name": "Create component audit script", "status": "completed" },
+        { "name": "Create initial component stubs", "status": "completed" },
+        { "name": "Bundle size baseline check", "status": "pending" },
+        { "name": "Update Storybook configuration", "status": "pending" }
+      ]
+    },
+    "phase1": {
+      "status": "pending",
+      "description": "Component Audit & Mapping",
+      "tasks": [
+        { "name": "Run component audit script", "status": "pending" },
+        { "name": "Create component mapping documentation", "status": "pending" },
+        { "name": "Migrate one low-risk page", "status": "pending" },
+        { "name": "Update Storybook stories", "status": "pending" },
+        { "name": "Complete migration checklist", "status": "pending" }
+      ]
+    }
+  },
+  "components": {
+    "Button": {
+      "status": "stub-created",
+      "shadcnPath": "@/components/ui/button",
+      "mantinePath": "@/components/mantine/Button",
+      "mantineComponent": "@mantine/core Button",
+      "complexity": "low",
+      "notes": "Initial stub created, needs variant mapping"
+    },
+    "Card": {
+      "status": "stub-created", 
+      "shadcnPath": "@/components/ui/card",
+      "mantinePath": "@/components/mantine/Card",
+      "mantineComponent": "@mantine/core Card",
+      "complexity": "low",
+      "notes": "Initial stub created, needs CardHeader/CardContent mapping"
+    },
+    "Input": {
+      "status": "pending",
+      "shadcnPath": "@/components/ui/input",
+      "mantinePath": "@/components/mantine/TextInput",
+      "mantineComponent": "@mantine/core TextInput",
+      "complexity": "low",
+      "notes": "TODO: Create stub and prop mapping"
+    },
+    "Select": {
+      "status": "pending",
+      "shadcnPath": "@/components/ui/select", 
+      "mantinePath": "@/components/mantine/Select",
+      "mantineComponent": "@mantine/core Select",
+      "complexity": "medium",
+      "notes": "TODO: Create stub, handle SelectTrigger/SelectContent mapping"
+    },
+    "Table": {
+      "status": "pending",
+      "shadcnPath": "@/components/ui/table",
+      "mantinePath": "@/components/mantine/Table", 
+      "mantineComponent": "@mantine/core Table + ScrollArea",
+      "complexity": "medium",
+      "notes": "TODO: Complex migration with scroll areas and sticky headers"
+    },
+    "Dialog": {
+      "status": "pending",
+      "shadcnPath": "@/components/ui/dialog",
+      "mantinePath": "@/components/mantine/Modal",
+      "mantineComponent": "@mantine/core Modal",
+      "complexity": "high",
+      "notes": "TODO: Handle DialogTrigger/DialogContent mapping and focus management"
+    }
+  },
+  "pages": {
+    "/portal/help": {
+      "status": "pending",
+      "components": ["Button", "Card"],
+      "complexity": "low",
+      "notes": "Target for Phase 1 migration test"
+    },
+    "/portal/profile": {
+      "status": "pending", 
+      "components": ["Button", "Card", "Input", "Select"],
+      "complexity": "medium",
+      "notes": "Alternative target for Phase 1 migration test"
+    },
+    "/portal/leads": {
+      "status": "pending",
+      "components": ["Button", "Card", "Input", "Select", "Table", "Dialog"],
+      "complexity": "high",
+      "notes": "Phase 4-5 target - complex table with actions"
+    }
+  },
+  "bundleSize": {
+    "baseline": null,
+    "phase0": null,
+    "phase1": null,
+    "target": "≤ +200kB gzip increase total"
+  }
+}
