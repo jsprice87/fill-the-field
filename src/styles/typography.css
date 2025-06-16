@@ -1,0 +1,144 @@
+
+/* Typography System - Fill the Field Design System */
+
+@layer base {
+  /* Base styles following the design system */
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-size: 16px; /* body-lg base size */
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  /* Exclude /free-trial/ from design system */
+  body:not([data-preserve-brand]) {
+    /* Apply design system globally except free-trial */
+  }
+
+  /* Typography hierarchy - Global heading styles */
+  h1, .text-h1 {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-size: 30px;
+    line-height: 36px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  
+  h2, .text-h2 {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  
+  h3, .text-h3 {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  /* Body text styles */
+  .text-body-lg {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+
+  .text-body-sm {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+
+  .text-code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 500;
+  }
+
+  /* Preserve brand styles for specific sections */
+  .brand-preserved,
+  [data-preserve-brand] h1,
+  [data-preserve-brand] h2,
+  [data-preserve-brand] h3,
+  [data-preserve-brand] h4,
+  [data-preserve-brand] h5,
+  [data-preserve-brand] h6 {
+    /* Preserve existing brand typography */
+  }
+
+  /* Portal and Admin sections use design system by default */
+  .portal-layout, .admin-layout, [data-section="portal"], [data-section="admin"] {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+  }
+
+  .portal-layout h1, .portal-layout h2, .portal-layout h3, .portal-layout h4, .portal-layout h5, .portal-layout h6,
+  .admin-layout h1, .admin-layout h2, .admin-layout h3, .admin-layout h4, .admin-layout h5, .admin-layout h6,
+  [data-section="portal"] h1, [data-section="portal"] h2, [data-section="portal"] h3, [data-section="portal"] h4, [data-section="portal"] h5, [data-section="portal"] h6,
+  [data-section="admin"] h1, [data-section="admin"] h2, [data-section="admin"] h3, [data-section="admin"] h4, [data-section="admin"] h5, [data-section="admin"] h6 {
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    font-weight: 600;
+  }
+
+  /* Improved text contrast and readability */
+  p {
+    color: rgb(55 65 81); /* gray-700 */
+  }
+
+  .dark p {
+    color: rgb(209 213 219); /* gray-300 */
+  }
+
+  /* Link styles */
+  a {
+    color: rgb(16 185 129); /* primary-500 */
+    text-decoration: none;
+    transition: all 200ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  a:hover {
+    color: rgb(5 150 105); /* primary-600 */
+    text-decoration: underline;
+  }
+
+  /* Content spacing for better readability */
+  .prose {
+    line-height: 1.6;
+  }
+
+  .prose h1 {
+    margin-bottom: 0.5em;
+  }
+
+  .prose h2 {
+    margin-top: 2em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+
+  .prose p {
+    margin-bottom: 1em;
+  }
+
+  .prose ul, .prose ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+  }
+
+  .prose li {
+    margin-bottom: 0.25em;
+  }
+}
