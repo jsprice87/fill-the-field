@@ -6,102 +6,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
- 
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
- 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
- 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
- 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+/* Import Design System Tokens */
+@import './styles/tokens.css';
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
- 
-    --radius: 0.5rem;
-
-    /* Soccer Stars Brand Colors */
-    --brand-red: 348 92% 44%;      /* #CE0E2D */
-    --brand-navy: 218 94% 14%;     /* #021D49 */
-    --brand-blue: 215 100% 40%;    /* #003BCE */
-    --brand-grey: 210 9% 64%;      /* #99A3AD */
-    --brand-red-600: 348 84% 45%;  /* For error states */
-  }
- 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
- 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
- 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
- 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
- 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
- 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
- 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
- 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-  }
-}
- 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Poppins', sans-serif;
-    font-size: 16px; /* Base 16px as per brand guidelines */
-  }
-
-  /* Portal and Admin sections use Montserrat by default */
-  .portal-layout, .admin-layout, [data-section="portal"], [data-section="admin"] {
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  /* Portal and Admin headings use Barlow Condensed */
-  .portal-layout h1, .portal-layout h2, .portal-layout h3, .portal-layout h4, .portal-layout h5, .portal-layout h6,
-  .admin-layout h1, .admin-layout h2, .admin-layout h3, .admin-layout h4, .admin-layout h5, .admin-layout h6,
-  [data-section="portal"] h1, [data-section="portal"] h2, [data-section="portal"] h3, [data-section="portal"] h4, [data-section="portal"] h5, [data-section="portal"] h6,
-  [data-section="admin"] h1, [data-section="admin"] h2, [data-section="admin"] h3, [data-section="admin"] h4, [data-section="admin"] h5, [data-section="admin"] h6 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 600;
-  }
-}
+/* Preserve existing Soccer Stars Brand styles for /free-trial/ */
 
 /* Soccer Stars Brand Typography Classes */
 .font-anton {
