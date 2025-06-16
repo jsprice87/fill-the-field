@@ -1,17 +1,15 @@
-
 import React from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Archive } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-
 interface ArchiveToggleProps {
   className?: string;
 }
-
-const ArchiveToggle: React.FC<ArchiveToggleProps> = ({ className }) => {
+const ArchiveToggle: React.FC<ArchiveToggleProps> = ({
+  className
+}) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const showArchived = searchParams.get('archived') === 'true';
-
   const handleToggle = (checked: boolean) => {
     const newParams = new URLSearchParams(searchParams);
     if (checked) {
@@ -21,21 +19,12 @@ const ArchiveToggle: React.FC<ArchiveToggleProps> = ({ className }) => {
     }
     setSearchParams(newParams);
   };
-
-  return (
-    <div className={`flex items-center space-x-3 ${className}`}>
-      <Archive className="h-4 w-4 text-muted-foreground" />
-      <Switch
-        id="archive-toggle"
-        checked={showArchived}
-        onCheckedChange={handleToggle}
-        aria-label="Archive toggle"
-      />
+  return <div className={`flex items-center space-x-3 ${className}`}>
+      
+      <Switch id="archive-toggle" checked={showArchived} onCheckedChange={handleToggle} aria-label="Archive toggle" />
       <span className="text-sm font-medium text-gray-900">
         {showArchived ? 'Show Archived' : 'Show Active'}
       </span>
-    </div>
-  );
+    </div>;
 };
-
 export default ArchiveToggle;
