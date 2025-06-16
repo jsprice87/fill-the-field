@@ -9,7 +9,7 @@ import App from './App';
 import './index.css';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import { theme, mantineEmotionCache } from './mantine/theme';
+import { theme } from './mantine/theme';
 import { updateFranchiseeSlugs } from './scripts/updateFranchiseeSlugs';
 
 const queryClient = new QueryClient();
@@ -30,21 +30,21 @@ root.render(
   <React.StrictMode>
     <ColorSchemeScript defaultColorScheme="light" />
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem
-        disableTransitionOnChange
+      <MantineProvider
+        withCssVariables
+        defaultColorScheme="light"
+        theme={theme}
       >
-        <MantineProvider 
-          theme={theme} 
-          emotionCache={mantineEmotionCache}
-          defaultColorScheme="light"
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
         >
           <Notifications />
           <App />
-        </MantineProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </MantineProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

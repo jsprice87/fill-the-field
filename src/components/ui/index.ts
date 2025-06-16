@@ -3,14 +3,15 @@
 export { Button } from '../mantine/Button';
 export type { ButtonProps } from '../mantine/Button';
 
-export { Input } from '../mantine/TextInput';
+export { Input, TextInput } from '../mantine/TextInput';
 export type { InputProps } from '../mantine/TextInput';
 
-export { Textarea } from '../mantine/Textarea';
-export type { TextareaProps } from '../mantine/Textarea';
+// Move WIP components to _wip folder later - for now just commenting out
+// export { Textarea } from '../mantine/Textarea';
+// export type { TextareaProps } from '../mantine/Textarea';
 
-export { Badge } from '../mantine/Badge';
-export type { BadgeProps } from '../mantine/Badge';
+// export { Badge } from '../mantine/Badge';
+// export type { BadgeProps } from '../mantine/Badge';
 
 // Still using shadcn/ui - will be migrated in future phases
 export * from './card';
