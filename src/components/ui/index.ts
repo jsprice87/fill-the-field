@@ -61,6 +61,6 @@ export * from './form-section';
 export * from './menubar';
 export * from './navigation-menu';
 export * from './toast';
-export * from './toaster';
-export * from './sonner';
+export { Toaster } from './toaster';
+export { toast } from './sonner';
 export * from './use-toast';

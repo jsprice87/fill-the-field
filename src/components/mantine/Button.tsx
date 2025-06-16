@@ -1,5 +1,5 @@
 
-import { Button as MantineButton, ActionIcon, ButtonProps as MantineButtonProps, ActionIconProps } from '@mantine/core';
+import { Button as MantineButton, ActionIcon, ButtonProps as MantineBadgeProps, ActionIconProps } from '@mantine/core';
 import { forwardRef } from 'react';
 import { Slot } from "@radix-ui/react-slot";
 
@@ -20,7 +20,7 @@ const sizeMap = {
   icon: 'md'
 } as const;
 
-export interface ButtonProps extends Omit<MantineButtonProps, 'variant' | 'size'> {
+export interface ButtonProps extends Omit<MantineBadgeProps, 'variant' | 'size'> {
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'soccer_primary' | 'soccer_secondary';
   size?: 'default' | 'sm' | 'lg' | 'icon' | 'soccer';
   asChild?: boolean;
