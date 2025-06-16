@@ -95,18 +95,6 @@ export const theme: MantineThemeOverride = createTheme({
     xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
   },
 
-  // Global styles for consistent theming
-  globalStyles: (theme) => ({
-    body: {
-      backgroundColor: theme.colorScheme === 'dark' 
-        ? theme.colors.gray[9] 
-        : theme.colors.gray[0],
-      color: theme.colorScheme === 'dark' 
-        ? theme.colors.gray[2] 
-        : theme.colors.gray[7]
-    }
-  }),
-
   components: {
     Button: {
       defaultProps: {
