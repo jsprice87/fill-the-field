@@ -1,221 +1,154 @@
+
 import React from 'react';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LeadsTable from '@/components/leads/LeadsTable';
-import LeadsTableEmpty from '@/components/leads/LeadsTableEmpty';
-import ArchiveToggle from '@/components/shared/ArchiveToggle';
-import AdvancedSearchInput from '@/components/shared/AdvancedSearchInput';
-import StatusFilter from '@/components/shared/StatusFilter';
-import DateRangeFilter from '@/components/shared/DateRangeFilter';
+import { Users, UserPlus, TrendingUp, Phone } from 'lucide-react';
 import { useLeads, useLeadStats } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
-import { useAdvancedSearch } from '@/hooks/useAdvancedSearch';
-import type { Lead, LeadStatus } from '@/types';
+import { useLeadsSearch } from '@/hooks/useLeadsSearch';
+import { useSearchParams } from 'react-router-dom';
+import LeadsTable from '@/components/leads/LeadsTable';
+import SearchInput from '@/components/shared/SearchInput';
+import ArchiveToggle from '@/components/shared/ArchiveToggle';
 
-const Leads: React.FC = () => {
+const PortalLeads: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
-  const [includeArchived, setIncludeArchived] = React.useState(false);
+  const [searchParams] = useSearchParams();
+  const includeArchived = searchParams.get('archived') === 'true';
   
-  const { data: leads = [], isLoading, error } = useLeads(
-    franchiseeData?.id,
-    includeArchived
-  );
-  
+  const { data: leads = [], isLoading } = useLeads(franchiseeData?.id, includeArchived);
   const { data: stats } = useLeadStats(franchiseeData?.id, includeArchived);
-
-  // Sort options for leads
-  const sortOptions = [
-    { key: 'created_at', label: 'Date Created', direction: 'desc' as const },
-    { key: 'created_at', label: 'Date Created', direction: 'asc' as const },
-    { key: 'updated_at', label: 'Last Updated', direction: 'desc' as const },
-    { key: 'updated_at', label: 'Last Updated', direction: 'asc' as const },
-    { key: 'first_name', label: 'First Name', direction: 'asc' as const },
-    { key: 'first_name', label: 'First Name', direction: 'desc' as const },
-    { key: 'last_name', label: 'Last Name', direction: 'asc' as const },
-    { key: 'last_name', label: 'Last Name', direction: 'desc' as const },
-    { key: 'status', label: 'Status', direction: 'asc' as const },
-    { key: 'status', label: 'Status', direction: 'desc' as const }
-  ];
-
-  // Advanced search hook
-  const {
-    searchState,
-    filteredData,
-    hasActiveFilters,
-    updateSearchTerm,
-    updateStatusFilter,
-    updateDateRange,
-    updateSort,
-    clearAllFilters
-  } = useAdvancedSearch<Lead>(
-    leads,
-    ['first_name', 'last_name', 'email', 'phone', 'zip', 'status', 'source', 'notes'],
-    { key: 'created_at', label: 'Date Created', direction: 'desc' }
-  );
+  const { searchTerm, searchQuery, filteredLeads, handleSearchChange } = useLeadsSearch(leads, includeArchived);
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading leads...</p>
+      <div className="h-full flex flex-col">
+        <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+          <div className="flex items-center justify-between">
+            <h1 className="text-h1 text-gray-900 dark:text-gray-50">Leads</h1>
           </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-500 border-t-transparent"></div>
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-destructive">Error loading leads. Please try again.</p>
-        </div>
-      </div>
-    );
-  }
+  const getSearchPlaceholder = () => {
+    return includeArchived ? "Search all leads..." : "Search leads...";
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Leads</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage and track your potential customers
-          </p>
+    <div className="h-full flex flex-col">
+      {/* Sticky Header with Stats and Controls */}
+      <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-1">
+            <h1 className="text-h1 text-gray-900 dark:text-gray-50">
+              {includeArchived ? 'All Leads' : 'Leads'}
+            </h1>
+            <p className="text-body-sm text-muted-foreground">
+              {includeArchived 
+                ? 'Manage all leads including archived records' 
+                : 'Manage your active leads and follow-ups'
+              }
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <ArchiveToggle />
+            <SearchInput
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder={getSearchPlaceholder()}
+              className="w-64"
+            />
+          </div>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Lead
-        </Button>
+
+        {/* Stats Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Total Leads</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">
+                {searchQuery ? filteredLeads.length : (stats?.totalLeads || 0)}
+              </div>
+              <p className="text-body-sm text-muted-foreground">
+                {searchQuery 
+                  ? `Matching "${searchQuery}"` 
+                  : includeArchived 
+                    ? 'Including archived'
+                    : `+${stats?.monthlyGrowth || 0}% from last month`
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">New Leads</CardTitle>
+              <UserPlus className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">
+                {searchQuery 
+                  ? filteredLeads.filter(lead => lead.status === 'new').length
+                  : (stats?.newLeads || 0)
+                }
+              </div>
+              <p className="text-body-sm text-muted-foreground">
+                Awaiting contact
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Conversion Rate</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">{stats?.conversionRate || 0}%</div>
+              <p className="text-body-sm text-muted-foreground">
+                Leads to bookings
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-body-sm font-medium text-gray-700 dark:text-gray-300">Needs Follow-up</CardTitle>
+              <Phone className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-h1 font-bold text-gray-900 dark:text-gray-50">
+                {(searchQuery ? filteredLeads : leads).filter(lead => 
+                  ['new', 'follow_up'].includes(lead.status)
+                ).length}
+              </div>
+              <p className="text-body-sm text-muted-foreground">
+                Action required
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Leads
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalLeads}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                New Leads
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.newLeads}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Conversion Rate
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.conversionRate}%</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Monthly Growth
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.monthlyGrowth > 0 ? '+' : ''}{stats.monthlyGrowth}%
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Filters and Search */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              All Leads
-              {hasActiveFilters && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({filteredData.length} of {leads.length})
-                </span>
-              )}
-            </CardTitle>
-            <ArchiveToggle />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Advanced Search */}
-          <AdvancedSearchInput
-            value={searchState.searchTerm}
-            onChange={updateSearchTerm}
-            onClear={() => updateSearchTerm('')}
-            placeholder="Search leads by name, email, phone, zip, status, or notes..."
-            sortOptions={sortOptions}
-            currentSort={searchState.currentSort}
-            onSortChange={updateSort}
+      {/* Scrollable Table Area with max height */}
+      <div className="flex-1 px-6 pb-6">
+        <div className="mt-6 h-full max-h-[calc(100vh-500px)] overflow-auto">
+          <LeadsTable 
+            leads={filteredLeads} 
+            searchQuery={searchQuery} 
+            showArchived={includeArchived}
           />
-
-          {/* Filter Row */}
-          <div className="flex flex-wrap items-center gap-3">
-            <StatusFilter
-              selectedStatuses={searchState.selectedStatuses}
-              onStatusChange={updateStatusFilter}
-            />
-            
-            <DateRangeFilter
-              dateRange={searchState.dateRange}
-              onDateRangeChange={updateDateRange}
-              label="Created Date"
-            />
-
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="text-muted-foreground"
-              >
-                Clear All Filters
-              </Button>
-            )}
-          </div>
-
-          {/* Results */}
-          {filteredData.length === 0 && leads.length > 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No leads match your current filters.
-              </p>
-              <Button
-                variant="outline"
-                onClick={clearAllFilters}
-                className="mt-2"
-              >
-                Clear Filters
-              </Button>
-            </div>
-          ) : filteredData.length === 0 ? (
-            <LeadsTableEmpty />
-          ) : (
-            <LeadsTable leads={filteredData} />
-          )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Leads;
+export default PortalLeads;
