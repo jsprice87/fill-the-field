@@ -12,41 +12,7 @@ import DateTimeCell from './DateTimeCell';
 import ParticipantCell from './ParticipantCell';
 import StatusCell from './StatusCell';
 import BookingsTableEmpty from './BookingsTableEmpty';
-
-interface Booking {
-  id: string;
-  booking_reference: string | null;
-  parent_first_name: string | null;
-  parent_last_name: string | null;
-  parent_email: string | null;
-  parent_phone: string | null;
-  waiver_accepted: boolean | null;
-  communication_permission: boolean | null;
-  marketing_permission: boolean | null;
-  created_at: string;
-  selected_date: string | null;
-  archived_at: string | null;
-  location_id: string;
-  class_schedule_id: string;
-  participants: Array<{
-    id: string;
-    first_name: string;
-    age: number;
-    computed_age: string | null;
-  }>;
-  class_schedules: {
-    start_time: string;
-    end_time: string;
-    classes: {
-      name: string;
-      class_name: string;
-      locations: {
-        name: string;
-      };
-    };
-  } | null;
-  status: 'booked_upcoming' | 'attended' | 'no_show' | 'cancelled';
-}
+import type { Booking } from '@/types';
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -104,9 +70,9 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
     try {
       await statusMutation.mutateAsync({
-        leadId: bookingId,
-        status: newStatus as any,
-        bookingDate: bookings.find(b => b.id === bookingId)?.selected_date || ''
+        entity: 'booking',
+        id: bookingId,
+        status: newStatus as any
       });
       toast.success('Booking status updated successfully');
     } catch (error) {

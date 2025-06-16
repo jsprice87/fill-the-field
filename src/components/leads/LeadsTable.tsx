@@ -12,24 +12,7 @@ import LeadInfoCell from './LeadInfoCell';
 import StatusBadge from './StatusBadge';
 import StatusSelect from './StatusSelect';
 import LeadsTableEmpty from './LeadsTableEmpty';
-
-interface Lead {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  zip: string;
-  source: string | null;
-  status: string;
-  created_at: string;
-  archived_at: string | null;
-  notes: string | null;
-  selected_location_id: string | null;
-  locations?: {
-    name: string;
-  };
-}
+import type { Lead } from '@/types';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -188,7 +171,10 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                 <LeadInfoCell 
                   firstName={lead.first_name}
                   lastName={lead.last_name}
+                  email={lead.email}
+                  phone={lead.phone}
                   notes={lead.notes}
+                  archivedAt={lead.archived_at}
                 />
               </TableCell>
               <TableCell>

@@ -1,30 +1,12 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-export interface Lead {
-  id: string;
-  franchisee_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  zip: string;
-  status: string;
-  source: string;
-  notes?: string;
-  child_speaks_english?: boolean;
-  selected_location_id?: string;
-  booking_session_data?: any;
-  created_at: string;
-  updated_at: string;
-  archived_at?: string | null;
-}
+import type { Lead } from '@/types';
 
 export const useLeads = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
     queryKey: ['leads', franchiseeId, includeArchived],
-    queryFn: async () => {
+    queryFn: async (): Promise<Lead[]> => {
       if (!franchiseeId) return [];
       
       let query = supabase

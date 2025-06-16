@@ -1,30 +1,12 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-export interface Booking {
-  id: string;
-  lead_id: string;
-  class_schedule_id: string;
-  selected_date: string;
-  class_time: string;
-  class_name: string;
-  participant_name: string;
-  participant_age: number;
-  participant_birth_date: string;
-  status: string; // This will come from the lead, not the booking
-  location_id: string;
-  location_name?: string;
-  lead_first_name?: string;
-  lead_last_name?: string;
-  created_at: string;
-  archived_at?: string | null;
-}
+import type { Booking } from '@/types';
 
 export const useBookings = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
     queryKey: ['bookings', franchiseeId, includeArchived],
-    queryFn: async () => {
+    queryFn: async (): Promise<Booking[]> => {
       if (!franchiseeId) return [];
       
       let query = supabase
@@ -41,8 +23,17 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
           created_at,
           archived_at,
           bookings!inner(
+            id,
             lead_id,
             archived_at,
+            booking_reference,
+            parent_first_name,
+            parent_last_name,
+            parent_email,
+            parent_phone,
+            communication_permission,
+            marketing_permission,
+            waiver_accepted,
             leads!inner(
               first_name,
               last_name,
@@ -52,8 +43,11 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
             )
           ),
           class_schedules!inner(
+            start_time,
+            end_time,
             classes!inner(
               location_id,
+              class_name,
               locations!inner(
                 name
               )
@@ -77,24 +71,49 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
         throw error;
       }
 
-      // Transform the data to flatten the nested structure
-      const transformedData = (data || []).map(appointment => ({
+      // Transform the data to match the canonical Booking type
+      const transformedData: Booking[] = (data || []).map(appointment => ({
         id: appointment.id,
+        created_at: appointment.created_at,
+        updated_at: appointment.created_at,
         lead_id: appointment.bookings.lead_id,
         class_schedule_id: appointment.booking_id,
+        waiver_accepted: appointment.bookings.waiver_accepted,
+        waiver_accepted_at: null,
+        confirmation_email_sent: null,
+        communication_permission: appointment.bookings.communication_permission,
+        marketing_permission: appointment.bookings.marketing_permission,
+        child_speaks_english: null,
+        archived_at: appointment.archived_at,
+        parent_zip: null,
+        parent_relationship: null,
+        cancellation_reason: null,
+        booking_reference: appointment.bookings.booking_reference,
+        parent_first_name: appointment.bookings.parent_first_name,
+        parent_last_name: appointment.bookings.parent_last_name,
+        parent_email: appointment.bookings.parent_email,
+        parent_phone: appointment.bookings.parent_phone,
         selected_date: appointment.selected_date,
-        class_time: appointment.class_time,
-        class_name: appointment.class_name,
-        participant_name: appointment.participant_name,
-        participant_age: appointment.participant_age,
-        participant_birth_date: appointment.participant_birth_date,
-        status: appointment.bookings?.leads?.status || 'new', // Status comes from lead
-        location_id: appointment.class_schedules?.classes?.location_id,
-        location_name: appointment.class_schedules?.classes?.locations?.name,
-        lead_first_name: appointment.bookings?.leads?.first_name,
-        lead_last_name: appointment.bookings?.leads?.last_name,
-        created_at: appointment.created_at,
-        archived_at: appointment.archived_at
+        participants: [{
+          id: appointment.id,
+          first_name: appointment.participant_name,
+          age: appointment.participant_age,
+          computed_age: null
+        }],
+        class_schedules: appointment.class_schedules ? {
+          start_time: appointment.class_schedules.start_time,
+          end_time: appointment.class_schedules.end_time,
+          classes: {
+            name: appointment.class_schedules.classes.class_name,
+            class_name: appointment.class_schedules.classes.class_name,
+            locations: {
+              name: appointment.class_schedules.classes.locations.name
+            }
+          }
+        } : null,
+        status: appointment.bookings?.leads?.status === 'booked_upcoming' ? 'booked_upcoming' :
+                appointment.bookings?.leads?.status === 'booked_complete' ? 'attended' :
+                appointment.bookings?.leads?.status === 'cancelled' ? 'cancelled' : 'no_show'
       }));
 
       console.log('Fetched bookings data:', transformedData);

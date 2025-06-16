@@ -25,7 +25,9 @@ const PortalBookings: React.FC = () => {
   // Combine location filter with search results
   const finalBookings = selectedLocationId === 'all' 
     ? filteredBookings 
-    : filteredBookings.filter(booking => booking.location_id === selectedLocationId);
+    : filteredBookings.filter(booking => 
+        booking.class_schedules?.classes?.locations?.name === locations.find(l => l.id === selectedLocationId)?.name
+      );
 
   if (isLoading) {
     return (
