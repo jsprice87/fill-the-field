@@ -157,8 +157,6 @@ export const theme: MantineThemeOverride = createTheme({
   }
 });
 
-// Create emotion cache with our prefix
-import { createEmotionCache } from '@mantine/core';
 
 export const mantineEmotionCache = createEmotionCache({ 
   key: 'ftf' 
