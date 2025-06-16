@@ -30,6 +30,7 @@ export type Booking = Database['public']['Tables']['bookings']['Row'] & {
     };
   } | null;
   status: 'booked_upcoming' | 'attended' | 'no_show' | 'cancelled';
+  selected_date: string; // Add the missing selected_date property
 };
 
 // Status types

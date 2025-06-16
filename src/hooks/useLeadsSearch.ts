@@ -1,6 +1,6 @@
 
 import { useMemo, useState, useEffect } from 'react';
-import { Lead } from '@/hooks/useLeads';
+import { Lead } from '@/types';
 import { useSearchQuery, useDebounce, searchInText, searchInDate } from '@/utils/searchUtils';
 
 export const useLeadsSearch = (leads: Lead[], includeArchived: boolean = false) => {

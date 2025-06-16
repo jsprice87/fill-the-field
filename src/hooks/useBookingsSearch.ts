@@ -1,6 +1,6 @@
 
 import { useMemo, useState, useEffect } from 'react';
-import { Booking } from '@/hooks/useBookings';
+import { Booking } from '@/types';
 import { useSearchQuery, useDebounce, searchInText, searchInDate } from '@/utils/searchUtils';
 
 export const useBookingsSearch = (bookings: Booking[], includeArchived: boolean = false) => {
@@ -37,16 +37,14 @@ export const useBookingsSearch = (bookings: Booking[], includeArchived: boolean 
     return filteredByArchive.filter(booking => {
       // Search in all text fields
       return (
-        searchInText(booking.lead_first_name, searchQuery) ||
-        searchInText(booking.lead_last_name, searchQuery) ||
-        searchInText(booking.participant_name, searchQuery) ||
-        searchInText(booking.location_name, searchQuery) ||
-        searchInText(booking.class_name, searchQuery) ||
-        searchInText(booking.class_time, searchQuery) ||
+        searchInText(booking.parent_first_name, searchQuery) ||
+        searchInText(booking.parent_last_name, searchQuery) ||
+        searchInText(booking.participants?.[0]?.first_name, searchQuery) ||
+        searchInText(booking.class_schedules?.classes?.locations?.name, searchQuery) ||
+        searchInText(booking.class_schedules?.classes?.class_name, searchQuery) ||
         searchInText(booking.status, searchQuery) ||
-        searchInText(booking.participant_age?.toString(), searchQuery) ||
+        searchInText(booking.participants?.[0]?.age?.toString(), searchQuery) ||
         searchInDate(booking.selected_date, searchQuery) ||
-        searchInDate(booking.participant_birth_date, searchQuery) ||
         searchInDate(booking.created_at, searchQuery)
       );
     });

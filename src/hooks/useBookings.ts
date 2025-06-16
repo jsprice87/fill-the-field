@@ -113,7 +113,7 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
         } : null,
         status: appointment.bookings?.leads?.status === 'booked_upcoming' ? 'booked_upcoming' :
                 appointment.bookings?.leads?.status === 'booked_complete' ? 'attended' :
-                appointment.bookings?.leads?.status === 'cancelled' ? 'cancelled' : 'no_show'
+                appointment.bookings?.leads?.status === 'canceled' ? 'cancelled' : 'no_show'
       }));
 
       console.log('Fetched bookings data:', transformedData);
