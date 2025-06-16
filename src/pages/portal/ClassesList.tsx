@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +43,8 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
   const [isLoading, setIsLoading] = useState(true);
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   const [currentFranchiseeId, setCurrentFranchiseeId] = useState<string | null>(propFranchiseeId || null);
+  const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   console.log('ClassesList: Rendered with props franchiseeId:', propFranchiseeId);
   console.log('ClassesList: URL franchiseeSlug:', franchiseeSlug);
@@ -203,6 +204,48 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
     setFilteredClasses(filtered);
   };
 
+  const handleClassSelection = (classId: string, selected: boolean) => {
+    const newSelection = new Set(selectedClasses);
+    if (selected) {
+      newSelection.add(classId);
+    } else {
+      newSelection.delete(classId);
+    }
+    setSelectedClasses(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedClasses.size === filteredClasses.length) {
+      setSelectedClasses(new Set());
+    } else {
+      setSelectedClasses(new Set(filteredClasses.map(cls => cls.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedClasses.size === 0) return;
+    
+    if (!confirm(`Are you sure you want to delete ${selectedClasses.size} class${selectedClasses.size > 1 ? 'es' : ''}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .update({ is_active: false })
+        .in('id', Array.from(selectedClasses));
+
+      if (error) throw error;
+
+      toast.success(`${selectedClasses.size} class${selectedClasses.size > 1 ? 'es' : ''} deleted successfully`);
+      setSelectedClasses(new Set());
+      loadClassesAndLocations();
+    } catch (error) {
+      console.error("Error deleting classes:", error);
+      toast.error("Failed to delete classes");
+    }
+  };
+
   const handleDeleteClass = async (classId: string) => {
     if (!confirm("Are you sure you want to delete this class? This action cannot be undone.")) {
       return;
@@ -240,99 +283,148 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Classes</h1>
-        <Link to={`/${currentSlug}/portal/classes/add`}>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Classes
-          </Button>
-        </Link>
-      </div>
-
-      {/* Filters */}
-      <div className="flex gap-4 items-center">
-        <div className="flex-1 max-w-sm relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search classes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+    <div className="h-full flex flex-col">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-1">
+            <h1 className="text-h1 text-gray-900 dark:text-gray-50">Classes</h1>
+            <p className="text-body-sm text-muted-foreground">
+              Manage your class schedules and programs
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            {selectedClasses.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete ({selectedClasses.size})
+              </Button>
+            )}
+            <Link to={`/${currentSlug}/portal/classes/add`}>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Classes
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-          <SelectTrigger className="w-64">
-            <SelectValue placeholder="Filter by location" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
-            {locations.map((location) => (
-              <SelectItem key={location.id} value={location.id}>
-                {location.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
-      {/* Classes Table */}
-      {filteredClasses.length === 0 ? (
-        <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <p className="text-muted-foreground">
-            {classes.length === 0 
-              ? "No classes found. Click 'Add Classes' to create your first class."
-              : "No classes match your current filters."
-            }
-          </p>
-        </div>
-      ) : (
-        <div className="border rounded-lg overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Class Name</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Schedule</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Age Range</TableHead>
-                <TableHead>Capacity</TableHead>
-                <TableHead className="w-24">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClasses.map((classItem) => (
-                <TableRow key={classItem.id}>
-                  <TableCell className="font-medium">{classItem.class_name}</TableCell>
-                  <TableCell>{classItem.location_name}</TableCell>
-                  <TableCell>{formatSchedule(classItem.schedules)}</TableCell>
-                  <TableCell>{classItem.duration_minutes} min</TableCell>
-                  <TableCell>{classItem.min_age}-{classItem.max_age} years</TableCell>
-                  <TableCell>{classItem.max_capacity}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Link to={`/${currentSlug}/portal/classes/edit/${classItem.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClass(classItem.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+        {/* Filters */}
+        <div className="flex gap-4 items-center">
+          <div className="flex-1 max-w-sm relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search classes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 interactive-input"
+            />
+          </div>
+          <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Filter by location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locations.map((location) => (
+                <SelectItem key={location.id} value={location.id}>
+                  {location.name}
+                </SelectItem>
               ))}
-            </TableBody>
-          </Table>
+            </SelectContent>
+          </Select>
         </div>
-      )}
+      </div>
+
+      {/* Scrollable Content Area */}
+      <div className="flex-1 px-6 pb-6 overflow-auto">
+        <div className="mt-6">
+          {filteredClasses.length === 0 ? (
+            <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <p className="text-muted-foreground">
+                {classes.length === 0 
+                  ? "No classes found. Click 'Add Classes' to create your first class."
+                  : "No classes match your current filters."
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="max-h-[calc(100vh-400px)] overflow-auto border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedClasses.size === filteredClasses.length && filteredClasses.length > 0}
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                      />
+                    </TableHead>
+                    <TableHead>Class Name</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Schedule</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Age Range</TableHead>
+                    <TableHead>Capacity</TableHead>
+                    <TableHead className="w-24">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredClasses.map((classItem) => (
+                    <TableRow 
+                      key={classItem.id}
+                      interactive
+                      className={`
+                        ${selectedClasses.has(classItem.id) ? 'bg-primary-50 dark:bg-primary-900/20' : ''}
+                        ${hoveredRow === classItem.id ? 'bg-gray-50 dark:bg-gray-800' : ''}
+                      `}
+                      onMouseEnter={() => setHoveredRow(classItem.id)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                    >
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedClasses.has(classItem.id)}
+                          onChange={(e) => handleClassSelection(classItem.id, e.target.checked)}
+                          className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">{classItem.class_name}</TableCell>
+                      <TableCell>{classItem.location_name}</TableCell>
+                      <TableCell>{formatSchedule(classItem.schedules)}</TableCell>
+                      <TableCell>{classItem.duration_minutes} min</TableCell>
+                      <TableCell>{classItem.min_age}-{classItem.max_age} years</TableCell>
+                      <TableCell>{classItem.max_capacity}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Link to={`/${currentSlug}/portal/classes/edit/${classItem.id}`}>
+                            <Button variant="ghost" size="sm" className="ui-hover">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClass(classItem.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 ui-hover"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

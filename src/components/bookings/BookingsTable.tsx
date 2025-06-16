@@ -1,36 +1,51 @@
 
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { MapPin } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
-import { useFranchiseeData } from '@/hooks/useFranchiseeData';
-import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
-import { useDeleteBooking } from '@/hooks/useDeleteActions';
-import DeleteConfirmationDialog from '@/components/shared/DeleteConfirmationDialog';
-import { TableRowMenu } from '@/components/ui/TableRowMenu';
-import ParticipantCell from './ParticipantCell';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Edit, Trash2, Archive, ArchiveRestore, Eye } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useArchiveActions } from '@/hooks/useArchiveActions';
+import { useDeleteActions } from '@/hooks/useDeleteActions';
+import { useStatusMutation } from '@/hooks/useStatusMutation';
+import { toast } from 'sonner';
 import DateTimeCell from './DateTimeCell';
+import ParticipantCell from './ParticipantCell';
+import StatusCell from './StatusCell';
 import BookingsTableEmpty from './BookingsTableEmpty';
-import StatusBadgeSelector from '@/components/ui/StatusBadgeSelector';
 
 interface Booking {
   id: string;
-  lead_id: string;
-  class_schedule_id: string;
-  selected_date: string;
-  class_time: string;
-  class_name: string;
-  participant_name: string;
-  participant_age: number;
-  participant_birth_date: string;
-  status: string;
-  location_id: string;
-  location_name?: string;
-  lead_first_name?: string;
-  lead_last_name?: string;
+  booking_reference: string | null;
+  parent_first_name: string | null;
+  parent_last_name: string | null;
+  parent_email: string | null;
+  parent_phone: string | null;
+  waiver_accepted: boolean | null;
+  communication_permission: boolean | null;
+  marketing_permission: boolean | null;
   created_at: string;
-  archived_at?: string | null;
+  selected_date: string | null;
+  archived_at: string | null;
+  location_id: string;
+  class_schedule_id: string;
+  participants: Array<{
+    id: string;
+    first_name: string;
+    age: number;
+    computed_age: string | null;
+  }>;
+  class_schedules: {
+    start_time: string;
+    end_time: string;
+    classes: {
+      name: string;
+      class_name: string;
+      locations: {
+        name: string;
+      };
+    };
+  } | null;
+  status: 'booked_upcoming' | 'attended' | 'no_show' | 'cancelled';
 }
 
 interface BookingsTableProps {
@@ -39,136 +54,246 @@ interface BookingsTableProps {
   showArchived?: boolean;
 }
 
-const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, showArchived }) => {
-  const [searchParams] = useSearchParams();
-  const { data: franchiseeData } = useFranchiseeData();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
+const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, showArchived = false }) => {
+  const { archiveBooking, unarchiveBooking } = useArchiveActions();
+  const { deleteBooking } = useDeleteActions();
+  const { updateBookingStatus } = useStatusMutation();
+  const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
-  const includeArchived = searchParams.get('archived') === 'true';
-
-  const archiveBooking = useArchiveBooking(franchiseeData?.id, includeArchived);
-  const unarchiveBooking = useUnarchiveBooking(franchiseeData?.id, includeArchived);
-  const deleteBooking = useDeleteBooking(franchiseeData?.id);
-
-  const handleArchiveToggle = (booking: Booking) => {
-    console.log('Archiving booking with ID:', booking.id, 'archived_at:', booking.archived_at);
-    
-    if (booking.archived_at) {
-      unarchiveBooking.mutate(booking.id);
-    } else {
-      archiveBooking.mutate(booking.id);
-    }
-  };
-
-  const handleDeleteClick = (booking: Booking) => {
-    console.log('Delete clicked for booking ID:', booking.id);
-    setBookingToDelete(booking);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (bookingToDelete) {
-      console.log('Confirming delete for booking ID:', bookingToDelete.id);
-      deleteBooking.mutate(bookingToDelete.id, {
-        onSuccess: () => {
-          setDeleteDialogOpen(false);
-          setBookingToDelete(null);
-        }
-      });
-    }
-  };
-
-  if (bookings.length === 0) {
+  if (!bookings || bookings.length === 0) {
     return <BookingsTableEmpty searchQuery={searchQuery} showArchived={showArchived} />;
   }
 
-  return (
-    <>
-      <div className="border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="min-w-[950px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-agrandir w-48">Lead</TableHead>
-                <TableHead className="font-agrandir w-48">Participant</TableHead>
-                <TableHead className="font-agrandir hidden md:table-cell w-40">Location</TableHead>
-                <TableHead className="font-agrandir hidden lg:table-cell w-40">Class</TableHead>
-                <TableHead className="font-agrandir w-32">Date/Time</TableHead>
-                <TableHead className="font-agrandir w-28">Status</TableHead>
-                <TableHead className="font-agrandir w-12">Menu</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking) => (
-                <TableRow 
-                  key={booking.id} 
-                  className={`hover:bg-muted/50 ${booking.archived_at ? 'opacity-60 bg-gray-50' : ''}`}
-                >
-                  <TableCell className="whitespace-nowrap">
-                    <div className="font-agrandir font-medium text-brand-navy flex items-center gap-2">
-                      {booking.lead_first_name} {booking.lead_last_name}
-                      {booking.archived_at && (
-                        <Badge variant="secondary" className="text-xs">Archived</Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <ParticipantCell
-                      participantName={booking.participant_name}
-                      participantBirthDate={booking.participant_birth_date}
-                      participantAge={booking.participant_age}
-                    />
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell whitespace-nowrap">
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      <span className="text-sm">{booking.location_name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell whitespace-nowrap">
-                    <div className="text-sm">{booking.class_name}</div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <DateTimeCell
-                      selectedDate={booking.selected_date}
-                      classTime={booking.class_time}
-                      locationName={booking.location_name}
-                      className={booking.class_name}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadgeSelector
-                      id={booking.id}
-                      entity="booking"
-                      status={booking.status as any}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <TableRowMenu
-                      onArchiveToggle={() => handleArchiveToggle(booking)}
-                      onDelete={() => handleDeleteClick(booking)}
-                      isArchived={!!booking.archived_at}
-                      isLoading={archiveBooking.isPending || unarchiveBooking.isPending || deleteBooking.isPending}
-                      deleteLabel="Delete Booking"
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+  const handleBookingSelection = (bookingId: string, selected: boolean) => {
+    const newSelection = new Set(selectedBookings);
+    if (selected) {
+      newSelection.add(bookingId);
+    } else {
+      newSelection.delete(bookingId);
+    }
+    setSelectedBookings(newSelection);
+  };
 
-      <DeleteConfirmationDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Booking"
-        description={bookingToDelete ? `Are you sure you want to delete the booking for ${bookingToDelete.participant_name}? This action cannot be undone.` : ''}
-        isLoading={deleteBooking.isPending}
-      />
-    </>
+  const handleSelectAll = () => {
+    if (selectedBookings.size === bookings.length) {
+      setSelectedBookings(new Set());
+    } else {
+      setSelectedBookings(new Set(bookings.map(booking => booking.id)));
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedBookings.size === 0) return;
+    
+    try {
+      const promises = Array.from(selectedBookings).map(id => 
+        showArchived ? unarchiveBooking(id) : archiveBooking(id)
+      );
+      await Promise.all(promises);
+      
+      toast.success(`${selectedBookings.size} booking${selectedBookings.size > 1 ? 's' : ''} ${showArchived ? 'unarchived' : 'archived'} successfully`);
+      setSelectedBookings(new Set());
+    } catch (error) {
+      console.error('Error in bulk archive operation:', error);
+      toast.error(`Failed to ${showArchived ? 'unarchive' : 'archive'} bookings`);
+    }
+  };
+
+  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    try {
+      await updateBookingStatus(bookingId, newStatus as Booking['status']);
+      toast.success('Booking status updated successfully');
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      toast.error('Failed to update booking status');
+    }
+  };
+
+  const handleArchiveToggle = async (bookingId: string) => {
+    try {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+
+      if (booking.archived_at) {
+        await unarchiveBooking(bookingId);
+        toast.success('Booking unarchived successfully');
+      } else {
+        await archiveBooking(bookingId);
+        toast.success('Booking archived successfully');
+      }
+    } catch (error) {
+      console.error('Error toggling archive status:', error);
+      toast.error('Failed to update booking');
+    }
+  };
+
+  const handleDelete = async (bookingId: string) => {
+    if (!confirm('Are you sure you want to permanently delete this booking? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await deleteBooking(bookingId);
+      toast.success('Booking deleted successfully');
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      toast.error('Failed to delete booking');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {selectedBookings.size > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+          <span className="text-body-sm font-medium">
+            {selectedBookings.size} booking{selectedBookings.size > 1 ? 's' : ''} selected
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBulkArchive}
+            className="ui-hover"
+          >
+            {showArchived ? <ArchiveRestore className="h-4 w-4 mr-2" /> : <Archive className="h-4 w-4 mr-2" />}
+            {showArchived ? 'Unarchive' : 'Archive'} Selected
+          </Button>
+        </div>
+      )}
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12">
+              <input
+                type="checkbox"
+                checked={selectedBookings.size === bookings.length && bookings.length > 0}
+                onChange={handleSelectAll}
+                className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+              />
+            </TableHead>
+            <TableHead>Reference</TableHead>
+            <TableHead>Parent</TableHead>
+            <TableHead>Participants</TableHead>
+            <TableHead>Class & Location</TableHead>
+            <TableHead>Date & Time</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead className="w-12">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {bookings.map((booking) => (
+            <TableRow 
+              key={booking.id} 
+              interactive
+              className={`
+                ${selectedBookings.has(booking.id) ? 'bg-primary-50 dark:bg-primary-900/20' : ''}
+                ${hoveredRow === booking.id ? 'bg-gray-50 dark:bg-gray-800' : ''}
+                ${booking.archived_at ? 'opacity-60' : ''}
+              `}
+              onMouseEnter={() => setHoveredRow(booking.id)}
+              onMouseLeave={() => setHoveredRow(null)}
+            >
+              <TableCell>
+                <input
+                  type="checkbox"
+                  checked={selectedBookings.has(booking.id)}
+                  onChange={(e) => handleBookingSelection(booking.id, e.target.checked)}
+                  className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                />
+              </TableCell>
+              <TableCell className="font-mono text-xs">
+                {booking.booking_reference || 'N/A'}
+              </TableCell>
+              <TableCell>
+                <div className="space-y-1">
+                  <div className="font-medium">
+                    {booking.parent_first_name} {booking.parent_last_name}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {booking.parent_email}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <ParticipantCell participants={booking.participants} />
+              </TableCell>
+              <TableCell>
+                <div className="space-y-1">
+                  <div className="font-medium">
+                    {booking.class_schedules?.classes?.class_name || 'N/A'}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {booking.class_schedules?.classes?.locations?.name || 'N/A'}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <DateTimeCell 
+                  selectedDate={booking.selected_date}
+                  startTime={booking.class_schedules?.start_time}
+                  endTime={booking.class_schedules?.end_time}
+                />
+              </TableCell>
+              <TableCell>
+                <StatusCell 
+                  status={booking.status}
+                  bookingId={booking.id}
+                  onStatusChange={handleStatusChange}
+                />
+              </TableCell>
+              <TableCell>
+                <div className="space-y-1 text-xs">
+                  <div>📧 {booking.communication_permission ? '✓' : '✗'}</div>
+                  <div>📱 {booking.marketing_permission ? '✓' : '✗'}</div>
+                  <div>📄 {booking.waiver_accepted ? '✓' : '✗'}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="ui-hover">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Booking
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleArchiveToggle(booking.id)}>
+                      {booking.archived_at ? (
+                        <>
+                          <ArchiveRestore className="h-4 w-4 mr-2" />
+                          Unarchive
+                        </>
+                      ) : (
+                        <>
+                          <Archive className="h-4 w-4 mr-2" />
+                          Archive
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDelete(booking.id)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
