@@ -1,81 +1,107 @@
 
-import React from 'react';
-import { MoreVertical, Phone, Edit, Archive, Trash2 } from 'lucide-react';
-import { ActionIcon, Menu } from '@mantine/core';
+import React, { useState } from 'react';
+import { Menu, ActionIcon } from '@mantine/core';
+import { MoreVertical, Edit, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
+import { ConfirmModal } from '@/components/mantine/ConfirmModal';
 
 interface TableRowMenuProps {
-  onCall?: (phone: string) => void;
   onEdit?: () => void;
   onArchiveToggle?: () => void;
   onDelete?: () => void;
-  phone?: string;
   isArchived?: boolean;
   isLoading?: boolean;
   editLabel?: string;
   deleteLabel?: string;
+  archiveLabel?: string;
+  unarchiveLabel?: string;
 }
 
 export const TableRowMenu: React.FC<TableRowMenuProps> = ({
-  onCall,
   onEdit,
   onArchiveToggle,
   onDelete,
-  phone,
   isArchived = false,
   isLoading = false,
-  editLabel = "Edit",
-  deleteLabel = "Delete"
+  editLabel = 'Edit',
+  deleteLabel = 'Delete',
+  archiveLabel = 'Archive',
+  unarchiveLabel = 'Restore',
 }) => {
-  return (
-    <Menu position="bottom-end" withArrow>
-      <Menu.Target>
-        <ActionIcon 
-          variant="subtle" 
-          size="sm"
-          disabled={isLoading}
-          aria-label="Actions menu"
-          style={{ width: '48px' }}
-        >
-          <MoreVertical size={16} />
-        </ActionIcon>
-      </Menu.Target>
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-      <Menu.Dropdown>
-        {onCall && phone && (
-          <Menu.Item
-            leftSection={<Phone size={16} />}
-            onClick={() => onCall(phone)}
+  const handleDeleteClick = () => {
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDelete?.();
+    setDeleteModalOpen(false);
+  };
+
+  return (
+    <>
+      <Menu shadow="md" width={180} position="bottom-end">
+        <Menu.Target>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            disabled={isLoading}
+            aria-label="More actions"
           >
-            Call
-          </Menu.Item>
-        )}
-        {onEdit && (
-          <Menu.Item
-            leftSection={<Edit size={16} />}
-            onClick={onEdit}
-          >
-            {editLabel}
-          </Menu.Item>
-        )}
-        {((onCall && phone) || onEdit) && <Menu.Divider />}
-        {onArchiveToggle && (
-          <Menu.Item
-            leftSection={<Archive size={16} />}
-            onClick={onArchiveToggle}
-          >
-            {isArchived ? 'Unarchive' : 'Archive'}
-          </Menu.Item>
-        )}
-        {onDelete && (
-          <Menu.Item
-            leftSection={<Trash2 size={16} />}
-            onClick={onDelete}
-            color="red"
-          >
-            {deleteLabel}
-          </Menu.Item>
-        )}
-      </Menu.Dropdown>
-    </Menu>
+            <MoreVertical className="h-4 w-4" />
+          </ActionIcon>
+        </Menu.Target>
+
+        <Menu.Dropdown>
+          {onEdit && (
+            <Menu.Item
+              leftSection={<Edit className="h-4 w-4" />}
+              onClick={onEdit}
+              disabled={isLoading}
+            >
+              {editLabel}
+            </Menu.Item>
+          )}
+
+          {onArchiveToggle && (
+            <Menu.Item
+              leftSection={
+                isArchived ? 
+                  <ArchiveRestore className="h-4 w-4" /> : 
+                  <Archive className="h-4 w-4" />
+              }
+              onClick={onArchiveToggle}
+              disabled={isLoading}
+            >
+              {isArchived ? unarchiveLabel : archiveLabel}
+            </Menu.Item>
+          )}
+
+          {onDelete && (
+            <Menu.Item
+              leftSection={<Trash2 className="h-4 w-4" />}
+              onClick={handleDeleteClick}
+              disabled={isLoading}
+              color="red"
+            >
+              {deleteLabel}
+            </Menu.Item>
+          )}
+        </Menu.Dropdown>
+      </Menu>
+
+      {onDelete && (
+        <ConfirmModal
+          opened={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Confirm Deletion"
+          message="Are you sure you want to permanently delete this item? This action cannot be undone."
+          confirmLabel="Delete"
+          destructive
+          loading={isLoading}
+        />
+      )}
+    </>
   );
 };

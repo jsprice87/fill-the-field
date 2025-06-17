@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
+import { Button } from '@/components/mantine/Button';
+import { Textarea } from '@/components/mantine/Textarea';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Phone, Mail, MapPin, Calendar, Baby, User, Plus, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Stack, Group, Text } from '@mantine/core';
 import StatusSelect from '@/components/leads/StatusSelect';
 
 interface LeadDetailData {
@@ -382,28 +382,30 @@ const LeadDetail: React.FC = () => {
               <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Add Note with Enhanced Textarea */}
-              <div className="space-y-4">
-                <EnhancedTextarea
+              {/* Add Note with Mantine Components */}
+              <Stack gap="md">
+                <Textarea
                   label="Add a note"
                   placeholder="Enter your note here..."
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
                   rows={3}
                   maxLength={500}
-                  showCharacterCount
-                  hint="Add important details about this lead"
+                  description="Add important details about this lead"
                 />
-                <Button
-                  onClick={handleAddNote}
-                  disabled={!newNote.trim() || addNoteMutation.isPending}
-                  className="w-full bg-brand-blue hover:bg-brand-blue/90"
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {addNoteMutation.isPending ? 'Adding...' : 'Add Note'}
-                </Button>
-              </div>
+                
+                <Group justify="flex-end">
+                  <Button
+                    onClick={handleAddNote}
+                    disabled={!newNote.trim() || addNoteMutation.isPending}
+                    loading={addNoteMutation.isPending}
+                    leftSection={<Plus className="h-4 w-4" />}
+                    size="sm"
+                  >
+                    Add Note
+                  </Button>
+                </Group>
+              </Stack>
 
               {/* Notes List */}
               <div className="border-t pt-4">

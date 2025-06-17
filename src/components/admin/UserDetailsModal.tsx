@@ -1,152 +1,155 @@
 
-import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import React from 'react';
+import { Stack, Text, Group, Badge } from '@mantine/core';
+import { Modal } from '@/components/mantine/Modal';
+import { Button } from '@/components/mantine/Button';
+import { Mail, Phone, MapPin, Building, Calendar, User } from 'lucide-react';
 
-interface Franchisee {
+interface UserDetailsData {
   id: string;
-  company_name: string;
-  contact_name: string;
   email: string;
-  phone: string | null;
-  subscription_status: string | null;
-  subscription_tier: string | null;
-  subscription_start_date: string | null;
-  subscription_end_date: string | null;
   created_at: string;
-  updated_at: string;
-  slug: string | null;
-  city: string | null;
-  state: string | null;
+  franchisee?: {
+    company_name: string;
+    contact_name: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    subscription_tier?: string;
+    subscription_status?: string;
+  };
 }
 
 interface UserDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  franchisee: Franchisee | null;
+  userData: UserDetailsData | null;
 }
 
-export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
+const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   isOpen,
   onClose,
-  franchisee,
+  userData,
 }) => {
-  if (!franchisee) return null;
+  if (!userData) return null;
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "—";
-    return new Date(dateString).toLocaleDateString();
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case 'active': return 'green';
+      case 'inactive': return 'red';
+      case 'pending': return 'yellow';
+      default: return 'gray';
+    }
+  };
+
+  const getTierColor = (tier?: string) => {
+    switch (tier) {
+      case 'premium': return 'blue';
+      case 'pro': return 'purple';
+      case 'free': return 'gray';
+      default: return 'gray';
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{franchisee.company_name}</DialogTitle>
-          <DialogDescription>
-            Detailed information for this franchisee
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid gap-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Company Name</label>
-                <p className="mt-1">{franchisee.company_name}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Contact Name</label>
-                <p className="mt-1">{franchisee.contact_name}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Email</label>
-                <p className="mt-1">{franchisee.email}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                <p className="mt-1">{franchisee.phone || "—"}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Location</label>
-                <p className="mt-1">
-                  {franchisee.city && franchisee.state
-                    ? `${franchisee.city}, ${franchisee.state}`
-                    : "—"}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Slug</label>
-                <p className="mt-1 font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                  {franchisee.slug || "—"}
-                </p>
-              </div>
-            </div>
-          </div>
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      title="User Details"
+      size="lg"
+    >
+      <Stack gap="lg">
+        {/* User Information */}
+        <Stack gap="sm">
+          <Text fw={600} size="lg">Account Information</Text>
+          
+          <Group gap="sm">
+            <Mail className="h-4 w-4 text-gray-500" />
+            <Text size="sm">{userData.email}</Text>
+          </Group>
+          
+          <Group gap="sm">
+            <Calendar className="h-4 w-4 text-gray-500" />
+            <Text size="sm">Created: {formatDate(userData.created_at)}</Text>
+          </Group>
+          
+          <Group gap="sm">
+            <User className="h-4 w-4 text-gray-500" />
+            <Text size="sm">ID: {userData.id}</Text>
+          </Group>
+        </Stack>
 
-          <Separator />
+        {/* Franchisee Information */}
+        {userData.franchisee && (
+          <Stack gap="sm">
+            <Text fw={600} size="lg">Franchisee Information</Text>
+            
+            <Group gap="sm">
+              <Building className="h-4 w-4 text-gray-500" />
+              <Text size="sm">{userData.franchisee.company_name}</Text>
+            </Group>
+            
+            <Group gap="sm">
+              <User className="h-4 w-4 text-gray-500" />
+              <Text size="sm">Contact: {userData.franchisee.contact_name}</Text>
+            </Group>
+            
+            {userData.franchisee.phone && (
+              <Group gap="sm">
+                <Phone className="h-4 w-4 text-gray-500" />
+                <Text size="sm">{userData.franchisee.phone}</Text>
+              </Group>
+            )}
+            
+            {userData.franchisee.address && (
+              <Group gap="sm">
+                <MapPin className="h-4 w-4 text-gray-500" />
+                <Text size="sm">
+                  {userData.franchisee.address}
+                  {userData.franchisee.city && `, ${userData.franchisee.city}`}
+                  {userData.franchisee.state && `, ${userData.franchisee.state}`}
+                  {userData.franchisee.zip && ` ${userData.franchisee.zip}`}
+                </Text>
+              </Group>
+            )}
+            
+            <Group gap="sm" mt="sm">
+              {userData.franchisee.subscription_tier && (
+                <Badge color={getTierColor(userData.franchisee.subscription_tier)}>
+                  {userData.franchisee.subscription_tier.charAt(0).toUpperCase() + 
+                   userData.franchisee.subscription_tier.slice(1)} Plan
+                </Badge>
+              )}
+              
+              {userData.franchisee.subscription_status && (
+                <Badge color={getStatusColor(userData.franchisee.subscription_status)}>
+                  {userData.franchisee.subscription_status.charAt(0).toUpperCase() + 
+                   userData.franchisee.subscription_status.slice(1)}
+                </Badge>
+              )}
+            </Group>
+          </Stack>
+        )}
 
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Subscription Details</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Status</label>
-                <div className="mt-1">
-                  <Badge variant="outline">
-                    {franchisee.subscription_status || "Unknown"}
-                  </Badge>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Tier</label>
-                <div className="mt-1">
-                  <Badge variant="outline">
-                    {franchisee.subscription_tier || "Free"}
-                  </Badge>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Start Date</label>
-                <p className="mt-1">{formatDate(franchisee.subscription_start_date)}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">End Date</label>
-                <p className="mt-1">{formatDate(franchisee.subscription_end_date)}</p>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="text-lg font-semibold mb-3">System Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">User ID</label>
-                <p className="mt-1 font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                  {franchisee.id}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Joined</label>
-                <p className="mt-1">{formatDate(franchisee.created_at)}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
-                <p className="mt-1">{formatDate(franchisee.updated_at)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        {/* Actions */}
+        <Group justify="flex-end" mt="lg">
+          <Button onClick={onClose}>
+            Close
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
   );
 };
+
+export default UserDetailsModal;

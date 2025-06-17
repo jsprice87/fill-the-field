@@ -1,181 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
-import { format, differenceInYears } from 'date-fns';
-import { toast } from 'sonner';
-import DateSelector from './DateSelector';
+
+import React, { useEffect } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Stack, NumberInput, Switch } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { Modal } from '@/components/mantine/Modal';
+import { FormWrapper } from '@/components/mantine/FormWrapper';
+import { TextInput } from '@/components/mantine/TextInput';
+import { Textarea } from '@/components/mantine/Textarea';
+
+const participantSchema = z.object({
+  first_name: z.string().min(1, 'First name is required'),
+  age: z.number().min(1, 'Age must be at least 1').max(18, 'Age must be 18 or under'),
+  birth_date: z.date().optional(),
+  notes: z.string().optional(),
+  age_override: z.boolean().default(false),
+});
+
+export type ParticipantFormData = z.infer<typeof participantSchema>;
 
 interface ParticipantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddParticipant: (participant: any) => void;
-  classSchedule: any;
-  dayNames: string[];
+  onSubmit: (data: ParticipantFormData) => void;
+  initialData?: Partial<ParticipantFormData>;
+  title?: string;
 }
 
 const ParticipantModal: React.FC<ParticipantModalProps> = ({
   isOpen,
   onClose,
-  onAddParticipant,
-  classSchedule,
-  dayNames
+  onSubmit,
+  initialData,
+  title = 'Add Participant',
 }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [healthConditions, setHealthConditions] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [calculatedAge, setCalculatedAge] = useState(0);
-  const [isAgeOverride, setIsAgeOverride] = useState(false);
+  const form = useForm<ParticipantFormData>({
+    resolver: zodResolver(participantSchema),
+    defaultValues: {
+      first_name: '',
+      age: 3,
+      birth_date: undefined,
+      notes: '',
+      age_override: false,
+      ...initialData,
+    },
+  });
 
   useEffect(() => {
-    if (birthDate) {
-      const age = differenceInYears(new Date(), new Date(birthDate));
-      setCalculatedAge(age);
-
-      const minAge = classSchedule.classes.min_age || 0;
-      const maxAge = classSchedule.classes.max_age || 100;
-      setIsAgeOverride(age < minAge || age > maxAge);
-    } else {
-      setCalculatedAge(0);
-      setIsAgeOverride(false);
+    if (initialData) {
+      form.reset({
+        first_name: '',
+        age: 3,
+        birth_date: undefined,
+        notes: '',
+        age_override: false,
+        ...initialData,
+      });
     }
-  }, [birthDate, classSchedule]);
+  }, [initialData, form]);
 
-  const validateName = (name: string): boolean => {
-    const nameRegex = /^[a-zA-Z\s-]+$/;
-    return nameRegex.test(name);
-  };
-
-  const validateBirthDate = (date: string): boolean => {
-    return !!date;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!firstName.trim() || !lastName.trim() || !birthDate || !selectedDate) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    const participant = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      age: calculatedAge,
-      birthDate,
-      classScheduleId: classSchedule.id,
-      className: classSchedule.classes.name,
-      classTime: `${formatTime(classSchedule.start_time)} - ${formatTime(classSchedule.end_time)}`,
-      selectedDate,
-      healthConditions: healthConditions.trim() || undefined,
-      ageOverride: isAgeOverride
-    };
-
-    onAddParticipant(participant);
-    
-    // Reset form
-    setFirstName('');
-    setLastName('');
-    setBirthDate('');
-    setHealthConditions('');
-    setSelectedDate('');
+  const handleSubmit = (data: ParticipantFormData) => {
+    onSubmit(data);
     onClose();
   };
 
-  const formatTime = (timeString: string) => {
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-agrandir text-xl text-brand-navy">
-            Add Participant to {classSchedule.classes.name}
-          </DialogTitle>
-          <DialogDescription className="font-poppins text-gray-600">
-            {dayNames[classSchedule.day_of_week]}s • {formatTime(classSchedule.start_time)} - {formatTime(classSchedule.end_time)}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-gray-700">
-              First Name *
-            </Label>
-            <Input
-              type="text"
-              id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      title={title}
+      size="md"
+    >
+      <FormProvider {...form}>
+        <FormWrapper
+          onSubmit={form.handleSubmit(handleSubmit)}
+          onCancel={onClose}
+          submitLabel="Save Participant"
+          isLoading={form.formState.isSubmitting}
+        >
+          <Stack gap="md">
+            <TextInput
+              label="Child's First Name"
+              placeholder="Enter child's first name"
+              {...form.register('first_name')}
+              error={form.formState.errors.first_name?.message}
               required
             />
-          </div>
 
-          <div>
-            <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-gray-700">
-              Last Name *
-            </Label>
-            <Input
-              type="text"
-              id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+            <NumberInput
+              label="Age"
+              placeholder="Enter age"
+              min={1}
+              max={18}
+              value={form.watch('age')}
+              onChange={(value) => form.setValue('age', Number(value) || 3)}
+              error={form.formState.errors.age?.message}
               required
             />
-          </div>
 
-          <div>
-            <Label htmlFor="birthDate" className="font-poppins text-sm font-medium text-gray-700">
-              Date of Birth *
-            </Label>
-            <Input
-              type="date"
-              id="birthDate"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              required
+            <DateInput
+              label="Birth Date (Optional)"
+              placeholder="Select birth date"
+              value={form.watch('birth_date')}
+              onChange={(value) => form.setValue('birth_date', value || undefined)}
+              error={form.formState.errors.birth_date?.message}
+              maxDate={new Date()}
             />
-          </div>
 
-          {/* Enhanced Date Selection */}
-          <div>
-            <Label className="font-poppins text-sm font-medium text-gray-700">
-              Select Class Date *
-            </Label>
-            <DateSelector
-              classScheduleId={classSchedule.id}
-              onDateSelect={setSelectedDate}
-              selectedDate={selectedDate}
+            <Switch
+              label="Age Override"
+              description="Allow this child to participate regardless of class age restrictions"
+              checked={form.watch('age_override')}
+              onChange={(event) => form.setValue('age_override', event.currentTarget.checked)}
+              color="soccerGreen"
+              size="sm"
             />
-          </div>
 
-          <div>
-            <Label htmlFor="healthConditions" className="font-poppins text-sm font-medium text-gray-700">
-              Any health conditions we should be aware of?
-            </Label>
-            <Input
-              type="text"
-              id="healthConditions"
-              value={healthConditions}
-              onChange={(e) => setHealthConditions(e.target.value)}
+            <Textarea
+              label="Notes (Optional)"
+              placeholder="Any special notes about this child..."
+              rows={3}
+              {...form.register('notes')}
+              error={form.formState.errors.notes?.message}
             />
-          </div>
-
-          <Button type="submit" className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins">
-            Add Participant
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </Stack>
+        </FormWrapper>
+      </FormProvider>
+    </Modal>
   );
 };
 

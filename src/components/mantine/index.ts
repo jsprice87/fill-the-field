@@ -1,4 +1,3 @@
-
 // Mantine component exports for Phase 2
 // These components have been migrated from shadcn/ui to Mantine
 
@@ -32,6 +31,13 @@ export type { TableProps } from './Table';
 // Phase 4 layout components
 export { MetricCard } from './MetricCard';
 export { StickyHeader } from './StickyHeader';
+
+// New input components
+export { DateInput } from './DateInput';
+export type { DateInputProps } from './DateInput';
+
+export { NumberInput } from './NumberInput';
+export type { NumberInputProps } from './NumberInput';
 
 // TODO: Add more components as they are migrated in future phases:
 // export { Select } from './Select';
