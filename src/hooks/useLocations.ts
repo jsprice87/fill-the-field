@@ -9,21 +9,34 @@ export interface Location {
   city: string;
   state: string;
   zip: string;
+  phone?: string;
+  email?: string;
   is_active: boolean;
+  archived_at?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
-export const useLocations = (franchiseeId?: string) => {
+export const useLocations = (franchiseeId?: string, showArchived: boolean = false) => {
   return useQuery({
-    queryKey: ['locations', franchiseeId],
+    queryKey: ['locations', franchiseeId, showArchived],
     queryFn: async () => {
       if (!franchiseeId) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('locations')
         .select('*')
         .eq('franchisee_id', franchiseeId)
-        .eq('is_active', true)
         .order('name');
+
+      // Filter by archive status
+      if (showArchived) {
+        query = query.not('archived_at', 'is', null);
+      } else {
+        query = query.is('archived_at', null);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching locations:', error);

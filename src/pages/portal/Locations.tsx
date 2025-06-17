@@ -1,25 +1,30 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, MapPin, Building, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { useParams } from "react-router-dom";
-import { Title, SimpleGrid, Stack, Group, ScrollArea, rem } from '@mantine/core';
+import { useParams, useSearchParams } from "react-router-dom";
+import { Title, SimpleGrid, Stack, Group } from '@mantine/core';
 import { StickyHeader } from '@/components/mantine';
-import LocationCard, { LocationProps } from '@/components/locations/LocationCard';
+import { MetricCard } from '@/components/mantine/MetricCard';
+import { PortalShell } from '@/layout/PortalShell';
+import ArchiveToggle from '@/components/shared/ArchiveToggle';
+import LocationsTable from '@/components/locations/LocationsTable';
 import LocationForm, { LocationFormData } from '@/components/locations/LocationForm';
+import { useLocations } from '@/hooks/useLocations';
 import { supabase } from "@/integrations/supabase/client";
 
 const PortalLocations: React.FC = () => {
-  const [locations, setLocations] = useState<LocationProps[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationFormData | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
   const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
-  const { franchiseeId: slugParam } = useParams<{ franchiseeId: string }>();
-
-  // Get franchisee ID and load locations
+  const [searchParams] = useSearchParams();
+  
+  const showArchived = searchParams.get('archived') === 'true';
+  
+  // Get franchisee ID
   useEffect(() => {
-    const getFranchiseeAndLoadLocations = async () => {
+    const getFranchiseeId = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
@@ -27,9 +32,6 @@ const PortalLocations: React.FC = () => {
           return;
         }
 
-        console.log("Current user ID:", session.user.id);
-        
-        // Get the franchisee record for this user
         const { data: franchisee, error: franchiseeError } = await supabase
           .from('franchisees')
           .select('id')
@@ -42,45 +44,17 @@ const PortalLocations: React.FC = () => {
           return;
         }
         
-        console.log("Found franchisee ID:", franchisee.id);
         setFranchiseeId(franchisee.id);
-        
-        // Load locations for this franchisee
-        await loadLocations(franchisee.id);
       } catch (error) {
         console.error("Error getting franchisee:", error);
         toast.error("Failed to authenticate. Please try again.");
       }
     };
 
-    getFranchiseeAndLoadLocations();
+    getFranchiseeId();
   }, []);
 
-  // Load locations from Supabase
-  const loadLocations = async (franchiseeId: string) => {
-    try {
-      setIsLoading(true);
-      console.log("Fetching locations for franchisee ID:", franchiseeId);
-      
-      const { data, error } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('franchisee_id', franchiseeId);
-      
-      if (error) {
-        console.error("Database error loading locations:", error);
-        throw error;
-      }
-      
-      console.log("Successfully loaded locations:", data);
-      setLocations(data || []);
-    } catch (error) {
-      console.error("Error loading locations:", error);
-      toast.error("Failed to load locations. Please check your connection and try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: locations = [], isLoading } = useLocations(franchiseeId || undefined, showArchived);
 
   const handleAddLocation = () => {
     setCurrentLocation(undefined);
@@ -98,32 +72,6 @@ const PortalLocations: React.FC = () => {
     }
   };
 
-  const handleDeleteLocation = async (id: string) => {
-    if (!franchiseeId) {
-      toast.error("Franchisee information not available");
-      return;
-    }
-
-    try {
-      console.log("Deleting location:", id);
-      const { error } = await supabase
-        .from('locations')
-        .delete()
-        .eq('id', id);
-      
-      if (error) {
-        console.error("Database error deleting location:", error);
-        throw error;
-      }
-      
-      setLocations(locations.filter(loc => loc.id !== id));
-      toast.success('Location deleted successfully');
-    } catch (error) {
-      console.error("Error deleting location:", error);
-      toast.error("Failed to delete location");
-    }
-  };
-
   const handleFormSubmit = async (data: LocationFormData) => {
     if (!franchiseeId) {
       toast.error("Franchisee information not available");
@@ -131,11 +79,8 @@ const PortalLocations: React.FC = () => {
     }
 
     try {
-      console.log("Saving location with franchisee ID:", franchiseeId);
-      
       if (data.id) {
         // Update existing location
-        console.log("Updating existing location:", data.id);
         const updateData = {
           name: data.name,
           address: data.address,
@@ -156,34 +101,10 @@ const PortalLocations: React.FC = () => {
           .update(updateData)
           .eq('id', data.id);
         
-        if (error) {
-          console.error("Database error updating location:", error);
-          throw error;
-        }
-        
-        setLocations(locations.map(loc => 
-          loc.id === data.id ? { 
-            ...loc, 
-            name: data.name, 
-            address: data.address, 
-            city: data.city, 
-            state: data.state, 
-            zip: data.zip, 
-            phone: data.phone, 
-            email: data.email, 
-            is_active: data.isActive,
-            latitude: data.latitude,
-            longitude: data.longitude
-          } : loc
-        ));
+        if (error) throw error;
         toast.success('Location updated successfully');
       } else {
         // Add new location
-        console.log("Creating new location with data:", {
-          ...data,
-          franchisee_id: franchiseeId
-        });
-        
         const insertData = {
           name: data.name,
           address: data.address,
@@ -205,15 +126,7 @@ const PortalLocations: React.FC = () => {
           .insert(insertData)
           .select();
         
-        if (error) {
-          console.error("Database error creating location:", error);
-          throw error;
-        }
-        
-        console.log("New location created successfully:", newLocation);
-        if (newLocation && newLocation.length > 0) {
-          setLocations([...locations, newLocation[0]]);
-        }
+        if (error) throw error;
         toast.success('Location added successfully');
       }
       
@@ -224,57 +137,76 @@ const PortalLocations: React.FC = () => {
     }
   };
 
+  // Calculate metrics
+  const activeLocations = locations.filter(loc => loc.is_active && !loc.archived_at).length;
+  const totalLocations = locations.length;
+  const archivedCount = locations.filter(loc => loc.archived_at).length;
+
   if (isLoading) {
     return (
-      <Stack h="100vh" justify="center" align="center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-      </Stack>
+      <PortalShell>
+        <Stack h="100vh" justify="center" align="center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+        </Stack>
+      </PortalShell>
     );
   }
 
   return (
-    <Stack h="100vh" gap={0}>
-      {/* Sticky Header */}
-      <StickyHeader>
-        <Group justify="space-between">
-          <Title order={1} size="30px" lh="36px" fw={600}>
-            Locations
-          </Title>
-          <Button onClick={handleAddLocation} disabled={!franchiseeId}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Location
-          </Button>
-        </Group>
-      </StickyHeader>
+    <PortalShell>
+      <Stack h="100vh" gap={0}>
+        {/* Sticky Header with Metrics */}
+        <StickyHeader>
+          <Stack gap="md">
+            <Group justify="space-between" align="center">
+              <Title order={1} size="30px" lh="36px" fw={600}>
+                Locations
+              </Title>
+              <Group gap="md">
+                <ArchiveToggle />
+                <Button onClick={handleAddLocation} disabled={!franchiseeId}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Location
+                </Button>
+              </Group>
+            </Group>
 
-      {/* Scrollable Content Area */}
-      <ScrollArea
-        scrollbarSize={8}
-        offsetScrollbars
-        type="scroll"
-        h={`calc(100vh - ${rem(100)})`}
-        px="md"
-        pb="md"
-      >
-        {locations.length > 0 ? (
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg" mt="md">
-            {locations.map((location) => (
-              <LocationCard 
-                key={location.id} 
-                {...location}
-                onEdit={handleEditLocation}
-                onDelete={handleDeleteLocation}
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
+              <MetricCard
+                label="Total Locations"
+                value={totalLocations}
+                icon={MapPin}
+                description={showArchived ? "Archived locations" : "All locations"}
               />
-            ))}
-          </SimpleGrid>
-        ) : (
-          <Stack align="center" justify="center" h="400px" mt="md">
-            <div className="rounded-md border border-dashed border-gray-300 p-8 text-center">
-              <p className="text-muted-foreground">No locations found. Add your first location to get started.</p>
-            </div>
+              <MetricCard
+                label="Active Locations"
+                value={activeLocations}
+                icon={Building}
+                description="Currently accepting bookings"
+              />
+              <MetricCard
+                label="Total Classes"
+                value={0}
+                icon={Users}
+                description="Across all locations"
+              />
+              <MetricCard
+                label="Avg. Classes/Location"
+                value="0"
+                icon={Clock}
+                description="Classes per location"
+              />
+            </SimpleGrid>
           </Stack>
-        )}
-      </ScrollArea>
+        </StickyHeader>
+
+        {/* Table Content */}
+        <LocationsTable 
+          locations={locations}
+          onEdit={handleEditLocation}
+          showArchived={showArchived}
+        />
+      </Stack>
 
       <LocationForm 
         open={isFormOpen}
@@ -282,7 +214,7 @@ const PortalLocations: React.FC = () => {
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleFormSubmit}
       />
-    </Stack>
+    </PortalShell>
   );
 };
 
