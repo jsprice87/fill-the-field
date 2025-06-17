@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin, Building, Users, Clock } from "lucide-react";
@@ -20,7 +19,7 @@ const PortalLocations: React.FC = () => {
   const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   
-  const showArchived = searchParams.get('archived') === 'true';
+  const hideInactive = searchParams.get('hideInactive') === 'true';
   
   // Get franchisee ID
   useEffect(() => {
@@ -54,7 +53,10 @@ const PortalLocations: React.FC = () => {
     getFranchiseeId();
   }, []);
 
-  const { data: locations = [], isLoading } = useLocations(franchiseeId || undefined, showArchived);
+  const { data: locations = [], isLoading } = useLocations(franchiseeId || undefined, hideInactive);
+
+  // Get all locations for metrics (unfiltered)
+  const { data: allLocations = [] } = useLocations(franchiseeId || undefined, false);
 
   const handleAddLocation = () => {
     setCurrentLocation(undefined);
@@ -62,7 +64,7 @@ const PortalLocations: React.FC = () => {
   };
 
   const handleEditLocation = (id: string) => {
-    const locationToEdit = locations.find(loc => loc.id === id);
+    const locationToEdit = allLocations.find(loc => loc.id === id);
     if (locationToEdit) {
       setCurrentLocation({
         ...locationToEdit,
@@ -137,10 +139,10 @@ const PortalLocations: React.FC = () => {
     }
   };
 
-  // Calculate metrics using is_active field
-  const activeLocations = locations.filter(loc => loc.is_active !== false).length;
-  const totalLocations = locations.length;
-  const archivedCount = locations.filter(loc => loc.is_active === false).length;
+  // Calculate metrics using all locations (unfiltered) to show static counts
+  const activeLocations = allLocations.filter(loc => loc.is_active !== false).length;
+  const totalLocations = allLocations.length;
+  const archivedCount = allLocations.filter(loc => loc.is_active === false).length;
 
   if (isLoading) {
     return (
@@ -176,7 +178,7 @@ const PortalLocations: React.FC = () => {
                 label="Total Locations"
                 value={totalLocations}
                 icon={MapPin}
-                description={showArchived ? "Archived locations" : "All locations"}
+                description="All locations"
               />
               <MetricCard
                 label="Active Locations"
@@ -204,7 +206,7 @@ const PortalLocations: React.FC = () => {
         <LocationsTable 
           locations={locations}
           onEdit={handleEditLocation}
-          showArchived={showArchived}
+          hideInactive={hideInactive}
         />
       </Stack>
 

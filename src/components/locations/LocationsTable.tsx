@@ -10,13 +10,13 @@ import { LocationProps } from './LocationCard';
 interface LocationsTableProps {
   locations: LocationProps[];
   onEdit: (locationId: string) => void;
-  showArchived?: boolean;
+  hideInactive?: boolean;
 }
 
 const LocationsTable: React.FC<LocationsTableProps> = ({ 
   locations, 
   onEdit, 
-  showArchived = false 
+  hideInactive = false 
 }) => {
   const archiveLocation = useArchiveLocation();
   const unarchiveLocation = useUnarchiveLocation();
@@ -47,7 +47,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Text size="sm" c="dimmed">
-            {showArchived ? 'No archived locations found.' : 'No locations found. Add your first location to get started.'}
+            {hideInactive ? 'No active locations found.' : 'No locations found. Add your first location to get started.'}
           </Text>
         </div>
       </div>

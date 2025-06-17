@@ -11,15 +11,17 @@ const ArchiveToggle: React.FC<ArchiveToggleProps> = ({
   className
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const showArchived = searchParams.get('archived') === 'true';
+  const hideInactive = searchParams.get('hideInactive') === 'true';
 
   const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.currentTarget.checked;
     const newParams = new URLSearchParams(searchParams);
-    if (checked) {
-      newParams.set('archived', 'true');
+    if (!checked) {
+      // When toggle is OFF, hide inactive locations
+      newParams.set('hideInactive', 'true');
     } else {
-      newParams.delete('archived');
+      // When toggle is ON, show all locations
+      newParams.delete('hideInactive');
     }
     setSearchParams(newParams);
   };
@@ -28,20 +30,19 @@ const ArchiveToggle: React.FC<ArchiveToggleProps> = ({
     <Group gap="sm" className={className}>
       <Center h="100%" w="100%">
         <Switch
-          checked={showArchived}
+          checked={!hideInactive} // Inverted: checked means "show all"
           onChange={handleToggle}
           color="soccerGreen"
           size="md"
           radius="xl"
-          aria-label="Archive toggle"
+          aria-label="Toggle inactive locations"
         />
       </Center>
       <Text size="sm" fw={500}>
-        {showArchived ? 'Show Archived' : 'Show Active'}
+        {hideInactive ? 'Hiding Inactive' : 'Show All'}
       </Text>
     </Group>
   );
 };
 
 export default ArchiveToggle;
-

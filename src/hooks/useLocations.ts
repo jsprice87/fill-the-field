@@ -16,9 +16,9 @@ export interface Location {
   longitude?: number;
 }
 
-export const useLocations = (franchiseeId?: string, showArchived: boolean = false) => {
+export const useLocations = (franchiseeId?: string, hideInactive: boolean = false) => {
   return useQuery({
-    queryKey: ['locations', franchiseeId, showArchived],
+    queryKey: ['locations', franchiseeId, hideInactive],
     queryFn: async () => {
       if (!franchiseeId) return [];
       
@@ -28,12 +28,11 @@ export const useLocations = (franchiseeId?: string, showArchived: boolean = fals
         .eq('franchisee_id', franchiseeId)
         .order('name');
 
-      // Filter by active status - archived means is_active = false
-      if (showArchived) {
-        query = query.eq('is_active', false);
-      } else {
-        query = query.neq('is_active', false); // Show active locations (true or null)
+      // Filter by active status if hideInactive is true
+      if (hideInactive) {
+        query = query.neq('is_active', false); // Hide inactive locations (only show active ones)
       }
+      // If hideInactive is false, show all locations (no filtering)
 
       const { data, error } = await query;
 
