@@ -13,7 +13,8 @@ const ArchiveToggle: React.FC<ArchiveToggleProps> = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const showArchived = searchParams.get('archived') === 'true';
 
-  const handleToggle = (checked: boolean) => {
+  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.currentTarget.checked;
     const newParams = new URLSearchParams(searchParams);
     if (checked) {
       newParams.set('archived', 'true');
