@@ -34,6 +34,7 @@ export const TableRowMenu: React.FC<TableRowMenuProps> = ({
           size="sm"
           disabled={isLoading}
           aria-label="Actions menu"
+          style={{ width: '48px' }}
         >
           <MoreVertical size={16} />
         </ActionIcon>

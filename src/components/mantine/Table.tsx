@@ -69,6 +69,20 @@ export const TableRow = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTM
       style={{
         transition: 'background-color 200ms cubic-bezier(0.4,0,0.2,1)',
         cursor: interactive ? 'pointer' : undefined,
+        '&[data-hovered]': {
+          backgroundColor: 'var(--mantine-color-gray-0)',
+        },
+        '&[data-selected]': {
+          backgroundColor: 'var(--mantine-color-blue-0)',
+        },
+        '@media (prefers-color-scheme: dark)': {
+          '&[data-hovered]': {
+            backgroundColor: 'var(--mantine-color-gray-9)',
+          },
+          '&[data-selected]': {
+            backgroundColor: 'var(--mantine-color-blue-9)',
+          },
+        },
         ...props.style
       }}
     >
