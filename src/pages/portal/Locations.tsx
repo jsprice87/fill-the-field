@@ -1,9 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useParams } from "react-router-dom";
+import { Title, SimpleGrid, Stack, Group, ScrollArea, rem } from '@mantine/core';
+import { StickyHeader } from '@/components/mantine';
 import LocationCard, { LocationProps } from '@/components/locations/LocationCard';
 import LocationForm, { LocationFormData } from '@/components/locations/LocationForm';
 import { supabase } from "@/integrations/supabase/client";
@@ -223,38 +224,57 @@ const PortalLocations: React.FC = () => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Locations</h1>
-        <Button onClick={handleAddLocation} disabled={!franchiseeId}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Location
-        </Button>
-      </div>
+  if (isLoading) {
+    return (
+      <Stack h="100vh" justify="center" align="center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </Stack>
+    );
+  }
 
-      {isLoading ? (
-        <div className="flex items-center justify-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-        </div>
-      ) : locations.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {locations.map((location) => (
-            <LocationCard 
-              key={location.id} 
-              {...location}
-              onEdit={handleEditLocation}
-              onDelete={handleDeleteLocation}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-md border">
-          <div className="p-6 flex items-center justify-center">
-            <p className="text-muted-foreground">No locations found. Add your first location to get started.</p>
-          </div>
-        </div>
-      )}
+  return (
+    <Stack h="100vh" gap={0}>
+      {/* Sticky Header */}
+      <StickyHeader>
+        <Group justify="space-between">
+          <Title order={1} size="30px" lh="36px" fw={600}>
+            Locations
+          </Title>
+          <Button onClick={handleAddLocation} disabled={!franchiseeId}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Location
+          </Button>
+        </Group>
+      </StickyHeader>
+
+      {/* Scrollable Content Area */}
+      <ScrollArea
+        scrollbarSize={8}
+        offsetScrollbars
+        type="scroll"
+        h={`calc(100vh - ${rem(100)})`}
+        px="md"
+        pb="md"
+      >
+        {locations.length > 0 ? (
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg" mt="md">
+            {locations.map((location) => (
+              <LocationCard 
+                key={location.id} 
+                {...location}
+                onEdit={handleEditLocation}
+                onDelete={handleDeleteLocation}
+              />
+            ))}
+          </SimpleGrid>
+        ) : (
+          <Stack align="center" justify="center" h="400px" mt="md">
+            <div className="rounded-md border border-dashed border-gray-300 p-8 text-center">
+              <p className="text-muted-foreground">No locations found. Add your first location to get started.</p>
+            </div>
+          </Stack>
+        )}
+      </ScrollArea>
 
       <LocationForm 
         open={isFormOpen}
@@ -262,7 +282,7 @@ const PortalLocations: React.FC = () => {
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleFormSubmit}
       />
-    </div>
+    </Stack>
   );
 };
 

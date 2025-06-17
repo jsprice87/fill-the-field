@@ -1,0 +1,39 @@
+
+import React from 'react';
+import { Paper, Text, Group } from '@mantine/core';
+import { LucideIcon } from 'lucide-react';
+
+interface MetricCardProps {
+  label: string;
+  value: string | number;
+  icon: LucideIcon;
+  description?: string;
+}
+
+export const MetricCard: React.FC<MetricCardProps> = ({ 
+  label, 
+  value, 
+  icon: Icon, 
+  description 
+}) => {
+  return (
+    <Paper shadow="md" radius="lg" p="lg" withBorder>
+      <Group justify="space-between" mb="xs">
+        <Text size="sm" fw={500} c="dimmed">
+          {label}
+        </Text>
+        <Icon size={16} className="text-muted-foreground" />
+      </Group>
+      
+      <Text size="xl" fw={700} mb={description ? "xs" : 0}>
+        {value}
+      </Text>
+      
+      {description && (
+        <Text size="sm" c="dimmed">
+          {description}
+        </Text>
+      )}
+    </Paper>
+  );
+};

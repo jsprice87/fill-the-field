@@ -1,3 +1,4 @@
+
 // Mantine component exports for Phase 2
 // These components have been migrated from shadcn/ui to Mantine
 
@@ -28,8 +29,11 @@ export type { PaperProps } from './Paper';
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table';
 export type { TableProps } from './Table';
 
+// Phase 4 layout components
+export { MetricCard } from './MetricCard';
+export { StickyHeader } from './StickyHeader';
+
 // TODO: Add more components as they are migrated in future phases:
 // export { Select } from './Select';
 // export { Modal } from './Modal';
 // export { Menu } from './Menu';
-// export { Table } from './Table';

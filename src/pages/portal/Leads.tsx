@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { Title, Text } from '@mantine/core';
-import { Paper } from '@/components/mantine';
+import { Title, Text, SimpleGrid, ScrollArea, rem, Stack, Group } from '@mantine/core';
+import { MetricCard, StickyHeader, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, User, Users, Filter } from 'lucide-react';
 import { useLeads } from '@/hooks/useLeads';
@@ -32,16 +32,9 @@ const PortalLeads: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col">
-        <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
-          <div className="flex items-center justify-between">
-            <Title order={1} size="30px" lh="36px" fw={600}>Leads</Title>
-          </div>
-        </header>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="loading-spinner h-8 w-8"></div>
-        </div>
-      </div>
+      <Stack h="100vh" justify="center" align="center">
+        <div className="loading-spinner h-8 w-8"></div>
+      </Stack>
     );
   }
 
@@ -49,120 +42,108 @@ const PortalLeads: React.FC = () => {
     return includeArchived ? "Search all leads..." : "Search leads...";
   };
 
+  // Prepare metrics data
+  const metrics = [
+    {
+      label: 'Total Leads',
+      value: finalLeads.length,
+      icon: Calendar,
+      description: searchQuery || selectedLocationId !== 'all' || includeArchived
+        ? 'Current filter' 
+        : 'All locations'
+    },
+    {
+      label: 'New Leads',
+      value: finalLeads.filter(lead => lead.status === 'new').length,
+      icon: Users,
+      description: 'Ready to contact'
+    },
+    {
+      label: 'Contacted',
+      value: finalLeads.filter(lead => ['contacted', 'follow_up_scheduled'].includes(lead.status)).length,
+      icon: User,
+      description: 'In conversation'
+    },
+    {
+      label: 'Locations',
+      value: locations.length,
+      icon: MapPin,
+      description: 'Active locations'
+    }
+  ];
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Sticky Header with Sidebar Clearance */}
-      <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
-        <div className="flex items-center justify-between mb-6">
-          <Title order={1} size="30px" lh="36px" fw={600} c="var(--mantine-color-gray-9)">
-            {includeArchived ? 'All Leads' : 'Leads'}
-          </Title>
-          
-          <div className="flex items-center gap-4">
-            <ArchiveToggle />
+    <Stack h="100vh" gap={0}>
+      {/* Sticky Header with Page Title and Filters */}
+      <StickyHeader>
+        <Stack gap="md">
+          <Group justify="space-between">
+            <Title order={1} size="30px" lh="36px" fw={600}>
+              {includeArchived ? 'All Leads' : 'Leads'}
+            </Title>
             
-            {/* Location Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Filter by location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map((location) => (
-                    <SelectItem key={location.id} value={location.id}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Group gap="md">
+              <ArchiveToggle />
+              
+              {/* Location Filter */}
+              <Group gap="xs">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {locations.map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Group>
 
-            {/* Search Input */}
-            <SearchInput
-              value={searchTerm}
-              onChange={handleSearchChange}
-              placeholder={getSearchPlaceholder()}
-              className="w-64"
-            />
-          </div>
-        </div>
+              {/* Search Input */}
+              <SearchInput
+                value={searchTerm}
+                onChange={handleSearchChange}
+                placeholder={getSearchPlaceholder()}
+                className="w-64"
+              />
+            </Group>
+          </Group>
 
-        {/* Responsive Stats Cards using Mantine Paper */}
-        <div className="metric-grid">
-          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Text size="sm" fw={500}>Total Leads</Text>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div>
-              <Title order={2} size="30px" lh="36px" fw={700}>{finalLeads.length}</Title>
-              <Text size="sm" c="dimmed">
-                {searchQuery || selectedLocationId !== 'all' || includeArchived
-                  ? 'Current filter' 
-                  : 'All locations'
-                }
-              </Text>
-            </div>
-          </Paper>
+          {/* Responsive Metrics Grid */}
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
+            {metrics.map((metric) => (
+              <MetricCard
+                key={metric.label}
+                label={metric.label}
+                value={metric.value}
+                icon={metric.icon}
+                description={metric.description}
+              />
+            ))}
+          </SimpleGrid>
+        </Stack>
+      </StickyHeader>
 
-          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Text size="sm" fw={500}>New Leads</Text>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div>
-              <Title order={2} size="30px" lh="36px" fw={700}>
-                {finalLeads.filter(lead => lead.status === 'new').length}
-              </Title>
-              <Text size="sm" c="dimmed">
-                Ready to contact
-              </Text>
-            </div>
-          </Paper>
-
-          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Text size="sm" fw={500}>Contacted</Text>
-              <User className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div>
-              <Title order={2} size="30px" lh="36px" fw={700}>
-                {finalLeads.filter(lead => ['contacted', 'follow_up_scheduled'].includes(lead.status)).length}
-              </Title>
-              <Text size="sm" c="dimmed">
-                In conversation
-              </Text>
-            </div>
-          </Paper>
-
-          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Text size="sm" fw={500}>Locations</Text>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div>
-              <Title order={2} size="30px" lh="36px" fw={700}>{locations.length}</Title>
-              <Text size="sm" c="dimmed">
-                Active locations
-              </Text>
-            </div>
-          </Paper>
-        </div>
-      </header>
-
-      {/* Table Container with Proper Overflow */}
-      <div className="table-container px-6 pb-6">
-        <div className="mt-6">
-          <LeadsTable 
-            leads={finalLeads} 
-            searchQuery={searchQuery} 
-            showArchived={includeArchived}
-          />
-        </div>
-      </div>
-    </div>
+      {/* Scrollable Table Area */}
+      <ScrollArea
+        scrollbarSize={8}
+        offsetScrollbars
+        type="scroll"
+        h={`calc(100vh - ${rem(180)})`}
+        px="md"
+        pb="md"
+      >
+        <LeadsTable 
+          leads={finalLeads} 
+          searchQuery={searchQuery} 
+          showArchived={includeArchived}
+        />
+      </ScrollArea>
+    </Stack>
   );
 };
 
