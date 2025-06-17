@@ -15,7 +15,6 @@ export const PortalShell: React.FC<PortalShellProps> = ({ children, navbar }) =>
         breakpoint: 'lg',
       }}
       padding="md"
-      navbarOffsetBreakpoint="sm"
     >
       {navbar && (
         <AppShell.Navbar>
