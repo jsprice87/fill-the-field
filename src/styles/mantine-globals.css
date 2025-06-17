@@ -1,0 +1,26 @@
+
+/* Global styles for Mantine integration */
+/* These styles were moved from the deprecated globalStyles theme option */
+
+body {
+  transition: background-color 200ms cubic-bezier(0.4,0,0.2,1), color 200ms cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Link styles consistent with our design system */
+a {
+  transition: color 200ms cubic-bezier(0.4,0,0.2,1);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

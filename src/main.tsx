@@ -9,6 +9,7 @@ import App from './App';
 import './index.css';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import './styles/mantine-globals.css';
 import { theme } from './mantine/theme';
 import { updateFranchiseeSlugs } from './scripts/updateFranchiseeSlugs';
 
@@ -32,7 +33,6 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <MantineProvider
         withCssVariables
-        withGlobalStyles
         defaultColorScheme="light"
         theme={theme}
       >

@@ -1,4 +1,3 @@
-
 import { MantineThemeOverride, createTheme } from '@mantine/core';
 
 // Import our existing design tokens to avoid duplication
@@ -213,38 +212,5 @@ export const theme: MantineThemeOverride = createTheme({
         }
       })
     }
-  },
-
-  // Global styles for proper theming
-  globalStyles: (theme) => ({
-    body: {
-      backgroundColor: theme.colors.gray[0],
-      color: theme.colors.gray[7],
-      transition: 'background-color 200ms cubic-bezier(0.4,0,0.2,1), color 200ms cubic-bezier(0.4,0,0.2,1)'
-    },
-    '[data-mantine-color-scheme="dark"] body': {
-      backgroundColor: theme.colors.gray[9],
-      color: theme.colors.gray[2]
-    },
-    'a': {
-      color: theme.colors.brand[6],
-      textDecoration: 'none',
-      transition: 'color 200ms cubic-bezier(0.4,0,0.2,1)',
-      '&:hover': {
-        color: theme.colors.brand[7],
-        textDecoration: 'underline'
-      },
-      '&:active': {
-        color: theme.colors.brand[8]
-      }
-    },
-    // Respect prefers-reduced-motion
-    '@media (prefers-reduced-motion: reduce)': {
-      '*': {
-        animationDuration: '0.01ms !important',
-        animationIterationCount: '1 !important',
-        transitionDuration: '0.01ms !important'
-      }
-    }
-  })
+  }
 });
