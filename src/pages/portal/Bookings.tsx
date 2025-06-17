@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Title, Text } from '@mantine/core';
+import { Paper } from '@/components/mantine';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, User, Users, Filter } from 'lucide-react';
 import { useBookings } from '@/hooks/useBookings';
@@ -34,7 +35,7 @@ const PortalBookings: React.FC = () => {
       <div className="h-full flex flex-col">
         <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
           <div className="flex items-center justify-between">
-            <h1 className="text-h1 text-gray-900 dark:text-gray-50">Bookings</h1>
+            <Title order={1} size="30px" lh="36px" fw={600}>Bookings</Title>
           </div>
         </header>
         <div className="flex-1 flex items-center justify-center">
@@ -53,9 +54,9 @@ const PortalBookings: React.FC = () => {
       {/* Sticky Header with Sidebar Clearance */}
       <header className="pl-sidebar sticky top-0 z-40 px-6 pt-6 pb-4 bg-background border-b">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-h1 text-gray-900 dark:text-gray-50">
+          <Title order={1} size="30px" lh="36px" fw={600} c="var(--mantine-color-gray-9)">
             {includeArchived ? 'All Bookings' : 'Bookings'}
-          </h1>
+          </Title>
           
           <div className="flex items-center gap-4">
             <ArchiveToggle />
@@ -88,70 +89,70 @@ const PortalBookings: React.FC = () => {
           </div>
         </div>
 
-        {/* Responsive Stats Cards */}
+        {/* Responsive Stats Cards using Mantine Paper */}
         <div className="metric-grid">
-          <Card className="motion-safe:transition-all motion-safe:duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">Total Bookings</CardTitle>
+          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
+            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Text size="sm" fw={500}>Total Bookings</Text>
               <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-h1 font-bold">{finalBookings.length}</div>
-              <p className="text-body-sm text-muted-foreground">
+            </div>
+            <div>
+              <Title order={2} size="30px" lh="36px" fw={700}>{finalBookings.length}</Title>
+              <Text size="sm" c="dimmed">
                 {searchQuery || selectedLocationId !== 'all' || includeArchived
                   ? 'Current filter' 
                   : 'All locations'
                 }
-              </p>
-            </CardContent>
-          </Card>
+              </Text>
+            </div>
+          </Paper>
 
-          <Card className="motion-safe:transition-all motion-safe:duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">Upcoming</CardTitle>
+          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
+            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Text size="sm" fw={500}>Upcoming</Text>
               <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-h1 font-bold">
+            </div>
+            <div>
+              <Title order={2} size="30px" lh="36px" fw={700}>
                 {finalBookings.filter(booking => booking.status === 'booked_upcoming').length}
-              </div>
-              <p className="text-body-sm text-muted-foreground">
+              </Title>
+              <Text size="sm" c="dimmed">
                 Ready to attend
-              </p>
-            </CardContent>
-          </Card>
+              </Text>
+            </div>
+          </Paper>
 
-          <Card className="motion-safe:transition-all motion-safe:duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">Need Status</CardTitle>
+          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
+            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Text size="sm" fw={500}>Need Status</Text>
               <User className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-h1 font-bold">
+            </div>
+            <div>
+              <Title order={2} size="30px" lh="36px" fw={700}>
                 {finalBookings.filter(booking => {
                   const today = new Date();
                   const bookingDate = new Date(booking.selected_date || '');
                   return bookingDate < today && booking.status === 'booked_upcoming';
                 }).length}
-              </div>
-              <p className="text-body-sm text-muted-foreground">
+              </Title>
+              <Text size="sm" c="dimmed">
                 Past date, needs update
-              </p>
-            </CardContent>
-          </Card>
+              </Text>
+            </div>
+          </Paper>
 
-          <Card className="motion-safe:transition-all motion-safe:duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-body-sm font-medium">Locations</CardTitle>
+          <Paper shadow="sm" radius="lg" p="lg" style={{ transition: 'all 200ms cubic-bezier(0.4,0,0.2,1)' }}>
+            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Text size="sm" fw={500}>Locations</Text>
               <MapPin className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-h1 font-bold">{locations.length}</div>
-              <p className="text-body-sm text-muted-foreground">
+            </div>
+            <div>
+              <Title order={2} size="30px" lh="36px" fw={700}>{locations.length}</Title>
+              <Text size="sm" c="dimmed">
                 Active locations
-              </p>
-            </CardContent>
-          </Card>
+              </Text>
+            </div>
+          </Paper>
         </div>
       </header>
 

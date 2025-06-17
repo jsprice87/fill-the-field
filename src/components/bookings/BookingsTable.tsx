@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/mantine';
+import { Button } from '@/components/mantine';
+import { Text } from '@mantine/core';
 import { MoreHorizontal, Edit, Trash2, Archive, ArchiveRestore, Eye } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
@@ -117,14 +117,13 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
     <div className="space-y-4">
       {selectedBookings.size > 0 && (
         <div className="flex items-center gap-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-          <span className="text-body-sm font-medium">
+          <Text size="sm" fw={500}>
             {selectedBookings.size} booking{selectedBookings.size > 1 ? 's' : ''} selected
-          </span>
+          </Text>
           <Button
             variant="outline"
             size="sm"
             onClick={handleBulkArchive}
-            className="ui-hover"
           >
             {showArchived ? <ArchiveRestore className="h-4 w-4 mr-2" /> : <Archive className="h-4 w-4 mr-2" />}
             {showArchived ? 'Unarchive' : 'Archive'} Selected
@@ -132,10 +131,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
         </div>
       )}
 
-      <Table>
+      <Table stickyHeader>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12">
+            <TableHead style={{ width: '48px' }}>
               <input
                 type="checkbox"
                 checked={selectedBookings.size === bookings.length && bookings.length > 0}
@@ -150,7 +149,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
             <TableHead>Date & Time</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Contact</TableHead>
-            <TableHead className="w-12">Actions</TableHead>
+            <TableHead style={{ width: '48px' }}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -158,86 +157,88 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
             <TableRow 
               key={booking.id} 
               interactive
-              className={`
-                ${selectedBookings.has(booking.id) ? 'bg-primary-50 dark:bg-primary-900/20' : ''}
-                ${hoveredRow === booking.id ? 'bg-gray-50 dark:bg-gray-800' : ''}
-                ${booking.archived_at ? 'opacity-60' : ''}
-              `}
+              style={{
+                backgroundColor: selectedBookings.has(booking.id) ? 'var(--mantine-color-primary-1)' : 
+                                hoveredRow === booking.id ? 'var(--mantine-color-gray-1)' : 'transparent',
+                opacity: booking.archived_at ? 0.6 : 1
+              }}
               onMouseEnter={() => setHoveredRow(booking.id)}
               onMouseLeave={() => setHoveredRow(null)}
             >
-              <TableCell>
+              <td style={{ padding: '12px 16px' }}>
                 <input
                   type="checkbox"
                   checked={selectedBookings.has(booking.id)}
                   onChange={(e) => handleBookingSelection(booking.id, e.target.checked)}
                   className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
                 />
-              </TableCell>
-              <TableCell className="font-mono text-xs">
-                {booking.booking_reference || 'N/A'}
-              </TableCell>
-              <TableCell>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
+                <Text size="xs" ff="monospace">
+                  {booking.booking_reference || 'N/A'}
+                </Text>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
                 <div className="space-y-1">
-                  <div className="font-medium">
+                  <Text size="sm" fw={500}>
                     {booking.parent_first_name} {booking.parent_last_name}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
+                  </Text>
+                  <Text size="xs" c="dimmed">
                     {booking.parent_email}
-                  </div>
+                  </Text>
                 </div>
-              </TableCell>
-              <TableCell>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
                 <div className="space-y-1">
                   {booking.participants.map((participant, index) => (
-                    <div key={participant.id} className="text-sm">
-                      <span className="font-medium">{participant.first_name}</span>
-                      <span className="text-muted-foreground ml-2">({participant.age})</span>
+                    <div key={participant.id}>
+                      <Text size="sm" fw={500} span>{participant.first_name}</Text>
+                      <Text size="sm" c="dimmed" span> ({participant.age})</Text>
                     </div>
                   ))}
                 </div>
-              </TableCell>
-              <TableCell>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
                 <div className="space-y-1">
-                  <div className="font-medium">
+                  <Text size="sm" fw={500}>
                     {booking.class_schedules?.classes?.class_name || 'N/A'}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
+                  </Text>
+                  <Text size="xs" c="dimmed">
                     {booking.class_schedules?.classes?.locations?.name || 'N/A'}
-                  </div>
+                  </Text>
                 </div>
-              </TableCell>
-              <TableCell>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
                 <div className="space-y-1">
-                  <div className="text-sm font-medium">
+                  <Text size="sm" fw={500}>
                     {booking.selected_date ? new Date(booking.selected_date).toLocaleDateString() : 'N/A'}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
+                  </Text>
+                  <Text size="xs" c="dimmed">
                     {booking.class_schedules?.start_time && booking.class_schedules?.end_time
                       ? `${booking.class_schedules.start_time} - ${booking.class_schedules.end_time}`
                       : 'Time not set'
                     }
-                  </div>
+                  </Text>
                 </div>
-              </TableCell>
-              <TableCell>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
                 <StatusCell 
                   leadId={booking.id}
                   bookingDate={booking.selected_date || ''}
                   fallbackStatus={booking.status}
                 />
-              </TableCell>
-              <TableCell>
-                <div className="space-y-1 text-xs">
-                  <div>📧 {booking.communication_permission ? '✓' : '✗'}</div>
-                  <div>📱 {booking.marketing_permission ? '✓' : '✗'}</div>
-                  <div>📄 {booking.waiver_accepted ? '✓' : '✗'}</div>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
+                <div className="space-y-1">
+                  <Text size="xs">📧 {booking.communication_permission ? '✓' : '✗'}</Text>
+                  <Text size="xs">📱 {booking.marketing_permission ? '✓' : '✗'}</Text>
+                  <Text size="xs">📄 {booking.waiver_accepted ? '✓' : '✗'}</Text>
                 </div>
-              </TableCell>
-              <TableCell>
+              </td>
+              <td style={{ padding: '12px 16px' }}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="ui-hover">
+                    <Button variant="subtle" size="sm">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -272,7 +273,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </TableCell>
+              </td>
             </TableRow>
           ))}
         </TableBody>

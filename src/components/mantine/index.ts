@@ -1,4 +1,3 @@
-
 // Mantine component exports for Phase 2
 // These components have been migrated from shadcn/ui to Mantine
 
@@ -21,6 +20,13 @@ export type { CardProps } from './Card';
 // Typography components
 export { H1, H2, H3, H4, H5, H6, BodyLg, BodySm, CodeText } from './Typography';
 export type { HeadingProps, BodyProps, CodeTextProps } from './Typography';
+
+// New Mantine component exports for Phase 3 visual migration
+export { Paper } from './Paper';
+export type { PaperProps } from './Paper';
+
+export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table';
+export type { TableProps } from './Table';
 
 // TODO: Add more components as they are migrated in future phases:
 // export { Select } from './Select';
