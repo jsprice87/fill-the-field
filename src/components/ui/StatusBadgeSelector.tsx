@@ -14,40 +14,28 @@ interface StatusBadgeSelectorProps {
   className?: string;
 }
 
-// Status theme configuration with Mantine color mapping
-const STATUS_THEME = {
-  'new': {
-    label: 'NEW',
-    color: 'gray'
-  },
-  'booked_upcoming': {
-    label: 'BOOKED UPCOMING', 
-    color: 'blue'
-  },
-  'booked_complete': {
-    label: 'BOOKED COMPLETE',
-    color: 'green'
-  },
-  'no_show': {
-    label: 'NO SHOW',
-    color: 'red'
-  },
-  'follow_up': {
-    label: 'FOLLOW UP',
-    color: 'yellow'
-  },
-  'canceled': {
-    label: 'CANCELED',
-    color: 'red'
-  },
-  'closed_lost': {
-    label: 'CLOSED LOST',
-    color: 'red'
-  },
-  'closed_won': {
-    label: 'CLOSED WON',
-    color: 'violet'
-  }
+// Status color mapping with Mantine colors and variants
+const STATUS_COLOR_MAP: Record<LeadStatus, { color: string; variant: 'light' | 'filled' }> = {
+  'new': { color: 'gray', variant: 'light' },
+  'booked_upcoming': { color: 'blue', variant: 'light' },
+  'booked_complete': { color: 'green', variant: 'light' },
+  'no_show': { color: 'yellow', variant: 'light' },
+  'follow_up': { color: 'orange', variant: 'light' },
+  'canceled': { color: 'red', variant: 'light' },
+  'closed_lost': { color: 'red', variant: 'filled' },
+  'closed_won': { color: 'teal', variant: 'filled' }
+} as const;
+
+// Status labels
+const STATUS_LABELS: Record<LeadStatus, string> = {
+  'new': 'NEW',
+  'booked_upcoming': 'BOOKED UPCOMING',
+  'booked_complete': 'BOOKED COMPLETE',
+  'no_show': 'NO SHOW',
+  'follow_up': 'FOLLOW UP',
+  'canceled': 'CANCELED',
+  'closed_lost': 'CLOSED LOST',
+  'closed_won': 'CLOSED WON'
 } as const;
 
 const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({ 
@@ -58,7 +46,8 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
 }) => {
   const statusMutation = useStatusMutation();
   
-  const currentTheme = STATUS_THEME[status] || STATUS_THEME.new;
+  const currentStatusConfig = STATUS_COLOR_MAP[status] || STATUS_COLOR_MAP.new;
+  const currentLabel = STATUS_LABELS[status] || STATUS_LABELS.new;
   
   const handleStatusChange = (newStatus: LeadStatus) => {
     if (newStatus === status) return;
@@ -71,11 +60,17 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
   };
 
   return (
-    <Menu withArrow position="bottom-start" disabled={statusMutation.isPending}>
+    <Menu 
+      withArrow 
+      position="bottom-start" 
+      disabled={statusMutation.isPending}
+      radius="sm"
+      shadow="md"
+    >
       <Menu.Target>
         <Badge
-          variant="filled"
-          color={currentTheme.color}
+          variant={currentStatusConfig.variant}
+          color={currentStatusConfig.color}
           style={{ cursor: 'pointer' }}
           className={className}
           rightSection={
@@ -86,19 +81,28 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
             )
           }
         >
-          {currentTheme.label}
+          {currentLabel}
         </Badge>
       </Menu.Target>
 
       <Menu.Dropdown>
-        {Object.entries(STATUS_THEME).map(([statusKey, theme]) => (
+        {Object.entries(STATUS_COLOR_MAP).map(([statusKey, config]) => (
           <Menu.Item
             key={statusKey}
             onClick={() => handleStatusChange(statusKey as LeadStatus)}
             disabled={statusMutation.isPending}
             rightSection={status === statusKey ? <Check size={16} /> : null}
+            leftSection={
+              <Badge
+                variant={config.variant}
+                color={config.color}
+                size="sm"
+              >
+                {STATUS_LABELS[statusKey as LeadStatus]}
+              </Badge>
+            }
           >
-            {theme.label}
+            {STATUS_LABELS[statusKey as LeadStatus]}
           </Menu.Item>
         ))}
       </Menu.Dropdown>
@@ -107,3 +111,4 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
 };
 
 export default StatusBadgeSelector;
+

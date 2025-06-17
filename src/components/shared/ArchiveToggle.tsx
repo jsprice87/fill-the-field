@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Switch, Group, Text } from '@mantine/core';
+import { Switch, Group, Text, Center } from '@mantine/core';
 import { useSearchParams } from 'react-router-dom';
 
 interface ArchiveToggleProps {
@@ -26,13 +26,16 @@ const ArchiveToggle: React.FC<ArchiveToggleProps> = ({
 
   return (
     <Group gap="sm" className={className}>
-      <Switch
-        checked={showArchived}
-        onChange={handleToggle}
-        color="emerald"
-        size="md"
-        aria-label="Archive toggle"
-      />
+      <Center h="100%" w="100%">
+        <Switch
+          checked={showArchived}
+          onChange={handleToggle}
+          color="soccerGreen"
+          size="md"
+          radius="xl"
+          aria-label="Archive toggle"
+        />
+      </Center>
       <Text size="sm" fw={500}>
         {showArchived ? 'Show Archived' : 'Show Active'}
       </Text>
@@ -41,3 +44,4 @@ const ArchiveToggle: React.FC<ArchiveToggleProps> = ({
 };
 
 export default ArchiveToggle;
+

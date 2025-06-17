@@ -1,7 +1,9 @@
+
 import {
   Table as MTable,
   TableProps as MTableProps,
   ScrollArea,
+  useMantineTheme,
 } from "@mantine/core";
 import { forwardRef } from "react";
 
@@ -61,23 +63,30 @@ export const TableBody = forwardRef<HTMLTableSectionElement, React.HTMLAttribute
 TableBody.displayName = "TableBody";
 
 export const TableRow = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement> & { interactive?: boolean }>(
-  ({ children, interactive = false, className, ...props }, ref) => (
-    <tr 
-      ref={ref} 
-      {...props}
-      className={`
-        transition-colors duration-200 
-        ${interactive ? 'cursor-pointer' : ''} 
-        hover:bg-gray-50 
-        data-[selected]:bg-blue-50 
-        dark:hover:bg-gray-800 
-        dark:data-[selected]:bg-blue-900
-        ${className || ''}
-      `}
-    >
-      {children}
-    </tr>
-  )
+  ({ children, interactive = false, className, ...props }, ref) => {
+    const theme = useMantineTheme();
+    
+    return (
+      <tr 
+        ref={ref} 
+        {...props}
+        style={{
+          transition: 'background-color 200ms cubic-bezier(0.4,0,0.2,1)',
+          cursor: interactive ? 'pointer' : undefined,
+          '&:hover': {
+            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[0],
+          },
+          '&[data-selected]': {
+            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.blue[9] : theme.colors.blue[0],
+          },
+          ...props.style
+        }}
+        className={className}
+      >
+        {children}
+      </tr>
+    );
+  }
 );
 TableRow.displayName = "TableRow";
 
@@ -98,3 +107,4 @@ export const TableCell = forwardRef<HTMLTableCellElement, React.TdHTMLAttributes
   )
 );
 TableCell.displayName = "TableCell";
+

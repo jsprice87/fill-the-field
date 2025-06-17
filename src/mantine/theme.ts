@@ -1,3 +1,4 @@
+
 import { MantineThemeOverride, createTheme } from '@mantine/core';
 
 // Import our existing design tokens to avoid duplication
@@ -56,6 +57,11 @@ export const theme: MantineThemeOverride = createTheme({
     soccerBlue: [
       '#EBF8FF', '#BEE3F8', '#90CDF4', '#63B3ED', '#4299E1',
       '#3366CC', '#1A365D', '#2A4B6D', '#2C5282', '#2B6CB0'
+    ],
+    // Add soccer green for ArchiveToggle
+    soccerGreen: [
+      '#F0FDF4', '#DCFCE7', '#BBF7D0', '#86EFAC', '#4ADE80',
+      '#10B981', '#059669', '#047857', '#065F46', '#064E3B'
     ]
   },
 
@@ -111,6 +117,13 @@ export const theme: MantineThemeOverride = createTheme({
     md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
     lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
     xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+  },
+
+  // Add semantic aliases for dark mode
+  other: {
+    surface: 'var(--mantine-color-body)',
+    hover: 'var(--mantine-color-gray-0)',
+    border: 'var(--mantine-color-gray-3)',
   },
 
   components: {
@@ -214,3 +227,4 @@ export const theme: MantineThemeOverride = createTheme({
     }
   }
 });
+
