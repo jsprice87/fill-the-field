@@ -32,6 +32,7 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <MantineProvider
         withCssVariables
+        withGlobalStyles
         defaultColorScheme="light"
         theme={theme}
       >

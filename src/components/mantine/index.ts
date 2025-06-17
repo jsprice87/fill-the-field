@@ -18,6 +18,10 @@ export type { BadgeProps } from './Badge';
 export { Card } from './Card';
 export type { CardProps } from './Card';
 
+// Typography components
+export { H1, H2, H3, H4, H5, H6, BodyLg, BodySm, CodeText } from './Typography';
+export type { HeadingProps, BodyProps, CodeTextProps } from './Typography';
+
 // TODO: Add more components as they are migrated in future phases:
 // export { Select } from './Select';
 // export { Modal } from './Modal';

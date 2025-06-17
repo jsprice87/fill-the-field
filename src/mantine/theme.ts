@@ -1,3 +1,4 @@
+
 import { MantineThemeOverride, createTheme } from '@mantine/core';
 
 // Import our existing design tokens to avoid duplication
@@ -43,12 +44,26 @@ export const theme: MantineThemeOverride = createTheme({
     green: [
       '#F0FDF4', '#DCFCE7', '#BBF7D0', '#86EFAC', '#4ADE80',
       '#22C55E', '#16A34A', '#15803D', '#166534', '#14532D'
+    ],
+    // Soccer Stars brand colors (preserved for /free-trial/)
+    soccerRed: [
+      '#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5', '#F87171',
+      '#C53030', '#B91C1C', '#991B1B', '#7F1D1D', '#68181B'
+    ],
+    soccerNavy: [
+      '#EBF8FF', '#BEE3F8', '#90CDF4', '#63B3ED', '#4299E1',
+      '#021B4A', '#1A365D', '#2A4B6D', '#2C5282', '#2B6CB0'
+    ],
+    soccerBlue: [
+      '#EBF8FF', '#BEE3F8', '#90CDF4', '#63B3ED', '#4299E1',
+      '#3366CC', '#1A365D', '#2A4B6D', '#2C5282', '#2B6CB0'
     ]
   },
 
   fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
   fontFamilyMonospace: 'Menlo, ui-monospace, monospace',
   
+  // Add Anton for hero headings (Soccer Stars)
   headings: {
     fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
     fontWeight: '600',
@@ -72,19 +87,23 @@ export const theme: MantineThemeOverride = createTheme({
 
   defaultRadius: 'md',
   radius: {
-    xs: '4px',
-    sm: '6px', 
-    md: '8px',
-    lg: '12px',
-    xl: '16px'
+    xs: '2px',  // Updated from 4px to match requirements
+    sm: '4px',  // Updated from 6px to match requirements
+    md: '6px',  // Updated from 8px to match requirements
+    lg: '8px',  // Updated from 12px to match requirements
+    xl: '12px'  // Updated from 16px to match requirements
   },
 
   spacing: {
-    xs: '8px',
-    sm: '12px',
-    md: '16px',
-    lg: '20px',
-    xl: '24px'
+    xs: '4px',   // Updated from 8px to match 4pt grid
+    sm: '8px',   // Updated from 12px
+    md: '12px',  // Updated from 16px
+    lg: '16px',  // Updated from 20px
+    xl: '20px',  // Updated from 24px
+    '2xl': '24px',  // New
+    '3xl': '32px',  // New
+    '4xl': '48px',  // New
+    '5xl': '80px'   // New
   },
 
   shadows: {
@@ -108,6 +127,34 @@ export const theme: MantineThemeOverride = createTheme({
           '&:hover': {
             transform: 'translateY(-0.5px)',
             boxShadow: theme.shadows.md
+          },
+          // Soccer Stars brand styles
+          '&[data-variant="soccer_primary"]': {
+            backgroundColor: 'hsl(348, 92%, 44%)',
+            color: 'white',
+            fontFamily: 'Poppins, sans-serif',
+            fontWeight: 500,
+            '&:hover': {
+              backgroundColor: 'hsl(215, 100%, 40%)',
+              boxShadow: theme.shadows.lg
+            }
+          },
+          '&[data-variant="soccer_secondary"]': {
+            backgroundColor: 'transparent',
+            border: '2px solid hsl(218, 94%, 14%)',
+            color: 'hsl(218, 94%, 14%)',
+            fontFamily: 'Poppins, sans-serif',
+            fontWeight: 500,
+            '&:hover': {
+              backgroundColor: 'hsl(218, 94%, 14%)',
+              color: 'white',
+              boxShadow: theme.shadows.lg
+            }
+          },
+          '&[data-size="soccer"]': {
+            height: '48px',
+            padding: '12px 24px',
+            fontSize: '16px'
           }
         }
       })
@@ -124,6 +171,18 @@ export const theme: MantineThemeOverride = createTheme({
           '&:focus': {
             borderColor: theme.colors.brand[5],
             boxShadow: `0 0 0 2px ${theme.colors.brand[5]}40`
+          },
+          // Soccer Stars brand styles
+          '&[data-soccer="true"]': {
+            borderColor: '#D1D5DB',
+            fontFamily: 'Poppins, sans-serif',
+            '&:focus': {
+              borderColor: 'hsl(218, 94%, 14%)',
+              boxShadow: 'none'
+            }
+          },
+          '&[data-error="true"]': {
+            borderColor: '#EF4444'
           }
         }
       })
@@ -154,5 +213,38 @@ export const theme: MantineThemeOverride = createTheme({
         }
       })
     }
-  }
+  },
+
+  // Global styles for proper theming
+  globalStyles: (theme) => ({
+    body: {
+      backgroundColor: theme.colors.gray[0],
+      color: theme.colors.gray[7],
+      transition: 'background-color 200ms cubic-bezier(0.4,0,0.2,1), color 200ms cubic-bezier(0.4,0,0.2,1)'
+    },
+    '[data-mantine-color-scheme="dark"] body': {
+      backgroundColor: theme.colors.gray[9],
+      color: theme.colors.gray[2]
+    },
+    'a': {
+      color: theme.colors.brand[6],
+      textDecoration: 'none',
+      transition: 'color 200ms cubic-bezier(0.4,0,0.2,1)',
+      '&:hover': {
+        color: theme.colors.brand[7],
+        textDecoration: 'underline'
+      },
+      '&:active': {
+        color: theme.colors.brand[8]
+      }
+    },
+    // Respect prefers-reduced-motion
+    '@media (prefers-reduced-motion: reduce)': {
+      '*': {
+        animationDuration: '0.01ms !important',
+        animationIterationCount: '1 !important',
+        transitionDuration: '0.01ms !important'
+      }
+    }
+  })
 });
