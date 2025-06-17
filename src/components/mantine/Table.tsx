@@ -64,8 +64,6 @@ TableBody.displayName = "TableBody";
 
 export const TableRow = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement> & { interactive?: boolean }>(
   ({ children, interactive = false, className, ...props }, ref) => {
-    const theme = useMantineTheme();
-    
     return (
       <tr 
         ref={ref} 
@@ -73,15 +71,9 @@ export const TableRow = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTM
         style={{
           transition: 'background-color 200ms cubic-bezier(0.4,0,0.2,1)',
           cursor: interactive ? 'pointer' : undefined,
-          '&:hover': {
-            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[0],
-          },
-          '&[data-selected]': {
-            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.blue[9] : theme.colors.blue[0],
-          },
           ...props.style
         }}
-        className={className}
+        className={`${className || ''} hover:bg-mantine-hover`}
       >
         {children}
       </tr>
@@ -107,4 +99,3 @@ export const TableCell = forwardRef<HTMLTableCellElement, React.TdHTMLAttributes
   )
 );
 TableCell.displayName = "TableCell";
-

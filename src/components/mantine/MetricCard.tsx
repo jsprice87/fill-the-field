@@ -26,11 +26,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         transition: 'transform 150ms ease',
         cursor: 'default'
       }}
-      sx={{
-        '&:hover': {
-          transform: 'translateY(-2px)'
-        }
-      }}
+      className="hover:-translate-y-0.5"
     >
       <Group justify="space-between" mb="xs">
         <Text size="sm" fw={500} c="dimmed" mb={4}>
@@ -51,4 +47,3 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     </Paper>
   );
 };
-
