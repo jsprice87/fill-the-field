@@ -10,7 +10,7 @@ export const useArchiveLocation = () => {
     mutationFn: async (locationId: string) => {
       const { error } = await supabase
         .from('locations')
-        .update({ archived_at: new Date().toISOString() })
+        .update({ is_active: false })
         .eq('id', locationId);
       
       if (error) throw error;
@@ -33,7 +33,7 @@ export const useUnarchiveLocation = () => {
     mutationFn: async (locationId: string) => {
       const { error } = await supabase
         .from('locations')
-        .update({ archived_at: null })
+        .update({ is_active: true })
         .eq('id', locationId);
       
       if (error) throw error;

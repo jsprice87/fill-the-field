@@ -12,7 +12,6 @@ export interface Location {
   phone?: string;
   email?: string;
   is_active: boolean;
-  archived_at?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -29,11 +28,11 @@ export const useLocations = (franchiseeId?: string, showArchived: boolean = fals
         .eq('franchisee_id', franchiseeId)
         .order('name');
 
-      // Filter by archive status
+      // Filter by active status - archived means is_active = false
       if (showArchived) {
-        query = query.not('archived_at', 'is', null);
+        query = query.eq('is_active', false);
       } else {
-        query = query.is('archived_at', null);
+        query = query.neq('is_active', false); // Show active locations (true or null)
       }
 
       const { data, error } = await query;

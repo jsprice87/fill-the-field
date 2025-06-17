@@ -137,10 +137,10 @@ const PortalLocations: React.FC = () => {
     }
   };
 
-  // Calculate metrics
-  const activeLocations = locations.filter(loc => loc.is_active && !loc.archived_at).length;
+  // Calculate metrics using is_active field
+  const activeLocations = locations.filter(loc => loc.is_active !== false).length;
   const totalLocations = locations.length;
-  const archivedCount = locations.filter(loc => loc.archived_at).length;
+  const archivedCount = locations.filter(loc => loc.is_active === false).length;
 
   if (isLoading) {
     return (

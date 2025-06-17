@@ -74,7 +74,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
         </TableHeader>
         <TableBody>
           {locations.map((location) => {
-            const isArchived = !!location.archived_at;
+            const isArchived = location.is_active === false;
             
             return (
               <TableRow 
