@@ -9,6 +9,9 @@ export type Lead = Database['public']['Tables']['leads']['Row'] & {
   locations?: {
     name: string;
   };
+  classes?: Array<{
+    location_id: string;
+  }>;
 };
 
 export type Booking = Database['public']['Tables']['bookings']['Row'] & {

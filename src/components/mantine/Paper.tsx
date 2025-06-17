@@ -8,6 +8,8 @@ import { forwardRef } from "react";
 export type PaperProps = MPaperProps & {
   /** Enable interactive hover states */
   interactive?: boolean;
+  /** Children content */
+  children?: React.ReactNode;
 };
 
 export const Paper = forwardRef<HTMLDivElement, PaperProps>(
