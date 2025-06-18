@@ -47,7 +47,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
+      birth_date: initialData?.birth_date ? initialData.birth_date : undefined,
       notes: '',
       age_override: false,
       ...initialData,
@@ -59,7 +59,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       form.reset({
         first_name: '',
         age: 3,
-        birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
+        birth_date: initialData?.birth_date ? initialData.birth_date : undefined,
         notes: '',
         age_override: false,
         ...initialData,
@@ -69,7 +69,11 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
   const handleSubmit = async (data: ParticipantFormData) => {
     if (onAddParticipant) {
-      await onAddParticipant(data);
+      const payload = { 
+        ...data, 
+        birth_date: data.birth_date ? new Date(data.birth_date).toISOString() : undefined 
+      };
+      await onAddParticipant(payload);
     } else {
       onSubmit(data);
     }
@@ -114,7 +118,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               label="Birth Date (Optional)"
               placeholder="Select birth date"
               value={form.watch('birth_date') ? new Date(form.watch('birth_date')!) : null}
-              onChange={(d) => form.setValue('birth_date', d ?? null)}
+              onChange={(d) => form.setValue('birth_date', d ? d.toISOString() : undefined)}
               error={toErrorNode(form.formState.errors.birth_date?.message)}
               maxDate={new Date()}
             />
