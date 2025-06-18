@@ -82,7 +82,6 @@ export const TooltipExample: StoryObj = {
       <Tooltip 
         label="This is a multiline tooltip that demonstrates longer content wrapping properly"
         multiline
-        width={200}
       >
         <Button variant="subtle">Multiline tooltip</Button>
       </Tooltip>

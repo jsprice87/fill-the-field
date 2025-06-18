@@ -49,7 +49,8 @@
         { "name": "Replace Tooltip usage", "status": "completed" },
         { "name": "Accessibility check", "status": "completed" },
         { "name": "Storybook stories updated", "status": "completed" },
-        { "name": "Update trackers", "status": "completed" }
+        { "name": "Update trackers", "status": "completed" },
+        { "name": "Fix TypeScript errors", "status": "completed" }
       ]
     }
   },
@@ -108,10 +109,10 @@
       "mantinePath": "@/components/mantine/Tooltip",
       "mantineComponent": "@mantine/core Tooltip",
       "complexity": "low",
-      "notes": "Completed with TooltipProvider removal and direct Mantine usage"
+      "notes": "Completed with TooltipProvider removal and direct Mantine usage, TypeScript errors resolved"
     },
     "Table": {
-      "status":  "completed",
+      "status": "completed",
       "shadcnPath": "@/components/ui/table",
       "mantinePath": "@/components/mantine/Table", 
       "mantineComponent": "@mantine/core Table + ScrollArea",
