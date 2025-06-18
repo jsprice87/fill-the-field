@@ -1,50 +1,28 @@
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { openConfirmModal } from '@mantine/modals';
+import { Text } from '@mantine/core';
 
 interface TestWebhookModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   webhookType: 'lead' | 'booking';
 }
 
-export default function TestWebhookModal({ 
-  open, 
-  onOpenChange, 
-  onConfirm, 
-  webhookType 
-}: TestWebhookModalProps) {
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Send Test {webhookType === 'lead' ? 'Lead' : 'Booking'} Webhook</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <p>You're about to send a test webhook to your n8n test URL.</p>
-            <p className="font-medium text-orange-600">
-              ⚠️ Make sure to open your n8n workflow and click "▶︎ Execute Workflow" first.
-            </p>
-            <p className="text-sm text-gray-600">
-              Test URLs only accept exactly 1 request after execution starts.
-            </p>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            Send Test Webhook
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
+export const showTestWebhookModal = ({ onConfirm, webhookType }: TestWebhookModalProps) => {
+  openConfirmModal({
+    title: `Send Test ${webhookType === 'lead' ? 'Lead' : 'Booking'} Webhook`,
+    children: (
+      <div className="space-y-2">
+        <Text size="sm">You're about to send a test webhook to your n8n test URL.</Text>
+        <Text size="sm" className="font-medium text-orange-600">
+          ⚠️ Make sure to open your n8n workflow and click "▶︎ Execute Workflow" first.
+        </Text>
+        <Text size="xs" className="text-gray-600">
+          Test URLs only accept exactly 1 request after execution starts.
+        </Text>
+      </div>
+    ),
+    labels: { confirm: 'Send Test Webhook', cancel: 'Cancel' },
+    confirmProps: { color: 'blue' },
+    onConfirm,
+  });
+};
