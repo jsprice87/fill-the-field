@@ -5,35 +5,35 @@ import { Modal } from '@/components/mantine/Modal';
 import { Button } from '@/components/mantine/Button';
 import { Mail, Phone, MapPin, Building, Calendar, User } from 'lucide-react';
 
-interface UserDetailsData {
+interface Franchisee {
   id: string;
+  company_name: string;
+  contact_name: string;
   email: string;
+  phone: string | null;
+  subscription_status: string | null;
+  subscription_tier: string | null;
+  subscription_start_date: string | null;
+  subscription_end_date: string | null;
   created_at: string;
-  franchisee?: {
-    company_name: string;
-    contact_name: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
-    subscription_tier?: string;
-    subscription_status?: string;
-  };
+  updated_at: string;
+  slug: string | null;
+  city: string | null;
+  state: string | null;
 }
 
 interface UserDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userData: UserDetailsData | null;
+  franchisee: Franchisee | null;
 }
 
 const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   isOpen,
   onClose,
-  userData,
+  franchisee,
 }) => {
-  if (!userData) return null;
+  if (!franchisee) return null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -75,71 +75,68 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
           
           <Group gap="sm">
             <Mail className="h-4 w-4 text-gray-500" />
-            <Text size="sm">{userData.email}</Text>
+            <Text size="sm">{franchisee.email}</Text>
           </Group>
           
           <Group gap="sm">
             <Calendar className="h-4 w-4 text-gray-500" />
-            <Text size="sm">Created: {formatDate(userData.created_at)}</Text>
+            <Text size="sm">Created: {formatDate(franchisee.created_at)}</Text>
           </Group>
           
           <Group gap="sm">
             <User className="h-4 w-4 text-gray-500" />
-            <Text size="sm">ID: {userData.id}</Text>
+            <Text size="sm">ID: {franchisee.id}</Text>
           </Group>
         </Stack>
 
         {/* Franchisee Information */}
-        {userData.franchisee && (
-          <Stack gap="sm">
-            <Text fw={600} size="lg">Franchisee Information</Text>
-            
+        <Stack gap="sm">
+          <Text fw={600} size="lg">Franchisee Information</Text>
+          
+          <Group gap="sm">
+            <Building className="h-4 w-4 text-gray-500" />
+            <Text size="sm">{franchisee.company_name}</Text>
+          </Group>
+          
+          <Group gap="sm">
+            <User className="h-4 w-4 text-gray-500" />
+            <Text size="sm">Contact: {franchisee.contact_name}</Text>
+          </Group>
+          
+          {franchisee.phone && (
             <Group gap="sm">
-              <Building className="h-4 w-4 text-gray-500" />
-              <Text size="sm">{userData.franchisee.company_name}</Text>
+              <Phone className="h-4 w-4 text-gray-500" />
+              <Text size="sm">{franchisee.phone}</Text>
             </Group>
-            
+          )}
+          
+          {(franchisee.city || franchisee.state) && (
             <Group gap="sm">
-              <User className="h-4 w-4 text-gray-500" />
-              <Text size="sm">Contact: {userData.franchisee.contact_name}</Text>
+              <MapPin className="h-4 w-4 text-gray-500" />
+              <Text size="sm">
+                {franchisee.city && franchisee.city}
+                {franchisee.city && franchisee.state && ', '}
+                {franchisee.state && franchisee.state}
+              </Text>
             </Group>
-            
-            {userData.franchisee.phone && (
-              <Group gap="sm">
-                <Phone className="h-4 w-4 text-gray-500" />
-                <Text size="sm">{userData.franchisee.phone}</Text>
-              </Group>
+          )}
+          
+          <Group gap="sm" mt="sm">
+            {franchisee.subscription_tier && (
+              <Badge color={getTierColor(franchisee.subscription_tier)}>
+                {franchisee.subscription_tier.charAt(0).toUpperCase() + 
+                 franchisee.subscription_tier.slice(1)} Plan
+              </Badge>
             )}
             
-            {userData.franchisee.address && (
-              <Group gap="sm">
-                <MapPin className="h-4 w-4 text-gray-500" />
-                <Text size="sm">
-                  {userData.franchisee.address}
-                  {userData.franchisee.city && `, ${userData.franchisee.city}`}
-                  {userData.franchisee.state && `, ${userData.franchisee.state}`}
-                  {userData.franchisee.zip && ` ${userData.franchisee.zip}`}
-                </Text>
-              </Group>
+            {franchisee.subscription_status && (
+              <Badge color={getStatusColor(franchisee.subscription_status)}>
+                {franchisee.subscription_status.charAt(0).toUpperCase() + 
+                 franchisee.subscription_status.slice(1)}
+              </Badge>
             )}
-            
-            <Group gap="sm" mt="sm">
-              {userData.franchisee.subscription_tier && (
-                <Badge color={getTierColor(userData.franchisee.subscription_tier)}>
-                  {userData.franchisee.subscription_tier.charAt(0).toUpperCase() + 
-                   userData.franchisee.subscription_tier.slice(1)} Plan
-                </Badge>
-              )}
-              
-              {userData.franchisee.subscription_status && (
-                <Badge color={getStatusColor(userData.franchisee.subscription_status)}>
-                  {userData.franchisee.subscription_status.charAt(0).toUpperCase() + 
-                   userData.franchisee.subscription_status.slice(1)}
-                </Badge>
-              )}
-            </Group>
-          </Stack>
-        )}
+          </Group>
+        </Stack>
 
         {/* Actions */}
         <Group justify="flex-end" mt="lg">
