@@ -1,10 +1,7 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, TextInput, PasswordInput, Stack, Text, Group, Divider } from '@mantine/core';
+import { AuthLayout } from '@/components/auth/AuthLayout';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getSlugFromFranchiseeId, generateSlug, ensureUniqueSlug } from "@/utils/slugUtils";
@@ -45,11 +42,10 @@ const Login = () => {
     password: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleChange = (field: string) => (value: string) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [field]: value,
     }));
   };
 
@@ -255,102 +251,104 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Log in to your account</CardTitle>
-          <CardDescription>
-            Welcome back to SuperLeadStar
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                <div className="text-right text-sm">
-                  <Link to="/forgot-password" className="text-indigo-600 hover:text-indigo-500">
-                    Forgot password?
-                  </Link>
-                </div>
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Log in"}
-              </Button>
+    <AuthLayout 
+      title="Log in to your account"
+      subtitle="Welcome back to SuperLeadStar"
+    >
+      <form onSubmit={handleSubmit}>
+        <Stack gap="md">
+          <TextInput
+            label="Email"
+            placeholder="name@example.com"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange('email')(e.target.value)}
+            required
+          />
+          
+          <PasswordInput
+            label="Password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChange={(e) => handleChange('password')(e.target.value)}
+            required
+          />
+          
+          <Group justify="flex-end">
+            <Text 
+              component={Link} 
+              to="/forgot-password" 
+              size="sm"
+              style={{ textDecoration: 'none', color: 'var(--mantine-color-blue-6)' }}
+            >
+              Forgot password?
+            </Text>
+          </Group>
+          
+          <Button type="submit" fullWidth loading={isLoading}>
+            {isLoading ? "Logging in..." : "Log in"}
+          </Button>
 
-              {/* Test Environment: Quick Access Buttons */}
-              {(import.meta.env.DEV || window.location.hostname === 'localhost') && (
-                <div className="mt-4 space-y-2">
-                  <div className="text-xs text-gray-500 text-center mb-2">Test Environment: Create/Login Test Accounts</div>
-                  
+          {/* Test Environment: Quick Access Buttons */}
+          {(import.meta.env.DEV || window.location.hostname === 'localhost') && (
+            <>
+              <Divider label="Test Environment" labelPosition="center" />
+              
+              <Text size="xs" c="dimmed" ta="center">
+                Create/Login Test Accounts
+              </Text>
+              
+              <Button 
+                variant="outline"
+                fullWidth
+                size="sm"
+                onClick={() => createAndLoginTestUser('admin')}
+                disabled={isLoading}
+              >
+                Create/Login as Admin
+              </Button>
+              
+              <Group grow>
+                {dummyFranchisees.map((franchisee, index) => (
                   <Button 
-                    type="button" 
+                    key={index}
                     variant="outline"
-                    className="w-full text-xs"
-                    onClick={() => createAndLoginTestUser('admin')}
+                    size="xs"
+                    onClick={() => createAndLoginTestUser(`franchisee${index + 1}` as any)}
                     disabled={isLoading}
                   >
-                    Create/Login as Admin
+                    Franchisee {index + 1}
                   </Button>
-                  
-                  <div className="grid grid-cols-3 gap-2">
-                    {dummyFranchisees.map((franchisee, index) => (
-                      <Button 
-                        key={index}
-                        type="button" 
-                        variant="outline"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => createAndLoginTestUser(`franchisee${index + 1}` as any)}
-                        disabled={isLoading}
-                      >
-                        Franchisee {index + 1}
-                      </Button>
-                    ))}
-                  </div>
-                  
-                  <div className="text-xs text-center text-gray-500 mt-1">
-                    <p>Test accounts (will be created if they don't exist):</p>
-                    {dummyFranchisees.map((f, i) => (
-                      <p key={i} className="text-[10px]">{f.name}: {f.email}</p>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <div className="text-sm text-gray-500">
-            Don't have an account?{" "}
-            <Link to="/create-account" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign up
-            </Link>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+                ))}
+              </Group>
+              
+              <Stack gap="xs">
+                <Text size="xs" ta="center" c="dimmed">
+                  Test accounts (will be created if they don't exist):
+                </Text>
+                {dummyFranchisees.map((f, i) => (
+                  <Text key={i} size="10px" ta="center" c="dimmed">
+                    {f.name}: {f.email}
+                  </Text>
+                ))}
+              </Stack>
+            </>
+          )}
+        </Stack>
+      </form>
+      
+      <Text ta="center" size="sm" c="dimmed">
+        Don't have an account?{" "}
+        <Text 
+          component={Link} 
+          to="/create-account"
+          fw={500}
+          style={{ textDecoration: 'none', color: 'var(--mantine-color-blue-6)' }}
+        >
+          Sign up
+        </Text>
+      </Text>
+    </AuthLayout>
   );
 };
 

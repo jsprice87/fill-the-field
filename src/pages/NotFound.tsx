@@ -1,6 +1,8 @@
 
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { Container, Stack, Title, Text, Button, Center } from '@mantine/core';
+import { Home } from 'lucide-react';
 
 const NotFound = () => {
   const location = useLocation();
@@ -13,15 +15,29 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! No Findy Page</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
-      </div>
-    </div>
+    <Container size="sm" py="xl">
+      <Center style={{ minHeight: '70vh' }}>
+        <Stack gap="lg" align="center" ta="center">
+          <Title order={1} size="4rem" c="dimmed">
+            404
+          </Title>
+          <Title order={2}>
+            Oops! No Findy Page
+          </Title>
+          <Text c="dimmed" size="lg">
+            The page you're looking for doesn't exist or has been moved.
+          </Text>
+          <Button 
+            component={Link} 
+            to="/" 
+            leftSection={<Home size={16} />}
+            size="lg"
+          >
+            Return to Home
+          </Button>
+        </Stack>
+      </Center>
+    </Container>
   );
 };
 

@@ -1,10 +1,7 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, TextInput, PasswordInput, Stack, Text } from '@mantine/core';
+import { AuthLayout } from '@/components/auth/AuthLayout';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,11 +15,10 @@ const Register = () => {
     contactName: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleChange = (field: string) => (value: string) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [field]: value,
     }));
   };
 
@@ -106,81 +102,63 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Create your account</CardTitle>
-          <CardDescription>
-            Get started with SuperLeadStar
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input
-                  id="companyName"
-                  name="companyName"
-                  type="text"
-                  placeholder="Your Business Name"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="contactName">Contact Name</Label>
-                <Input
-                  id="contactName"
-                  name="contactName"
-                  type="text"
-                  placeholder="Your Name"
-                  value={formData.contactName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <div className="text-sm text-gray-500">
-            Already have an account?{" "}
-            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Log in
-            </Link>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+    <AuthLayout 
+      title="Create your account"
+      subtitle="Get started with SuperLeadStar"
+    >
+      <form onSubmit={handleSubmit}>
+        <Stack gap="md">
+          <TextInput
+            label="Email"
+            placeholder="name@example.com"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange('email')(e.target.value)}
+            required
+          />
+          
+          <PasswordInput
+            label="Password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChange={(e) => handleChange('password')(e.target.value)}
+            required
+          />
+          
+          <TextInput
+            label="Company Name"
+            placeholder="Your Business Name"
+            value={formData.companyName}
+            onChange={(e) => handleChange('companyName')(e.target.value)}
+            required
+          />
+          
+          <TextInput
+            label="Contact Name"
+            placeholder="Your Name"
+            value={formData.contactName}
+            onChange={(e) => handleChange('contactName')(e.target.value)}
+            required
+          />
+          
+          <Button type="submit" fullWidth loading={isLoading}>
+            {isLoading ? "Creating Account..." : "Create Account"}
+          </Button>
+        </Stack>
+      </form>
+      
+      <Text ta="center" size="sm" c="dimmed">
+        Already have an account?{" "}
+        <Text 
+          component={Link} 
+          to="/login"
+          fw={500}
+          style={{ textDecoration: 'none', color: 'var(--mantine-color-blue-6)' }}
+        >
+          Log in
+        </Text>
+      </Text>
+    </AuthLayout>
   );
 };
 
