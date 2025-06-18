@@ -2,7 +2,7 @@
 import { DatePickerInput, DatePickerInputProps } from '@mantine/dates';
 import { forwardRef } from 'react';
 
-export type AppDatePickerProps = Omit<DatePickerInputProps, 'allowFreeInput'>;
+export type AppDatePickerProps = DatePickerInputProps;
 
 export const AppDatePicker = forwardRef<HTMLButtonElement, AppDatePickerProps>(
   (props, ref) => {
@@ -11,7 +11,6 @@ export const AppDatePicker = forwardRef<HTMLButtonElement, AppDatePickerProps>(
         ref={ref}
         maxDate={new Date()}
         popoverProps={{ withinPortal: true }}
-        allowFreeInput={false}
         {...props}
       />
     );
