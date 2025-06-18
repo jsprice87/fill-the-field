@@ -1,8 +1,10 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { z } from 'zod';
-import { Stack, Alert } from '@mantine/core';
+import { Stack, Alert, ActionIcon } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
+import { Calendar } from 'lucide-react';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
@@ -10,6 +12,8 @@ import { Textarea } from '@/components/mantine/Textarea';
 import { toDate } from '@/utils/normalize';
 import { useZodForm } from '@/hooks/useZodForm';
 import { calculateAgeFromDate } from '@/utils/ageCalculator';
+
+dayjs.extend(customParseFormat);
 
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -48,6 +52,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   classSchedule,
   dayNames,
 }) => {
+  const dateRef = useRef<HTMLInputElement | null>(null);
+  
   const form = useZodForm(participantSchema, {
     first_name: initialData?.first_name ?? '',
     birth_date: toDate(initialData?.birth_date) ?? null,
@@ -115,10 +121,28 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           />
 
           <DateInput
+            ref={dateRef}
             withAsterisk
             label="Birth Date"
-            placeholder="Pick date"
+            placeholder="DD / MM / YYYY"
+            valueFormat="DD / MM / YYYY"
+            allowFreeInput
             maxDate={new Date()}
+            dateParser={(input) =>
+              dayjs(input, ['D/M/YYYY', 'DD/MM/YYYY', 'D-M-YYYY', 'DD-MM-YYYY'], true)
+                .isValid()
+                ? dayjs(input, ['D/M/YYYY','DD/MM/YYYY','D-M-YYYY','DD-MM-YYYY']).toDate()
+                : new Date(NaN)
+            }
+            rightSection={
+              <ActionIcon
+                variant="subtle"
+                onClick={() => dateRef.current?.focus()}
+                aria-label="Open calendar"
+              >
+                <Calendar size={16} />
+              </ActionIcon>
+            }
             {...form.getInputProps('birth_date')}
           />
 
