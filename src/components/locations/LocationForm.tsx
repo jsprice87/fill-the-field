@@ -74,7 +74,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
 
   const handleSubmit = async (data: LocationFormData) => {
     try {
-      // Attempt to geocode the address
+      // Attempt to geocode the address - pass as string
       const fullAddress = `${data.address}, ${data.city}, ${data.state} ${data.zip}`;
       const coordinates = await geocodeAddress(fullAddress);
       
