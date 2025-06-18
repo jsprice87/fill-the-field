@@ -21,6 +21,10 @@ const participantSchema = z.object({
 
 export type ParticipantFormData = z.infer<typeof participantSchema>;
 
+// Utility function to safely convert any date value to Date | null
+const toDate = (v: unknown): Date | null =>
+  v instanceof Date ? v : v ? new Date(String(v)) : null;
+
 interface ParticipantModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,9 +51,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: initialData?.birth_date 
-        ? (initialData.birth_date instanceof Date ? initialData.birth_date : new Date(initialData.birth_date))
-        : null,
+      birth_date: toDate(initialData?.birth_date),
       notes: '',
       age_override: false,
       ...initialData,
@@ -59,13 +61,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   useEffect(() => {
     if (initialData) {
       form.reset({
-        first_name: initialData.first_name || '',
-        age: initialData.age || 3,
-        birth_date: initialData.birth_date 
-          ? (initialData.birth_date instanceof Date ? initialData.birth_date : new Date(initialData.birth_date))
-          : null,
-        notes: initialData.notes || '',
-        age_override: initialData.age_override || false,
+        ...initialData,
+        birth_date: toDate(initialData.birth_date),
       });
     }
   }, [initialData, form]);
