@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Modal } from '@mantine/core';
 import { User, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { BookingFlowData } from '@/hooks/useBookingFlow';
@@ -21,6 +20,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({
 }) => {
   const [customWaiver, setCustomWaiver] = useState<string>('');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
+  const [waiverModalOpened, setWaiverModalOpened] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -349,31 +349,13 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({
             <div className="flex-1">
               <Label htmlFor="waiver" className="font-poppins text-sm leading-relaxed">
                 <span className="text-red-500">*</span> I agree to the terms and conditions outlined in the{' '}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="link" className="p-0 h-auto text-brand-blue underline font-poppins text-sm">
-                      liability waiver and agreement
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="font-agrandir text-brand-navy flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        Liability Waiver and Agreement
-                        {franchiseeData && (
-                          <span className="text-sm font-poppins text-gray-600">
-                            - {franchiseeData.company_name}
-                          </span>
-                        )}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="prose prose-sm max-w-none font-poppins">
-                      <div className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
-                        {waiverText}
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto text-brand-blue underline font-poppins text-sm"
+                  onClick={() => setWaiverModalOpened(true)}
+                >
+                  liability waiver and agreement
+                </Button>
               </Label>
             </div>
           </div>
@@ -423,7 +405,29 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({
           </div>
         )}
 
-        
+        <Modal
+          opened={waiverModalOpened}
+          onClose={() => setWaiverModalOpened(false)}
+          title={
+            <div className="font-agrandir text-brand-navy flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Liability Waiver and Agreement
+              {franchiseeData && (
+                <span className="text-sm font-poppins text-gray-600">
+                  - {franchiseeData.company_name}
+                </span>
+              )}
+            </div>
+          }
+          size="xl"
+          overlayProps={{ blur: 3 }}
+        >
+          <div className="prose prose-sm max-w-none font-poppins">
+            <div className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed max-h-96 overflow-y-auto">
+              {waiverText}
+            </div>
+          </div>
+        </Modal>
       </CardContent>
     </Card>
   );
