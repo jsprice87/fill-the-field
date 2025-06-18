@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -627,9 +626,8 @@ const ClassBooking: React.FC = () => {
         <ParticipantModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onAddParticipant={handleParticipantAdded}
-          classSchedule={selectedClass}
-          dayNames={dayNames}
+          onSubmit={handleParticipantAdded}
+          title="Add Participant"
         />
       )}
     </div>

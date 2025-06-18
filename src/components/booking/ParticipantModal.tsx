@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Stack, NumberInput, Switch } from '@mantine/core';
+import { Stack, NumberInput, Switch, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
@@ -24,16 +24,22 @@ interface ParticipantModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: ParticipantFormData) => void;
+  onAddParticipant?: (participant: any) => Promise<void>;
   initialData?: Partial<ParticipantFormData>;
   title?: string;
+  classSchedule?: any;
+  dayNames?: string[];
 }
 
 const ParticipantModal: React.FC<ParticipantModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  onAddParticipant,
   initialData,
   title = 'Add Participant',
+  classSchedule,
+  dayNames,
 }) => {
   const form = useForm<ParticipantFormData>({
     resolver: zodResolver(participantSchema),
@@ -60,8 +66,12 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     }
   }, [initialData, form]);
 
-  const handleSubmit = (data: ParticipantFormData) => {
-    onSubmit(data);
+  const handleSubmit = async (data: ParticipantFormData) => {
+    if (onAddParticipant) {
+      await onAddParticipant(data);
+    } else {
+      onSubmit(data);
+    }
     onClose();
   };
 
@@ -84,7 +94,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               label="Child's First Name"
               placeholder="Enter child's first name"
               {...form.register('first_name')}
-              error={form.formState.errors.first_name?.message}
+              error={form.formState.errors.first_name?.message ? <Text size="sm" c="red">{form.formState.errors.first_name.message}</Text> : false}
               required
             />
 
@@ -95,16 +105,16 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               max={18}
               value={form.watch('age')}
               onChange={(value) => form.setValue('age', Number(value) || 3)}
-              error={form.formState.errors.age?.message}
+              error={form.formState.errors.age?.message ? <Text size="sm" c="red">{form.formState.errors.age.message}</Text> : false}
               required
             />
 
             <DateInput
               label="Birth Date (Optional)"
               placeholder="Select birth date"
-              value={form.watch('birth_date')}
+              value={form.watch('birth_date') || null}
               onChange={(value) => form.setValue('birth_date', value || undefined)}
-              error={form.formState.errors.birth_date?.message}
+              error={form.formState.errors.birth_date?.message ? <Text size="sm" c="red">{form.formState.errors.birth_date.message}</Text> : false}
               maxDate={new Date()}
             />
 
@@ -122,7 +132,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               placeholder="Any special notes about this child..."
               rows={3}
               {...form.register('notes')}
-              error={form.formState.errors.notes?.message}
+              error={form.formState.errors.notes?.message ? <Text size="sm" c="red">{form.formState.errors.notes.message}</Text> : false}
             />
           </Stack>
         </FormWrapper>

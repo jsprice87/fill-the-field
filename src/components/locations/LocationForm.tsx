@@ -108,7 +108,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               label="Location Name"
               placeholder="Enter location name"
               {...form.register('name')}
-              error={form.formState.errors.name?.message}
+              error={form.formState.errors.name?.message ? <Text size="sm" c="red">{form.formState.errors.name.message}</Text> : false}
               required
             />
 
@@ -116,7 +116,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               label="Address"
               placeholder="Enter street address"
               {...form.register('address')}
-              error={form.formState.errors.address?.message}
+              error={form.formState.errors.address?.message ? <Text size="sm" c="red">{form.formState.errors.address.message}</Text> : false}
               required
             />
 
@@ -125,7 +125,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
                 label="City"
                 placeholder="Enter city"
                 {...form.register('city')}
-                error={form.formState.errors.city?.message}
+                error={form.formState.errors.city?.message ? <Text size="sm" c="red">{form.formState.errors.city.message}</Text> : false}
                 required
               />
 
@@ -133,7 +133,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
                 label="State"
                 placeholder="Enter state"
                 {...form.register('state')}
-                error={form.formState.errors.state?.message}
+                error={form.formState.errors.state?.message ? <Text size="sm" c="red">{form.formState.errors.state.message}</Text> : false}
                 required
               />
 
@@ -141,7 +141,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
                 label="ZIP Code"
                 placeholder="Enter ZIP code"
                 {...form.register('zip')}
-                error={form.formState.errors.zip?.message}
+                error={form.formState.errors.zip?.message ? <Text size="sm" c="red">{form.formState.errors.zip.message}</Text> : false}
                 required
               />
             </Stack>
@@ -150,7 +150,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               label="Phone"
               placeholder="Enter phone number (optional)"
               {...form.register('phone')}
-              error={form.formState.errors.phone?.message}
+              error={form.formState.errors.phone?.message ? <Text size="sm" c="red">{form.formState.errors.phone.message}</Text> : false}
             />
 
             <TextInput
@@ -158,7 +158,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               placeholder="Enter email address (optional)"
               type="email"
               {...form.register('email')}
-              error={form.formState.errors.email?.message}
+              error={form.formState.errors.email?.message ? <Text size="sm" c="red">{form.formState.errors.email.message}</Text> : false}
             />
 
             <Switch

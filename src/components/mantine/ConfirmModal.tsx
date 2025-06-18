@@ -30,8 +30,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const transitionProps = prefersReducedMotion 
-    ? { transition: 'fade', duration: 0 }
-    : { transition: 'pop', duration: 200 };
+    ? { transition: 'fade' as const, duration: 0 }
+    : { transition: 'pop' as const, duration: 200 };
 
   return (
     <Modal

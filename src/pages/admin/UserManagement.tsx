@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAdminFranchisees } from '@/hooks/useAdminFranchisees';
 import { FranchiseesTable } from '@/components/admin/FranchiseesTable';
-import { UserDetailsModal } from '@/components/admin/UserDetailsModal';
+import UserDetailsModal from '@/components/admin/UserDetailsModal';
 import { UserManagementFilters } from '@/components/admin/UserManagementFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
