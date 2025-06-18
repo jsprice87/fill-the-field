@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Stack, NumberInput, Switch } from '@mantine/core';
+import { Stack, NumberInput, Switch, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
@@ -47,7 +47,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: null,
+      birth_date: initialData?.birth_date 
+        ? (initialData.birth_date instanceof Date ? initialData.birth_date : new Date(initialData.birth_date))
+        : null,
       notes: '',
       age_override: false,
       ...initialData,
@@ -59,7 +61,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       form.reset({
         first_name: '',
         age: 3,
-        birth_date: initialData?.birth_date || null,
+        birth_date: initialData?.birth_date 
+          ? (initialData.birth_date instanceof Date ? initialData.birth_date : new Date(initialData.birth_date))
+          : null,
         notes: '',
         age_override: false,
         ...initialData,
@@ -68,10 +72,16 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   }, [initialData, form]);
 
   const handleSubmit = async (data: ParticipantFormData) => {
+    // Convert to ISO string only at submission time
+    const payload = {
+      ...data,
+      birth_date: data.birth_date ? data.birth_date.toISOString() : null,
+    };
+
     if (onAddParticipant) {
-      await onAddParticipant(data);
+      await onAddParticipant(payload);
     } else {
-      onSubmit(data);
+      onSubmit(payload);
     }
     onClose();
   };
@@ -115,7 +125,11 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               placeholder="Select birth date"
               value={form.watch('birth_date')}
               onChange={(date) => form.setValue('birth_date', date)}
-              error={toErrorNode(form.formState.errors.birth_date?.message)}
+              error={form.formState.errors.birth_date && (
+                <Text size="sm" c="red.6">
+                  {form.formState.errors.birth_date.message}
+                </Text>
+              )}
               maxDate={new Date()}
               clearable
             />
