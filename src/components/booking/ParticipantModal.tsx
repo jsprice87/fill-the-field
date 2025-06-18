@@ -14,7 +14,7 @@ import { toErrorNode } from '@/lib/toErrorNode';
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   age: z.number().min(1, 'Age must be at least 1').max(18, 'Age must be 18 or under'),
-  birth_date: z.string().optional(),
+  birth_date: z.string().optional().nullable(),
   notes: z.string().optional(),
   age_override: z.boolean().default(false),
 });
@@ -47,7 +47,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: initialData?.birth_date ?? '',
+      birth_date: null,
       notes: '',
       age_override: false,
       ...initialData,
@@ -59,7 +59,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       form.reset({
         first_name: '',
         age: 3,
-        birth_date: initialData?.birth_date ?? '',
+        birth_date: initialData?.birth_date || null,
         notes: '',
         age_override: false,
         ...initialData,

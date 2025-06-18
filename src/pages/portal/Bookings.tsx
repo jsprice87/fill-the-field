@@ -12,6 +12,7 @@ import { useSearchParams } from 'react-router-dom';
 import BookingsTable from '@/components/bookings/BookingsTable';
 import SearchInput from '@/components/shared/SearchInput';
 import ArchiveToggle from '@/components/shared/ArchiveToggle';
+import { PortalShell } from '@/layout/PortalShell';
 
 const PortalBookings: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
@@ -32,9 +33,11 @@ const PortalBookings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Stack h="100vh" justify="center" align="center">
-        <div className="loading-spinner h-8 w-8"></div>
-      </Stack>
+      <PortalShell>
+        <Stack h="100vh" justify="center" align="center">
+          <div className="loading-spinner h-8 w-8"></div>
+        </Stack>
+      </PortalShell>
     );
   }
 
@@ -77,77 +80,79 @@ const PortalBookings: React.FC = () => {
   ];
 
   return (
-    <Stack h="100vh" gap={0}>
-      {/* Sticky Header with Page Title and Filters */}
-      <StickyHeader>
-        <Stack gap="md">
-          <Group justify="space-between">
-            <Title order={1} size="30px" lh="36px" fw={600}>
-              {includeArchived ? 'All Bookings' : 'Bookings'}
-            </Title>
-            
-            <Group gap="md">
-              <ArchiveToggle />
+    <PortalShell>
+      <Stack h="100vh" gap={0}>
+        {/* Sticky Header with Page Title and Filters */}
+        <StickyHeader>
+          <Stack gap="md">
+            <Group justify="space-between">
+              <Title order={1} size="30px" lh="36px" fw={600}>
+                {includeArchived ? 'All Bookings' : 'Bookings'}
+              </Title>
               
-              {/* Location Filter */}
-              <Group gap="xs">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {locations.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Group gap="md">
+                <ArchiveToggle />
+                
+                {/* Location Filter */}
+                <Group gap="xs">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Filter by location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Locations</SelectItem>
+                      {locations.map((location) => (
+                        <SelectItem key={location.id} value={location.id}>
+                          {location.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Group>
+
+                {/* Search Input */}
+                <SearchInput
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder={getSearchPlaceholder()}
+                  className="w-64"
+                />
               </Group>
-
-              {/* Search Input */}
-              <SearchInput
-                value={searchTerm}
-                onChange={handleSearchChange}
-                placeholder={getSearchPlaceholder()}
-                className="w-64"
-              />
             </Group>
-          </Group>
 
-          {/* Responsive Metrics Grid */}
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
-            {metrics.map((metric) => (
-              <MetricCard
-                key={metric.label}
-                label={metric.label}
-                value={metric.value}
-                icon={metric.icon}
-                description={metric.description}
-              />
-            ))}
-          </SimpleGrid>
-        </Stack>
-      </StickyHeader>
+            {/* Responsive Metrics Grid */}
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
+              {metrics.map((metric) => (
+                <MetricCard
+                  key={metric.label}
+                  label={metric.label}
+                  value={metric.value}
+                  icon={metric.icon}
+                  description={metric.description}
+                />
+              ))}
+            </SimpleGrid>
+          </Stack>
+        </StickyHeader>
 
-      {/* Scrollable Table Area */}
-      <ScrollArea
-        scrollbarSize={8}
-        offsetScrollbars
-        type="scroll"
-        h={`calc(100vh - ${rem(180)})`}
-        px="md"
-        pb="md"
-      >
-        <BookingsTable 
-          bookings={finalBookings} 
-          searchQuery={searchQuery} 
-          showArchived={includeArchived}
-        />
-      </ScrollArea>
-    </Stack>
+        {/* Scrollable Table Area */}
+        <ScrollArea
+          scrollbarSize={8}
+          offsetScrollbars
+          type="scroll"
+          h={`calc(100vh - ${rem(180)})`}
+          px="md"
+          pb="md"
+        >
+          <BookingsTable 
+            bookings={finalBookings} 
+            searchQuery={searchQuery} 
+            showArchived={includeArchived}
+          />
+        </ScrollArea>
+      </Stack>
+    </PortalShell>
   );
 };
 

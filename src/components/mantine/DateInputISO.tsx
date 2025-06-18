@@ -3,8 +3,8 @@ import { DateInput, DateInputProps } from '@mantine/dates';
 import { forwardRef } from 'react';
 
 interface DateInputISOProps extends Omit<DateInputProps, 'value' | 'onChange'> {
-  value?: string;
-  onChange?: (value: string) => void;
+  value?: string | null;
+  onChange?: (value: string | null) => void;
 }
 
 export const DateInputISO = forwardRef<HTMLInputElement, DateInputISOProps>(
@@ -14,7 +14,7 @@ export const DateInputISO = forwardRef<HTMLInputElement, DateInputISOProps>(
         ref={ref}
         {...props}
         value={value ? new Date(value) : null}
-        onChange={(d: Date | null) => onChange?.(d ? d.toISOString() : '')}
+        onChange={(d: Date | null) => onChange?.(d ? d.toISOString() : null)}
       />
     );
   }
