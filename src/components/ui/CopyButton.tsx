@@ -2,7 +2,7 @@
 import React from 'react';
 import { ClipboardCopy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip } from '@mantine/core';
 
 interface CopyButtonProps {
   url: string;
@@ -41,21 +41,16 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ url, className = '' }) =
   };
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={handleCopy}
-          onKeyDown={handleKeyDown}
-          className={`h-6 w-6 flex items-center justify-center rounded hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors ${className}`}
-          aria-label="Copy landing page URL"
-          tabIndex={0}
-        >
-          <ClipboardCopy className="h-4 w-4" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="right">
-        Copy link
-      </TooltipContent>
+    <Tooltip label="Copy link" position="right" withArrow>
+      <button
+        onClick={handleCopy}
+        onKeyDown={handleKeyDown}
+        className={`h-6 w-6 flex items-center justify-center rounded hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors ${className}`}
+        aria-label="Copy landing page URL"
+        tabIndex={0}
+      >
+        <ClipboardCopy className="h-4 w-4" />
+      </button>
     </Tooltip>
   );
 };
