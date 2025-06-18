@@ -1,7 +1,5 @@
 
 import React, { useEffect } from 'react';
-import { FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Stack, Switch, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
@@ -12,7 +10,7 @@ import { NumberInput } from '@/components/mantine/NumberInput';
 import { Textarea } from '@/components/mantine/Textarea';
 import { toErrorNode } from '@/lib/toErrorNode';
 import { toDate } from '@/utils/normalize';
-import { createForm } from '@/hooks/createForm';
+import { useZodForm } from '@/hooks/useZodForm';
 
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -45,7 +43,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   classSchedule,
   dayNames,
 }) => {
-  const form = createForm(participantSchema, {
+  const form = useZodForm(participantSchema, {
     first_name: '',
     age: 3,
     notes: '',
@@ -56,7 +54,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
   useEffect(() => {
     if (initialData) {
-      form.reset({
+      form.setValues({
         ...initialData,
         birth_date: toDate(initialData.birth_date),
       });
@@ -85,63 +83,53 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       title={title}
       size="md"
     >
-      <FormProvider {...form}>
-        <FormWrapper
-          onSubmit={form.handleSubmit(handleSubmit)}
-          onCancel={onClose}
-          submitLabel="Save Participant"
-          isLoading={form.formState.isSubmitting}
-        >
-          <Stack gap="md">
-            <TextInput
-              label="Child's First Name"
-              placeholder="Enter child's first name"
-              {...form.register('first_name')}
-              error={toErrorNode(form.formState.errors.first_name?.message)}
-              required
-            />
+      <FormWrapper
+        onSubmit={form.onSubmit(handleSubmit)}
+        onCancel={onClose}
+        submitLabel="Save Participant"
+        isLoading={false}
+      >
+        <Stack gap="md">
+          <TextInput
+            label="Child's First Name"
+            placeholder="Enter child's first name"
+            {...form.getInputProps('first_name')}
+            required
+          />
 
-            <NumberInput
-              label="Age"
-              placeholder="Enter age"
-              min={1}
-              max={18}
-              {...form.getInputProps('age')}
-              error={toErrorNode(form.formState.errors.age?.message)}
-              required
-            />
+          <NumberInput
+            label="Age"
+            placeholder="Enter age"
+            min={1}
+            max={18}
+            {...form.getInputProps('age')}
+            required
+          />
 
-            <DateInput
-              label="Birth Date (Optional)"
-              placeholder="Select birth date"
-              {...form.getInputProps('birth_date')}
-              error={form.formState.errors.birth_date && (
-                <Text size="sm" c="red.6">
-                  {form.formState.errors.birth_date.message}
-                </Text>
-              )}
-              maxDate={new Date()}
-              clearable
-            />
+          <DateInput
+            label="Birth Date (Optional)"
+            placeholder="Select birth date"
+            {...form.getInputProps('birth_date')}
+            maxDate={new Date()}
+            clearable
+          />
 
-            <Switch
-              label="Age Override"
-              description="Allow this child to participate regardless of class age restrictions"
-              {...form.getInputProps('age_override')}
-              color="soccerGreen"
-              size="sm"
-            />
+          <Switch
+            label="Age Override"
+            description="Allow this child to participate regardless of class age restrictions"
+            {...form.getInputProps('age_override')}
+            color="soccerGreen"
+            size="sm"
+          />
 
-            <Textarea
-              label="Notes (Optional)"
-              placeholder="Any special notes about this child..."
-              rows={3}
-              {...form.register('notes')}
-              error={toErrorNode(form.formState.errors.notes?.message)}
-            />
-          </Stack>
-        </FormWrapper>
-      </FormProvider>
+          <Textarea
+            label="Notes (Optional)"
+            placeholder="Any special notes about this child..."
+            rows={3}
+            {...form.getInputProps('notes')}
+          />
+        </Stack>
+      </FormWrapper>
     </Modal>
   );
 };

@@ -2,11 +2,11 @@
 import { useForm, zodResolver } from '@mantine/form';
 import { ZodSchema, z } from 'zod';
 
-export const createForm = <T extends ZodSchema>(
+export const useZodForm = <T extends ZodSchema>(
   schema: T,
-  defaults: Partial<z.infer<T>>,
+  initial: Partial<z.infer<T>>,
 ) =>
   useForm<z.infer<T>>({
-    initialValues: defaults,
+    initialValues: initial,
     validate: zodResolver(schema),
   });

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,9 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useZodForm } from '@/hooks/useZodForm';
 import type { Database } from '@/integrations/supabase/types';
 
 type LeadStatus = Database['public']['Enums']['lead_status'];
+
+const quickCaptureSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Please enter a valid email address'),
+  phone: z.string().min(1, 'Phone number is required'),
+  zip: z.string().min(1, 'ZIP code is required'),
+});
+
+type QuickCaptureFormData = z.infer<typeof quickCaptureSchema>;
 
 interface QuickCaptureFormProps {
   franchiseeId: string;
@@ -24,41 +36,17 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   showTitle = false,
   onLeadCreated
 }) => {
-  const [formData, setFormData] = useState({
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useZodForm(quickCaptureSchema, {
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     zip: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
-    if (!formData.zip.trim()) newErrors.zip = 'ZIP code is required';
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-    
+  const handleSubmit = async (formData: QuickCaptureFormData) => {
     setIsSubmitting(true);
 
     try {
@@ -126,14 +114,6 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
   return (
     <Card className="w-full border-0 shadow-none">
       {showTitle && (
@@ -147,7 +127,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
         </CardHeader>
       )}
       <CardContent className="p-0">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
@@ -156,16 +136,15 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               <Input
                 id="firstName"
                 type="text"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                {...form.getInputProps('firstName')}
                 required
                 placeholder="Enter first name"
                 soccer
-                error={!!errors.firstName}
+                error={!!form.errors.firstName}
                 className="h-12"
               />
-              {errors.firstName && (
-                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.firstName}</p>
+              {form.errors.firstName && (
+                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.firstName}</p>
               )}
             </div>
             <div>
@@ -175,16 +154,15 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               <Input
                 id="lastName"
                 type="text"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                {...form.getInputProps('lastName')}
                 required
                 placeholder="Enter last name"
                 soccer
-                error={!!errors.lastName}
+                error={!!form.errors.lastName}
                 className="h-12"
               />
-              {errors.lastName && (
-                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.lastName}</p>
+              {form.errors.lastName && (
+                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.lastName}</p>
               )}
             </div>
           </div>
@@ -196,16 +174,15 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             <Input
               id="email"
               type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
+              {...form.getInputProps('email')}
               required
               placeholder="your.email@example.com"
               soccer
-              error={!!errors.email}
+              error={!!form.errors.email}
               className="h-12"
             />
-            {errors.email && (
-              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.email}</p>
+            {form.errors.email && (
+              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.email}</p>
             )}
           </div>
 
@@ -216,16 +193,15 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             <Input
               id="phone"
               type="tel"
-              value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
+              {...form.getInputProps('phone')}
               required
               placeholder="(555) 123-4567"
               soccer
-              error={!!errors.phone}
+              error={!!form.errors.phone}
               className="h-12"
             />
-            {errors.phone && (
-              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.phone}</p>
+            {form.errors.phone && (
+              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.phone}</p>
             )}
           </div>
 
@@ -236,17 +212,16 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             <Input
               id="zip"
               type="text"
-              value={formData.zip}
-              onChange={(e) => handleInputChange('zip', e.target.value)}
+              {...form.getInputProps('zip')}
               required
               placeholder="12345"
               maxLength={5}
               soccer
-              error={!!errors.zip}
+              error={!!form.errors.zip}
               className="h-12"
             />
-            {errors.zip && (
-              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{errors.zip}</p>
+            {form.errors.zip && (
+              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.zip}</p>
             )}
           </div>
 
