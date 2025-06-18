@@ -83,7 +83,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
         data.longitude = coordinates.longitude;
       }
       
-      // Pass the complete data object, not just ID
+      // Pass the complete data object with all form fields
       await onSubmit(data);
     } catch (error) {
       console.error('Error submitting location:', error);
