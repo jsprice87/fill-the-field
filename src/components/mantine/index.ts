@@ -12,7 +12,6 @@ export { NumberInput } from './NumberInput';
 export { Paper } from './Paper';
 export { Select } from './Select';
 export { StickyHeader } from './StickyHeader';
-export { Table } from './Table';
+export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table';
 export { TextInput } from './TextInput';
 export { Textarea } from './Textarea';
-export { Typography } from './Typography';
