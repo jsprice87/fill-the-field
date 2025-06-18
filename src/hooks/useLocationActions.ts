@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { LocationFormData } from '@/components/locations/LocationForm';
+import { geocodeAddress } from '@/utils/geocoding';
 
 export const useArchiveLocation = () => {
   const queryClient = useQueryClient();
@@ -104,6 +105,19 @@ export const useUpdateLocation = () => {
         throw new Error('Location ID is required for update');
       }
 
+      // Try to geocode the address with Location object
+      let coordinates = null;
+      try {
+        coordinates = await geocodeAddress({
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip: data.zip
+        });
+      } catch (error) {
+        console.warn('Geocoding failed:', error);
+      }
+
       const updateData = {
         name: data.name,
         address: data.address,
@@ -113,9 +127,9 @@ export const useUpdateLocation = () => {
         phone: data.phone || null,
         email: data.email || null,
         is_active: data.isActive,
-        ...(data.latitude && data.longitude && {
-          latitude: data.latitude,
-          longitude: data.longitude
+        ...(coordinates && {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude
         })
       };
 
@@ -133,6 +147,56 @@ export const useUpdateLocation = () => {
     onError: (error) => {
       console.error('Error updating location:', error);
       toast.error('Failed to update location');
+    }
+  });
+};
+
+export const useCreateLocation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: Omit<LocationFormData, 'id'>) => {
+      // Try to geocode the address with Location object
+      let coordinates = null;
+      try {
+        coordinates = await geocodeAddress({
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip: data.zip
+        });
+      } catch (error) {
+        console.warn('Geocoding failed:', error);
+      }
+
+      const insertData = {
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zip: data.zip,
+        phone: data.phone || null,
+        email: data.email || null,
+        is_active: data.isActive,
+        ...(coordinates && {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude
+        })
+      };
+
+      const { error } = await supabase
+        .from('locations')
+        .insert(insertData);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      toast.success('Location created successfully');
+    },
+    onError: (error) => {
+      console.error('Error creating location:', error);
+      toast.error('Failed to create location');
     }
   });
 };

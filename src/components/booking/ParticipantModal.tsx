@@ -24,7 +24,7 @@ export type ParticipantFormData = z.infer<typeof participantSchema>;
 interface ParticipantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ParticipantFormData) => void;
+  onSubmit: (data: any) => void;
   onAddParticipant?: (participant: any) => Promise<void>;
   initialData?: Partial<ParticipantFormData>;
   title?: string;

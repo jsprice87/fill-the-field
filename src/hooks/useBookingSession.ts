@@ -8,7 +8,7 @@ export interface ParticipantData {
   firstName: string;
   lastName: string;
   age: number;
-  birthDate: string;
+  birthDate: string; // ISO string for storage/API
   classScheduleId: string;
   className: string;
   classTime: string;
