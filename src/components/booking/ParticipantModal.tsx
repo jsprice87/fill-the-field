@@ -9,6 +9,7 @@ import { TextInput } from '@/components/mantine/TextInput';
 import { Textarea } from '@/components/mantine/Textarea';
 import { toDate } from '@/utils/normalize';
 import { useZodForm } from '@/hooks/useZodForm';
+import { calculateAgeFromDate } from '@/utils/ageCalculator';
 
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -65,7 +66,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
   // Calculate age from birth date
   const age = form.values.birth_date
-    ? Math.floor((Date.now() - form.values.birth_date.getTime()) / 31_557_600_000)
+    ? calculateAgeFromDate(form.values.birth_date)
     : null;
 
   // Check if age is outside class range
@@ -116,8 +117,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           <DateInput
             withAsterisk
             label="Birth Date"
-            placeholder="Select birth date"
-            dropdownType="modal"
+            placeholder="Pick date"
             maxDate={new Date()}
             {...form.getInputProps('birth_date')}
           />
