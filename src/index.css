@@ -1,4 +1,5 @@
 
+
 @charset "UTF-8";
 
 /* Import Design System Tokens */
@@ -95,7 +96,7 @@
 }
 
 .ring-offset-background {
-  @apply ring-offset-background
+  @apply ring-offset-2
 }
 
 .select {
@@ -125,3 +126,4 @@
 .card-footer {
   @apply flex items-center p-6 pt-0
 }
+
