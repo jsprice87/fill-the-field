@@ -10,6 +10,7 @@ import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
 import { Textarea } from '@/components/mantine/Textarea';
 import { toErrorNode } from '@/lib/toErrorNode';
+import { dateOrNull, isoOrNull } from '@/lib/date';
 
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -47,7 +48,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: initialData?.birth_date ? initialData.birth_date : undefined,
+      birth_date: dateOrNull(initialData?.birth_date),
       notes: '',
       age_override: false,
       ...initialData,
@@ -59,7 +60,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       form.reset({
         first_name: '',
         age: 3,
-        birth_date: initialData?.birth_date ? initialData.birth_date : undefined,
+        birth_date: dateOrNull(initialData?.birth_date),
         notes: '',
         age_override: false,
         ...initialData,
@@ -71,7 +72,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     if (onAddParticipant) {
       const payload = { 
         ...data, 
-        birth_date: data.birth_date ? new Date(data.birth_date).toISOString() : undefined 
+        birth_date: isoOrNull(data.birth_date)
       };
       await onAddParticipant(payload);
     } else {
@@ -117,8 +118,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             <DateInput
               label="Birth Date (Optional)"
               placeholder="Select birth date"
-              value={form.watch('birth_date') ? new Date(form.watch('birth_date')!) : null}
-              onChange={(d) => form.setValue('birth_date', d ? d.toISOString() : undefined)}
+              value={form.watch('birth_date')}
+              onChange={(d) => form.setValue('birth_date', d)}
               error={toErrorNode(form.formState.errors.birth_date?.message)}
               maxDate={new Date()}
             />
