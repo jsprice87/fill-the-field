@@ -6,16 +6,17 @@ export type { ButtonProps } from '../mantine/Button';
 export { Input, TextInput } from '../mantine/TextInput';
 export type { InputProps } from '../mantine/TextInput';
 
-// 🔓 UNCOMMENTED these lines as instructed
 export { Textarea } from '../mantine/Textarea';
 export type { TextareaProps } from '../mantine/Textarea';
 
 export { Badge } from '../mantine/Badge';
 export type { BadgeProps } from '../mantine/Badge';
 
+export { Select } from '../mantine/Select';
+export type { SelectProps } from '../mantine/Select';
+
 // Still using shadcn/ui - will be migrated in future phases
 export * from './card';
-export * from './select';
 export * from './dropdown-menu';
 export * from './dialog';
 export * from './table';
@@ -66,6 +67,6 @@ export { Toaster } from './toaster';
 export { toast } from './sonner';
 export * from './use-toast';
 
-// ➕ ENSURE these exports exist (SearchInput and TableRowMenu)
+// Ensure these exports exist (SearchInput and TableRowMenu)
 export { default as SearchInput } from '../shared/SearchInput';
 export { TableRowMenu } from './TableRowMenu';

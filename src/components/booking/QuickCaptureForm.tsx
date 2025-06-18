@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/mantine/Button';
+import { Input } from '@/components/mantine/TextInput';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';

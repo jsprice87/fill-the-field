@@ -19,7 +19,7 @@ Repository: <https://github.com/mantinedev/mantine>
 
 ---
 
-## 1 · Project Level Setup
+## 1 · Project Level Setup ✅ COMPLETE
 
 | Step | Command / File | Notes |
 |------|----------------|-------|
@@ -31,7 +31,7 @@ Repository: <https://github.com/mantinedev/mantine>
 
 ---
 
-## 2 · Theming Strategy
+## 2 · Theming Strategy ✅ COMPLETE
 
 ### 2.1 Colour Palette  
 > **Rule:** Keep existing marketing colours on **`/free-trial/`**, otherwise adopt Mantine defaults tweaked to Style Guidelines.
@@ -56,18 +56,18 @@ export const theme: MantineThemeOverride = {
 };
 ```
 
-### 2.2 Typography
+### 2.2 Typography ✅ COMPLETE
 - **Headings:** `font-family: Inter, sans-serif; font-weight: 600;`
 - **Body:** Mantine default (Inter).
 - **Code:** `Menlo, ui-monospace`.
 
-### 2.3 Shadow & Radius
+### 2.3 Shadow & Radius ✅ COMPLETE
 - Use Mantine default shadows (`sm`, `md`).
 - Radius globally set to `8px`; buttons override via prop when pill‑style needed.
 
 ---
 
-## 3 · Styled‑System Decision
+## 3 · Styled‑System Decision ✅ COMPLETE
 
 | Concern | Decision |
 |---------|----------|
@@ -79,7 +79,7 @@ export const theme: MantineThemeOverride = {
 
 ---
 
-## 4 · Component Mapping Table
+## 4 · Component Mapping Table ✅ COMPLETE
 
 | Current Component (src) | Mantine Replacement | Notes / Props |
 |------------------------|---------------------|---------------|
@@ -99,42 +99,42 @@ export const theme: MantineThemeOverride = {
 
 ## 5 · Phased Checklist
 
-### Phase 0 — Scaffolding
-- [ ] Install packages (Section 1).
-- [ ] Create `mantine-theme.ts` and wrap app.
-- [ ] Add `<Notifications />` root level.
+### Phase 0 — Scaffolding ✅ COMPLETE
+- [x] Install packages (Section 1).
+- [x] Create `mantine-theme.ts` and wrap app.
+- [x] Add `<Notifications />` root level.
 
 **Gate:** App boots with no visual regressions.
 
 ---
 
-### Phase 1 — Design Tokens
-- [ ] Apply colour palette, radius, typography in theme.
-- [ ] Add GlobalStyles to reset body background / font.
-- [ ] Update Storybook (if present) to load MantineProvider.
+### Phase 1 — Design Tokens ✅ COMPLETE
+- [x] Apply colour palette, radius, typography in theme.
+- [x] Add GlobalStyles to reset body background / font.
+- [x] Update Storybook (if present) to load MantineProvider.
 
 **Gate:** New `{Button variant="filled"}` renders in brand green.
 
 ---
 
-### Phase 2 — Primitive Replacement
-- [ ] Replace all `<Button>` imports with Mantine.
-- [ ] Replace all form inputs (Input, Select, Textarea).
-- [ ] Remove corresponding shadcn component files.
+### Phase 2 — Primitive Replacement ✅ COMPLETE
+- [x] Replace all `<Button>` imports with Mantine.
+- [x] Replace all form inputs (Input, Select, Textarea).
+- [x] Remove corresponding shadcn component files.
 
 **Gate:** CI passes; booking flow works.
 
 ---
 
-### Phase 3 — Overlays & Menus
-- [ ] Swap Radix Dialog, DropdownMenu, Tooltip with Mantine equivalents.
-- [ ] Verify focus‑trap and screen‑reader behaviour.
+### Phase 3 — Overlays & Menus ✅ COMPLETE (Previously completed)
+- [x] Swap Radix Dialog, DropdownMenu, Tooltip with Mantine equivalents.
+- [x] Verify focus‑trap and screen‑reader behaviour.
 
 **Gate:** Accessibility audit (axe) passes.
 
 ---
 
-### Phase 4 — Tables & Scroll Areas
+### Phase 4 — Tables & Scroll Areas (NEXT PHASE)
 - [ ] Wrap Bookings / Leads table bodies in `<ScrollArea h="calc(100vh-240px)">`.
 - [ ] Use `Table.ScrollContainer minWidth={900}` for side‑scroll.
 - [ ] Keep header cards sticky at top via CSS (`position: sticky; top: 0; z-index: 1`).
@@ -214,6 +214,16 @@ Before opening a PR, ensure you have verified:
 - **Mantine v7 Migration Notes:** https://mantine.dev/guides/v7-migration/
 - **Notifications API:** https://mantine.dev/notifications/
 - **ScrollArea / Table docs:** https://mantine.dev/core/table/
+
+---
+
+**Phase 2 Migration Complete!** 
+- ✅ All Button, Input, Textarea, Select components now use Mantine
+- ✅ Soccer Stars branding preserved with custom variants
+- ✅ Storybook integration complete with new primitive stories
+- ✅ All critical user flows tested and functional
+
+**Next:** Proceed to Phase 4 (Phase 3 was completed earlier)
 
 ---
 

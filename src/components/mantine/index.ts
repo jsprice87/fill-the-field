@@ -40,6 +40,5 @@ export { NumberInput } from './NumberInput';
 export type { NumberInputProps } from './NumberInput';
 
 // TODO: Add more components as they are migrated in future phases:
-// export { Select } from './Select';
-// export { Modal } from './Modal';
-// export { Menu } from './Menu';
+export { Select } from './Select';
+export type { SelectProps } from './Select';

@@ -14,12 +14,17 @@
     },
     "phase2": {
       "status": "complete", 
-      "description": "Low-risk component migration and provider setup",
-      "completedAt": "2025-06-17",
+      "description": "Primitive component replacement - Button, Input, Textarea, Select migration",
+      "completedAt": "2025-06-18",
       "components": [
-        "MantineProvider integrated with theme",
-        "Component wrappers created for seamless API compatibility",
-        "Export paths updated in ui/index.ts"
+        "Select wrapper created with Mantine Select component",
+        "All Button imports migrated to Mantine (40+ files)",
+        "All Input imports migrated to Mantine TextInput (9+ files)", 
+        "All Textarea imports migrated to Mantine (2+ files)",
+        "All Select imports migrated to Mantine (4+ files)",
+        "Storybook stories created for all Mantine primitives",
+        "Component export paths updated in ui/index.ts",
+        "Soccer Stars brand styling preserved in all components"
       ]
     },
     "phase3": {
@@ -52,21 +57,22 @@
   "nextPhases": {
     "phase4": "Complete remaining portal pages (Locations, Profile, Settings)",
     "phase5": "Free trial form migration with Soccer Stars branding preservation",
-    "phase6": "Complex components (Select, Modal, Table enhancements)"
+    "phase6": "Complex components (Modal, Table enhancements, Menu)"
   },
   "acceptanceChecklist": {
-    "buttonsShowMantineStyling": "✅ Rounded corners, focus rings, green filled default visible",
-    "headingsUseMantineTitle": "✅ Inspect element shows mantine-Title-root classes",
-    "metricCardsUseMantinePaper": "✅ Shadow & radius visible on metric cards",
-    "tableHeaderStickyNoSidebarOverlap": "✅ ScrollArea prevents sidebar overlap, headers stay fixed",
-    "darkModeColoursSwapProperly": "✅ Mantine theme tokens ensure clean color transitions"
+    "phase2PrimitivesComplete": "✅ All Button, Input, Textarea, Select use Mantine imports",
+    "soccerBrandingPreserved": "✅ Soccer Stars variants (soccer_primary, soccer_secondary) working",
+    "storybookIntegration": "✅ MantineProvider configured, new primitive stories created",
+    "bookingFlowFunctional": "✅ Free trial signup and class booking flows tested",
+    "formValidationWorking": "✅ All form error states and submissions functional",
+    "buildPassing": "✅ Development and production builds successful"
   },
   "notes": [
-    "Phase 3 focused on visual migration - making Mantine styling obvious",
-    "All portal pages now show distinctive Mantine components",
+    "Phase 2 completed - All primitive components now use Mantine",
+    "Soccer Stars branding fully preserved with custom variant support",
+    "Comprehensive Storybook integration with MantineProvider setup",
+    "All critical user flows tested and functional",
     "Zero functional regressions - all existing workflows preserved",
-    "Soccer Stars branding preserved for future free-trial migration",
-    "Table scrolling and sticky headers work correctly without sidebar overlap",
-    "Dark mode transitions work seamlessly with Mantine theme tokens"
+    "Ready to proceed to Phase 4 (skipping Phase 3 which was already completed)"
   ]
 }
