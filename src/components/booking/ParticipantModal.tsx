@@ -4,11 +4,11 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Stack, NumberInput, Switch } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
 import { Textarea } from '@/components/mantine/Textarea';
+import { DateInputISO } from '@/components/mantine/DateInputISO';
 import { toErrorNode } from '@/lib/toErrorNode';
 
 const participantSchema = z.object({
@@ -110,11 +110,11 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               required
             />
 
-            <DateInput
+            <DateInputISO
               label="Birth Date (Optional)"
               placeholder="Select birth date"
-              value={form.watch('birth_date') ? new Date(form.watch('birth_date')!) : null}
-              onChange={(date) => form.setValue('birth_date', date ? date.toISOString() : null)}
+              value={form.watch('birth_date')}
+              onChange={(value) => form.setValue('birth_date', value)}
               error={toErrorNode(form.formState.errors.birth_date?.message)}
               maxDate={new Date()}
               clearable

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin, Building, Users, Clock } from "lucide-react";
@@ -11,6 +12,7 @@ import ArchiveToggle from '@/components/shared/ArchiveToggle';
 import LocationsTable from '@/components/locations/LocationsTable';
 import LocationForm, { LocationFormData } from '@/components/locations/LocationForm';
 import { useLocations } from '@/hooks/useLocations';
+import { useUpdateLocation } from '@/hooks/useLocationActions';
 import { supabase } from "@/integrations/supabase/client";
 
 const PortalLocations: React.FC = () => {
@@ -20,6 +22,7 @@ const PortalLocations: React.FC = () => {
   const [searchParams] = useSearchParams();
   
   const hideInactive = searchParams.get('hideInactive') === 'true';
+  const updateLocationMutation = useUpdateLocation();
   
   // Get franchisee ID
   useEffect(() => {
@@ -82,29 +85,8 @@ const PortalLocations: React.FC = () => {
 
     try {
       if (data.id) {
-        // Update existing location
-        const updateData = {
-          name: data.name,
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zip: data.zip,
-          phone: data.phone || null,
-          email: data.email || null,
-          is_active: data.isActive,
-          ...(data.latitude && data.longitude && {
-            latitude: data.latitude,
-            longitude: data.longitude
-          })
-        };
-
-        const { error } = await supabase
-          .from('locations')
-          .update(updateData)
-          .eq('id', data.id);
-        
-        if (error) throw error;
-        toast.success('Location updated successfully');
+        // Update existing location using the mutation hook
+        await updateLocationMutation.mutateAsync(data);
       } else {
         // Add new location
         const insertData = {
