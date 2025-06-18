@@ -1,23 +1,21 @@
 
 import React, { useEffect } from 'react';
 import { z } from 'zod';
-import { Stack, Switch, Text } from '@mantine/core';
+import { Stack, Alert } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
-import { NumberInput } from '@/components/mantine/NumberInput';
 import { Textarea } from '@/components/mantine/Textarea';
-import { toErrorNode } from '@/lib/toErrorNode';
 import { toDate } from '@/utils/normalize';
 import { useZodForm } from '@/hooks/useZodForm';
 
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
-  age: z.number().min(1, 'Age must be at least 1').max(18, 'Age must be 18 or under'),
-  birth_date: z.date().nullable(),
+  birth_date: z
+    .date({ required_error: 'Birth date is required' })
+    .max(new Date(), 'Birth date cannot be in the future'),
   notes: z.string().optional(),
-  age_override: z.boolean().default(false),
 });
 
 export type ParticipantFormData = z.infer<typeof participantSchema>;
@@ -29,7 +27,13 @@ interface ParticipantModalProps {
   onAddParticipant?: (participant: any) => Promise<void>;
   initialData?: Partial<ParticipantFormData>;
   title?: string;
-  classSchedule?: any;
+  classSchedule?: {
+    classes: {
+      min_age?: number;
+      max_age?: number;
+      name: string;
+    };
+  };
   dayNames?: string[];
 }
 
@@ -44,28 +48,40 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   dayNames,
 }) => {
   const form = useZodForm(participantSchema, {
-    first_name: '',
-    age: 3,
-    notes: '',
-    age_override: false,
-    ...initialData,
-    birth_date: toDate(initialData?.birth_date),
+    first_name: initialData?.first_name ?? '',
+    birth_date: toDate(initialData?.birth_date) ?? null,
+    notes: initialData?.notes ?? '',
   });
 
   useEffect(() => {
     if (initialData) {
       form.setValues({
-        ...initialData,
-        birth_date: toDate(initialData.birth_date),
+        first_name: initialData.first_name ?? '',
+        birth_date: toDate(initialData.birth_date) ?? null,
+        notes: initialData.notes ?? '',
       });
     }
   }, [initialData, form]);
 
+  // Calculate age from birth date
+  const age = form.values.birth_date
+    ? Math.floor((Date.now() - form.values.birth_date.getTime()) / 31_557_600_000)
+    : null;
+
+  // Check if age is outside class range
+  const isOutOfRange = 
+    age !== null && 
+    classSchedule?.classes && 
+    ((classSchedule.classes.min_age && age < classSchedule.classes.min_age) ||
+     (classSchedule.classes.max_age && age > classSchedule.classes.max_age));
+
   const handleSubmit = async (data: ParticipantFormData) => {
     // Convert to ISO string only at submission time
+    const { notes, ...rest } = data;
     const payload = {
-      ...data,
-      birth_date: data.birth_date ? data.birth_date.toISOString() : null,
+      ...rest,
+      birth_date: data.birth_date.toISOString(),
+      notes: notes || undefined,
     };
 
     if (onAddParticipant) {
@@ -97,30 +113,22 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             required
           />
 
-          <NumberInput
-            label="Age"
-            placeholder="Enter age"
-            min={1}
-            max={18}
-            {...form.getInputProps('age')}
-            required
-          />
-
           <DateInput
-            label="Birth Date (Optional)"
+            withAsterisk
+            label="Birth Date"
             placeholder="Select birth date"
-            {...form.getInputProps('birth_date')}
+            dropdownType="modal"
             maxDate={new Date()}
-            clearable
+            {...form.getInputProps('birth_date')}
           />
 
-          <Switch
-            label="Age Override"
-            description="Allow this child to participate regardless of class age restrictions"
-            {...form.getInputProps('age_override')}
-            color="soccerGreen"
-            size="sm"
-          />
+          {isOutOfRange && classSchedule?.classes && (
+            <Alert color="yellow" radius="md">
+              This child is outside the recommended age range 
+              ({classSchedule.classes.min_age}–{classSchedule.classes.max_age}). 
+              You can still save the participant, but coaches may move them to a different class.
+            </Alert>
+          )}
 
           <Textarea
             label="Notes (Optional)"

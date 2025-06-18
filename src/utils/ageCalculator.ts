@@ -1,17 +1,11 @@
 
-export const calculateAge = (birthDate: string): number => {
-  const today = new Date();
-  const birth = new Date(birthDate);
-  
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  
-  // If birthday hasn't occurred this year yet, subtract 1
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  
-  return age;
+export const calculateAge = (birthDate: string | Date): number => {
+  const birth = birthDate instanceof Date ? birthDate : new Date(birthDate);
+  return Math.floor((Date.now() - birth.getTime()) / 31_557_600_000);
+};
+
+export const calculateAgeFromDate = (birthDate: Date): number => {
+  return Math.floor((Date.now() - birthDate.getTime()) / 31_557_600_000);
 };
 
 export const isAgeInRange = (age: number, minAge?: number, maxAge?: number): boolean => {
