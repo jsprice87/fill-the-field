@@ -1,7 +1,8 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@integrations/supabase/client';
 import { toast } from 'sonner';
+import type { LocationFormData } from '@/components/locations/LocationForm';
 
 export const useArchiveLocation = () => {
   const queryClient = useQueryClient();
@@ -90,6 +91,48 @@ export const useToggleLocationStatus = () => {
     onError: (error) => {
       console.error('Error updating location status:', error);
       toast.error('Failed to update location status');
+    }
+  });
+};
+
+export const useUpdateLocation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: LocationFormData) => {
+      if (!data.id) {
+        throw new Error('Location ID is required for update');
+      }
+
+      const updateData = {
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zip: data.zip,
+        phone: data.phone || null,
+        email: data.email || null,
+        is_active: data.isActive,
+        ...(data.latitude && data.longitude && {
+          latitude: data.latitude,
+          longitude: data.longitude
+        })
+      };
+
+      const { error } = await supabase
+        .from('locations')
+        .update(updateData)
+        .eq('id', data.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      toast.success('Location updated successfully');
+    },
+    onError: (error) => {
+      console.error('Error updating location:', error);
+      toast.error('Failed to update location');
     }
   });
 };

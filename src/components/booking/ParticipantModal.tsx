@@ -113,7 +113,11 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             <DateInput
               label="Birth Date (Optional)"
               placeholder="Select birth date"
-              value={form.watch('birth_date') || null}
+              value={
+                form.watch('birth_date')
+                  ? new Date(form.watch('birth_date') as string)
+                  : null
+              }
               onChange={(value) => form.setValue('birth_date', value || undefined)}
               error={toErrorNode(form.formState.errors.birth_date?.message)}
               maxDate={new Date()}
