@@ -1,3 +1,4 @@
+
 @charset "UTF-8";
 
 /* Import Design System Tokens */
@@ -72,14 +73,13 @@
  
     --ring: 217.2 32.6% 17.5%;
   }
-}
 
-body {
-  @apply bg-background text-foreground;
-  font-feature-settings:
-    "rlig" 1,
-    "calt" 1;
-}
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
 }
 
 .input {
