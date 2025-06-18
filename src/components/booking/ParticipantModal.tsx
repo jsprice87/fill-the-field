@@ -51,10 +51,10 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: toDate(initialData?.birth_date),
       notes: '',
       age_override: false,
       ...initialData,
+      birth_date: toDate(initialData?.birth_date),
     },
   });
 
