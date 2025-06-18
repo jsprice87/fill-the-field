@@ -3,6 +3,7 @@ import type { Preview } from '@storybook/react';
 import { MantineProvider } from '@mantine/core';
 import { theme } from '../src/mantine/theme';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 import '../src/index.css';
 

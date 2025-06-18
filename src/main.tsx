@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import App from './App';
 import './index.css';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 import './styles/mantine-globals.css';
 import { theme } from './mantine/theme';
