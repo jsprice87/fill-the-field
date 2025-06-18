@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 
 export type AppDatePickerProps = Omit<DatePickerInputProps, 'allowFreeInput'>;
 
-export const AppDatePicker = forwardRef<HTMLInputElement, AppDatePickerProps>(
+export const AppDatePicker = forwardRef<HTMLButtonElement, AppDatePickerProps>(
   (props, ref) => {
     return (
       <DatePickerInput

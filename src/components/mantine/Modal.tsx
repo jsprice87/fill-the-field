@@ -8,6 +8,14 @@ interface ModalProps extends Omit<MantineModalProps, 'transitionProps'> {
 }
 
 export const Modal: React.FC<ModalProps> = ({
+  size = 'lg',
+  radius = 'lg',
+  padding = 'xl',
+  overlayProps = { blur: 3 },
+  withinPortal = true,
+  trapFocus = true,
+  closeOnEscape = true,
+  centered = true,
   children,
   ...props
 }) => {
@@ -19,14 +27,15 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <MantineModal
-      radius="lg"
-      padding="xl"
-      overlayProps={{ blur: 4 }}
+      size={size}
+      radius={radius}
+      padding={padding}
+      overlayProps={overlayProps}
       transitionProps={transitionProps}
-      withinPortal
-      trapFocus
-      closeOnEscape
-      centered
+      withinPortal={withinPortal}
+      trapFocus={trapFocus}
+      closeOnEscape={closeOnEscape}
+      centered={centered}
       {...props}
     >
       {children}

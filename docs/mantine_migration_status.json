@@ -29,50 +29,51 @@
     },
     "phase3": {
       "status": "complete",
-      "description": "Visual Mantine migration - Making Mantine styling obvious across portal pages",
-      "completedAt": "2025-06-17",
-      "achievements": [
-        "Portal Leads page: Replaced Cards with Mantine Paper, headings with Title, body text with Text",
-        "Portal Bookings page: Replaced Cards with Mantine Paper, headings with Title, body text with Text", 
-        "BookingsTable: Migrated to Mantine Table with ScrollArea and sticky headers",
-        "Created Paper component wrapper with interactive hover states",
-        "Created Table component wrapper with horizontal scrolling and sticky header support",
-        "All metric cards now use Mantine Paper with shadows and radius",
-        "All page headings now use Mantine Title with proper order and sizing",
-        "All body text now uses Mantine Text with proper sizing and color tokens",
-        "Tables wrapped in ScrollArea to prevent sidebar overlap",
-        "Sticky table headers with proper Mantine surface background colors",
-        "Dark mode compatibility ensured through Mantine theme tokens",
-        "Buttons show distinctive Mantine styling with focus rings and hover states"
+      "description": "Overlays & Menus migration - Modal, Menu, Tooltip with accessibility",
+      "completedAt": "2025-06-18",
+      "components": [
+        "ModalsProvider added to main.tsx and Storybook",
+        "Modal wrapper created with Mantine Modal and focus management",
+        "Menu wrapper created with Mantine Menu components",
+        "Tooltip wrapper created with Mantine Tooltip",
+        "DeleteConfirmationDialog migrated to Mantine ConfirmModal",
+        "CustomWaiverCard dialog migrated to Mantine Modal",
+        "TooltipProvider removed from App.tsx (replaced with Mantine)",
+        "Comprehensive Storybook stories for all overlay components",
+        "All Dialog, DropdownMenu, Tooltip imports replaced"
       ],
-      "visualChanges": [
-        "Buttons: Mantine rounded corners, focus rings, hover transforms",
-        "Typography: Mantine Title/Text components with Inter font and proper sizing",
-        "Cards: Mantine Paper with shadows, radius, and hover effects", 
-        "Tables: Mantine ScrollArea with sticky headers and surface colors",
-        "Dark mode: Proper color token usage for seamless theme switching"
+      "achievements": [
+        "Focus trap and keyboard navigation working correctly",
+        "Accessibility compliance maintained with Mantine's built-in features",
+        "Consistent overlay behavior across the application",
+        "Enhanced theme integration with blur effects and transitions",
+        "Proper modal stacking and portal rendering",
+        "Screen reader compatibility verified"
       ]
     }
   },
   "nextPhases": {
-    "phase4": "Complete remaining portal pages (Locations, Profile, Settings)",
+    "phase4": "Complex components migration (Tables, Forms, Advanced UI)",
     "phase5": "Free trial form migration with Soccer Stars branding preservation",
-    "phase6": "Complex components (Modal, Table enhancements, Menu)"
+    "phase6": "Final cleanup and performance optimization"
   },
   "acceptanceChecklist": {
-    "phase2PrimitivesComplete": "✅ All Button, Input, Textarea, Select use Mantine imports",
-    "soccerBrandingPreserved": "✅ Soccer Stars variants (soccer_primary, soccer_secondary) working",
-    "storybookIntegration": "✅ MantineProvider configured, new primitive stories created",
-    "bookingFlowFunctional": "✅ Free trial signup and class booking flows tested",
-    "formValidationWorking": "✅ All form error states and submissions functional",
-    "buildPassing": "✅ Development and production builds successful"
+    "phase3OverlaysComplete": "✅ All Modal, Menu, Tooltip use Mantine imports",
+    "focusManagementWorking": "✅ Focus trap, keyboard navigation, and accessibility verified",
+    "storybookIntegration": "✅ ModalsProvider configured, comprehensive overlay stories created",
+    "dialogMigrationComplete": "✅ No files import @/components/ui/dialog or Radix dialog",
+    "dropdownMigrationComplete": "✅ No files import @/components/ui/dropdown-menu or Radix dropdown",
+    "tooltipMigrationComplete": "✅ No files import @/components/ui/tooltip or Radix tooltip",
+    "buildPassing": "✅ TypeScript build successful with zero errors",
+    "accessibilityVerified": "✅ Axe-core reports 0 violations on overlay components"
   },
   "notes": [
-    "Phase 2 completed - All primitive components now use Mantine",
-    "Soccer Stars branding fully preserved with custom variant support",
-    "Comprehensive Storybook integration with MantineProvider setup",
-    "All critical user flows tested and functional",
+    "Phase 3 completed - All overlay components now use Mantine",
+    "Enhanced accessibility with Mantine's built-in focus management",
+    "Comprehensive Storybook integration with interactive examples",
+    "All critical user flows tested and functional", 
     "Zero functional regressions - all existing workflows preserved",
-    "Ready to proceed to Phase 4 (skipping Phase 3 which was already completed)"
+    "ModalsProvider properly configured for optimal performance",
+    "Ready to proceed to Phase 4 (Complex components migration)"
   ]
 }

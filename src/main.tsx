@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import App from './App';
@@ -37,17 +38,18 @@ root.render(
         defaultColorScheme="light"
         theme={theme}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Notifications />
-          <App />
-        </ThemeProvider>
+        <ModalsProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Notifications />
+            <App />
+          </ThemeProvider>
+        </ModalsProvider>
       </MantineProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );
-

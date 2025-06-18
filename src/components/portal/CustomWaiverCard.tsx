@@ -6,12 +6,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { FileText, Eye } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Modal } from '@/components/mantine/Modal';
+import { Title, Text } from '@mantine/core';
 
 const CustomWaiverCard: React.FC = () => {
   const { data: settings } = useFranchiseeSettings();
   const updateSetting = useUpdateFranchiseeSetting();
   const [waiverText, setWaiverText] = useState(settings?.waiver_text || '');
+  const [previewOpened, setPreviewOpened] = useState(false);
 
   const handleSave = () => {
     updateSetting.mutate({
@@ -51,33 +53,14 @@ I grant permission for emergency medical treatment if needed during program acti
         </div>
 
         <div className="flex justify-between items-center">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Preview
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Waiver Preview</DialogTitle>
-              </DialogHeader>
-              <div className="mt-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3">Liability Waiver and Release</h3>
-                  <div className="whitespace-pre-wrap text-sm">
-                    {waiverText || defaultWaiver}
-                  </div>
-                  <div className="mt-4 flex items-center gap-2">
-                    <input type="checkbox" id="preview-accept" className="rounded" />
-                    <label htmlFor="preview-accept" className="text-sm">
-                      I have read and accept the terms of this waiver
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => setPreviewOpened(true)}
+          >
+            <Eye className="h-4 w-4" />
+            Preview
+          </Button>
 
           <Button 
             onClick={handleSave}
@@ -86,6 +69,26 @@ I grant permission for emergency medical treatment if needed during program acti
             {updateSetting.isPending ? 'Saving...' : 'Save Waiver'}
           </Button>
         </div>
+
+        <Modal
+          opened={previewOpened}
+          onClose={() => setPreviewOpened(false)}
+          title="Waiver Preview"
+          size="xl"
+        >
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <Title order={3} size="lg" mb="md">Liability Waiver and Release</Title>
+            <Text size="sm" style={{ whiteSpace: 'pre-wrap' }} mb="md">
+              {waiverText || defaultWaiver}
+            </Text>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="preview-accept" className="rounded" />
+              <label htmlFor="preview-accept" className="text-sm">
+                I have read and accept the terms of this waiver
+              </label>
+            </div>
+          </div>
+        </Modal>
 
         <div className="bg-blue-50 p-4 rounded-lg">
           <h4 className="font-medium text-blue-900 mb-2">How it works:</h4>

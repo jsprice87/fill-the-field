@@ -1,6 +1,7 @@
 
 import type { Preview } from '@storybook/react';
 import { MantineProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
 import { theme } from '../src/mantine/theme';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
@@ -19,7 +20,9 @@ const preview: Preview = {
   decorators: [
     (Story) => (
       <MantineProvider theme={theme} defaultColorScheme="light">
-        <Story />
+        <ModalsProvider>
+          <Story />
+        </ModalsProvider>
       </MantineProvider>
     ),
   ],
