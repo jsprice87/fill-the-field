@@ -1,4 +1,3 @@
-
 export const isoOrNull = (d: Date | null): string | null =>
   d ? d.toISOString() : null;
 

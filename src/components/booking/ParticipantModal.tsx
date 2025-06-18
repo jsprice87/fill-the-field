@@ -4,18 +4,17 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Stack, NumberInput, Switch } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
 import { Textarea } from '@/components/mantine/Textarea';
+import { DateInputISO } from '@/components/mantine/DateInputISO';
 import { toErrorNode } from '@/lib/toErrorNode';
-import { dateOrNull, isoOrNull } from '@/lib/date';
 
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   age: z.number().min(1, 'Age must be at least 1').max(18, 'Age must be 18 or under'),
-  birth_date: z.preprocess((v) => (v instanceof Date ? v.toISOString() : v), z.string().optional()),
+  birth_date: z.string().optional(),
   notes: z.string().optional(),
   age_override: z.boolean().default(false),
 });
@@ -48,7 +47,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: dateOrNull(initialData?.birth_date),
+      birth_date: initialData?.birth_date ?? '',
       notes: '',
       age_override: false,
       ...initialData,
@@ -60,7 +59,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       form.reset({
         first_name: '',
         age: 3,
-        birth_date: dateOrNull(initialData?.birth_date),
+        birth_date: initialData?.birth_date ?? '',
         notes: '',
         age_override: false,
         ...initialData,
@@ -70,11 +69,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
   const handleSubmit = async (data: ParticipantFormData) => {
     if (onAddParticipant) {
-      const payload = { 
-        ...data, 
-        birth_date: isoOrNull(data.birth_date)
-      };
-      await onAddParticipant(payload);
+      await onAddParticipant(data);
     } else {
       onSubmit(data);
     }
@@ -115,11 +110,11 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               required
             />
 
-            <DateInput
+            <DateInputISO
               label="Birth Date (Optional)"
               placeholder="Select birth date"
               value={form.watch('birth_date')}
-              onChange={(d) => form.setValue('birth_date', d)}
+              onChange={(value) => form.setValue('birth_date', value)}
               error={toErrorNode(form.formState.errors.birth_date?.message)}
               maxDate={new Date()}
             />
