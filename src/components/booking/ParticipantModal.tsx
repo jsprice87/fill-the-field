@@ -59,14 +59,13 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   useEffect(() => {
     if (initialData) {
       form.reset({
-        first_name: '',
-        age: 3,
-        birth_date: initialData?.birth_date 
+        first_name: initialData.first_name || '',
+        age: initialData.age || 3,
+        birth_date: initialData.birth_date 
           ? (initialData.birth_date instanceof Date ? initialData.birth_date : new Date(initialData.birth_date))
           : null,
-        notes: '',
-        age_override: false,
-        ...initialData,
+        notes: initialData.notes || '',
+        age_override: initialData.age_override || false,
       });
     }
   }, [initialData, form]);

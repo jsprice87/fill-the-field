@@ -1,9 +1,9 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { LocationFormData } from '@/components/locations/LocationForm';
 import { geocodeAddress } from '@/utils/geocoding';
+import { useFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
 
 export const useArchiveLocation = () => {
   const queryClient = useQueryClient();
@@ -153,9 +153,14 @@ export const useUpdateLocation = () => {
 
 export const useCreateLocation = () => {
   const queryClient = useQueryClient();
+  const { data: franchiseeProfile } = useFranchiseeProfile();
   
   return useMutation({
     mutationFn: async (data: Omit<LocationFormData, 'id'>) => {
+      if (!franchiseeProfile?.id) {
+        throw new Error('Franchisee profile is required to create locations');
+      }
+
       // Try to geocode the address with Location object
       let coordinates = null;
       try {
@@ -170,6 +175,7 @@ export const useCreateLocation = () => {
       }
 
       const insertData = {
+        franchisee_id: franchiseeProfile.id,
         name: data.name,
         address: data.address,
         city: data.city,
