@@ -3,12 +3,13 @@ import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Stack, NumberInput, Switch, Text } from '@mantine/core';
+import { Stack, NumberInput, Switch } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
 import { Textarea } from '@/components/mantine/Textarea';
+import { toErrorNode } from '@/lib/toErrorNode';
 
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -30,9 +31,6 @@ interface ParticipantModalProps {
   classSchedule?: any;
   dayNames?: string[];
 }
-
-// Helper function to handle error display
-const toErrorNode = (msg?: string) => (msg ? <Text size="sm" c="red">{msg}</Text> : undefined);
 
 const ParticipantModal: React.FC<ParticipantModalProps> = ({
   isOpen,

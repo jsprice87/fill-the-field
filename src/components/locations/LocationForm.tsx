@@ -3,12 +3,13 @@ import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Stack, Switch, Text } from '@mantine/core';
+import { Stack, Switch } from '@mantine/core';
 import { Modal } from '@/components/mantine/Modal';
 import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
 import { geocodeAddress } from '@/utils/geocoding';
 import { toast } from 'sonner';
+import { toErrorNode } from '@/lib/toErrorNode';
 
 const locationSchema = z.object({
   id: z.string().optional(),
@@ -32,9 +33,6 @@ interface LocationFormProps {
   onSubmit: (data: LocationFormData) => Promise<void>;
   initialData?: LocationFormData;
 }
-
-// Helper function to handle error display
-const toErrorNode = (msg?: string) => (msg ? <Text size="sm" c="red">{msg}</Text> : undefined);
 
 const LocationForm: React.FC<LocationFormProps> = ({
   open,
