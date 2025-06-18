@@ -126,7 +126,6 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             label="Birth Date"
             placeholder="DD / MM / YYYY"
             valueFormat="DD / MM / YYYY"
-            allowFreeInput
             maxDate={new Date()}
             dateParser={(input) =>
               dayjs(input, ['D/M/YYYY', 'DD/MM/YYYY', 'D-M-YYYY', 'DD-MM-YYYY'], true)
