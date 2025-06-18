@@ -14,7 +14,7 @@ import { toErrorNode } from '@/lib/toErrorNode';
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   age: z.number().min(1, 'Age must be at least 1').max(18, 'Age must be 18 or under'),
-  birth_date: z.date().optional(),
+  birth_date: z.preprocess((v) => (v instanceof Date ? v.toISOString() : v), z.string().optional()),
   notes: z.string().optional(),
   age_override: z.boolean().default(false),
 });
@@ -47,7 +47,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     defaultValues: {
       first_name: '',
       age: 3,
-      birth_date: undefined,
+      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
       notes: '',
       age_override: false,
       ...initialData,
@@ -59,7 +59,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       form.reset({
         first_name: '',
         age: 3,
-        birth_date: undefined,
+        birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
         notes: '',
         age_override: false,
         ...initialData,
@@ -113,12 +113,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             <DateInput
               label="Birth Date (Optional)"
               placeholder="Select birth date"
-              value={
-                form.watch('birth_date')
-                  ? new Date(form.watch('birth_date') as string)
-                  : null
-              }
-              onChange={(value) => form.setValue('birth_date', value || undefined)}
+              value={form.watch('birth_date') ? new Date(form.watch('birth_date')!) : null}
+              onChange={(d) => form.setValue('birth_date', d ?? null)}
               error={toErrorNode(form.formState.errors.birth_date?.message)}
               maxDate={new Date()}
             />
