@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -82,6 +83,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
         data.longitude = coordinates.longitude;
       }
       
+      // Pass the complete data object, not just ID
       await onSubmit(data);
     } catch (error) {
       console.error('Error submitting location:', error);
