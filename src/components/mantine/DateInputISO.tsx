@@ -14,7 +14,7 @@ export const DateInputISO = forwardRef<HTMLInputElement, DateInputISOProps>(
         ref={ref}
         {...props}
         value={value ? new Date(value) : null}
-        onChange={(d) => onChange?.(d ? d.toISOString() : '')}
+        onChange={(d: Date | null) => onChange?.(d ? d.toISOString() : '')}
       />
     );
   }
