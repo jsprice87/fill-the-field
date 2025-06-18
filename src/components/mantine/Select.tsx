@@ -25,5 +25,3 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
   },
 );
 Select.displayName = "Select";
-
-export type { SelectProps };
