@@ -1,424 +1,237 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Button } from '@mantine/core';
 import { TextInput } from '@mantine/core';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Building2, 
-  CreditCard, 
-  Shield, 
-  Calendar,
-  Edit3,
-  Save,
-  X
-} from 'lucide-react';
-import { useFranchiseeProfile, useUpdateFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
-import { supabase } from '@/integrations/supabase/client';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { User, Building, Mail, Phone, MapPin, Save } from 'lucide-react';
+import { PortalShell } from '@/layout/PortalShell';
+import { useFranchiseeData } from '@/hooks/useFranchiseeData';
+import { useUpdateFranchiseeData } from '@/hooks/useUpdateFranchiseeData';
 
-const Profile: React.FC = () => {
-  const { data: profile, isLoading, error } = useFranchiseeProfile();
-  const updateProfile = useUpdateFranchiseeProfile();
+const PortalProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    contact_name: '',
-    email: '',
-    phone: '',
-    company_name: ''
-  });
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+  const [companyName, setCompanyName] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zip, setZip] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Remove the manual refetch call since the query is now enabled by default
-  React.useEffect(() => {
-    if (profile) {
-      setFormData({
-        contact_name: profile.contact_name || '',
-        email: profile.email || '',
-        phone: profile.phone || '',
-        company_name: profile.company_name || ''
-      });
+  const { data: franchiseeData } = useFranchiseeData();
+  const updateFranchisee = useUpdateFranchiseeData();
+
+  useEffect(() => {
+    if (franchiseeData) {
+      setCompanyName(franchiseeData.business_name || '');
+      setContactName(franchiseeData.contact_name || '');
+      setEmail(franchiseeData.email || '');
+      setPhone(franchiseeData.phone || '');
+      setAddress(franchiseeData.address || '');
+      setCity(franchiseeData.city || '');
+      setState(franchiseeData.state || '');
+      setZip(franchiseeData.zip || '');
+      setIsLoading(false);
     }
-  }, [profile]);
+  }, [franchiseeData]);
 
-  const handleEdit = () => {
+  const handleEditClick = () => {
     setIsEditing(true);
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    if (profile) {
-      setFormData({
-        contact_name: profile.contact_name || '',
-        email: profile.email || '',
-        phone: profile.phone || '',
-        company_name: profile.company_name || ''
-      });
-    }
-  };
-
-  const handleSave = async () => {
+  const handleSaveClick = async () => {
+    setIsSaving(true);
     try {
-      await updateProfile.mutateAsync(formData);
-      setIsEditing(false);
+      await updateFranchisee.mutateAsync({
+        business_name: companyName,
+        contact_name: contactName,
+        email: email,
+        phone: phone,
+        address: address,
+        city: city,
+        state: state,
+        zip: zip,
+      });
       toast.success('Profile updated successfully');
+      setIsEditing(false);
     } catch (error) {
+      console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handlePasswordChange = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match');
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long');
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: passwordData.newPassword
-      });
-
-      if (error) throw error;
-
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      setIsChangingPassword(false);
-      toast.success('Password updated successfully');
-    } catch (error) {
-      toast.error('Failed to update password');
-    }
-  };
-
-  const getSubscriptionBadgeColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'inactive':
-        return 'bg-red-100 text-red-800';
-      case 'cancelled':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
-  };
-
-  const getTierBadgeColor = (tier: string) => {
-    switch (tier?.toLowerCase()) {
-      case 'premium':
-        return 'bg-purple-100 text-purple-800';
-      case 'pro':
-        return 'bg-blue-100 text-blue-800';
-      case 'free':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleCancelClick = () => {
+    setIsEditing(false);
+    if (franchiseeData) {
+      setCompanyName(franchiseeData.business_name || '');
+      setContactName(franchiseeData.contact_name || '');
+      setEmail(franchiseeData.email || '');
+      setPhone(franchiseeData.phone || '');
+      setAddress(franchiseeData.address || '');
+      setCity(franchiseeData.city || '');
+      setState(franchiseeData.state || '');
+      setZip(franchiseeData.zip || '');
     }
   };
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="space-y-4">
-            <div className="h-48 bg-gray-200 rounded"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
-          </div>
+      <PortalShell>
+        <div className="flex items-center justify-center h-full">
+          Loading...
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">Setting Up Your Profile</h2>
-          <p className="text-blue-600 mb-4">
-            We're creating your profile automatically. This usually takes just a moment...
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
-            <span className="text-sm text-blue-600">Creating profile...</span>
-          </div>
-          <div className="mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.reload()}
-              className="text-blue-600 border-blue-600 hover:bg-blue-50"
-            >
-              Refresh Page
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="p-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">Setting Up Your Profile</h2>
-          <p className="text-blue-600 mb-4">
-            We're creating your profile automatically. Please wait a moment...
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
-            <span className="text-sm text-blue-600">Creating profile...</span>
-          </div>
-        </div>
-      </div>
+      </PortalShell>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
-      </div>
-
-      <div className="grid gap-6">
-        {/* Account Information */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Information
-              </CardTitle>
-              {!isEditing ? (
-                <Button variant="outline" size="sm" onClick={handleEdit}>
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={handleCancel}>
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
-                    <Save className="h-4 w-4 mr-2" />
+    <PortalShell>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
+          {isEditing ? (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCancelClick}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveClick} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Save className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
                     Save
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="gri|d grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="contact_name">Full Name</Label>
-                <TextInput
-                  id="contact_name"
-                  value={formData.contact_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <TextInput
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <TextInput
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="company_name">Company Name</Label>
-                <TextInput
-                  id="company_name"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Subscription & Billing */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Subscription & Billing
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Current Plan</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge className={getTierBadgeColor(profile.subscription_tier)}>
-                    {profile.subscription_tier?.toUpperCase() || 'FREE'}
-                  </Badge>
-                  <Badge className={getSubscriptionBadgeColor(profile.subscription_status)}>
-                    {profile.subscription_status?.toUpperCase() || 'ACTIVE'}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Subscription Start</p>
-                <p className="font-medium">
-                  {profile.subscription_start_date 
-                    ? new Date(profile.subscription_start_date).toLocaleDateString()
-                    : 'Not set'
-                  }
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Subscription End</p>
-                <p className="font-medium">
-                  {profile.subscription_end_date 
-                    ? new Date(profile.subscription_end_date).toLocaleDateString()
-                    : 'Not set'
-                  }
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4">
-              <Button variant="outline" disabled>
-                <CreditCard className="h-4 w-4 mr-2" />
-                Manage Billing (Coming Soon)
+                  </>
+                )}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          ) : (
+            <Button onClick={handleEditClick}>Edit Profile</Button>
+          )}
+        </div>
 
-        {/* Security */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Security
-            </CardTitle>
+            <CardTitle>Franchisee Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!isChangingPassword ? (
-              <div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Keep your account secure by using a strong password
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsChangingPassword(true)}
-                >
-                  <Shield className="h-4 w-4 mr-2" />
-                  Change Password
-                </Button>
+            <div className="grid gap-4">
+              <Label htmlFor="company-name">
+                <Building className="mr-2 h-4 w-4 inline-block" />
+                Company Name
+              </Label>
+              <TextInput
+                id="company-name"
+                placeholder="Enter company name"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                disabled={!isEditing}
+                leftSection={<Building className="h-4 w-4" />}
+              />
+            </div>
+            <div className="grid gap-4">
+              <Label htmlFor="contact-name">
+                <User className="mr-2 h-4 w-4 inline-block" />
+                Contact Name
+              </Label>
+              <TextInput
+                id="contact-name"
+                placeholder="Enter contact name"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                disabled={!isEditing}
+                leftSection={<User className="h-4 w-4" />}
+              />
+            </div>
+            <div className="grid gap-4">
+              <Label htmlFor="email">
+                <Mail className="mr-2 h-4 w-4 inline-block" />
+                Email Address
+              </Label>
+              <TextInput
+                id="email"
+                type="email"
+                placeholder="Enter email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={!isEditing}
+                leftSection={<Mail className="h-4 w-4" />}
+              />
+            </div>
+            <div className="grid gap-4">
+              <Label htmlFor="phone">
+                <Phone className="mr-2 h-4 w-4 inline-block" />
+                Phone Number
+              </Label>
+              <TextInput
+                id="phone"
+                placeholder="Enter phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                disabled={!isEditing}
+                leftSection={<Phone className="h-4 w-4" />}
+              />
+            </div>
+            <div className="grid gap-4">
+              <Label htmlFor="address">
+                <MapPin className="mr-2 h-4 w-4 inline-block" />
+                Address
+              </Label>
+              <TextInput
+                id="address"
+                placeholder="Enter address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                disabled={!isEditing}
+                leftSection={<MapPin className="h-4 w-4" />}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-1 grid gap-4">
+                <Label htmlFor="city">City</Label>
+                <TextInput
+                  id="city"
+                  placeholder="Enter city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  disabled={!isEditing}
+                />
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="new_password">New Password</Label>
-                  <TextInput
-                    id="new_password"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    placeholder="Enter new password"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirm_password">Confirm New Password</Label>
-                  <TextInput
-                    id="confirm_password"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setIsChangingPassword(false);
-                      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handlePasswordChange}>
-                    Update Password
-                  </Button>
-                </div>
+              <div className="col-span-1 grid gap-4">
+                <Label htmlFor="state">State</Label>
+                <TextInput
+                  id="state"
+                  placeholder="Enter state"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  disabled={!isEditing}
+                />
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Account Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Account Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Member Since</p>
-                <p className="font-medium">
-                  {profile.created_at 
-                    ? new Date(profile.created_at).toLocaleDateString()
-                    : 'Unknown'
-                  }
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Last Updated</p>
-                <p className="font-medium">
-                  {profile.updated_at 
-                    ? new Date(profile.updated_at).toLocaleDateString()
-                    : 'Unknown'
-                  }
-                </p>
+              <div className="col-span-1 grid gap-4">
+                <Label htmlFor="zip">Zip Code</Label>
+                <TextInput
+                  id="zip"
+                  placeholder="Enter zip code"
+                  value={zip}
+                  onChange={(e) => setZip(e.target.value)}
+                  disabled={!isEditing}
+                />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PortalShell>
   );
 };
 
-export default Profile;
+export default PortalProfile;

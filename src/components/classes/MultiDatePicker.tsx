@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@mantine/core';
 import { TextInput } from "@mantine/core";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";

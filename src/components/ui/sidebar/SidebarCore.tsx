@@ -2,7 +2,7 @@ import * as React from "react"
 import { PanelLeft } from "lucide-react"
 import { useSidebar, SIDEBAR_WIDTH_MOBILE } from "./SidebarContext"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from '@mantine/core'
 import { TextInput } from "@mantine/core"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
