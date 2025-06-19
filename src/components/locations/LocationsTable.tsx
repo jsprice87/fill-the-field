@@ -55,12 +55,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   }
 
   return (
-    <ScrollArea
-      scrollbarSize={8}
-      offsetScrollbars
-      type="scroll"
-      h={`calc(100vh - ${rem(180)})`}
-    >
+    <ScrollArea h="calc(100vh - 240px)" scrollbarSize={8} offsetScrollbars type="scroll">
       <Table stickyHeader>
         <TableHeader>
           <TableRow>
