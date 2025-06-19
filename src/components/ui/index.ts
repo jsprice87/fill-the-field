@@ -39,7 +39,6 @@ export * from './pagination';
 export * from './drawer';
 export * from './resizable';
 export * from './label';
-export * from './form';
 export * from './accordion';
 export * from './alert-dialog';
 export * from './alert';

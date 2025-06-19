@@ -5,7 +5,6 @@ export { Card } from './Card';
 export { ConfirmModal } from './ConfirmModal';
 export { DateInput } from './DateInput';
 export { AppDatePicker } from './DatePicker';
-export { FormWrapper } from './FormWrapper';
 export { Menu } from './Menu';
 export { MetricCard } from './MetricCard';
 export { Modal } from './Modal';
