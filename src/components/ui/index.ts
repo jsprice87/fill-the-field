@@ -3,8 +3,8 @@
 export { Button } from '../mantine/Button';
 export type { ButtonProps } from '../mantine/Button';
 
-export { Input, TextInput } from '../mantine/TextInput';
-export type { InputProps } from '../mantine/TextInput';
+export { TextInput as Input, TextInput } from '../mantine/TextInput';
+export type { TextInputProps as InputProps } from '../mantine/TextInput';
 
 export { Textarea } from '../mantine/Textarea';
 export type { TextareaProps } from '../mantine/Textarea';
