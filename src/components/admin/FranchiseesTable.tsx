@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Edit, Trash2, Eye, Mail, Phone } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Menu, ActionIcon } from '@mantine/core';
+import { IconDotsVertical, IconPencil, IconTrash, IconEye, IconMail, IconPhone } from '@tabler/icons-react';
 
 interface Franchisee {
   id: string;
@@ -190,7 +190,7 @@ export const FranchiseesTable: React.FC<FranchiseesTableProps> = ({
                     title="Send email"
                     disabled={!franchisee.email}
                   >
-                    <Mail className="h-4 w-4" />
+                    <IconMail size={16} />
                   </Button>
                   <Button
                     variant="ghost"
@@ -200,35 +200,33 @@ export const FranchiseesTable: React.FC<FranchiseesTableProps> = ({
                     title="Call franchisee"
                     disabled={!franchisee.phone}
                   >
-                    <Phone className="h-4 w-4" />
+                    <IconPhone size={16} />
                   </Button>
                 </div>
               </TableCell>
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="ui-hover">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onViewUser(franchisee)}>
-                      <Eye className="h-4 w-4 mr-2" />
+                <Menu shadow="md" withinPortal position="bottom-end">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" size="sm">
+                      <IconDotsVertical size={16} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item leftSection={<IconEye size={14} />} onClick={() => onViewUser(franchisee)}>
                       View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onEditUser(franchisee)}>
-                      <Edit className="h-4 w-4 mr-2" />
+                    </Menu.Item>
+                    <Menu.Item leftSection={<IconPencil size={14} />} onClick={() => onEditUser(franchisee)}>
                       Edit Franchisee
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    </Menu.Item>
+                    <Menu.Item 
+                      leftSection={<IconTrash size={14} />}
+                      color="red"
                       onClick={() => onDeleteUser(franchisee)}
-                      className="text-red-600 focus:text-red-600"
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
                       Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
               </TableCell>
             </TableRow>
           ))}
