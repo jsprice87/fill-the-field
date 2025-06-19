@@ -1,5 +1,6 @@
+
 import { Label } from "@/components/ui/label";
-import { TextInput } from "@mantine/core";
+import { Input } from "@/components/ui/input";
 
 interface WebhookUrlFieldsProps {
   testWebhookUrl: string;
@@ -38,13 +39,13 @@ export default function WebhookUrlFields({
     <div className="space-y-4">
       <div>
         <Label htmlFor="test-webhook-url">Test Webhook URL</Label>
-        <TextInput
+        <Input
           id="test-webhook-url"
           value={testWebhookUrl || currentTestWebhookUrl}
           onChange={(e) => setTestWebhookUrl(e.target.value)}
           onBlur={(e) => onTestUrlBlur(e.target.value)}
           placeholder="https://your-test-webhook-endpoint.com/webhook-test/..."
-          error={testUrlError}
+          error={!!testUrlError}
         />
         {testUrlError && (
           <p className="text-sm text-red-600 mt-1">{testUrlError}</p>
@@ -56,13 +57,13 @@ export default function WebhookUrlFields({
 
       <div>
         <Label htmlFor="prod-webhook-url">Production Webhook URL</Label>
-        <TextInput
+        <Input
           id="prod-webhook-url"
           value={prodWebhookUrl || currentProdWebhookUrl}
           onChange={(e) => setProdWebhookUrl(e.target.value)}
           onBlur={(e) => onProdUrlBlur(e.target.value)}
           placeholder="https://your-production-webhook-endpoint.com/webhook/..."
-          error={prodUrlError}
+          error={!!prodUrlError}
         />
         {prodUrlError && (
           <p className="text-sm text-red-600 mt-1">{prodUrlError}</p>
@@ -74,7 +75,7 @@ export default function WebhookUrlFields({
       
       <div>
         <Label htmlFor="auth-header">Authorization Header (Optional)</Label>
-        <TextInput
+        <Input
           id="auth-header"
           value={authHeader || currentAuthHeader}
           onChange={(e) => setAuthHeader(e.target.value)}

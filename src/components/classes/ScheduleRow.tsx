@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { TextInput } from "@mantine/core";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
@@ -37,7 +37,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
   return (
     <TableRow>
       <TableCell className="w-48">
-        <TextInput
+        <Input
           type="text"
           placeholder="Enter class name"
           value={row.className}
@@ -66,11 +66,11 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
       </TableCell>
 
       <TableCell className="w-32">
-        <TextInput
+        <Input
           type="number"
-          min={15}
-          max={180}
-          step={15}
+          min="15"
+          max="180"
+          step="15"
           value={row.duration}
           onChange={(e) => onRowChange(index, 'duration', parseInt(e.target.value) || 60)}
           className="w-full"
@@ -78,7 +78,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
       </TableCell>
 
       <TableCell className="w-32">
-        <TextInput
+        <Input
           type="time"
           value={row.timeStart}
           onChange={(e) => onRowChange(index, 'timeStart', e.target.value)}
@@ -87,7 +87,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
       </TableCell>
 
       <TableCell className="w-32">
-        <TextInput
+        <Input
           type="time"
           value={row.timeEnd}
           className="w-full bg-gray-50"
@@ -97,7 +97,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
       </TableCell>
 
       <TableCell className="w-32">
-        <TextInput
+        <Input
           type="date"
           value={row.dateStart}
           onChange={(e) => onRowChange(index, 'dateStart', e.target.value)}
@@ -106,7 +106,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
       </TableCell>
 
       <TableCell className="w-32">
-        <TextInput
+        <Input
           type="date"
           value={row.dateEnd}
           onChange={(e) => onRowChange(index, 'dateEnd', e.target.value)}
@@ -131,10 +131,10 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
       </TableCell>
 
       <TableCell className="w-24">
-        <TextInput
+        <Input
           type="number"
-          min={1}
-          max={50}
+          min="1"
+          max="50"
           value={row.capacity}
           onChange={(e) => onRowChange(index, 'capacity', parseInt(e.target.value) || 1)}
           className="w-full"

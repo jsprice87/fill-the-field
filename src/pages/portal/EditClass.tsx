@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { TextInput } from "@mantine/core";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
@@ -285,7 +285,7 @@ const EditClass: React.FC = () => {
           
           <div className="space-y-2">
             <Label htmlFor="class-name">Class Name</Label>
-            <TextInput
+            <Input
               id="class-name"
               value={classData.class_name}
               onChange={(e) => setClassData({...classData, class_name: e.target.value, name: e.target.value})}
@@ -295,7 +295,7 @@ const EditClass: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <TextInput
+            <Input
               id="description"
               value={classData.description}
               onChange={(e) => setClassData({...classData, description: e.target.value})}
@@ -324,12 +324,12 @@ const EditClass: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="duration">Duration (minutes)</Label>
-            <TextInput
+            <Input
               id="duration"
               type="number"
-              min={15}
-              max={180}
-              step={15}
+              min="15"
+              max="180"
+              step="15"
               value={classData.duration_minutes}
               onChange={(e) => {
                 const duration = parseInt(e.target.value) || 60;
@@ -347,11 +347,11 @@ const EditClass: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="capacity">Max Capacity</Label>
-            <TextInput
+            <Input
               id="capacity"
               type="number"
-              min={1}
-              max={50}
+              min="1"
+              max="50"
               value={classData.max_capacity}
               onChange={(e) => setClassData({...classData, max_capacity: parseInt(e.target.value) || 1})}
             />
@@ -398,7 +398,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="start-time">Start Time</Label>
-                <TextInput
+                <Input
                   id="start-time"
                   type="time"
                   value={classData.schedule.start_time}
@@ -415,7 +415,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="end-time">End Time</Label>
-                <TextInput
+                <Input
                   id="end-time"
                   type="time"
                   value={classData.schedule.end_time}
@@ -427,7 +427,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="date-start">Start Date</Label>
-                <TextInput
+                <Input
                   id="date-start"
                   type="date"
                   value={classData.schedule.date_start || ''}
@@ -440,7 +440,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="date-end">End Date</Label>
-                <TextInput
+                <Input
                   id="date-end"
                   type="date"
                   value={classData.schedule.date_end || ''}

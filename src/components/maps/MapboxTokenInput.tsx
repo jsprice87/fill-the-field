@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { TextInput } from '@mantine/core';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExternalLink, Key } from 'lucide-react';
 
@@ -43,7 +43,7 @@ const MapboxTokenInput: React.FC<MapboxTokenInputProps> = ({ onTokenSubmit, clas
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <TextInput
+              <Input
                 type="text"
                 placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwia..."
                 value={token}

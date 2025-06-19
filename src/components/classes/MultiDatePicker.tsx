@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { TextInput } from "@mantine/core";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, X, Plus } from "lucide-react";
@@ -55,7 +55,7 @@ const MultiDatePicker: React.FC<MultiDatePickerProps> = ({
       <PopoverContent className="w-80 p-3" align="start">
         <div className="space-y-3">
           <div className="flex space-x-2">
-            <TextInput
+            <Input
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}

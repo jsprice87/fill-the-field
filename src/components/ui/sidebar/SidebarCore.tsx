@@ -1,9 +1,10 @@
+
 import * as React from "react"
 import { PanelLeft } from "lucide-react"
 import { useSidebar, SIDEBAR_WIDTH_MOBILE } from "./SidebarContext"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { TextInput } from "@mantine/core"
+import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 
@@ -185,11 +186,11 @@ const SidebarInset = React.forwardRef<
 SidebarInset.displayName = "SidebarInset"
 
 const SidebarInput = React.forwardRef<
-  React.ElementRef<typeof TextInput>,
-  React.ComponentProps<typeof TextInput>
+  React.ElementRef<typeof Input>,
+  React.ComponentProps<typeof Input>
 >(({ className, ...props }, ref) => {
   return (
-    <TextInput
+    <Input
       ref={ref}
       data-sidebar="input"
       className={cn(

@@ -1,6 +1,6 @@
 
 import React from "react";
-import { TextInput } from "@mantine/core";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Download, RefreshCw } from "lucide-react";
@@ -31,7 +31,7 @@ export const UserManagementFilters: React.FC<UserManagementFiltersProps> = ({
       <div className="flex flex-col sm:flex-row gap-4 flex-1">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <TextInput
+          <Input
             placeholder="Search by company name, contact, or email..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}

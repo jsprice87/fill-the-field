@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { TextInput } from '@mantine/core';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface FormData {
@@ -26,7 +26,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="parentFirstName" className="font-poppins">First Name *</Label>
-          <TextInput
+          <Input
             id="parentFirstName"
             value={formData.firstName}
             onChange={(e) => onInputChange('firstName', e.target.value)}
@@ -37,7 +37,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
         </div>
         <div>
           <Label htmlFor="parentLastName" className="font-poppins">Last Name *</Label>
-          <TextInput
+          <Input
             id="parentLastName"
             value={formData.lastName}
             onChange={(e) => onInputChange('lastName', e.target.value)}
@@ -50,7 +50,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
 
       <div>
         <Label htmlFor="parentEmail" className="font-poppins">Email Address *</Label>
-        <TextInput
+        <Input
           id="parentEmail"
           type="email"
           value={formData.email}
@@ -64,7 +64,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="parentPhone" className="font-poppins">Phone Number *</Label>
-          <TextInput
+          <Input
             id="parentPhone"
             type="tel"
             value={formData.phone}
@@ -76,7 +76,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
         </div>
         <div>
           <Label htmlFor="parentZip" className="font-poppins">ZIP Code *</Label>
-          <TextInput
+          <Input
             id="parentZip"
             value={formData.zip}
             onChange={(e) => onInputChange('zip', e.target.value)}
@@ -89,7 +89,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
 
       <div>
         <Label htmlFor="relationship" className="font-poppins">Relationship to Child(ren)</Label>
-        <TextInput
+        <Input
           id="relationship"
           value={formData.relationship}
           onChange={(e) => onInputChange('relationship', e.target.value)}
