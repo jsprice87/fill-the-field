@@ -1,5 +1,4 @@
-
-import { Button } from "@mantine/core";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowRight, CheckCircle, Globe, Calendar, Users } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -142,7 +141,7 @@ const Index = () => {
             Join thousands of business owners who are filling their classes and growing their customer base with our fast funnels for free trials.
           </p>
           <Link to="/register">
-            <Button size="lg" variant="white" className="px-8">
+            <Button size="lg" variant="secondary" className="px-8">
               Start Your Free Trial
             </Button>
           </Link>

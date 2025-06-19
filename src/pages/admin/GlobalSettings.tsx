@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { TextInput } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

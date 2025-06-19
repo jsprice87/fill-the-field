@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { TextInput, Button } from '@mantine/core';
+import { TextInput } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -224,7 +225,7 @@ const Profile: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="gri|d grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="contact_name">Full Name</Label>
                 <TextInput
@@ -346,9 +347,9 @@ const Profile: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="new_password">New Password</Label>
                   <TextInput
-                    id="newPassword"
+                    id="new_password"
                     type="password"
                     value={passwordData.newPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
@@ -356,9 +357,9 @@ const Profile: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirm_password">Confirm New Password</Label>
                   <TextInput
-                    id="confirmPassword"
+                    id="confirm_password"
                     type="password"
                     value={passwordData.confirmPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
@@ -366,25 +367,53 @@ const Profile: React.FC = () => {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handlePasswordChange}>
-                    Save Password
-                  </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => {
                       setIsChangingPassword(false);
-                      setPasswordData({
-                        currentPassword: '',
-                        newPassword: '',
-                        confirmPassword: ''
-                      });
+                      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
                     }}
                   >
                     Cancel
                   </Button>
+                  <Button onClick={handlePasswordChange}>
+                    Update Password
+                  </Button>
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Account Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Account Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Member Since</p>
+                <p className="font-medium">
+                  {profile.created_at 
+                    ? new Date(profile.created_at).toLocaleDateString()
+                    : 'Unknown'
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Last Updated</p>
+                <p className="font-medium">
+                  {profile.updated_at 
+                    ? new Date(profile.updated_at).toLocaleDateString()
+                    : 'Unknown'
+                  }
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -1,261 +1,398 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { Stack, Alert, Loader } from '@mantine/core';
-import { ParentGuardianFormFields } from '@/components/booking/ParentGuardianFormFields';
-import { ParentGuardianAgreements } from '@/components/booking/ParentGuardianAgreements';
-import { ParticipantList } from '@/components/booking/ParticipantList';
-import ParticipantModal, { ParticipantFormData } from '@/components/booking/ParticipantModal';
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
-import { useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
-import { notify } from '@/utils/notify';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
 
-const bookingFormSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-  zip: z.string().min(5, 'Zip code must be at least 5 digits').max(5, 'Zip code must be 5 digits'),
-  relationship: z.string().optional(),
-  waiverAccepted: z.literal(true, { errorMap: () => ({ message: 'You must accept the waiver to continue' }) }),
-  communicationPermission: z.literal(true, { errorMap: () => ({ message: 'You must give permission to be contacted' }) }),
-  marketingPermission: z.boolean().default(false),
-});
+interface BookingData {
+  id: string;
+  booking_reference: string;
+  parent_first_name: string;
+  parent_last_name: string;
+  parent_email: string;
+  parent_phone: string;
+  class_schedule_id: string;
+  appointments: Array<{
+    selected_date: string;
+    class_name: string;
+    class_time: string;
+    participant_name: string;
+  }>;
+  class_schedules: {
+    classes: {
+      name: string;
+      locations: {
+        name: string;
+        address: string;
+        city: string;
+        state: string;
+        phone?: string;
+      };
+    };
+  };
+}
 
-type BookingFormData = z.infer<typeof bookingFormSchema>;
+interface FranchiseeData {
+  company_name: string;
+  contact_name: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+}
+
+interface FranchiseeSettings {
+  website_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  share_message_template?: string;
+}
 
 const BookingConfirmation: React.FC = () => {
+  const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const selectedSchedule = location.state?.selectedSchedule;
-  const [participants, setParticipants] = useState<ParticipantFormData[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [waiverOpen, setWaiverOpen] = useState(false);
-  const { trackEvent } = useMetaPixelTracking();
-  const { data: franchisee } = useFranchiseeProfile();
+  const [searchParams] = useSearchParams();
+  const [booking, setBooking] = useState<BookingData | null>(null);
+  const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
+  const [franchiseeSettings, setFranchiseeSettings] = useState<FranchiseeSettings>({});
+  const [isLoading, setIsLoading] = useState(true);
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-    watch,
-    setValue,
-  } = useForm<BookingFormData>({
-    resolver: zodResolver(bookingFormSchema),
-    defaultValues: {
-      marketingPermission: false,
-    },
-  });
+  useEffect(() => {
+    if (!franchiseeSlug) {
+      navigate('/');
+      return;
+    }
+    loadBookingData();
+  }, [franchiseeSlug]);
 
-  const waiverAccepted = watch('waiverAccepted');
-  const communicationPermission = watch('communicationPermission');
-  const marketingPermission = watch('marketingPermission');
-
-  if (!selectedSchedule) {
-    return <Alert color="red">No class schedule selected. Please go back and select a class.</Alert>;
-  }
-
-  const handleAddParticipant = (newParticipant: ParticipantFormData) => {
-    setParticipants([...participants, newParticipant]);
-  };
-
-  const handleRemoveParticipant = (index: number) => {
-    const newParticipants = [...participants];
-    newParticipants.splice(index, 1);
-    setParticipants(newParticipants);
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setValue(field as keyof BookingFormData, value);
-  };
-
-  const handleBookingSubmit = async (formData: any) => {
+  const loadBookingData = async () => {
     try {
-      setIsSubmitting(true);
-
-      // Get the parent data from form
-      const parentData = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        zip: formData.zip || '', // Add zip field
-        relationship: formData.relationship || 'Parent',
-        communication_permission: formData.communicationPermission,
-        marketing_permission: formData.marketingPermission,
-        waiver_accepted: formData.waiverAccepted,
-        waiver_accepted_at: formData.waiverAccepted ? new Date().toISOString() : null,
-      };
-
-      // Create the booking
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
-        .insert({
-          class_schedule_id: selectedSchedule.id,
-          // Remove location_id as it doesn't exist in the bookings table
-          ...parentData,
-          booking_reference: `SS-${Date.now()}`,
-          status: 'confirmed',
-          notes: `Class: ${selectedSchedule.classes.name}. Participants: ${participants.map(p => p.first_name).join(', ')}`
-        })
-        .select()
-        .single();
-
-      if (bookingError) throw bookingError;
-
-      // Create lead record
-      const { error: leadError } = await supabase
-        .from('leads')
-        .insert({
-          franchisee_id: selectedSchedule.franchisee_id,
-          first_name: parentData.first_name,
-          last_name: parentData.last_name,
-          email: parentData.email,
-          phone: parentData.phone,
-          zip: parentData.zip, // Add zip field
-          source: 'booking_form',
-          status: 'new' as const,
-          notes: `Booking confirmed: ${booking.booking_reference}`,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (leadError) {
-        console.error('Error creating lead:', leadError);
-        // Don't fail the booking if lead creation fails
+      // Accept both 'ref' and 'booking_reference' query params for backward compatibility
+      const bookingReference = searchParams.get('booking_reference') || searchParams.get('ref');
+      console.log('Looking for booking with reference:', bookingReference);
+      
+      if (!bookingReference) {
+        throw new Error('Booking reference not found');
       }
 
-      // Create participant records
-      const participantPromises = participants.map(participant =>
-        supabase
-          .from('participants')
-          .insert({
-            booking_id: booking.id,
-            first_name: participant.first_name,
-            birth_date: participant.birth_date,
-            notes: participant.notes,
-          })
-      );
+      console.log('Loading booking with reference:', bookingReference);
 
-      await Promise.all(participantPromises);
+      // Get franchisee by slug first
+      const { data: franchisee, error: franchiseeError } = await supabase
+        .from('franchisees')
+        .select('*')
+        .eq('slug', franchiseeSlug)
+        .maybeSingle();
 
-      // Track event
-      trackEvent('booking_completed', {
-        class_name: selectedSchedule.classes.name,
-        num_participants: participants.length,
-        class_schedule_id: selectedSchedule.id,
-        franchisee_id: selectedSchedule.franchisee_id,
-      });
+      if (franchiseeError) {
+        console.error('Error fetching franchisee:', franchiseeError);
+        throw new Error('Franchisee not found');
+      }
 
-      notify('success', 'Booking Confirmed!');
+      if (!franchisee) {
+        throw new Error('Franchisee not found');
+      }
 
-      // Redirect to success page
-      navigate('/booking/success', {
-        state: {
-          bookingReference: booking.booking_reference,
-          className: selectedSchedule.classes.name,
-          locationName: selectedSchedule.location.name,
-          classDate: selectedSchedule.start_date,
-          classTime: selectedSchedule.start_time,
-        },
-      });
+      setFranchiseeData(franchisee);
+
+      // Get franchisee settings with the new RLS policy
+      const { data: settings, error: settingsError } = await supabase
+        .from('franchisee_settings')
+        .select('*')
+        .eq('franchisee_id', franchisee.id);
+
+      if (settingsError) {
+        console.error('Error fetching settings:', settingsError);
+        // Don't throw here, settings are optional
+      } else if (settings) {
+        const settingsMap = settings.reduce((acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value;
+          return acc;
+        }, {} as Record<string, string>);
+        setFranchiseeSettings(settingsMap);
+      }
+
+      // Get booking details using the updated RLS policy
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          appointments (*),
+          class_schedules (
+            classes (
+              name,
+              locations (
+                name,
+                address,
+                city,
+                state,
+                phone
+              )
+            )
+          )
+        `)
+        .eq('booking_reference', bookingReference)
+        .maybeSingle();
+
+      if (bookingError) {
+        console.error('Error fetching booking:', bookingError);
+        throw new Error('Failed to load booking details');
+      }
+
+      if (!bookingData) {
+        throw new Error('Booking not found');
+      }
+
+      console.log('Booking loaded successfully:', bookingData);
+      setBooking(bookingData);
     } catch (error) {
-      console.error('Error submitting booking:', error);
-      setError('Failed to submit booking. Please try again.');
+      console.error('Error loading booking:', error);
+      toast.error('Failed to load booking details');
+      navigate(`/${franchiseeSlug}/free-trial`);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  return (
-    <div className="container py-8">
-      <h1 className="text-2xl font-bold mb-4">Confirm Your Booking</h1>
-      <p className="mb-4">
-        You are booking <strong>{selectedSchedule.classes.name}</strong> at{' '}
-        <strong>{selectedSchedule.location.name}</strong>.
-      </p>
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/${franchiseeSlug}/free-trial`;
+    const message = franchiseeSettings.share_message_template 
+      ? franchiseeSettings.share_message_template
+          .replace('{company_name}', franchiseeData?.company_name || 'Soccer Stars')
+          .replace('{url}', shareUrl)
+      : `I just signed up my child for a free soccer trial at ${franchiseeData?.company_name || 'Soccer Stars'}! Check it out: ${shareUrl}`;
 
-      {error && <Alert color="red" className="mb-4">{error}</Alert>}
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Soccer Trial Booking',
+          text: message,
+          url: shareUrl,
+        });
+      } catch (error) {
+        console.log('Share cancelled');
+      }
+    } else {
+      await navigator.clipboard.writeText(message);
+      toast.success('Share message copied to clipboard!');
+    }
+  };
 
-      <form onSubmit={handleSubmit(handleBookingSubmit)}>
-        <Stack gap="md">
-          <ParentGuardianFormFields
-            formData={{
-              firstName: watch('firstName') || '',
-              lastName: watch('lastName') || '',
-              email: watch('email') || '',
-              phone: watch('phone') || '',
-              zip: watch('zip') || '',
-              relationship: watch('relationship') || '',
-            }}
-            onInputChange={handleInputChange}
-          />
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
+          <p className="font-poppins text-gray-600">Loading booking details...</p>
+        </div>
+      </div>
+    );
+  }
 
-          <ParticipantList
-            participants={participants}
-            onAdd={() => setIsModalOpen(true)}
-            onRemove={handleRemoveParticipant}
-          />
-
-          <ParentGuardianAgreements
-            waiverAccepted={waiverAccepted}
-            communicationPermission={communicationPermission}
-            marketingPermission={marketingPermission}
-            onWaiverChange={(checked) => setValue('waiverAccepted', checked)}
-            onCommunicationPermissionChange={(checked) => setValue('communicationPermission', checked)}
-            onMarketingPermissionChange={(checked) => setValue('marketingPermission', checked)}
-            onOpenWaiver={() => setWaiverOpen(true)}
-          />
-
-          <Button type="submit" disabled={isSubmitting || participants.length === 0} className="w-full">
-            {isSubmitting ? (
-              <>
-                <Loader size="sm" color="white" />
-                &nbsp;Submitting Booking...
-              </>
-            ) : (
-              'Complete Booking'
-            )}
+  if (!booking || !franchiseeData) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Booking Not Found</h1>
+          <p className="text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
+          <Button onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}>
+            Back to Booking
           </Button>
-        </Stack>
-      </form>
+        </div>
+      </div>
+    );
+  }
 
-      <ParticipantModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddParticipant}
-        classSchedule={selectedSchedule}
-      />
+  const appointment = booking.appointments[0];
+  const location = booking.class_schedules.classes.locations;
 
-      {/* Waiver Modal */}
-      <Modal
-        opened={waiverOpen}
-        onClose={() => setWaiverOpen(false)}
-        title="Liability Waiver and Release"
-        size="xl"
-      >
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-bold text-lg mb-2">Liability Waiver and Release</h3>
-          <p className="text-sm">
-            I acknowledge that participation in soccer activities involves certain inherent risks including, but not
-            limited to, the risk of injury. I voluntarily assume all risks associated with participation and agree to
-            release and hold harmless Soccer Stars, its instructors, and facility owners from any claims arising from
-            participation in this program.
-          </p>
-          <p className="text-sm mt-2">
-            I confirm that my child is physically capable of participating in soccer activities and has no medical
-            conditions that would prevent safe participation.
-          </p>
-          <p className="text-sm mt-2">
-            I grant permission for emergency medical treatment if needed during program activities.
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="bg-brand-navy text-white py-6">
+        <div className="container mx-auto px-4">
+          <h1 className="font-anton text-3xl mb-2">SOCCER STARS</h1>
+          <h2 className="font-agrandir text-xl">Booking Confirmed!</h2>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        {/* Success Message */}
+        <Card className="mb-8 border-l-4 border-l-green-500">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-8 w-8 text-green-500" />
+              <div>
+                <CardTitle className="font-agrandir text-xl text-brand-navy">
+                  Booking Confirmed!
+                </CardTitle>
+                <p className="font-poppins text-gray-600 mt-1">
+                  Reference: {booking.booking_reference}
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="font-poppins text-gray-700 mb-4">
+              Thank you {booking.parent_first_name}! Your free trial has been successfully booked. 
+              We're excited to see {appointment.participant_name} on the field!
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Booking Details */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="font-agrandir text-lg text-brand-navy">Booking Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <Calendar className="h-5 w-5 text-brand-blue mt-1" />
+              <div>
+                <p className="font-poppins font-medium">Date & Time</p>
+                <p className="font-poppins text-gray-600">
+                  {format(new Date(appointment.selected_date), 'EEEE, MMMM d, yyyy')} at {appointment.class_time}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <User className="h-5 w-5 text-brand-blue mt-1" />
+              <div>
+                <p className="font-poppins font-medium">Class</p>
+                <p className="font-poppins text-gray-600">{appointment.class_name}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+              <div>
+                <p className="font-poppins font-medium">Location</p>
+                <p className="font-poppins text-gray-600">
+                  {location.name}<br />
+                  {location.address}, {location.city}, {location.state}
+                </p>
+                {location.phone && (
+                  <p className="font-poppins text-gray-600 flex items-center gap-1 mt-1">
+                    <Phone className="h-4 w-4" />
+                    {location.phone}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Information */}
+        {(franchiseeData.phone || franchiseeData.address || franchiseeSettings.website_url) && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="font-agrandir text-lg text-brand-navy">Contact Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {franchiseeData.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-brand-blue" />
+                  <span className="font-poppins text-gray-700">{franchiseeData.phone}</span>
+                </div>
+              )}
+              
+              {franchiseeData.address && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+                  <span className="font-poppins text-gray-700">
+                    {franchiseeData.address}
+                    {franchiseeData.city && franchiseeData.state && (
+                      <><br />{franchiseeData.city}, {franchiseeData.state}</>
+                    )}
+                  </span>
+                </div>
+              )}
+
+              {franchiseeSettings.website_url && (
+                <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-brand-blue" />
+                  <a 
+                    href={franchiseeSettings.website_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="font-poppins text-brand-blue hover:underline"
+                  >
+                    Visit our website
+                  </a>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Actions */}
+        <div className="space-y-4">
+          <Button
+            onClick={handleShare}
+            className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+            size="lg"
+          >
+            <Share2 className="h-5 w-5 mr-2" />
+            Share with Friends
+          </Button>
+
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/${franchiseeSlug}`)}
+              className="flex-1 font-poppins"
+            >
+              Back to Home
+            </Button>
+            {franchiseeSettings.website_url && (
+              <Button
+                variant="outline"
+                onClick={() => window.open(franchiseeSettings.website_url, '_blank')}
+                className="flex-1 font-poppins"
+              >
+                Visit Website
+              </Button>
+            )}
+          </div>
+
+          {/* Social Links */}
+          {(franchiseeSettings.facebook_url || franchiseeSettings.instagram_url) && (
+            <div className="flex justify-center gap-4 pt-4">
+              {franchiseeSettings.facebook_url && (
+                <a
+                  href={franchiseeSettings.facebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-blue hover:text-brand-blue/80"
+                >
+                  Follow us on Facebook
+                </a>
+              )}
+              {franchiseeSettings.instagram_url && (
+                <a
+                  href={franchiseeSettings.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-blue hover:text-brand-blue/80"
+                >
+                  Follow us on Instagram
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Confirmation Email Notice */}
+        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="font-poppins text-blue-800 text-center text-sm">
+            📧 A confirmation email has been sent to {booking.parent_email}
           </p>
         </div>
-      </Modal>
+      </div>
     </div>
   );
 };

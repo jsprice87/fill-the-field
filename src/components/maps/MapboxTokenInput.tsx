@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { TextInput } from '@mantine/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExternalLink, Key } from 'lucide-react';
@@ -55,8 +56,8 @@ const MapboxTokenInput: React.FC<MapboxTokenInputProps> = ({ onTokenSubmit, clas
               </p>
             </div>
             
-            <Button
-              onClick={handleSubmit}
+            <Button 
+              type="submit" 
               className="w-full bg-brand-blue hover:bg-brand-blue/90" 
               disabled={!token.trim() || isSubmitting}
             >

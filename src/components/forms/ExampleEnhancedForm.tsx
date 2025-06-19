@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
 import { EnhancedSelect, EnhancedSelectItem } from '@/components/ui/enhanced-select';
@@ -173,10 +174,11 @@ const ExampleEnhancedForm: React.FC = () => {
           </FormSection>
 
           <div className="flex gap-4 pt-4">
-            <Button onClick={handleSubmit} className="flex-1">
+            <Button type="submit" className="flex-1">
               Submit Form
             </Button>
             <Button 
+              type="button" 
               variant="outline" 
               onClick={() => {
                 setFormData({

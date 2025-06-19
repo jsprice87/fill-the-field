@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@mantine/core";
+import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Edit, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@mantine/core";
+import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -271,7 +271,7 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to={`/${franchiseeSlug}/portal/classes`}>
-            <Button variant="subtle" size="sm">
+            <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Classes
             </Button>

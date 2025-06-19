@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Calendar, MapPin, Clock, User } from 'lucide-react';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MetaPixelProvider, useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
 

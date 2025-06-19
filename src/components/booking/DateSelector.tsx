@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { Calendar, AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDateSelection } from '@/hooks/useDateSelection';
@@ -86,7 +86,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
           {availableDates.map((dateOption) => (
             <Button
               key={dateOption.date}
-              variant={currentSelected === dateOption.date ? "filled" : "outline"}
+              variant={currentSelected === dateOption.date ? "default" : "outline"}
               onClick={() => handleDateSelect(dateOption.date)}
               className={`justify-start h-auto p-3 ${
                 currentSelected === dateOption.date 

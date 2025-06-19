@@ -1,9 +1,8 @@
-
 import * as React from "react"
 import { PanelLeft } from "lucide-react"
 import { useSidebar, SIDEBAR_WIDTH_MOBILE } from "./SidebarContext"
 import { cn } from "@/lib/utils"
-import { Button } from "@mantine/core"
+import { Button } from "@/components/ui/button"
 import { TextInput } from "@mantine/core"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -113,7 +112,7 @@ const Sidebar = React.forwardRef<
 Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
-  HTMLButtonElement,
+  React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
@@ -121,10 +120,11 @@ const SidebarTrigger = React.forwardRef<
   return (
     <Button
       ref={ref}
-      variant="subtle"
-      size="sm"
+      data-sidebar="trigger"
+      variant="ghost"
+      size="icon"
       className={cn("h-7 w-7", className)}
-      onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+      onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}

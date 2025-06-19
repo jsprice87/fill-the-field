@@ -1,6 +1,5 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@mantine/core";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from "@/hooks/useFranchiseeSettings";
 import { useFranchiseeData } from "@/hooks/useFranchiseeData";

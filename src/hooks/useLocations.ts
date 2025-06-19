@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -43,25 +44,5 @@ export const useLocations = (franchiseeId?: string, hideInactive: boolean = fals
       return data || [];
     },
     enabled: !!franchiseeId,
-  });
-};
-
-// Add missing useLocation hook for single location fetching
-export const useLocation = (locationId: string) => {
-  return useQuery({
-    queryKey: ['location', locationId],
-    queryFn: async () => {
-      if (!locationId) throw new Error('Location ID is required');
-      
-      const { data, error } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('id', locationId)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!locationId,
   });
 };
