@@ -59,8 +59,7 @@ const FindClasses: React.FC = () => {
       return 'America/New_York'; // Default timezone
     }
 
-    // TODO: replace with proper type
-    const settingsData = data as any;
+    const settingsData = data as any; // TODO: replace with proper type
     if (settingsData && settingsData.length > 0) {
       return settingsData[0].setting_value || 'America/New_York';
     }
@@ -76,7 +75,7 @@ const FindClasses: React.FC = () => {
       try {
         const { data: settings, error: settingsError } = await supabase
           .from('franchisee_settings')
-          .select('key, value')
+          .select('setting_key, setting_value')
           .eq('franchisee_slug', franchiseeSlug);
 
         if (settingsError) {
@@ -85,8 +84,9 @@ const FindClasses: React.FC = () => {
           return;
         }
 
-        const pixelSetting = settings?.find(s => s.key === 'meta_pixel_id');
-        setMetaPixelId(pixelSetting?.value || null);
+        const settingsData = settings as any; // TODO: replace with proper type
+        const pixelSetting = settingsData?.find((s: any) => s.setting_key === 'meta_pixel_id');
+        setMetaPixelId(pixelSetting?.setting_value || null);
 
         const { data: classScheduleData, error: classScheduleError } = await supabase
           .from('class_schedules')
@@ -126,12 +126,12 @@ const FindClasses: React.FC = () => {
           return;
         }
 
-        setClassSchedules(classScheduleData as ClassSchedule[]);
+        setClassSchedules(classScheduleData as any); // TODO: replace with proper type
 
         // Extract unique locations for filtering
         const uniqueLocations = [
           ...new Set(
-            classScheduleData.map((schedule) => ({
+            classScheduleData.map((schedule: any) => ({
               value: schedule.classes.locations.name,
               label: schedule.classes.locations.name,
             }))

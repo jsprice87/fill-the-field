@@ -102,7 +102,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
           console.error('Error fetching booking:', error);
           setError('Failed to load booking confirmation.');
         } else if (data) {
-          setBookingData(data);
+          setBookingData(data as any); // TODO: replace with proper type
         } else {
           setError('Booking not found.');
         }
@@ -232,12 +232,15 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
           </div>
         </CardContent>
       </Card>
-      <a href={`/${franchiseeSlug}/booking`} className="mt-4">
-        <Button variant="ghost" className="flex items-center space-x-2">
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back to Booking Page</span>
-        </Button>
-      </a>
+      <Button
+        component="a"
+        href={`/${franchiseeSlug}/booking`}
+        variant="ghost"
+        className="mt-4 flex items-center space-x-2"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back to Booking Page</span>
+      </Button>
     </div>
   );
 };

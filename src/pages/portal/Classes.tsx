@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
+import { IconPlus, IconArrowLeft, IconTrash } from '@tabler/icons-react';
 import { useNavigate, useLocation, useParams, Link } from 'react-router-dom';
 import ScheduleRow from '@/components/classes/ScheduleRow';
 
@@ -357,26 +357,17 @@ const PortalClasses: React.FC<PortalClassesProps> = ({ franchiseeId: propFranchi
             {scheduleRows.map((row, index) => (
               <ScheduleRow
                 key={index}
+                row={row}
                 index={index}
-                className={row.className}
-                duration={row.duration}
-                timeStart={row.timeStart}
-                timeEnd={row.timeEnd}
-                dateStart={row.dateStart}
-                dateEnd={row.dateEnd}
-                overrideDates={row.overrideDates}
-                minAge={row.minAge}
-                maxAge={row.maxAge}
-                capacity={row.capacity}
-                dayOfWeek={row.dayOfWeek}
                 onRowChange={handleRowChange}
                 onRemoveRow={handleRemoveRow}
+                globalDayOfWeek={globalDayOfWeek}
               />
             ))}
           </TableBody>
         </Table>
 
-        <Button onClick={handleAddRow} variant="outline" leftIcon={<Plus />}>
+        <Button onClick={handleAddRow} variant="outline" leftSection={<IconPlus />}>
           Add Schedule
         </Button>
       </div>

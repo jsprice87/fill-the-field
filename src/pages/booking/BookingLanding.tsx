@@ -108,8 +108,7 @@ const BookingLanding: React.FC = () => {
           console.error("Error fetching Mapbox token:", globalSettingsError);
         }
 
-        // TODO: replace with proper type
-        const settingsData = globalSettings as any;
+        const settingsData = globalSettings as any; // TODO: replace with proper type
         if (settingsData && settingsData.setting_value) {
           setMapboxToken(String(settingsData.setting_value));
         } else {
