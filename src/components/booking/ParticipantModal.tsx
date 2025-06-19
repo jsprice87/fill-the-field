@@ -1,13 +1,12 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { z } from 'zod';
-import { Stack, Alert, ActionIcon } from '@mantine/core';
-import { Calendar } from 'lucide-react';
+import { Stack, Alert } from '@mantine/core';
 import { Modal } from '@/components/mantine/Modal';
-import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
 import { Textarea } from '@/components/mantine/Textarea';
 import { AppDatePicker } from '@/components/mantine/DatePicker';
+import { Button, Group } from '@mantine/core';
 import { toDate } from '@/utils/normalize';
 import { useZodForm } from '@/hooks/useZodForm';
 import { calculateAgeFromDate } from '@/utils/ageCalculator';
@@ -101,18 +100,13 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       title={title}
       size="md"
     >
-      <FormWrapper
-        onSubmit={form.onSubmit(handleSubmit)}
-        onCancel={onClose}
-        submitLabel="Save Participant"
-        isLoading={false}
-      >
+      <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <TextInput
             label="Child's First Name"
             placeholder="Enter child's first name"
             {...form.getInputProps('first_name')}
-            required
+            withAsterisk
           />
 
           <AppDatePicker
@@ -137,8 +131,26 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             rows={3}
             {...form.getInputProps('notes')}
           />
+
+          <Group justify="flex-end" gap="sm" mt="lg">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={form.submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={form.submitting}
+              disabled={!form.isValid()}
+              data-autofocus
+            >
+              Save Participant
+            </Button>
+          </Group>
         </Stack>
-      </FormWrapper>
+      </form>
     </Modal>
   );
 };

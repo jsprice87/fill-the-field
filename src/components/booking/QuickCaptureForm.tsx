@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/mantine/Button';
-import { Input } from '@/components/mantine/TextInput';
+import { TextInput } from '@/components/mantine/TextInput';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
@@ -133,37 +133,29 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
                 First Name *
               </Label>
-              <Input
+              <TextInput
                 id="firstName"
                 type="text"
                 {...form.getInputProps('firstName')}
                 required
                 placeholder="Enter first name"
                 soccer
-                error={!!form.errors.firstName}
                 className="h-12"
               />
-              {form.errors.firstName && (
-                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.firstName}</p>
-              )}
             </div>
             <div>
               <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
                 Last Name *
               </Label>
-              <Input
+              <TextInput
                 id="lastName"
                 type="text"
                 {...form.getInputProps('lastName')}
                 required
                 placeholder="Enter last name"
                 soccer
-                error={!!form.errors.lastName}
                 className="h-12"
               />
-              {form.errors.lastName && (
-                <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.lastName}</p>
-              )}
             </div>
           </div>
 
@@ -171,45 +163,37 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             <Label htmlFor="email" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
               Email Address *
             </Label>
-            <Input
+            <TextInput
               id="email"
               type="email"
               {...form.getInputProps('email')}
               required
               placeholder="your.email@example.com"
               soccer
-              error={!!form.errors.email}
               className="h-12"
             />
-            {form.errors.email && (
-              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.email}</p>
-            )}
           </div>
 
           <div>
             <Label htmlFor="phone" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
               Phone Number *
             </Label>
-            <Input
+            <TextInput
               id="phone"
               type="tel"
               {...form.getInputProps('phone')}
               required
               placeholder="(555) 123-4567"
               soccer
-              error={!!form.errors.phone}
               className="h-12"
             />
-            {form.errors.phone && (
-              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.phone}</p>
-            )}
           </div>
 
           <div>
             <Label htmlFor="zip" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
               ZIP Code *
             </Label>
-            <Input
+            <TextInput
               id="zip"
               type="text"
               {...form.getInputProps('zip')}
@@ -217,12 +201,8 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               placeholder="12345"
               maxLength={5}
               soccer
-              error={!!form.errors.zip}
               className="h-12"
             />
-            {form.errors.zip && (
-              <p className="text-brand-red-600 text-xs mt-1 font-poppins">{form.errors.zip}</p>
-            )}
           </div>
 
           <Button
