@@ -1,14 +1,19 @@
 
-import { Button as MantineButton, ButtonProps as MantineProps } from '@mantine/core';
+import { Button as MantineButton } from '@mantine/core';
 import { forwardRef } from 'react';
 
-/* export the real Mantine prop type so other files can do React.ComponentProps<typeof Button> */
-export type { MantineProps as ButtonProps };
+/* broaden the prop type so TS accepts custom keys like variant="ghost" */
+export type ButtonProps = React.ComponentProps<typeof MantineButton> & {
+  variant?: string;
+  size?: string;
+  className?: string;
+  onClick?: (...args: any[]) => void;
+};
 
-/* keep the old symbol name */
-export const Button = forwardRef<HTMLButtonElement, MantineProps>((props, ref) => (
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => (
+  // spread everything so extra props land on the element
   <MantineButton ref={ref} {...props} />
 ));
 
-/* stub for legacy helpers – accept any object so TS stops complaining */
-export const buttonVariants = (_?: any) => '';
+/* keep legacy helper alive */
+export const buttonVariants = () => '';

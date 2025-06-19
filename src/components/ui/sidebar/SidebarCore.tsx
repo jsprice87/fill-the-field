@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { PanelLeft } from "lucide-react"
 import { useSidebar, SIDEBAR_WIDTH_MOBILE } from "./SidebarContext"
@@ -121,7 +122,7 @@ const SidebarTrigger = React.forwardRef<
     <Button
       ref={ref}
       data-sidebar="trigger"
-      variant="ghost"
+      variant="subtle"
       size="icon"
       className={cn("h-7 w-7", className)}
       onClick={(event) => {
