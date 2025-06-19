@@ -74,7 +74,7 @@ const BookingLanding: React.FC = () => {
           .from('classes')
           .select('*')
           .eq('franchisee_id', franchiseeId)
-          .eq('is_active', true);
+          .eq('is_active', true) as any;
 
         if (classesError) {
           console.error("Error fetching classes:", classesError);
@@ -88,7 +88,7 @@ const BookingLanding: React.FC = () => {
           .from('locations')
           .select('*')
           .eq('franchisee_id', franchiseeId)
-          .eq('is_active', true);
+          .eq('is_active', true) as any;
 
         if (locationsError) {
           console.error("Error fetching locations:", locationsError);

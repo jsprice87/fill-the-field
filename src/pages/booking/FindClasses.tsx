@@ -76,7 +76,7 @@ const FindClasses: React.FC = () => {
         const { data: settings, error: settingsError } = await supabase
           .from('franchisee_settings')
           .select('setting_key, setting_value')
-          .eq('franchisee_slug', franchiseeSlug);
+          .eq('franchisee_slug', franchiseeSlug) as any;
 
         if (settingsError) {
           console.error('Error fetching franchisee settings:', settingsError);
@@ -113,7 +113,7 @@ const FindClasses: React.FC = () => {
               )
             )
           `)
-          .eq('classes.locations.franchisee_slug', franchiseeSlug);
+          .eq('classes.locations.franchisee_slug', franchiseeSlug) as any;
 
         if (classScheduleError) {
           console.error('Error fetching class schedules:', classScheduleError);

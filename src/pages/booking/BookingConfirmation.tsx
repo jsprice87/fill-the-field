@@ -96,7 +96,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
           `)
           .eq('booking_reference', bookingReference)
           .eq('franchisee_id', currentFranchiseeId)
-          .single();
+          .single() as any;
 
         if (error) {
           console.error('Error fetching booking:', error);

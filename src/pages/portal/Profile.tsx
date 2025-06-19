@@ -1,9 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@mantine/core';
+import { Button, Badge, Divider } from '@mantine/core';
 import { Building, User, Mail, Phone, MapPin, Save } from 'lucide-react';
+import { 
+  IconEdit, 
+  IconX, 
+  IconCreditCard, 
+  IconShield, 
+  IconCalendar 
+} from '@tabler/icons-react';
 import { useFranchiseeProfile, useUpdateFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -96,26 +104,26 @@ const Profile: React.FC = () => {
   const getSubscriptionBadgeColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'active':
-        return 'bg-green-100 text-green-800';
+        return 'green';
       case 'inactive':
-        return 'bg-red-100 text-red-800';
+        return 'red';
       case 'cancelled':
-        return 'bg-gray-100 text-gray-800';
+        return 'gray';
       default:
-        return 'bg-blue-100 text-blue-800';
+        return 'blue';
     }
   };
 
   const getTierBadgeColor = (tier: string) => {
     switch (tier?.toLowerCase()) {
       case 'premium':
-        return 'bg-purple-100 text-purple-800';
+        return 'violet';
       case 'pro':
-        return 'bg-blue-100 text-blue-800';
+        return 'blue';
       case 'free':
-        return 'bg-gray-100 text-gray-800';
+        return 'gray';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'gray';
     }
   };
 
@@ -194,13 +202,13 @@ const Profile: React.FC = () => {
               </CardTitle>
               {!isEditing ? (
                 <Button variant="outline" size="sm" onClick={handleEdit}>
-                  <Edit3 className="h-4 w-4 mr-2" />
+                  <IconEdit className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
               ) : (
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleCancel}>
-                    <X className="h-4 w-4 mr-2" />
+                    <IconX className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
                   <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
@@ -258,7 +266,7 @@ const Profile: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
+              <IconCreditCard className="h-5 w-5" />
               Subscription & Billing
             </CardTitle>
           </CardHeader>
@@ -267,17 +275,17 @@ const Profile: React.FC = () => {
               <div>
                 <p className="font-medium">Current Plan</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge className={getTierBadgeColor(profile.subscription_tier)}>
+                  <Badge color={getTierBadgeColor(profile.subscription_tier)}>
                     {profile.subscription_tier?.toUpperCase() || 'FREE'}
                   </Badge>
-                  <Badge className={getSubscriptionBadgeColor(profile.subscription_status)}>
+                  <Badge color={getSubscriptionBadgeColor(profile.subscription_status)}>
                     {profile.subscription_status?.toUpperCase() || 'ACTIVE'}
                   </Badge>
                 </div>
               </div>
             </div>
 
-            <Separator />
+            <Divider />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -302,7 +310,7 @@ const Profile: React.FC = () => {
 
             <div className="pt-4">
               <Button variant="outline" disabled>
-                <CreditCard className="h-4 w-4 mr-2" />
+                <IconCreditCard className="h-4 w-4 mr-2" />
                 Manage Billing (Coming Soon)
               </Button>
             </div>
@@ -313,7 +321,7 @@ const Profile: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+              <IconShield className="h-5 w-5" />
               Security
             </CardTitle>
           </CardHeader>
@@ -327,7 +335,7 @@ const Profile: React.FC = () => {
                   variant="outline" 
                   onClick={() => setIsChangingPassword(true)}
                 >
-                  <Shield className="h-4 w-4 mr-2" />
+                  <IconShield className="h-4 w-4 mr-2" />
                   Change Password
                 </Button>
               </div>
@@ -376,7 +384,7 @@ const Profile: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+              <IconCalendar className="h-5 w-5" />
               Account Details
             </CardTitle>
           </CardHeader>
