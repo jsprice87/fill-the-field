@@ -10,6 +10,8 @@ export type ButtonProps = MantineButtonProps & React.ButtonHTMLAttributes<HTMLBu
   size?: 'default' | 'sm' | 'lg' | 'icon' | 'soccer';
 };
 
-export const buttonVariants = (_?: any) => '';        // noop until component migrated
+/* accept any keys while we migrate */
+type AnyProps = Record<string, unknown>;
+export const buttonVariants = (_?: AnyProps) => '';
 
 export { MantineButton as Button };
