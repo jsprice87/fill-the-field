@@ -1,15 +1,12 @@
 
 import React, { useEffect } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Stack, Switch } from '@mantine/core';
+import { Stack, Switch, Group, Button } from '@mantine/core';
 import { Modal } from '@/components/mantine/Modal';
-import { FormWrapper } from '@/components/mantine/FormWrapper';
 import { TextInput } from '@/components/mantine/TextInput';
+import { useZodForm } from '@/hooks/useZodForm';
 import { geocodeAddress } from '@/utils/geocoding';
 import { toast } from 'sonner';
-import { toErrorNode } from '@/lib/toErrorNode';
 
 const locationSchema = z.object({
   id: z.string().optional(),
@@ -40,26 +37,23 @@ const LocationForm: React.FC<LocationFormProps> = ({
   onSubmit,
   initialData,
 }) => {
-  const form = useForm<LocationFormData>({
-    resolver: zodResolver(locationSchema),
-    defaultValues: {
-      name: '',
-      address: '',
-      city: '',
-      state: '',
-      zip: '',
-      phone: '',
-      email: '',
-      isActive: true,
-      ...initialData,
-    },
+  const form = useZodForm(locationSchema, {
+    name: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    phone: '',
+    email: '',
+    isActive: true,
+    ...initialData,
   });
 
   useEffect(() => {
     if (initialData) {
-      form.reset(initialData);
+      form.setValues(initialData);
     } else {
-      form.reset({
+      form.setValues({
         name: '',
         address: '',
         city: '',
@@ -97,6 +91,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
     }
   };
 
+  const onSubmitHandler = form.onSubmit(handleSubmit);
+
   return (
     <Modal
       opened={open}
@@ -104,82 +100,85 @@ const LocationForm: React.FC<LocationFormProps> = ({
       title={initialData?.id ? 'Edit Location' : 'Add Location'}
       size="lg"
     >
-      <FormProvider {...form}>
-        <FormWrapper
-          onSubmit={form.handleSubmit(handleSubmit)}
-          onCancel={onClose}
-          submitLabel={initialData?.id ? 'Update Location' : 'Add Location'}
-          isLoading={form.formState.isSubmitting}
-        >
-          <Stack gap="md">
+      <form onSubmit={onSubmitHandler}>
+        <Stack gap="md">
+          <TextInput
+            label="Location Name"
+            placeholder="Enter location name"
+            withAsterisk
+            {...form.getInputProps('name')}
+          />
+
+          <TextInput
+            label="Address"
+            placeholder="Enter street address"
+            withAsterisk
+            {...form.getInputProps('address')}
+          />
+
+          <Stack gap="sm">
             <TextInput
-              label="Location Name"
-              placeholder="Enter location name"
-              {...form.register('name')}
-              error={toErrorNode(form.formState.errors.name?.message)}
-              required
+              label="City"
+              placeholder="Enter city"
+              withAsterisk
+              {...form.getInputProps('city')}
             />
 
             <TextInput
-              label="Address"
-              placeholder="Enter street address"
-              {...form.register('address')}
-              error={toErrorNode(form.formState.errors.address?.message)}
-              required
-            />
-
-            <Stack gap="sm">
-              <TextInput
-                label="City"
-                placeholder="Enter city"
-                {...form.register('city')}
-                error={toErrorNode(form.formState.errors.city?.message)}
-                required
-              />
-
-              <TextInput
-                label="State"
-                placeholder="Enter state"
-                {...form.register('state')}
-                error={toErrorNode(form.formState.errors.state?.message)}
-                required
-              />
-
-              <TextInput
-                label="ZIP Code"
-                placeholder="Enter ZIP code"
-                {...form.register('zip')}
-                error={toErrorNode(form.formState.errors.zip?.message)}
-                required
-              />
-            </Stack>
-
-            <TextInput
-              label="Phone"
-              placeholder="Enter phone number (optional)"
-              {...form.register('phone')}
-              error={toErrorNode(form.formState.errors.phone?.message)}
+              label="State"
+              placeholder="Enter state"
+              withAsterisk
+              {...form.getInputProps('state')}
             />
 
             <TextInput
-              label="Email"
-              placeholder="Enter email address (optional)"
-              type="email"
-              {...form.register('email')}
-              error={toErrorNode(form.formState.errors.email?.message)}
-            />
-
-            <Switch
-              label="Active Location"
-              description="Location is available for booking"
-              checked={form.watch('isActive')}
-              onChange={(event) => form.setValue('isActive', event.currentTarget.checked)}
-              color="soccerGreen"
-              size="md"
+              label="ZIP Code"
+              placeholder="Enter ZIP code"
+              withAsterisk
+              {...form.getInputProps('zip')}
             />
           </Stack>
-        </FormWrapper>
-      </FormProvider>
+
+          <TextInput
+            label="Phone"
+            placeholder="Enter phone number (optional)"
+            {...form.getInputProps('phone')}
+          />
+
+          <TextInput
+            label="Email"
+            placeholder="Enter email address (optional)"
+            type="email"
+            {...form.getInputProps('email')}
+          />
+
+          <Switch
+            label="Active Location"
+            description="Location is available for booking"
+            color="soccerGreen"
+            size="md"
+            {...form.getInputProps('isActive', { type: 'checkbox' })}
+          />
+
+          <Group justify="flex-end" gap="sm" mt="lg">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={form.submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={form.submitting}
+              disabled={!form.isValid()}
+              data-autofocus
+            >
+              {initialData?.id ? 'Update Location' : 'Add Location'}
+            </Button>
+          </Group>
+        </Stack>
+      </form>
     </Modal>
   );
 };
