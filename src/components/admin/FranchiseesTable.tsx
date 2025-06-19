@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
 import { Menu, ActionIcon } from '@mantine/core';
 import { IconDotsVertical, IconPencil, IconTrash, IconEye, IconMail, IconPhone } from '@tabler/icons-react';
@@ -183,7 +183,7 @@ export const FranchiseesTable: React.FC<FranchiseesTableProps> = ({
               <TableCell>
                 <div className="flex gap-2">
                   <Button
-                    variant="ghost"
+                    variant="subtle"
                     size="sm"
                     onClick={() => franchisee.email && (window.location.href = `mailto:${franchisee.email}`)}
                     className="ui-hover"
@@ -193,7 +193,7 @@ export const FranchiseesTable: React.FC<FranchiseesTableProps> = ({
                     <IconMail size={16} />
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="subtle"
                     size="sm"
                     onClick={() => franchisee.phone && (window.location.href = `tel:${franchisee.phone}`)}
                     className="ui-hover"

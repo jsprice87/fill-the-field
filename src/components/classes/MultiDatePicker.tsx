@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from "@mantine/core";
 import { TextInput } from "@mantine/core";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +78,7 @@ const MultiDatePicker: React.FC<MultiDatePickerProps> = ({
                     {formatDate(date)}
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="subtle"
                       className="h-4 w-4 p-0 hover:bg-red-100"
                       onClick={() => removeDate(date)}
                     >

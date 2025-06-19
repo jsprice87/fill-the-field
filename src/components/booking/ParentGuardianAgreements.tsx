@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -36,7 +36,7 @@ export const ParentGuardianAgreements: React.FC<ParentGuardianAgreementsProps> =
           <Label htmlFor="waiver" className="font-poppins text-sm leading-relaxed">
             <span className="text-red-500">*</span> I agree to the terms and conditions outlined in the{' '}
             <Button 
-              variant="link" 
+              variant="subtle" 
               className="p-0 h-auto text-brand-blue underline font-poppins text-sm"
               onClick={onOpenWaiver}
             >

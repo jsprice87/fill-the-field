@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from "@mantine/core";
 import { TextInput } from "@mantine/core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -143,7 +142,7 @@ const ScheduleRow: React.FC<ScheduleRowProps> = ({
 
       <TableCell className="w-16">
         <Button
-          variant="ghost"
+          variant="subtle"
           size="sm"
           onClick={() => onRemoveRow(index)}
           className="text-red-600 hover:text-red-700 hover:bg-red-50"

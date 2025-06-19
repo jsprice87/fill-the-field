@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 
 interface MapErrorFallbackProps {
   error?: string;
