@@ -1,9 +1,7 @@
-
 import React from 'react';
-import { ActionIcon } from '@mantine/core';
+import { ActionIcon, Tooltip } from '@mantine/core';
 import { IconCopy } from '@tabler/icons-react';
 import { notify } from '@/utils/notify';
-import { Tooltip } from '@mantine/core';
 
 interface CopyButtonProps {
   url: string;

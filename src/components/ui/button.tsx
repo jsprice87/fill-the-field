@@ -1,17 +1,14 @@
 
-import { Button as MantineButton, ButtonProps as MantineButtonProps } from '@mantine/core';
-import * as React from 'react';
+import { Button as MantineButton, ButtonProps as MantineBtnProps } from '@mantine/core';
+import { forwardRef } from 'react';
 
-/* temporary shims so existing code compiles */
-export type ButtonProps = MantineButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  asChild?: boolean;
-  loading?: boolean;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'soccer_primary' | 'soccer_secondary';
-  size?: 'default' | 'sm' | 'lg' | 'icon' | 'soccer';
-};
+/* Re-export Mantine props so React.ComponentProps<typeof Button> resolves correctly */
+export type ButtonProps = MantineBtnProps;
 
-/* accept any keys while we migrate */
-type AnyProps = Record<string, unknown>;
-export const buttonVariants = (_?: AnyProps) => '';
+/* Wrap MantineButton to keep the old symbol name */
+export const Button = forwardRef<HTMLButtonElement, MantineBtnProps>((props, ref) => (
+  <MantineButton ref={ref} {...props} />
+));
 
-export { MantineButton as Button };
+/* Keep legacy helper alive until import swap is done */
+export const buttonVariants = (_?: Record<string, unknown>) => '';

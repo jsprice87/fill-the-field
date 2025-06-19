@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@mantine/core';
-import { Button } from '@/components/ui/button';
+import { Textarea, Button } from '@mantine/core';
 import { FileText, Eye } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 import { Modal } from '@/components/mantine/Modal';
