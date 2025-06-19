@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { TextInput } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { TextInput } from '@/components/ui';
+import { Textarea } from '@/components/ui';
 import { Globe, Share2 } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 import BookingRestrictionsCard from '@/components/portal/BookingRestrictionsCard';

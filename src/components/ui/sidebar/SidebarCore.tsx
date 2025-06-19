@@ -4,7 +4,7 @@ import { PanelLeft } from "lucide-react"
 import { useSidebar, SIDEBAR_WIDTH_MOBILE } from "./SidebarContext"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { TextInput } from "@/components/ui/input"
+import { TextInput } from "@/components/ui"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 

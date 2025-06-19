@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Link, useParams } from "react-router-dom";
-import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TextInput } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Search, Plus, Eye, Edit, Trash2, MapPin, Calendar, Clock, Users } from 'lucide-react';
+import { toast } from 'sonner';
+import { Link, useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { getSlugFromFranchiseeId } from '@/utils/slugUtils';
 
 interface ClassWithDetails {
   id: string;
@@ -329,7 +330,7 @@ const ClassesList: React.FC<ClassesListProps> = ({ franchiseeId: propFranchiseeI
         <div className="flex gap-4 items-center">
           <div className="flex-1 max-w-sm relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
+            <TextInput
               placeholder="Search classes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

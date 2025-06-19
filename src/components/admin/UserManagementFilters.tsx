@@ -1,6 +1,6 @@
 
 import React from "react";
-import { TextInput } from "@/components/ui/input";
+import { TextInput } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Download, RefreshCw } from "lucide-react";

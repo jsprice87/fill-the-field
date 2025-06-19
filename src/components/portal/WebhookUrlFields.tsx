@@ -1,6 +1,5 @@
-
 import { Label } from "@/components/ui/label";
-import { TextInput } from "@/components/ui/input";
+import { TextInput } from "@/components/ui";
 
 interface WebhookUrlFieldsProps {
   testWebhookUrl: string;
