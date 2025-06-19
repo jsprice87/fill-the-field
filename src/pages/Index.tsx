@@ -1,10 +1,12 @@
+
 import { Button } from "@mantine/core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Users, Calendar, MapPin, Play, Zap, Shield, Heart, Award, Target } from "lucide-react";
+import { Star, MapPin, Play, Zap, Shield, Heart, Award, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, CheckCircle, Globe, Calendar, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Text } from "@mantine/core";
 
 const Index = () => {
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -64,7 +66,7 @@ const Index = () => {
             <CardHeader>
               <Globe className="h-10 w-10 text-indigo-600 mb-2" />
               <CardTitle>Custom Landing Pages</CardTitle>
-              <CardDescription>Create beautiful landing pages that match your brand in minutes.</CardDescription>
+              <Text size="sm" c="dimmed">Create beautiful landing pages that match your brand in minutes.</Text>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
@@ -88,7 +90,7 @@ const Index = () => {
             <CardHeader>
               <Calendar className="h-10 w-10 text-indigo-600 mb-2" />
               <CardTitle>Booking Management</CardTitle>
-              <CardDescription>Streamline your class scheduling and booking process.</CardDescription>
+              <Text size="sm" c="dimmed">Streamline your class scheduling and booking process.</Text>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
@@ -112,7 +114,7 @@ const Index = () => {
             <CardHeader>
               <Users className="h-10 w-10 text-indigo-600 mb-2" />
               <CardTitle>Lead Conversion</CardTitle>
-              <CardDescription>Turn trial participants into loyal paying customers.</CardDescription>
+              <Text size="sm" c="dimmed">Turn trial participants into loyal paying customers.</Text>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">

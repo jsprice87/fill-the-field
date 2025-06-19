@@ -124,7 +124,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
 
   if (isPublicError) {
     return (
-      <ErrorBoundary>
+      <ErrorBoundary onReset={() => window.location.reload()}>
         <div className="min-h-screen flex items-center justify-center bg-white">
           <div className="text-center">
             <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Page Not Found</h1>
@@ -137,7 +137,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
 
   if (!resolvedId) {
     return (
-      <ErrorBoundary>
+      <ErrorBoundary onReset={() => window.location.reload()}>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">Account Not Found</h2>
@@ -150,7 +150,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
 
   // Use context provider to pass franchisee ID to children
   return (
-    <ErrorBoundary>
+    <ErrorBoundary onReset={() => window.location.reload()}>
       <FranchiseeProvider franchiseeId={resolvedId}>
         {children}
       </FranchiseeProvider>
