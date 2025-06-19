@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Menu, Badge, ActionIcon } from '@mantine/core';
-import { IconChevronDown, IconCheck } from '@tabler/icons-react';
+import { IconChevronDown, IconCheck, IconX, IconClock, IconAlertTriangle, IconArchive } from '@tabler/icons-react';
 import { useStatusMutation } from '@/hooks/useStatusMutation';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -36,6 +36,18 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   'canceled': 'CANCELED',
   'closed_lost': 'CLOSED LOST',
   'closed_won': 'CLOSED WON'
+} as const;
+
+// Status icons mapping
+const STATUS_ICONS: Record<LeadStatus, React.ReactNode> = {
+  'new': <IconClock size={16} />,
+  'booked_upcoming': <IconCheck size={16} />,
+  'booked_complete': <IconCheck size={16} />,
+  'no_show': <IconX size={16} />,
+  'follow_up': <IconClock size={16} />,
+  'canceled': <IconX size={16} />,
+  'closed_lost': <IconX size={16} />,
+  'closed_won': <IconCheck size={16} />
 } as const;
 
 const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({ 
@@ -93,15 +105,7 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
             onClick={() => handleStatusChange(statusKey as LeadStatus)}
             disabled={statusMutation.isPending}
             rightSection={status === statusKey ? <IconCheck size={16} /> : null}
-            leftSection={
-              <Badge
-                variant={config.variant}
-                color={config.color}
-                size="sm"
-              >
-                {STATUS_LABELS[statusKey as LeadStatus]}
-              </Badge>
-            }
+            leftSection={STATUS_ICONS[statusKey as LeadStatus]}
           >
             {STATUS_LABELS[statusKey as LeadStatus]}
           </Menu.Item>
