@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { TextInput } from '@/components/ui';
-import { Textarea } from '@/components/ui';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Globe, Share2 } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 import BookingRestrictionsCard from '@/components/portal/BookingRestrictionsCard';
@@ -79,7 +79,7 @@ const Settings: React.FC = () => {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="website_url">Website URL</Label>
-              <TextInput
+              <Input
                 id="website_url"
                 placeholder="https://your-website.com"
                 value={websiteUrl}
@@ -91,7 +91,7 @@ const Settings: React.FC = () => {
             
             <div>
               <Label htmlFor="facebook_url">Facebook Page URL</Label>
-              <TextInput
+              <Input
                 id="facebook_url"
                 placeholder="https://facebook.com/your-page"
                 value={facebookUrl}
@@ -103,7 +103,7 @@ const Settings: React.FC = () => {
             
             <div>
               <Label htmlFor="instagram_url">Instagram Profile URL</Label>
-              <TextInput
+              <Input
                 id="instagram_url"
                 placeholder="https://instagram.com/your-profile"
                 value={instagramUrl}

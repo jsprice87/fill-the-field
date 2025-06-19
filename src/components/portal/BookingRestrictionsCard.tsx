@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { TextInput } from '@/components/ui';
+import { Input } from '@/components/ui/input';
 import { Calendar, Clock } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 
@@ -36,7 +37,7 @@ const BookingRestrictionsCard: React.FC = () => {
               <Clock className="h-4 w-4" />
               Maximum Days Ahead for Booking
             </Label>
-            <TextInput
+            <Input
               id="max-days-ahead"
               type="number"
               min="1"

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { TextInput } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface FormData {
@@ -26,23 +26,23 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="parentFirstName" className="font-poppins">First Name *</Label>
-          <TextInput
+          <Input
             id="parentFirstName"
             value={formData.firstName}
             onChange={(e) => onInputChange('firstName', e.target.value)}
             placeholder="Parent/Guardian first name"
-            data-soccer={true}
+            className="font-poppins"
             required
           />
         </div>
         <div>
           <Label htmlFor="parentLastName" className="font-poppins">Last Name *</Label>
-          <TextInput
+          <Input
             id="parentLastName"
             value={formData.lastName}
             onChange={(e) => onInputChange('lastName', e.target.value)}
             placeholder="Parent/Guardian last name"
-            data-soccer={true}
+            className="font-poppins"
             required
           />
         </div>
@@ -50,13 +50,13 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
 
       <div>
         <Label htmlFor="parentEmail" className="font-poppins">Email Address *</Label>
-        <TextInput
+        <Input
           id="parentEmail"
           type="email"
           value={formData.email}
           onChange={(e) => onInputChange('email', e.target.value)}
           placeholder="your.email@example.com"
-          data-soccer={true}
+          className="font-poppins"
           required
         />
       </div>
@@ -64,24 +64,24 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="parentPhone" className="font-poppins">Phone Number *</Label>
-          <TextInput
+          <Input
             id="parentPhone"
             type="tel"
             value={formData.phone}
             onChange={(e) => onInputChange('phone', e.target.value)}
             placeholder="(555) 123-4567"
-            data-soccer={true}
+            className="font-poppins"
             required
           />
         </div>
         <div>
           <Label htmlFor="parentZip" className="font-poppins">ZIP Code *</Label>
-          <TextInput
+          <Input
             id="parentZip"
             value={formData.zip}
             onChange={(e) => onInputChange('zip', e.target.value)}
             placeholder="12345"
-            data-soccer={true}
+            className="font-poppins"
             required
           />
         </div>
@@ -89,12 +89,12 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
 
       <div>
         <Label htmlFor="relationship" className="font-poppins">Relationship to Child(ren)</Label>
-        <TextInput
+        <Input
           id="relationship"
           value={formData.relationship}
           onChange={(e) => onInputChange('relationship', e.target.value)}
           placeholder="Parent, Guardian, etc."
-          data-soccer={true}
+          className="font-poppins"
         />
       </div>
     </>

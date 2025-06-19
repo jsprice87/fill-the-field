@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { TextInput } from '@/components/ui';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -102,7 +103,7 @@ const AdminGlobalSettings: React.FC = () => {
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="system-name">System Name</Label>
-            <TextInput 
+            <Input 
               id="system-name" 
               defaultValue="SuperLeadStar" 
               disabled
@@ -118,7 +119,7 @@ const AdminGlobalSettings: React.FC = () => {
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="mapbox-token">Mapbox Public Token</Label>
-            <TextInput
+            <Input
               id="mapbox-token"
               type="text"
               placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwia..."

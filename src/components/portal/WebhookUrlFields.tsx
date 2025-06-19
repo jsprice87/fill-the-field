@@ -1,5 +1,6 @@
+
 import { Label } from "@/components/ui/label";
-import { TextInput } from "@/components/ui";
+import { Input } from "@/components/ui/input";
 
 interface WebhookUrlFieldsProps {
   testWebhookUrl: string;
@@ -38,7 +39,7 @@ export default function WebhookUrlFields({
     <div className="space-y-4">
       <div>
         <Label htmlFor="test-webhook-url">Test Webhook URL</Label>
-        <TextInput
+        <Input
           id="test-webhook-url"
           value={testWebhookUrl || currentTestWebhookUrl}
           onChange={(e) => setTestWebhookUrl(e.target.value)}
@@ -56,7 +57,7 @@ export default function WebhookUrlFields({
 
       <div>
         <Label htmlFor="prod-webhook-url">Production Webhook URL</Label>
-        <TextInput
+        <Input
           id="prod-webhook-url"
           value={prodWebhookUrl || currentProdWebhookUrl}
           onChange={(e) => setProdWebhookUrl(e.target.value)}
@@ -74,7 +75,7 @@ export default function WebhookUrlFields({
       
       <div>
         <Label htmlFor="auth-header">Authorization Header (Optional)</Label>
-        <TextInput
+        <Input
           id="auth-header"
           value={authHeader || currentAuthHeader}
           onChange={(e) => setAuthHeader(e.target.value)}
