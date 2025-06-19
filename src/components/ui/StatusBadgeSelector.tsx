@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Menu, Badge, ActionIcon } from '@mantine/core';
-import { ChevronDown, Check } from 'lucide-react';
+import { IconChevronDown, IconCheck } from '@tabler/icons-react';
 import { useStatusMutation } from '@/hooks/useStatusMutation';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -66,6 +66,7 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
       disabled={statusMutation.isPending}
       radius="sm"
       shadow="md"
+      withinPortal
     >
       <Menu.Target>
         <Badge
@@ -77,7 +78,7 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
             statusMutation.isPending ? (
               <div className="animate-spin rounded-full h-3 w-3 border border-current border-t-transparent" />
             ) : (
-              <ChevronDown size={12} />
+              <IconChevronDown size={12} />
             )
           }
         >
@@ -91,7 +92,7 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
             key={statusKey}
             onClick={() => handleStatusChange(statusKey as LeadStatus)}
             disabled={statusMutation.isPending}
-            rightSection={status === statusKey ? <Check size={16} /> : null}
+            rightSection={status === statusKey ? <IconCheck size={16} /> : null}
             leftSection={
               <Badge
                 variant={config.variant}
@@ -111,4 +112,3 @@ const StatusBadgeSelector: React.FC<StatusBadgeSelectorProps> = ({
 };
 
 export default StatusBadgeSelector;
-
