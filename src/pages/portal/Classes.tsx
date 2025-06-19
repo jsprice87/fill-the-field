@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Link, useParams } from "react-router-dom";
-import LocationSelector from '@/components/classes/LocationSelector';
-import GlobalDayPicker from '@/components/classes/GlobalDayPicker';
-import ScheduleGrid from '@/components/classes/ScheduleGrid';
+import { Button } from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import ScheduleRow from '@/components/classes/ScheduleRow';
 
 export interface ScheduleRow {
   id?: string;
@@ -295,48 +299,3 @@ const PortalClasses: React.FC<PortalClassesProps> = ({ franchiseeId: propFranchi
       </div>
 
       <div className="space-y-4">
-        <LocationSelector
-          franchiseeId={currentFranchiseeId}
-          selectedLocationId={selectedLocationId}
-          onLocationChange={setSelectedLocationId}
-        />
-
-        {selectedLocationId && (
-          <>
-            <GlobalDayPicker
-              selectedDay={globalDayOfWeek}
-              onDayChange={setGlobalDayOfWeek}
-            />
-
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Schedule Grid</h3>
-                <Button onClick={handleAddRow} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Row
-                </Button>
-              </div>
-
-              <ScheduleGrid
-                rows={scheduleRows}
-                onRowChange={handleRowChange}
-                onRemoveRow={handleRemoveRow}
-                globalDayOfWeek={globalDayOfWeek}
-              />
-            </div>
-          </>
-        )}
-
-        {!selectedLocationId && (
-          <div className="rounded-md border border-dashed border-gray-300">
-            <div className="p-8 flex items-center justify-center">
-              <p className="text-muted-foreground">Select a location to start creating class schedules.</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default PortalClasses;

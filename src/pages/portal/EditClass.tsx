@@ -1,316 +1,284 @@
-
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import AgeRangeInput from '@/components/classes/AgeRangeInput';
-import MultiDatePicker from '@/components/classes/MultiDatePicker';
-import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
+import { useParams, useNavigate } from 'react-router-dom';
+import { Button } from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Save, Trash } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-interface ClassData {
-  id: string;
-  name: string;
-  class_name: string;
-  description: string;
-  duration_minutes: number;
-  max_capacity: number;
-  min_age: number;
-  max_age: number;
-  location_id: string;
-  schedule: {
-    id: string;
-    start_time: string;
-    end_time: string;
-    day_of_week: number;
-    date_start: string | null;
-    date_end: string | null;
-  } | null;
-  exceptions: string[];
+interface EditClassProps {
+  franchiseeId?: string;
 }
 
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-];
-
-const EditClass: React.FC = () => {
-  const { franchiseeId, classId } = useParams();
+const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId }) => {
+  const { classId, franchiseeSlug } = useParams<{ classId: string; franchiseeSlug: string }>();
   const navigate = useNavigate();
-  const [classData, setClassData] = useState<ClassData | null>(null);
-  const [locations, setLocations] = useState<{id: string, name: string}[]>([]);
+
+  const [className, setClassName] = useState('');
+  const [duration, setDuration] = useState(60);
+  const [capacity, setCapacity] = useState(12);
+  const [locationId, setLocationId] = useState('');
+  const [isActive, setIsActive] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
+  const [locations, setLocations] = useState([]);
+  const [currentFranchiseeId, setCurrentFranchiseeId] = useState<string | null>(propFranchiseeId || null);
 
-  // Get the current slug for navigation
   useEffect(() => {
-    if (franchiseeId) {
-      if (!franchiseeId.includes('-')) {
-        getSlugFromFranchiseeId(franchiseeId).then(slug => {
-          setCurrentSlug(slug || franchiseeId);
-        });
-      } else {
-        setCurrentSlug(franchiseeId);
-      }
+    if (propFranchiseeId) {
+      setCurrentFranchiseeId(propFranchiseeId);
+      return;
     }
-  }, [franchiseeId]);
+
+    const getFranchiseeId = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          toast.error("Authentication required");
+          return;
+        }
+
+        const { data: franchisee, error } = await supabase
+          .from('franchisees')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (error || !franchisee) {
+          console.error("Error fetching franchisee:", error);
+          toast.error("Unable to find franchisee account");
+          return;
+        }
+
+        setCurrentFranchiseeId(franchisee.id);
+      } catch (error) {
+        console.error("Error getting franchisee:", error);
+        toast.error("Failed to authenticate");
+      }
+    };
+
+    getFranchiseeId();
+  }, [propFranchiseeId]);
 
   useEffect(() => {
-    loadClassData();
-    loadLocations();
-  }, [classId]);
-
-  const loadClassData = async () => {
-    if (!classId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('classes')
-        .select(`
-          id,
-          name,
-          class_name,
-          description,
-          duration_minutes,
-          max_capacity,
-          min_age,
-          max_age,
-          location_id,
-          class_schedules(
-            id,
-            start_time,
-            end_time,
-            day_of_week,
-            date_start,
-            date_end,
-            schedule_exceptions(exception_date)
-          )
-        `)
-        .eq('id', classId)
-        .eq('is_active', true)
-        .single();
-
-      if (error) {
-        console.error("Error loading class:", error);
-        toast.error("Failed to load class data");
+    const fetchData = async () => {
+      if (!classId || !currentFranchiseeId) {
         return;
       }
 
-      const schedule = data.class_schedules?.[0] || null;
-      const exceptions = schedule?.schedule_exceptions?.map((exc: any) => exc.exception_date) || [];
+      setIsLoading(true);
+      try {
+        // Fetch class details
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('id', classId)
+          .single();
 
-      setClassData({
-        id: data.id,
-        name: data.name,
-        class_name: data.class_name,
-        description: data.description || '',
-        duration_minutes: data.duration_minutes,
-        max_capacity: data.max_capacity,
-        min_age: data.min_age || 3,
-        max_age: data.max_age || 12,
-        location_id: data.location_id,
-        schedule,
-        exceptions
-      });
-    } catch (error) {
-      console.error("Error loading class:", error);
-      toast.error("Failed to load class data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        if (classError) {
+          console.error("Error fetching class:", classError);
+          toast.error("Failed to load class details");
+          return;
+        }
 
-  const loadLocations = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+        setClassName(classData.name);
+        setDuration(classData.duration_minutes);
+        setCapacity(classData.max_capacity);
+        setLocationId(classData.location_id);
+        setIsActive(classData.is_active);
 
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .single();
-      
-      if (franchiseeError || !franchisee) return;
+        // Fetch locations for the franchisee
+        const { data: locationsData, error: locationsError } = await supabase
+          .from('locations')
+          .select('*')
+          .eq('franchisee_id', currentFranchiseeId);
 
-      const { data: locationsData, error: locationsError } = await supabase
-        .from('locations')
-        .select('id, name')
-        .eq('franchisee_id', franchisee.id)
-        .eq('is_active', true)
-        .order('name');
+        if (locationsError) {
+          console.error("Error fetching locations:", locationsError);
+          toast.error("Failed to load locations");
+          return;
+        }
 
-      if (locationsError) {
-        console.error("Error loading locations:", locationsError);
-        return;
+        setLocations(locationsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load data");
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      setLocations(locationsData || []);
-    } catch (error) {
-      console.error("Error loading locations:", error);
-    }
-  };
-
-  const calculateEndTime = (startTime: string, duration: number): string => {
-    if (!startTime) return '';
-    
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(hours, minutes, 0, 0);
-    
-    const endDate = new Date(startDate.getTime() + duration * 60000);
-    
-    return `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-  };
+    fetchData();
+  }, [classId, currentFranchiseeId]);
 
   const handleSave = async () => {
-    if (!classData) return;
+    if (!classId) {
+      toast.error("Class ID is missing");
+      return;
+    }
 
     setIsSaving(true);
     try {
-      // Update class
-      const { error: classError } = await supabase
+      const { error } = await supabase
         .from('classes')
         .update({
-          name: classData.name,
-          class_name: classData.class_name,
-          description: classData.description,
-          duration_minutes: classData.duration_minutes,
-          max_capacity: classData.max_capacity,
-          min_age: classData.min_age,
-          max_age: classData.max_age,
-          location_id: classData.location_id
+          name: className,
+          class_name: className,
+          duration_minutes: duration,
+          max_capacity: capacity,
+          location_id: locationId,
+          is_active: isActive,
         })
-        .eq('id', classData.id);
+        .eq('id', classId);
 
-      if (classError) {
-        console.error("Error updating class:", classError);
-        throw classError;
+      if (error) {
+        console.error("Error updating class:", error);
+        toast.error("Failed to update class");
+        return;
       }
 
-      // Update schedule if it exists
-      if (classData.schedule) {
-        const { error: scheduleError } = await supabase
-          .from('class_schedules')
-          .update({
-            start_time: classData.schedule.start_time,
-            end_time: classData.schedule.end_time,
-            day_of_week: classData.schedule.day_of_week,
-            date_start: classData.schedule.date_start,
-            date_end: classData.schedule.date_end
-          })
-          .eq('id', classData.schedule.id);
-
-        if (scheduleError) {
-          console.error("Error updating schedule:", scheduleError);
-          throw scheduleError;
-        }
-
-        // Update exceptions
-        // First delete existing exceptions
-        await supabase
-          .from('schedule_exceptions')
-          .delete()
-          .eq('class_schedule_id', classData.schedule.id);
-
-        // Then insert new exceptions
-        if (classData.exceptions.length > 0) {
-          const exceptionInserts = classData.exceptions.map(date => ({
-            class_schedule_id: classData.schedule!.id,
-            exception_date: date,
-            is_cancelled: true
-          }));
-
-          const { error: exceptionError } = await supabase
-            .from('schedule_exceptions')
-            .insert(exceptionInserts);
-
-          if (exceptionError) {
-            console.error("Error updating exceptions:", exceptionError);
-            throw exceptionError;
-          }
-        }
-      }
-
-      toast.success("Class updated successfully!");
-      navigate(`/${currentSlug}/portal/classes`);
+      toast.success("Class updated successfully");
+      navigate(`/${franchiseeSlug}/portal/classes/list`);
     } catch (error) {
       console.error("Error saving class:", error);
-      toast.error("Failed to save class. Please try again.");
+      toast.error("Failed to save class");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!classId) {
+      toast.error("Class ID is missing");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this class?")) {
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .delete()
+        .eq('id', classId);
+
+      if (error) {
+        console.error("Error deleting class:", error);
+        toast.error("Failed to delete class");
+        return;
+      }
+
+      toast.success("Class deleted successfully");
+      navigate(`/${franchiseeSlug}/portal/classes/list`);
+    } catch (error) {
+      console.error("Error deleting class:", error);
+      toast.error("Failed to delete class");
     } finally {
       setIsSaving(false);
     }
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-64">Loading class data...</div>;
-  }
-
-  if (!classData) {
-    return <div className="text-center text-red-600">Class not found</div>;
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Edit Class</h1>
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to={`/${currentSlug}/portal/classes`}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Classes
-            </Button>
-          </Link>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`/${franchiseeSlug}/portal/classes/list`)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Classes
+          </Button>
           <h1 className="text-2xl font-bold tracking-tight">Edit Class</h1>
         </div>
-        <Button onClick={handleSave} disabled={isSaving}>
-          <Save className="h-4 w-4 mr-2" />
-          {isSaving ? "Saving..." : "Save Changes"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <span className="animate-pulse">Deleting...</span>
+              </>
+            ) : (
+              <>
+                <Trash className="h-4 w-4 mr-2" />
+                Delete
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <span className="animate-pulse">Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Basic Information</h3>
-          
-          <div className="space-y-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Class Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2">
             <Label htmlFor="class-name">Class Name</Label>
             <Input
               id="class-name"
-              value={classData.class_name}
-              onChange={(e) => setClassData({...classData, class_name: e.target.value, name: e.target.value})}
+              type="text"
               placeholder="Enter class name"
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <div className="grid gap-2">
+            <Label htmlFor="duration">Duration (minutes)</Label>
             <Input
-              id="description"
-              value={classData.description}
-              onChange={(e) => setClassData({...classData, description: e.target.value})}
-              placeholder="Enter class description"
+              id="duration"
+              type="number"
+              placeholder="Enter duration"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
             />
           </div>
-
-          <div className="space-y-2">
+          <div className="grid gap-2">
+            <Label htmlFor="capacity">Capacity</Label>
+            <Input
+              id="capacity"
+              type="number"
+              placeholder="Enter capacity"
+              value={capacity}
+              onChange={(e) => setCapacity(Number(e.target.value))}
+            />
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="location">Location</Label>
-            <Select
-              value={classData.location_id}
-              onValueChange={(value) => setClassData({...classData, location_id: value})}
-            >
+            <Select value={locationId} onValueChange={setLocationId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select location" />
+                <SelectValue placeholder="Select a location" />
               </SelectTrigger>
               <SelectContent>
                 {locations.map((location) => (
@@ -321,153 +289,17 @@ const EditClass: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
+          <div className="grid gap-2">
+            <Label htmlFor="is-active">Active</Label>
             <Input
-              id="duration"
-              type="number"
-              min="15"
-              max="180"
-              step="15"
-              value={classData.duration_minutes}
-              onChange={(e) => {
-                const duration = parseInt(e.target.value) || 60;
-                const updatedClassData = {...classData, duration_minutes: duration};
-                if (classData.schedule) {
-                  updatedClassData.schedule = {
-                    ...classData.schedule,
-                    end_time: calculateEndTime(classData.schedule.start_time, duration)
-                  };
-                }
-                setClassData(updatedClassData);
-              }}
+              id="is-active"
+              type="checkbox"
+              checked={isActive}
+              onChange={() => setIsActive(!isActive)}
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="capacity">Max Capacity</Label>
-            <Input
-              id="capacity"
-              type="number"
-              min="1"
-              max="50"
-              value={classData.max_capacity}
-              onChange={(e) => setClassData({...classData, max_capacity: parseInt(e.target.value) || 1})}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Age Range</Label>
-            <AgeRangeInput
-              minAge={classData.min_age}
-              maxAge={classData.max_age}
-              onMinAgeChange={(value) => setClassData({...classData, min_age: value})}
-              onMaxAgeChange={(value) => setClassData({...classData, max_age: value})}
-            />
-          </div>
-        </div>
-
-        {/* Schedule Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Schedule Information</h3>
-          
-          {classData.schedule && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="day-of-week">Day of Week</Label>
-                <Select
-                  value={classData.schedule.day_of_week.toString()}
-                  onValueChange={(value) => setClassData({
-                    ...classData,
-                    schedule: {...classData.schedule!, day_of_week: parseInt(value)}
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DAYS_OF_WEEK.map((day) => (
-                      <SelectItem key={day.value} value={day.value.toString()}>
-                        {day.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="start-time">Start Time</Label>
-                <Input
-                  id="start-time"
-                  type="time"
-                  value={classData.schedule.start_time}
-                  onChange={(e) => setClassData({
-                    ...classData,
-                    schedule: {
-                      ...classData.schedule!,
-                      start_time: e.target.value,
-                      end_time: calculateEndTime(e.target.value, classData.duration_minutes)
-                    }
-                  })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="end-time">End Time</Label>
-                <Input
-                  id="end-time"
-                  type="time"
-                  value={classData.schedule.end_time}
-                  readOnly
-                  className="bg-gray-50"
-                  title="Auto-calculated based on start time + duration"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date-start">Start Date</Label>
-                <Input
-                  id="date-start"
-                  type="date"
-                  value={classData.schedule.date_start || ''}
-                  onChange={(e) => setClassData({
-                    ...classData,
-                    schedule: {...classData.schedule!, date_start: e.target.value || null}
-                  })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date-end">End Date</Label>
-                <Input
-                  id="date-end"
-                  type="date"
-                  value={classData.schedule.date_end || ''}
-                  onChange={(e) => setClassData({
-                    ...classData,
-                    schedule: {...classData.schedule!, date_end: e.target.value || null}
-                  })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Override Dates</Label>
-                <MultiDatePicker
-                  selectedDates={classData.exceptions}
-                  onDatesChange={(dates) => setClassData({...classData, exceptions: dates})}
-                />
-              </div>
-            </>
-          )}
-
-          {!classData.schedule && (
-            <div className="text-muted-foreground">
-              No schedule information available for this class.
-            </div>
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

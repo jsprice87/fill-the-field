@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@mantine/core';
 import { Plus, MapPin, Building, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useParams, useSearchParams } from "react-router-dom";

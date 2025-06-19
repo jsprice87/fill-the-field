@@ -1,22 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Building2, 
-  CreditCard, 
-  Shield, 
-  Calendar,
-  Edit3,
-  Save,
-  X
-} from 'lucide-react';
+import { Button } from '@mantine/core';
+import { Building, User, Mail, Phone, MapPin, Save } from 'lucide-react';
 import { useFranchiseeProfile, useUpdateFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';

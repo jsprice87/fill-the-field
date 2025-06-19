@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Link, useParams } from "react-router-dom";
+import { Button } from '@mantine/core';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import LocationSelector from '@/components/classes/LocationSelector';
 import GlobalDayPicker from '@/components/classes/GlobalDayPicker';
 import ScheduleGrid from '@/components/classes/ScheduleGrid';
@@ -28,17 +32,16 @@ interface AddClassesProps {
 }
 
 const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId }) => {
-  const { franchiseeSlug } = useParams();
+  const navigate = useNavigate();
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
   const [globalDayOfWeek, setGlobalDayOfWeek] = useState<number>(1); // Monday default
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [franchiseeDbId, setFranchiseeDbId] = useState<string | null>(propFranchiseeId || null);
+  const [franchiseeId, setFranchiseeId] = useState<string | null>(propFranchiseeId || null);
 
-  // Get franchisee ID on component mount
   useEffect(() => {
     if (propFranchiseeId) {
-      setFranchiseeDbId(propFranchiseeId);
+      setFranchiseeId(propFranchiseeId);
       return;
     }
 
@@ -62,16 +65,14 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
           return;
         }
         
-        setFranchiseeDbId(franchisee.id);
+        setFranchiseeId(franchisee.id);
       } catch (error) {
         console.error("Error getting franchisee:", error);
         toast.error("Failed to authenticate");
       }
     };
 
-    if (!propFranchiseeId) {
-      getFranchiseeId();
-    }
+    getFranchiseeId();
   }, [propFranchiseeId]);
 
   const calculateEndTime = (startTime: string, duration: number): string => {
@@ -270,12 +271,10 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to={`/${franchiseeSlug}/portal/classes`}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Classes
-            </Button>
-          </Link>
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <h1 className="text-2xl font-bold tracking-tight">Add Class Schedules</h1>
         </div>
         <Button 
@@ -288,7 +287,7 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
 
       <div className="space-y-4">
         <LocationSelector
-          franchiseeId={franchiseeDbId}
+          franchiseeId={franchiseeId}
           selectedLocationId={selectedLocationId}
           onLocationChange={setSelectedLocationId}
         />

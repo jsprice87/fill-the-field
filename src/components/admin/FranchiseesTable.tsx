@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
 import { Menu, ActionIcon } from '@mantine/core';
 import { IconDotsVertical, IconPencil, IconTrash, IconEye, IconMail, IconPhone } from '@tabler/icons-react';

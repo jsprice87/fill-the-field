@@ -1,338 +1,280 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
-import { MetaPixelProvider, useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
-import { useBookingFlow } from '@/hooks/useBookingFlow';
-import { useFranchiseeOptional } from '@/contexts/FranchiseeContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Calendar, Users, Clock, Star, ArrowRight, Phone, Mail } from 'lucide-react';
+import { Button } from '@mantine/core';
+import { supabase } from '@/integrations/supabase/client';
+import { useGeocodedLocations } from '@/hooks/useGeocodedLocations';
 import { toast } from 'sonner';
-import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import LocationsMap from '@/components/maps/LocationsMap';
+import { MetaPixelProvider } from '@/components/booking/MetaPixelProvider';
 
-const BookingLandingContent: React.FC = () => {
-  const { franchiseeSlug } = useParams();
-  const navigate = useNavigate();
-  const { createFlow } = useBookingFlow();
-  const { trackEvent } = useMetaPixelTracking();
-  const [isCreatingFlow, setIsCreatingFlow] = useState(false);
-  
-  // Get franchisee data from context
-  const franchiseeContext = useFranchiseeOptional();
-  const franchiseeId = franchiseeContext?.franchiseeId;
+interface ClassInfo {
+  id: string;
+  name: string;
+  description: string;
+  duration_minutes: number;
+  max_capacity: number;
+  min_age: number;
+  max_age: number;
+}
 
-  const handleLeadCreated = () => {
-    // Track Meta Pixel Lead event
-    trackEvent('Lead');
-  };
-
-  const handleFormSuccess = async (leadId: string, leadData: any) => {
-    if (!franchiseeId || !franchiseeSlug) {
-      console.error('Missing required data for flow creation:', { franchiseeId, franchiseeSlug });
-      toast.error('Unable to start booking process. Please try again.');
-      return;
-    }
-    
-    setIsCreatingFlow(true);
-    try {
-      const flowId = await createFlow(franchiseeId, {
-        leadId,
-        leadData: {
-          firstName: leadData.first_name,
-          lastName: leadData.last_name,
-          email: leadData.email,
-          phone: leadData.phone,
-          zip: leadData.zip
-        }
-      });
-      
-      navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
-    } catch (error) {
-      console.error('Error creating flow:', error);
-      toast.error('Failed to start booking process. Please try again.');
-    } finally {
-      setIsCreatingFlow(false);
-    }
-  };
-
-  if (!franchiseeId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Account Not Found</h1>
-          <p className="font-poppins text-brand-grey">The requested account could not be found.</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section - 70-100vh with background image and overlay */}
-      <section className="hero-section relative flex items-center justify-center">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `linear-gradient(rgba(2, 29, 73, 0.8), rgba(0, 59, 206, 0.8)), url('/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png')`
-          }}
-        />
-        
-        <div className="relative z-10 container mx-auto px-4 py-24">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Side - Brand and Value Props */}
-            <div className="text-center lg:text-left">
-              <div className="flex justify-center lg:justify-start mb-8">
-                <img 
-                  src="/lovable-uploads/73ddb431-9bcb-476d-b5a8-e7cde1c58b51.png" 
-                  alt="Soccer Stars Logo" 
-                  className="h-16 md:h-20 w-auto"
-                  loading="eager"
-                />
-              </div>
-              
-              <h1 className="font-anton text-4xl md:text-6xl lg:text-7xl text-white mb-6">
-                FREE TRIAL CLASSES
-              </h1>
-              
-              <h2 className="font-agrandir text-xl md:text-2xl text-white mb-8">
-                Fun Soccer for Kids Ages 12 months to 12 years!
-              </h2>
-              
-              {/* Three Key Value Props */}
-              <div className="space-y-4 mb-8 text-white">
-                <div className="flex items-center justify-center lg:justify-start">
-                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <Users className="w-3 h-3 text-white" />
-                  </div>
-                  <p className="font-poppins text-lg">Professional coaching in a fun environment</p>
-                </div>
-                <div className="flex items-center justify-center lg:justify-start">
-                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <Star className="w-3 h-3 text-white" />
-                  </div>
-                  <p className="font-poppins text-lg">Build confidence & skills through play</p>
-                </div>
-                <div className="flex items-center justify-center lg:justify-start">
-                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <Clock className="w-3 h-3 text-white" />
-                  </div>
-                  <p className="font-poppins text-lg">Non-competitive, inclusive for all abilities</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Side - Lead Capture Form */}
-            <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-auto">
-              {isCreatingFlow ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-                  <p className="font-poppins text-brand-grey">Starting your booking...</p>
-                </div>
-              ) : (
-                <QuickCaptureForm 
-                  franchiseeId={franchiseeId}
-                  onSuccess={handleFormSuccess}
-                  onLeadCreated={handleLeadCreated}
-                  showTitle={true}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Value-Prop Strip - Three Equal Columns */}
-      <section className="py-20 px-4 bg-gray-50">
-        <div className="container mx-auto">
-          <h3 className="font-agrandir text-4xl text-brand-navy text-center mb-16">
-            Why Choose Soccer Stars?
-          </h3>
-          
-          <div className="value-prop-strip">
-            <div className="text-center">
-              <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" 
-                  alt="Toddler Soccer Fun" 
-                  className="w-full h-64 object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
-              <p className="font-poppins text-brand-grey text-lg">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" 
-                  alt="Youth Soccer Development" 
-                  className="w-full h-64 object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="w-6 h-6 text-white" />
-              </div>
-              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-10+: Super Soccer Stars</h4>
-              <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="container mx-auto">
-          <h3 className="font-agrandir text-4xl text-brand-navy text-center mb-12">
-            See the Joy in Action
-          </h3>
-          
-          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <div className="space-y-8">
-              <div className="bg-gray-50 p-8 rounded-xl border-l-4 border-l-brand-red">
-                <div className="flex mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="font-poppins text-xl text-gray-700 mb-4 italic">
-                  "My daughter absolutely loves Soccer Stars! She's gained so much confidence and made great friends. The coaches are amazing with kids."
-                </p>
-                <p className="font-poppins font-semibold text-brand-navy">- Sarah M., Parent</p>
-              </div>
-              
-              <div className="bg-gray-50 p-8 rounded-xl border-l-4 border-l-brand-blue">
-                <div className="flex mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="font-poppins text-xl text-gray-700 mb-4 italic">
-                  "The non-competitive environment is perfect for our son. He's learning skills while having a blast!"
-                </p>
-                <p className="font-poppins font-semibold text-brand-navy">- Mike D., Parent</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <img 
-                src="/lovable-uploads/f5c00969-26f0-44a8-8551-f73f45e5fec2.png" 
-                alt="Happy Soccer Kid" 
-                className="rounded-lg shadow-lg w-full h-48 object-cover"
-                loading="lazy"
-              />
-              <img 
-                src="/lovable-uploads/80139c96-b766-49d4-83b6-10e210326cd7.png" 
-                alt="Excited Soccer Player" 
-                className="rounded-lg shadow-lg w-full h-48 object-cover"
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Band - Navy background with white text and red button */}
-      <section className="cta-band">
-        <div className="container mx-auto px-4">
-          <h3 className="font-agrandir text-3xl md:text-4xl mb-6 text-white">
-            Ready to Get Started?
-          </h3>
-          <p className="font-poppins text-xl mb-8 text-white max-w-2xl mx-auto">
-            Join thousands of families who have discovered the joy of Soccer Stars. Your free trial is just a click away!
-          </p>
-          <Button 
-            variant="soccer_primary"
-            size="soccer"
-            onClick={() => {
-              document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="text-xl"
-          >
-            Find Your Free Trial
-          </Button>
-        </div>
-      </section>
-
-      {/* Footer - Navy background, three columns */}
-      <footer className="soccer-footer">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            {/* Column 1: Sitemap Links */}
-            <div>
-              <h4 className="font-agrandir text-lg mb-4 text-white">Programs</h4>
-              <div className="space-y-2">
-                <p className="font-poppins text-gray-300">Parent & Me (Ages 12-24 months)</p>
-                <p className="font-poppins text-gray-300">Super Soccer Stars (Ages 2-10+ years)</p>
-                <p className="font-poppins text-gray-300">Free Trial Classes</p>
-              </div>
-            </div>
-            
-            {/* Column 2: Contact Info */}
-            <div>
-              <h4 className="font-agrandir text-lg mb-4 text-white">Contact Us</h4>
-              <div className="space-y-2">
-                <div className="flex items-center text-gray-300">
-                  <Phone className="w-4 h-4 mr-2" />
-                  <span className="font-poppins">720-432-9084</span>
-                </div>
-                <div className="flex items-center text-gray-300">
-                  <Mail className="w-4 h-4 mr-2" />
-                  <span className="font-poppins">southdenver@soccerstars.com</span>
-                </div>
-                <div className="flex items-center text-gray-300">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  <span className="font-poppins">Find Local Programs</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Column 3: Social Icons */}
-            <div>
-              <h4 className="font-agrandir text-lg mb-4 text-white">Follow Us</h4>
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
-                  <span className="text-white font-poppins text-sm">f</span>
-                </div>
-                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
-                  <span className="text-white font-poppins text-sm">ig</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-600 pt-6 text-center">
-            <p className="font-poppins text-gray-400 text-sm">
-              © {new Date().getFullYear()} Soccer Stars. All rights reserved. | Backed by 25 years of experience
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
+interface LocationInfo {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  email: string | null;
+}
 
 const BookingLanding: React.FC = () => {
-  const franchiseeContext = useFranchiseeOptional();
-  const franchiseeId = franchiseeContext?.franchiseeId;
+  const { franchiseeSlug } = useParams();
+  const navigate = useNavigate();
+  const [selectedClass, setSelectedClass] = useState<ClassInfo | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<LocationInfo | null>(null);
+  const [availableClasses, setAvailableClasses] = useState<ClassInfo[]>([]);
+  const [availableLocations, setAvailableLocations] = useState<LocationInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const [showMapTokenInput, setShowMapTokenInput] = useState(false);
+  const { geocodedLocations, isLoading: isGeocoding, error: geocodingError, retryGeocode } = useGeocodedLocations(availableLocations, mapboxToken);
 
-  if (!franchiseeId) {
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch franchisee profile
+        const { data: franchisee, error: franchiseeError } = await supabase
+          .from('franchisees')
+          .select('id')
+          .eq('slug', franchiseeSlug)
+          .single();
+
+        if (franchiseeError) {
+          console.error("Error fetching franchisee:", franchiseeError);
+          setError("Unable to find franchisee. Please check the URL.");
+          return;
+        }
+
+        const franchiseeId = franchisee.id;
+
+        // Fetch classes
+        const { data: classes, error: classesError } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('franchisee_id', franchiseeId)
+          .eq('is_active', true);
+
+        if (classesError) {
+          console.error("Error fetching classes:", classesError);
+          setError("Failed to load classes. Please try again.");
+          return;
+        }
+        setAvailableClasses(classes || []);
+
+        // Fetch locations
+        const { data: locations, error: locationsError } = await supabase
+          .from('locations')
+          .select('*')
+          .eq('franchisee_id', franchiseeId)
+          .eq('is_active', true);
+
+        if (locationsError) {
+          console.error("Error fetching locations:", locationsError);
+          setError("Failed to load locations. Please try again.");
+          return;
+        }
+        setAvailableLocations(locations || []);
+
+        // Fetch global settings for Mapbox token
+        const { data: globalSettings, error: globalSettingsError } = await supabase
+          .from('global_settings' as any)
+          .select('setting_value')
+          .eq('setting_key', 'mapbox_public_token')
+          .single();
+
+        if (globalSettingsError) {
+          console.error("Error fetching Mapbox token:", globalSettingsError);
+        }
+
+        if (globalSettings && globalSettings.setting_value) {
+          setMapboxToken(String(globalSettings.setting_value));
+        } else {
+          setShowMapTokenInput(true);
+        }
+
+      } catch (err) {
+        console.error("Unexpected error:", err);
+        setError("An unexpected error occurred. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [franchiseeSlug]);
+
+  const handleClassSelect = (classItem: ClassInfo) => {
+    setSelectedClass(classItem);
+  };
+
+  const handleLocationSelect = (location: LocationInfo) => {
+    setSelectedLocation(location);
+  };
+
+  const handleContinue = () => {
+    if (!selectedClass || !selectedLocation) {
+      toast.error("Please select a class and a location to continue.");
+      return;
+    }
+
+    navigate(`/${franchiseeSlug}/booking/class?classId=${selectedClass.id}&locationId=${selectedLocation.id}`);
+  };
+
+  const handleMapboxTokenSubmit = (token: string) => {
+    setMapboxToken(token);
+    setShowMapTokenInput(false);
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Account Not Found</h1>
-          <p className="font-poppins text-brand-grey">The requested account could not be found.</p>
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-red-500">Error: {error}</div>
       </div>
     );
   }
 
   return (
-    <MetaPixelProvider franchiseeId={franchiseeId}>
-      <BookingLandingContent />
+    <MetaPixelProvider franchiseeSlug={franchiseeSlug}>
+      <div className="container mx-auto mt-8 p-4 max-w-4xl">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-2xl font-bold">Book a Free Trial Class</CardTitle>
+            <Badge variant="secondary">Free Trial</Badge>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-xl font-semibold mb-2">1. Choose a Class</h3>
+                <div className="space-y-2">
+                  {availableClasses.map((classItem) => (
+                    <Card key={classItem.id}
+                      className={`border-2 rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 ${selectedClass?.id === classItem.id ? 'border-brand-blue' : 'border-gray-200'
+                        }`}
+                    >
+                      <CardContent className="p-3 cursor-pointer" onClick={() => handleClassSelect(classItem)}>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-semibold text-lg">{classItem.name}</h4>
+                            <p className="text-sm text-gray-500">{classItem.description}</p>
+                          </div>
+                          <Star className="h-5 w-5 text-yellow-500" />
+                        </div>
+                        <Separator className="my-2" />
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>{classItem.min_age}-{classItem.max_age} years</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{classItem.duration_minutes} minutes</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {availableClasses.length === 0 && (
+                    <div className="text-gray-500">No classes available.</div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-2">2. Choose a Location</h3>
+                <div className="space-y-2">
+                  {availableLocations.map((location) => (
+                    <Card key={location.id}
+                      className={`border-2 rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 ${selectedLocation?.id === location.id ? 'border-brand-blue' : 'border-gray-200'
+                        }`}
+                    >
+                      <CardContent className="p-3 cursor-pointer" onClick={() => handleLocationSelect(location)}>
+                        <h4 className="font-semibold text-lg">{location.name}</h4>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <MapPin className="h-4 w-4" />
+                          <span>{location.address}, {location.city}, {location.state} {location.zip}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Phone className="h-4 w-4" />
+                          <span>{location.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Mail className="h-4 w-4" />
+                          <span>{location.email}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {availableLocations.length === 0 && (
+                    <div className="text-gray-500">No locations available.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="border rounded-md">
+              {mapboxToken ? (
+                <LocationsMap
+                  locations={geocodedLocations}
+                  loading={isGeocoding}
+                  error={geocodingError}
+                  onRetry={retryGeocode}
+                  selectedLocationId={selectedLocation?.id}
+                />
+              ) : (
+                <div className="p-6 text-center">
+                  {showMapTokenInput ? (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-4">
+                        A valid Mapbox token is required to display the map.
+                      </p>
+                      {/*  MapboxTokenInput component here if needed */}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Loading map...</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Button
+              className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+              onClick={handleContinue}
+              disabled={!selectedClass || !selectedLocation}
+            >
+              Continue to Booking <ArrowRight className="ml-2" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </MetaPixelProvider>
   );
 };
