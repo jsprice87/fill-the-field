@@ -1,7 +1,8 @@
 
 import React, { useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { AppShell } from '@mantine/core';
+import { AppShell, Burger, rem } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
@@ -10,6 +11,7 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoading: isFranchiseeLoading } = useFranchiseeData();
+  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
 
   useEffect(() => {
     if (location.pathname === '/portal' || location.pathname === '/portal/') {
@@ -32,11 +34,29 @@ const DashboardLayout = () => {
 
   return (
     <AppShell
-      navbar={{ width: 260, breakpoint: 'sm' }}
       padding="md"
+      header={{ height: 60 }}
+      navbar={{
+        width: 260,
+        breakpoint: 'sm',
+        collapsed: { mobile: !mobileOpened },
+      }}
+      withBorder={false}
       className={`${sectionType === 'portal' ? 'portal-layout' : ''} ${sectionType === 'admin' ? 'admin-layout' : ''}`}
       data-section={sectionType}
     >
+      <AppShell.Header>
+        <div className="flex items-center h-full px-4">
+          <Burger
+            opened={mobileOpened}
+            onClick={toggleMobile}
+            hiddenFrom="sm"
+            size={rem(20)}
+          />
+          <div className="font-semibold ml-2">Fill&nbsp;the&nbsp;Field</div>
+        </div>
+      </AppShell.Header>
+
       <AppShell.Navbar>
         <AppSidebar />
       </AppShell.Navbar>
