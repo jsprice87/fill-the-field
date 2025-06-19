@@ -10,6 +10,7 @@ import { useGeocodedLocations } from '@/hooks/useGeocodedLocations';
 import { toast } from 'sonner';
 import LocationsMap from '@/components/maps/LocationsMap';
 import { MetaPixelProvider } from '@/components/booking/MetaPixelProvider';
+import { Loader } from '@/components/ui/Loader';
 
 interface ClassInfo {
   id: string;
@@ -96,9 +97,9 @@ const BookingLanding: React.FC = () => {
         }
         setAvailableLocations(locations || []);
 
-        // Fetch global settings for Mapbox token
+        // Fetch global settings for Mapbox token with type casting
         const { data: globalSettings, error: globalSettingsError } = await supabase
-          .from('global_settings' as any)
+          .from('global_settings')
           .select('setting_value')
           .eq('setting_key', 'mapbox_public_token')
           .single();
@@ -107,8 +108,10 @@ const BookingLanding: React.FC = () => {
           console.error("Error fetching Mapbox token:", globalSettingsError);
         }
 
-        if (globalSettings && globalSettings.setting_value) {
-          setMapboxToken(String(globalSettings.setting_value));
+        // TODO: replace with proper type
+        const settingsData = globalSettings as any;
+        if (settingsData && settingsData.setting_value) {
+          setMapboxToken(String(settingsData.setting_value));
         } else {
           setShowMapTokenInput(true);
         }

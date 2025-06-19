@@ -1,3 +1,8 @@
 
 // TODO: real implementation
-export const useGeocodedLocations = () => ({ data: [], isLoading: false });
+export const useGeocodedLocations = (locations: any[], mapboxToken: string | null) => ({
+  geocodedLocations: [],
+  isLoading: false,
+  error: null,
+  retryGeocode: () => {},
+});

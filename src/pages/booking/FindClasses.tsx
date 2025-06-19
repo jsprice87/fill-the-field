@@ -47,6 +47,27 @@ const FindClasses: React.FC = () => {
   const [locationOptions, setLocationOptions] = useState<{ value: string; label: string }[]>([]);
   const [metaPixelId, setMetaPixelId] = useState<string | null>(null);
 
+  const fetchFranchiseeTimezone = async (id: string) => {
+    const { data, error } = await supabase
+      .from('franchisee_settings')
+      .select('setting_key, setting_value')
+      .eq('franchisee_id', id)
+      .eq('setting_key', 'timezone');
+
+    if (error) {
+      console.error('Error fetching timezone:', error);
+      return 'America/New_York'; // Default timezone
+    }
+
+    // TODO: replace with proper type
+    const settingsData = data as any;
+    if (settingsData && settingsData.length > 0) {
+      return settingsData[0].setting_value || 'America/New_York';
+    }
+
+    return 'America/New_York';
+  };
+
   useEffect(() => {
     const fetchClasses = async () => {
       setIsLoading(true);

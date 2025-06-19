@@ -16,14 +16,16 @@ export const useMetaPixelTracking = () => {
   return context;
 };
 
-interface MetaPixelProviderProps {
+export interface MetaPixelProviderProps {
   children: React.ReactNode;
-  franchiseeId: string;
+  franchiseeId?: string;
+  franchiseeSlug?: string;
 }
 
 export const MetaPixelProvider: React.FC<MetaPixelProviderProps> = ({ 
   children, 
-  franchiseeId 
+  franchiseeId,
+  franchiseeSlug 
 }) => {
   const { trackEvent } = useMetaPixel();
 

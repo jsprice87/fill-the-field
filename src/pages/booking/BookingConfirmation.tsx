@@ -232,12 +232,12 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
           </div>
         </CardContent>
       </Card>
-      <Button variant="ghost" asChild className="mt-4">
-        <a href={`/${franchiseeSlug}/booking`} className="flex items-center space-x-2">
+      <a href={`/${franchiseeSlug}/booking`} className="mt-4">
+        <Button variant="ghost" className="flex items-center space-x-2">
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Booking Page</span>
-        </a>
-      </Button>
+        </Button>
+      </a>
     </div>
   );
 };

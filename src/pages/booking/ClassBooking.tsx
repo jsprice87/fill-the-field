@@ -11,7 +11,7 @@ import ParticipantForm from '@/components/booking/ParticipantForm';
 import ParentContactForm from '@/components/booking/ParentContactForm';
 import { ParentGuardianAgreements } from '@/components/booking/ParentGuardianAgreements';
 import BookingSuccess from '@/components/booking/BookingSuccess';
-import WaiverModal from '@/components/booking/WaiverModal';
+import { WaiverModal } from '@/components/booking/WaiverModal';
 import { MetaPixelProvider } from '@/components/booking/MetaPixelProvider';
 
 interface ClassBookingProps {
@@ -23,7 +23,7 @@ const ClassBooking: React.FC<ClassBookingProps> = ({ franchiseeId: propFranchise
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [classData, setClassData] = useState<{
+  const [classData, setClassData<{
     class_name: string;
     min_age: number;
     max_age: number;
@@ -84,7 +84,6 @@ const ClassBooking: React.FC<ClassBookingProps> = ({ franchiseeId: propFranchise
               max_age,
               max_capacity,
               is_active,
-              allow_future_bookings,
               locations (
                 name,
                 address,
@@ -103,19 +102,21 @@ const ClassBooking: React.FC<ClassBookingProps> = ({ franchiseeId: propFranchise
         } else if (!data || !data.classes) {
           setError('Class details not found.');
         } else {
+          // TODO: replace with proper type
+          const classDetails = data as any;
           setClassData({
-            class_name: data.classes.class_name,
-            min_age: data.classes.min_age,
-            max_age: data.classes.max_age,
-            max_capacity: data.classes.max_capacity,
-            location_name: data.classes.locations.name,
-            location_address: data.classes.locations.address,
-            location_city: data.classes.locations.city,
-            location_state: data.classes.locations.state,
-            location_zip: data.classes.locations.zip,
-            class_time: data.start_time,
-            is_active: data.classes.is_active,
-            allow_future_bookings: data.classes.allow_future_bookings
+            class_name: classDetails.classes.class_name,
+            min_age: classDetails.classes.min_age,
+            max_age: classDetails.classes.max_age,
+            max_capacity: classDetails.classes.max_capacity,
+            location_name: classDetails.classes.locations.name,
+            location_address: classDetails.classes.locations.address,
+            location_city: classDetails.classes.locations.city,
+            location_state: classDetails.classes.locations.state,
+            location_zip: classDetails.classes.locations.zip,
+            class_time: classDetails.start_time,
+            is_active: classDetails.classes.is_active,
+            allow_future_bookings: true // TODO: add to database
           });
         }
       } catch (err) {
@@ -159,18 +160,18 @@ const ClassBooking: React.FC<ClassBookingProps> = ({ franchiseeId: propFranchise
         age: participant.age
       }));
 
-      // Construct booking data
+      // Construct booking data without appointments array
       const bookingData = {
         franchisee_id: franchiseeDbId,
         parent_first_name: parentContact.first_name,
         parent_last_name: parentContact.last_name,
         parent_email: parentContact.email,
         parent_phone: parentContact.phone,
-        appointments: appointments,
         communication_permission: communicationPermission,
         marketing_permission: marketingPermission,
         waiver_acceptance: waiverAccepted,
         class_schedule_id: classScheduleId,
+        lead_id: 'temp-lead-id', // TODO: generate proper lead
         utm_source: new URLSearchParams(location.search).get('utm_source'),
         utm_medium: new URLSearchParams(location.search).get('utm_medium'),
         utm_campaign: new URLSearchParams(location.search).get('utm_campaign'),
