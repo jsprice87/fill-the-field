@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useTheme } from 'next-themes';
+import { useMantineColorScheme } from '@mantine/core';
 import { ScrollArea, Stack, Group, Text, NavLink } from '@mantine/core';
 import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconWorld, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
@@ -24,7 +24,7 @@ const secondaryMenuItems = [
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
   const { data: franchiseeData } = useFranchiseeData();
 
@@ -56,10 +56,6 @@ export function AppSidebar() {
       return location.pathname.endsWith('/portal');
     }
     return location.pathname.includes(url);
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const handleLogout = () => {
@@ -144,9 +140,9 @@ export function AppSidebar() {
       {/* Footer */}
       <div>
         <NavLink
-          label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          leftSection={theme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
-          onClick={toggleTheme}
+          label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}
+          leftSection={colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
+          onClick={() => toggleColorScheme()}
         />
         <NavLink
           label="Logout"

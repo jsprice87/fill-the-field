@@ -3,9 +3,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
+import { ColorSchemeProvider } from '@mantine/core';
+import { useLocalStorage, useHotkeys } from '@mantine/hooks';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import App from './App';
 import './index.css';
 import '@mantine/core/styles.css';
@@ -23,6 +24,32 @@ if (import.meta.env.DEV || window.location.hostname === 'localhost') {
   updateFranchiseeSlugs().catch(console.error);
 }
 
+function AppWithColorScheme() {
+  const [colorScheme, setColorScheme] = useLocalStorage<'light' | 'dark'>({
+    key: 'mantine-color-scheme',
+    defaultValue: 'light',
+  });
+
+  const toggleColorScheme = (value?: 'light' | 'dark') =>
+    setColorScheme(value ?? (colorScheme === 'light' ? 'dark' : 'light'));
+
+  useHotkeys([['mod+J', () => toggleColorScheme()]]);
+
+  return (
+    <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
+      <MantineProvider
+        withCssVariables
+        theme={{ ...theme, colorScheme }}
+      >
+        <ModalsProvider>
+          <Notifications />
+          <App />
+        </ModalsProvider>
+      </MantineProvider>
+    </ColorSchemeProvider>
+  );
+}
+
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Root element not found');
@@ -33,23 +60,7 @@ root.render(
   <React.StrictMode>
     <ColorSchemeScript defaultColorScheme="light" />
     <QueryClientProvider client={queryClient}>
-      <MantineProvider
-        withCssVariables
-        defaultColorScheme="light"
-        theme={theme}
-      >
-        <ModalsProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Notifications />
-            <App />
-          </ThemeProvider>
-        </ModalsProvider>
-      </MantineProvider>
+      <AppWithColorScheme />
     </QueryClientProvider>
   </React.StrictMode>
 );

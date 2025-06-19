@@ -1,7 +1,6 @@
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { navItems } from "./nav-items";
@@ -14,59 +13,52 @@ const App = () => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {navItems.map((item, index) => {
-              // Handle the special nested portal route
-              if (item.to === "/:franchiseeSlug/portal" && item.children) {
-                return (
-                  <Route
-                    key={index}
-                    path={item.to}
-                    element={item.page}
-                  >
-                    {item.children.map((child, childIndex) => {
-                      if (child.index) {
-                        return (
-                          <Route
-                            key={childIndex}
-                            index
-                            element={child.page}
-                          />
-                        );
-                      }
-                      return (
-                        <Route
-                          key={childIndex}
-                          path={child.to}
-                          element={child.page}
-                        />
-                      );
-                    })}
-                  </Route>
-                );
-              }
-              
-              // Handle regular routes
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          {navItems.map((item, index) => {
+            // Handle the special nested portal route
+            if (item.to === "/:franchiseeSlug/portal" && item.children) {
               return (
                 <Route
                   key={index}
                   path={item.to}
                   element={item.page}
-                />
+                >
+                  {item.children.map((child, childIndex) => {
+                    if (child.index) {
+                      return (
+                        <Route
+                          key={childIndex}
+                          index
+                          element={child.page}
+                        />
+                      );
+                    }
+                    return (
+                      <Route
+                        key={childIndex}
+                        path={child.to}
+                        element={child.page}
+                      />
+                    );
+                  })}
+                </Route>
               );
-            })}
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
+            }
+            
+            // Handle regular routes
+            return (
+              <Route
+                key={index}
+                path={item.to}
+                element={item.page}
+              />
+            );
+          })}
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };
