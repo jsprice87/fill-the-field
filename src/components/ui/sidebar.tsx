@@ -1,6 +1,7 @@
+
 import React from 'react';
-import { Navbar, NavLink, ScrollArea, Stack } from '@mantine/core';
-import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconGlobe, IconLogOut } from '@tabler/icons-react';
+import { AppShell, NavLink, ScrollArea, Stack } from '@mantine/core';
+import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconGlobe, IconLogout } from '@tabler/icons-react';
 import { useLocation, Link } from 'react-router-dom';
 
 const mainMenuItems = [
@@ -51,8 +52,8 @@ export function Sidebar({
   };
 
   return (
-    <Navbar width={{ base: 260 }} p="md" withBorder>
-      <Navbar.Section mb="md">
+    <AppShell.Navbar w={260} p="md">
+      <AppShell.Section mb="md">
         <div className="flex items-center gap-2 px-2 py-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <span className="text-sm font-semibold">FTF</span>
@@ -64,9 +65,9 @@ export function Sidebar({
             </span>
           </div>
         </div>
-      </Navbar.Section>
+      </AppShell.Section>
 
-      <Navbar.Section grow component={ScrollArea}>
+      <AppShell.Section grow component={ScrollArea}>
         <Stack gap="xs">
           <div className="text-xs font-medium text-muted-foreground px-2 mb-2">Portal</div>
           {mainMenuItems.map((item) => (
@@ -101,17 +102,17 @@ export function Sidebar({
             />
           ))}
         </Stack>
-      </Navbar.Section>
+      </AppShell.Section>
 
-      <Navbar.Section>
+      <AppShell.Section>
         <NavLink
           label="Logout"
-          leftSection={<IconLogOut size={18} />}
+          leftSection={<IconLogout size={18} />}
           onClick={() => {/* TODO: Implement logout */}}
           className="cursor-pointer"
         />
-      </Navbar.Section>
-    </Navbar>
+      </AppShell.Section>
+    </AppShell.Navbar>
   );
 }
 
