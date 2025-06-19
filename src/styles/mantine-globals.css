@@ -1,4 +1,5 @@
 
+
 /* Global styles for Mantine integration */
 /* These styles were moved from the deprecated globalStyles theme option */
 
@@ -16,6 +17,14 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Sticky table headers for consistent behavior across all tables */
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--mantine-color-body);
+}
+
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -24,3 +33,4 @@ a:hover {
     transition-duration: 0.01ms !important;
   }
 }
+
