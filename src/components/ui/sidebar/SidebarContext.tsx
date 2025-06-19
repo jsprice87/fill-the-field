@@ -142,6 +142,6 @@ export {
   SidebarProvider,
   useSidebar,
   SIDEBAR_WIDTH,
-  SIDEBAR_WIDTH_MOBILE: "18rem",
+  SIDEBAR_WIDTH_MOBILE,
   SIDEBAR_WIDTH_ICON,
 }
