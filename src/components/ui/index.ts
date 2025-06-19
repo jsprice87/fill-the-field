@@ -17,7 +17,6 @@ export type { SelectProps } from '../mantine/Select';
 
 // Still using shadcn/ui - will be migrated in future phases
 export * from './card';
-export * from './dropdown-menu';
 export * from './dialog';
 export * from './table';
 export * from './tabs';
