@@ -1,359 +1,350 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Clock, Users, Map, List } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { TextInput } from '@mantine/core';
+import { Label } from '@/components/ui/label';
+import { Calendar, MapPin, Clock, User, Users, ArrowLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import ErrorBoundary from '@/components/shared/ErrorBoundary';
-import InteractiveMap from '@/components/maps/InteractiveMap';
+import { useFranchiseeBySlug } from '@/hooks/useFranchiseeData';
+import { useLocation } from '@/hooks/useLocations';
 
-interface BookingLocation {
+interface ClassSchedule {
   id: string;
   name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  phone?: string;
-  email?: string;
-  latitude?: number;
-  longitude?: number;
+  description: string;
+  dayOfWeek: string;
+  time: string;
+  duration: number;
+  minAge: number;
+  maxAge: number;
+  capacity: number;
+  currentBookings: number;
+  nextAvailableDate: string;
+}
+
+interface QuickFormData {
+  childName: string;
+  childAge: number;
 }
 
 const FindClasses: React.FC = () => {
-  const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
+  const { franchiseeSlug, locationId } = useParams<{ franchiseeSlug: string; locationId: string }>();
   const [searchParams] = useSearchParams();
-  const flowId = searchParams.get('flow');
   
-  const { flowData, loadFlow, updateFlow, isLoading: flowLoading } = useBookingFlow(flowId || undefined, franchiseeSlug);
-  const [locations, setLocations] = useState<BookingLocation[]>([]);
+  const [quickForm, setQuickForm] = useState<QuickFormData>({
+    childName: searchParams.get('childName') || '',
+    childAge: parseInt(searchParams.get('childAge') || '0') || 5,
+  });
+  
+  const [availableClasses, setAvailableClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
-  const [franchiseeData, setFranchiseeData] = useState<any>(null);
-  const [flowLoaded, setFlowLoaded] = useState(false);
+
+  const { data: franchisee, isLoading: isFranchiseeLoading } = useFranchiseeBySlug(franchiseeSlug as string);
+  const { data: location, isLoading: isLocationLoading } = useLocation(locationId as string);
 
   useEffect(() => {
-    if (!flowId) {
-      navigate(`/${franchiseeSlug}/free-trial`);
-      return;
-    }
-
-    loadData();
-  }, [franchiseeSlug, flowId]);
-
-  const loadData = async () => {
-    if (!franchiseeSlug || !flowId) {
-      setError('Missing required parameters');
-      setIsLoading(false);
-      return;
-    }
+    // Mock class data - in real app, fetch from API based on location
+    const mockClasses: ClassSchedule[] = [
+      {
+        id: 'class-1',
+        name: 'Lil Kickers',
+        description: 'Perfect introduction to soccer for toddlers. Focus on fun, basic skills, and social interaction.',
+        dayOfWeek: 'Saturday',
+        time: '9:00 AM',
+        duration: 45,
+        minAge: 2,
+        maxAge: 4,
+        capacity: 8,
+        currentBookings: 5,
+        nextAvailableDate: '2024-01-13',
+      },
+      {
+        id: 'class-2',
+        name: 'Soccer Skills',
+        description: 'Develop fundamental soccer skills through fun games and activities.',
+        dayOfWeek: 'Saturday',
+        time: '10:00 AM',
+        duration: 60,
+        minAge: 5,
+        maxAge: 8,
+        capacity: 12,
+        currentBookings: 8,
+        nextAvailableDate: '2024-01-13',
+      },
+      {
+        id: 'class-3',
+        name: 'Junior Academy',
+        description: 'More advanced training for young players ready to take their game to the next level.',
+        dayOfWeek: 'Saturday',
+        time: '11:30 AM',
+        duration: 75,
+        minAge: 9,
+        maxAge: 12,
+        capacity: 15,
+        currentBookings: 10,
+        nextAvailableDate: '2024-01-13',
+      },
+    ];
     
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      // Load flow data first
-      await loadFlow(flowId);
-      setFlowLoaded(true);
+    setAvailableClasses(mockClasses);
+    setIsLoading(false);
+  }, [locationId]);
 
-      // Get franchisee by slug
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('*')
-        .eq('slug', franchiseeSlug)
-        .single();
-
-      if (franchiseeError || !franchisee) {
-        throw new Error('Franchisee not found');
-      }
-
-      setFranchiseeData(franchisee);
-
-      // Load locations for this franchisee
-      const { data: locationsData, error: locationsError } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('franchisee_id', franchisee.id)
-        .eq('is_active', true)
-        .order('name');
-
-      if (locationsError) {
-        throw locationsError;
-      }
-      
-      // Convert database locations to BookingLocation format with validation
-      const convertedLocations: BookingLocation[] = (locationsData || [])
-        .filter(loc => {
-          return loc && loc.id && loc.name && loc.address && loc.city && loc.state && loc.zip;
-        })
-        .map(loc => ({
-          id: loc.id,
-          name: loc.name,
-          address: loc.address,
-          city: loc.city,
-          state: loc.state,
-          zip: loc.zip,
-          phone: loc.phone,
-          email: loc.email,
-          latitude: loc.latitude ? parseFloat(loc.latitude.toString()) : undefined,
-          longitude: loc.longitude ? parseFloat(loc.longitude.toString()) : undefined
-        }))
-        .filter(loc => {
-          return typeof loc.id === 'string' && 
-            typeof loc.name === 'string' && 
-            typeof loc.address === 'string';
-        });
-      
-      setLocations(convertedLocations);
-    } catch (error) {
-      console.error('Error loading data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
-      setError(errorMessage);
-      toast.error('Failed to load locations');
-      // If flow loading fails, redirect to start over
-      navigate(`/${franchiseeSlug}/free-trial`);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleQuickFormChange = (field: keyof QuickFormData, value: string | number) => {
+    setQuickForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleLocationSelect = async (location: BookingLocation) => {
-    if (!flowId) {
-      toast.error('Session expired. Please start over.');
+  const handleBookClass = (classSchedule: ClassSchedule) => {
+    if (!quickForm.childName.trim()) {
+      toast.error('Please enter child\'s name first');
       return;
     }
 
-    if (!location || !location.id || !location.name) {
-      toast.error('Invalid location data. Please try again.');
+    if (quickForm.childAge < classSchedule.minAge || quickForm.childAge > classSchedule.maxAge) {
+      toast.error(`This class is for ages ${classSchedule.minAge}-${classSchedule.maxAge}. Please select a different class or update the age.`);
       return;
     }
-    
-    try {
-      // Update flow with selected location
-      await updateFlow({
-        selectedLocation: {
-          id: location.id,
-          name: location.name,
-          address: `${location.address}, ${location.city}, ${location.state}`
-        }
-      });
-      
-      navigate(`/${franchiseeSlug}/free-trial/classes?flow=${flowId}`);
-    } catch (error) {
-      console.error('Error updating flow:', error);
-      toast.error('Failed to select location. Please try again.');
+
+    if (classSchedule.currentBookings >= classSchedule.capacity) {
+      toast.error('This class is currently full. Please try another class or check back later.');
+      return;
     }
+
+    // Navigate to booking form with pre-filled data
+    const bookingParams = new URLSearchParams({
+      childName: quickForm.childName,
+      childAge: quickForm.childAge.toString(),
+    });
+
+    navigate(`/booking/${franchiseeSlug}/location/${locationId}/class/${classSchedule.id}?${bookingParams.toString()}`);
   };
 
-  const handleRequestLocation = () => {
-    // TODO: Implement location request modal
-    toast.info('Location request feature coming soon');
+  const handleBack = () => {
+    navigate(`/booking/${franchiseeSlug}`);
   };
 
-  const handleMapError = () => {
-    setViewMode('list');
-    toast.info('Map is unavailable, showing list view');
+  const getAgeAppropriateClasses = () => {
+    if (!quickForm.childAge) return availableClasses;
+    
+    return availableClasses.filter(cls => 
+      quickForm.childAge >= cls.minAge && quickForm.childAge <= cls.maxAge
+    );
   };
 
-  // Show loading state while data is being loaded
-  if (isLoading || flowLoading) {
+  const getSpotsRemaining = (classSchedule: ClassSchedule) => {
+    return classSchedule.capacity - classSchedule.currentBookings;
+  };
+
+  if (isFranchiseeLoading || isLocationLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-          <p className="font-poppins text-gray-600">Loading locations...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  // Show error state
-  if (error) {
+  if (!location) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <h2 className="font-agrandir text-2xl text-brand-navy mb-4">Unable to Load Locations</h2>
-          <p className="font-poppins text-gray-600 mb-6">{error}</p>
-          <Button 
-            onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}
-            className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
-          >
-            Start Over
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Location Not Found</h1>
+          <p className="text-gray-600 mb-4">The requested location could not be found.</p>
+          <Button onClick={() => navigate(`/booking/${franchiseeSlug}`)}>
+            Back to Locations
           </Button>
         </div>
       </div>
     );
   }
 
-  const currentLeadData = flowData?.leadData;
+  const ageAppropriateClasses = getAgeAppropriateClasses();
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-brand-navy text-white py-6">
-        <div className="container mx-auto px-4">
-          <h1 className="font-anton text-3xl mb-2">SOCCER STARS</h1>
-          <h2 className="font-agrandir text-xl">Find Classes Near You</h2>
-          {currentLeadData && (
-            <p className="font-poppins text-sm opacity-90 mt-2">
-              Hello {currentLeadData.firstName}, let's find classes near {currentLeadData.zip}
-            </p>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      <header className="bg-white shadow-md">
+        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-brand-blue">
+            {franchisee?.company_name || 'Soccer Academy'}
+          </h1>
+          <Button variant="subtle" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Locations
+          </Button>
         </div>
-      </div>
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h3 className="font-agrandir text-2xl text-brand-navy mb-2">Available Locations</h3>
-            {franchiseeData && (
-              <p className="font-poppins text-gray-600">
-                {franchiseeData.company_name} - {locations.length} location{locations.length !== 1 ? 's' : ''} found
-              </p>
-            )}
-          </div>
-          
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              onClick={() => setViewMode('list')}
-              className="font-poppins"
-            >
-              <List className="h-4 w-4 mr-2" />
-              List
-            </Button>
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'outline'}
-              onClick={() => setViewMode('map')}
-              className="font-poppins"
-            >
-              <Map className="h-4 w-4 mr-2" />
-              Map
-            </Button>
-          </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Available Classes
+          </h1>
+          <p className="text-lg text-gray-600 mb-4">
+            Find the perfect soccer class for your child at {location.name}
+          </p>
+          <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
+            <MapPin className="w-4 h-4" />
+            {location.address}, {location.city}, {location.state} {location.zip}
+          </p>
         </div>
 
-        {/* Responsive layout: Desktop side-by-side, Mobile stacked */}
-        <div className={`${viewMode === 'map' ? 'lg:grid lg:grid-cols-5 lg:gap-8' : ''}`}>
-          {/* Map View - Now with proper aspect ratio */}
-          {viewMode === 'map' && (
-            <div className="lg:col-span-3 mb-8 lg:mb-0">
-              <div className="relative">
-                <ErrorBoundary 
-                  fallback={
-                    <div className="h-[400px] flex items-center justify-center bg-gray-100 rounded-lg">
-                      <div className="text-center">
-                        <p className="font-poppins text-gray-600 mb-4">Map component failed to load</p>
-                        <Button 
-                          onClick={() => setViewMode('list')}
-                          variant="outline"
-                          size="sm"
-                        >
-                          View List Instead
-                        </Button>
-                      </div>
-                    </div>
-                  }
-                  onReset={handleMapError}
-                >
-                  <InteractiveMap
-                    locations={locations}
-                    aspectRatio={4/3} // 4:3 aspect ratio for better display
-                    franchiseeSlug={franchiseeSlug || ''}
-                    flowId={flowId || undefined}
-                    onLocationSelect={handleLocationSelect}
-                    className="w-full"
-                  />
-                </ErrorBoundary>
+        {/* Quick Info Form */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-600" />
+              Quick Info (Optional)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="childName">Child's Name</Label>
+                <TextInput
+                  id="childName"
+                  type="text"
+                  placeholder="Enter child's name"
+                  value={quickForm.childName}
+                  onChange={(e) => handleQuickFormChange('childName', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="childAge">Child's Age</Label>
+                <TextInput
+                  id="childAge"
+                  type="number"
+                  placeholder="Age"
+                  min="2"
+                  max="18"
+                  value={quickForm.childAge.toString()}
+                  onChange={(e) => handleQuickFormChange('childAge', parseInt(e.target.value) || 0)}
+                />
               </div>
             </div>
-          )}
+            {quickForm.childAge > 0 && (
+              <p className="text-sm text-blue-600 mt-2">
+                Showing classes appropriate for age {quickForm.childAge}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Available Classes */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            {ageAppropriateClasses.length > 0 ? 'Available Classes' : 'All Classes'}
+          </h2>
           
-          {/* Locations List - Now takes remaining space */}
-          <div className={`space-y-4 ${viewMode === 'map' ? 'lg:col-span-2' : ''}`}>
-            {locations.length > 0 ? (
-              locations.map((location) => (
-                <Card key={location.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
+          {ageAppropriateClasses.length === 0 && quickForm.childAge > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-yellow-800 mb-2">No Age-Appropriate Classes Found</h3>
+              <p className="text-sm text-yellow-700">
+                We don't currently have classes for age {quickForm.childAge} at this location. 
+                Please check our other locations or contact us for more information.
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(ageAppropriateClasses.length > 0 ? ageAppropriateClasses : availableClasses).map((classSchedule) => {
+              const spotsRemaining = getSpotsRemaining(classSchedule);
+              const isAgeAppropriate = !quickForm.childAge || 
+                (quickForm.childAge >= classSchedule.minAge && quickForm.childAge <= classSchedule.maxAge);
+              
+              return (
+                <Card 
+                  key={classSchedule.id} 
+                  className={`h-full ${!isAgeAppropriate ? 'opacity-60' : ''}`}
+                >
                   <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <CardTitle className="font-agrandir text-xl text-brand-navy mb-3">
-                          {location.name}
-                        </CardTitle>
-                        <div className="space-y-2">
-                          <div className="flex items-start text-gray-600">
-                            <MapPin className="h-4 w-4 mr-2 mt-1 flex-shrink-0" />
-                            <span className="font-poppins">
-                              {location.address}<br />
-                              {location.city}, {location.state} {location.zip}
-                            </span>
-                          </div>
-                          {location.phone && (
-                            <div className="flex items-center text-gray-600">
-                              <span className="font-poppins text-sm">
-                                📞 {location.phone}
-                              </span>
-                            </div>
-                          )}
-                          {location.email && (
-                            <div className="flex items-center text-gray-600">
-                              <span className="font-poppins text-sm">
-                                ✉️ {location.email}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                    <CardTitle className="text-xl">{classSchedule.name}</CardTitle>
+                    <p className="text-sm text-gray-600">
+                      Ages {classSchedule.minAge}-{classSchedule.maxAge}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-700 text-sm">
+                      {classSchedule.description}
+                    </p>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <span>{classSchedule.dayOfWeek}s</span>
                       </div>
-                      <div className="ml-6">
-                        <Button
-                          onClick={() => handleLocationSelect(location)}
-                          className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3"
-                          size="lg"
-                        >
-                          Select Location
-                        </Button>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span>{classSchedule.time} ({classSchedule.duration} mins)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Users className="w-4 h-4 text-gray-500" />
+                        <span>
+                          {spotsRemaining > 0 ? (
+                            <span className="text-green-600">
+                              {spotsRemaining} spots available
+                            </span>
+                          ) : (
+                            <span className="text-red-600">Class full</span>
+                          )}
+                        </span>
                       </div>
                     </div>
-                  </CardHeader>
+
+                    <div className="bg-blue-50 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        <strong>Next class:</strong> {classSchedule.nextAvailableDate}
+                      </p>
+                    </div>
+
+                    {!isAgeAppropriate && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                        <p className="text-xs text-yellow-700">
+                          Not age-appropriate for {quickForm.childAge} year old
+                        </p>
+                      </div>
+                    )}
+
+                    <Button
+                      onClick={() => handleBookClass(classSchedule)}
+                      disabled={spotsRemaining <= 0}
+                      className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white"
+                      variant={spotsRemaining <= 0 ? 'outline' : 'filled'}
+                    >
+                      {spotsRemaining <= 0 ? (
+                        'Class Full'
+                      ) : (
+                        <>
+                          Book Free Trial
+                          <ChevronRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
                 </Card>
-              ))
-            ) : (
-              <Card className="p-8 text-center border-l-4 border-l-brand-red">
-                <div className="mb-6">
-                  <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="font-agrandir text-xl text-brand-navy mb-2">
-                    No Locations Found Near You
-                  </h3>
-                  <p className="font-poppins text-gray-600 mb-6 max-w-md mx-auto">
-                    We don't currently have any locations within 50km of your area ({currentLeadData?.zip}).
-                    Would you like us to notify you when programs become available in your area?
-                  </p>
-                  <Button
-                    onClick={handleRequestLocation}
-                    className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
-                    size="lg"
-                  >
-                    Request Programs in My Area
-                  </Button>
-                </div>
-              </Card>
-            )}
+              );
+            })}
           </div>
         </div>
 
-        {/* Navigation hint */}
-        {locations.length > 0 && (
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="font-poppins text-blue-800 text-center">
-              💡 Select a location above to view available classes and book your free trial
+        {availableClasses.length === 0 && (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              No Classes Available
+            </h3>
+            <p className="text-gray-600 mb-4">
+              There are currently no classes scheduled at this location.
             </p>
+            <Button onClick={handleBack}>
+              Try Another Location
+            </Button>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };

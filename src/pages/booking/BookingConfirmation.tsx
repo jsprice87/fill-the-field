@@ -1,398 +1,308 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Button } from '@mantine/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Calendar, MapPin, Clock, User, Mail, Phone, ChevronRight, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useFranchiseeBySlug } from '@/hooks/useFranchiseeData';
 
 interface BookingData {
-  id: string;
-  booking_reference: string;
-  parent_first_name: string;
-  parent_last_name: string;
-  parent_email: string;
-  parent_phone: string;
-  class_schedule_id: string;
-  appointments: Array<{
-    selected_date: string;
-    class_name: string;
-    class_time: string;
-    participant_name: string;
-  }>;
-  class_schedules: {
-    classes: {
-      name: string;
-      locations: {
-        name: string;
-        address: string;
-        city: string;
-        state: string;
-        phone?: string;
-      };
-    };
-  };
-}
-
-interface FranchiseeData {
-  company_name: string;
-  contact_name: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-}
-
-interface FranchiseeSettings {
-  website_url?: string;
-  facebook_url?: string;
-  instagram_url?: string;
-  share_message_template?: string;
+  childName: string;
+  parentName: string;
+  parentEmail: string;
+  parentPhone: string;
+  childAge: number;
+  locationName: string;
+  className: string;
+  classDate: string;
+  classTime: string;
+  classId: string;
+  locationId: string;
+  scheduleId: string;
 }
 
 const BookingConfirmation: React.FC = () => {
-  const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
+  const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
   const [searchParams] = useSearchParams();
-  const [booking, setBooking] = useState<BookingData | null>(null);
-  const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
-  const [franchiseeSettings, setFranchiseeSettings] = useState<FranchiseeSettings>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: franchisee, isLoading: isFranchiseeLoading } = useFranchiseeBySlug(franchiseeSlug as string);
 
   useEffect(() => {
-    if (!franchiseeSlug) {
-      navigate('/');
+    // Get booking data from URL params
+    const data: BookingData = {
+      childName: searchParams.get('childName') || '',
+      parentName: searchParams.get('parentName') || '',
+      parentEmail: searchParams.get('parentEmail') || '',
+      parentPhone: searchParams.get('parentPhone') || '',
+      childAge: parseInt(searchParams.get('childAge') || '0'),
+      locationName: searchParams.get('locationName') || '',
+      className: searchParams.get('className') || '',
+      classDate: searchParams.get('classDate') || '',
+      classTime: searchParams.get('classTime') || '',
+      classId: searchParams.get('classId') || '',
+      locationId: searchParams.get('locationId') || '',
+      scheduleId: searchParams.get('scheduleId') || '',
+    };
+
+    if (!data.childName || !data.parentEmail) {
+      toast.error('Missing required booking information');
+      navigate(`/booking/${franchiseeSlug}`);
       return;
     }
-    loadBookingData();
-  }, [franchiseeSlug]);
 
-  const loadBookingData = async () => {
+    setBookingData(data);
+  }, [searchParams, franchiseeSlug, navigate]);
+
+  const handleConfirmBooking = async () => {
+    if (!bookingData || !franchisee) {
+      toast.error('Missing booking information');
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      // Accept both 'ref' and 'booking_reference' query params for backward compatibility
-      const bookingReference = searchParams.get('booking_reference') || searchParams.get('ref');
-      console.log('Looking for booking with reference:', bookingReference);
-      
-      if (!bookingReference) {
-        throw new Error('Booking reference not found');
-      }
-
-      console.log('Loading booking with reference:', bookingReference);
-
-      // Get franchisee by slug first
-      const { data: franchisee, error: franchiseeError } = await supabase
-        .from('franchisees')
-        .select('*')
-        .eq('slug', franchiseeSlug)
-        .maybeSingle();
-
-      if (franchiseeError) {
-        console.error('Error fetching franchisee:', franchiseeError);
-        throw new Error('Franchisee not found');
-      }
-
-      if (!franchisee) {
-        throw new Error('Franchisee not found');
-      }
-
-      setFranchiseeData(franchisee);
-
-      // Get franchisee settings with the new RLS policy
-      const { data: settings, error: settingsError } = await supabase
-        .from('franchisee_settings')
-        .select('*')
-        .eq('franchisee_id', franchisee.id);
-
-      if (settingsError) {
-        console.error('Error fetching settings:', settingsError);
-        // Don't throw here, settings are optional
-      } else if (settings) {
-        const settingsMap = settings.reduce((acc, setting) => {
-          acc[setting.setting_key] = setting.setting_value;
-          return acc;
-        }, {} as Record<string, string>);
-        setFranchiseeSettings(settingsMap);
-      }
-
-      // Get booking details using the updated RLS policy
-      const { data: bookingData, error: bookingError } = await supabase
+      // Create the booking
+      const { data: booking, error: bookingError } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          appointments (*),
-          class_schedules (
-            classes (
-              name,
-              locations (
-                name,
-                address,
-                city,
-                state,
-                phone
-              )
-            )
-          )
-        `)
-        .eq('booking_reference', bookingReference)
-        .maybeSingle();
+        .insert({
+          franchisee_id: franchisee.id,
+          location_id: bookingData.locationId,
+          class_id: bookingData.classId,
+          class_schedule_id: bookingData.scheduleId,
+          parent_name: bookingData.parentName,
+          parent_email: bookingData.parentEmail,
+          parent_phone: bookingData.parentPhone,
+          child_name: bookingData.childName,
+          child_age: bookingData.childAge,
+          booking_date: new Date().toISOString(),
+          class_date: bookingData.classDate,
+          status: 'confirmed',
+          notes: '',
+        })
+        .select()
+        .single();
 
       if (bookingError) {
-        console.error('Error fetching booking:', bookingError);
-        throw new Error('Failed to load booking details');
+        console.error('Error creating booking:', bookingError);
+        toast.error('Failed to create booking. Please try again.');
+        return;
       }
 
-      if (!bookingData) {
-        throw new Error('Booking not found');
-      }
-
-      console.log('Booking loaded successfully:', bookingData);
-      setBooking(bookingData);
-    } catch (error) {
-      console.error('Error loading booking:', error);
-      toast.error('Failed to load booking details');
-      navigate(`/${franchiseeSlug}/free-trial`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/${franchiseeSlug}/free-trial`;
-    const message = franchiseeSettings.share_message_template 
-      ? franchiseeSettings.share_message_template
-          .replace('{company_name}', franchiseeData?.company_name || 'Soccer Stars')
-          .replace('{url}', shareUrl)
-      : `I just signed up my child for a free soccer trial at ${franchiseeData?.company_name || 'Soccer Stars'}! Check it out: ${shareUrl}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Soccer Trial Booking',
-          text: message,
-          url: shareUrl,
+      // Create or update lead
+      const { error: leadError } = await supabase
+        .from('leads')
+        .upsert({
+          franchisee_id: franchisee.id,
+          parent_name: bookingData.parentName,
+          parent_email: bookingData.parentEmail,
+          parent_phone: bookingData.parentPhone,
+          child_name: bookingData.childName,
+          child_age: bookingData.childAge,
+          source: 'booking_form',
+          status: 'new',
+          notes: `Booked ${bookingData.className} at ${bookingData.locationName}`,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'parent_email,franchisee_id'
         });
-      } catch (error) {
-        console.log('Share cancelled');
+
+      if (leadError) {
+        console.error('Error creating/updating lead:', leadError);
+        // Don't fail the booking for lead errors
       }
-    } else {
-      await navigator.clipboard.writeText(message);
-      toast.success('Share message copied to clipboard!');
+
+      toast.success('Booking confirmed successfully!');
+      
+      // Navigate to thank you page with booking details
+      const thankYouParams = new URLSearchParams({
+        ref: booking.id.toString(),
+        child: bookingData.childName,
+        class: bookingData.className,
+        date: bookingData.classDate,
+        time: bookingData.classTime,
+        location: bookingData.locationName,
+      });
+      
+      navigate(`/booking/${franchiseeSlug}/thank-you?${thankYouParams.toString()}`);
+
+    } catch (error) {
+      console.error('Error confirming booking:', error);
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
+  const handleBack = () => {
+    // Go back to class selection with current data
+    const params = new URLSearchParams();
+    if (bookingData) {
+      params.set('childName', bookingData.childName);
+      params.set('parentName', bookingData.parentName);
+      params.set('parentEmail', bookingData.parentEmail);
+      params.set('parentPhone', bookingData.parentPhone);
+      params.set('childAge', bookingData.childAge.toString());
+    }
+    navigate(`/booking/${franchiseeSlug}/location/${bookingData?.locationId}?${params.toString()}`);
+  };
+
+  if (isFranchiseeLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-          <p className="font-poppins text-gray-600">Loading booking details...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  if (!booking || !franchiseeData) {
+  if (!bookingData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Booking Not Found</h1>
-          <p className="text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
-          <Button onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}>
-            Back to Booking
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Missing Information</h1>
+          <p className="text-gray-600 mb-4">Required booking information is missing.</p>
+          <Button onClick={() => navigate(`/booking/${franchiseeSlug}`)}>
+            Start Over
           </Button>
         </div>
       </div>
     );
   }
-
-  const appointment = booking.appointments[0];
-  const location = booking.class_schedules.classes.locations;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-brand-navy text-white py-6">
-        <div className="container mx-auto px-4">
-          <h1 className="font-anton text-3xl mb-2">SOCCER STARS</h1>
-          <h2 className="font-agrandir text-xl">Booking Confirmed!</h2>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      <header className="bg-white shadow-md">
+        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-brand-blue">
+            {franchisee?.company_name || 'Soccer Academy'}
+          </h1>
         </div>
-      </div>
+      </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        {/* Success Message */}
-        <Card className="mb-8 border-l-4 border-l-green-500">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-8 w-8 text-green-500" />
-              <div>
-                <CardTitle className="font-agrandir text-xl text-brand-navy">
-                  Booking Confirmed!
-                </CardTitle>
-                <p className="font-poppins text-gray-600 mt-1">
-                  Reference: {booking.booking_reference}
-                </p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="font-poppins text-gray-700 mb-4">
-              Thank you {booking.parent_first_name}! Your free trial has been successfully booked. 
-              We're excited to see {appointment.participant_name} on the field!
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Booking Details */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="font-agrandir text-lg text-brand-navy">Booking Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-brand-blue mt-1" />
-              <div>
-                <p className="font-poppins font-medium">Date & Time</p>
-                <p className="font-poppins text-gray-600">
-                  {format(new Date(appointment.selected_date), 'EEEE, MMMM d, yyyy')} at {appointment.class_time}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <User className="h-5 w-5 text-brand-blue mt-1" />
-              <div>
-                <p className="font-poppins font-medium">Class</p>
-                <p className="font-poppins text-gray-600">{appointment.class_name}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-brand-blue mt-1" />
-              <div>
-                <p className="font-poppins font-medium">Location</p>
-                <p className="font-poppins text-gray-600">
-                  {location.name}<br />
-                  {location.address}, {location.city}, {location.state}
-                </p>
-                {location.phone && (
-                  <p className="font-poppins text-gray-600 flex items-center gap-1 mt-1">
-                    <Phone className="h-4 w-4" />
-                    {location.phone}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Information */}
-        {(franchiseeData.phone || franchiseeData.address || franchiseeSettings.website_url) && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="font-agrandir text-lg text-brand-navy">Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {franchiseeData.phone && (
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-brand-blue" />
-                  <span className="font-poppins text-gray-700">{franchiseeData.phone}</span>
-                </div>
-              )}
-              
-              {franchiseeData.address && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-brand-blue mt-1" />
-                  <span className="font-poppins text-gray-700">
-                    {franchiseeData.address}
-                    {franchiseeData.city && franchiseeData.state && (
-                      <><br />{franchiseeData.city}, {franchiseeData.state}</>
-                    )}
-                  </span>
-                </div>
-              )}
-
-              {franchiseeSettings.website_url && (
-                <div className="flex items-center gap-3">
-                  <Globe className="h-5 w-5 text-brand-blue" />
-                  <a 
-                    href={franchiseeSettings.website_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="font-poppins text-brand-blue hover:underline"
-                  >
-                    Visit our website
-                  </a>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Actions */}
-        <div className="space-y-4">
-          <Button
-            onClick={handleShare}
-            className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
-            size="lg"
-          >
-            <Share2 className="h-5 w-5 mr-2" />
-            Share with Friends
-          </Button>
-
-          <div className="flex gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/${franchiseeSlug}`)}
-              className="flex-1 font-poppins"
-            >
-              Back to Home
-            </Button>
-            {franchiseeSettings.website_url && (
-              <Button
-                variant="outline"
-                onClick={() => window.open(franchiseeSettings.website_url, '_blank')}
-                className="flex-1 font-poppins"
-              >
-                Visit Website
-              </Button>
-            )}
-          </div>
-
-          {/* Social Links */}
-          {(franchiseeSettings.facebook_url || franchiseeSettings.instagram_url) && (
-            <div className="flex justify-center gap-4 pt-4">
-              {franchiseeSettings.facebook_url && (
-                <a
-                  href={franchiseeSettings.facebook_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-blue hover:text-brand-blue/80"
-                >
-                  Follow us on Facebook
-                </a>
-              )}
-              {franchiseeSettings.instagram_url && (
-                <a
-                  href={franchiseeSettings.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-blue hover:text-brand-blue/80"
-                >
-                  Follow us on Instagram
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Confirmation Email Notice */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="font-poppins text-blue-800 text-center text-sm">
-            📧 A confirmation email has been sent to {booking.parent_email}
+      <main className="container mx-auto px-4 py-12 max-w-2xl">
+        <div className="text-center mb-8">
+          <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Confirm Your Booking
+          </h1>
+          <p className="text-lg text-gray-600">
+            Please review your booking details below and confirm to complete your registration.
           </p>
         </div>
-      </div>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              Class Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-600">Class</label>
+                <p className="text-lg font-semibold text-gray-900">{bookingData.className}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">Date & Time</label>
+                <p className="text-lg font-semibold text-gray-900">
+                  {bookingData.classDate} at {bookingData.classTime}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-600">Location</label>
+                <p className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-gray-600" />
+                  {bookingData.locationName}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-600" />
+              Participant Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-600">Child's Name</label>
+                <p className="text-lg font-semibold text-gray-900">{bookingData.childName}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">Age</label>
+                <p className="text-lg font-semibold text-gray-900">{bookingData.childAge} years old</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">Parent/Guardian</label>
+                <p className="text-lg font-semibold text-gray-900">{bookingData.parentName}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">Contact</label>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-900 flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-gray-600" />
+                    {bookingData.parentEmail}
+                  </p>
+                  <p className="text-sm text-gray-900 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-gray-600" />
+                    {bookingData.parentPhone}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="bg-blue-50 rounded-lg p-6 mb-8">
+          <h3 className="font-semibold text-blue-900 mb-2">What to Expect</h3>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• Arrive 15 minutes early for check-in</li>
+            <li>• Bring water and wear comfortable athletic clothing</li>
+            <li>• Soccer cleats recommended but not required</li>
+            <li>• All equipment will be provided</li>
+            <li>• Free trial class - no payment required today</li>
+          </ul>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button 
+            variant="outline" 
+            onClick={handleBack}
+            className="flex-1"
+          >
+            Back to Edit
+          </Button>
+          <Button 
+            onClick={handleConfirmBooking}
+            disabled={isSubmitting}
+            className="flex-1 bg-brand-blue hover:bg-brand-blue/90 text-white"
+            size="lg"
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Confirming...
+              </div>
+            ) : (
+              <>
+                Confirm Booking
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </>
+            )}
+          </Button>
+        </div>
+      </main>
     </div>
   );
 };

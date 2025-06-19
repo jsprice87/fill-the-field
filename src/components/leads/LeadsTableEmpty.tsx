@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Phone, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 
 interface LeadsTableEmptyProps {
   searchQuery?: string;

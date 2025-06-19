@@ -2,7 +2,7 @@
 import React, { Component, ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 
 interface Props {
   children: ReactNode;

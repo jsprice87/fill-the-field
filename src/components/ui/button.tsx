@@ -8,6 +8,9 @@ export type ButtonProps = React.ComponentProps<typeof MantineButton> & {
   size?: string;
   className?: string;
   onClick?: (...args: any[]) => void;
+  children?: React.ReactNode;
+  disabled?: boolean;
+  title?: string;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => (
