@@ -2,36 +2,23 @@
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from 'next-themes';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarSeparator,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { HomeIcon, UsersIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UserIcon, SettingsIcon, HelpCircleIcon, Globe, Moon, Sun } from 'lucide-react';
+import { Navbar, NavLink, ScrollArea, Stack, Group, Text, ActionIcon } from '@mantine/core';
+import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconWorld, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { CopyButton } from '@/components/ui/CopyButton';
 
 const mainMenuItems = [
-  { title: 'Dashboard', url: '.', icon: HomeIcon },
-  { title: 'Leads', url: 'leads', icon: UsersIcon },
-  { title: 'Bookings', url: 'bookings', icon: CalendarIcon },
-  { title: 'Locations', url: 'locations', icon: MapPinIcon },
-  { title: 'Classes', url: 'classes', icon: BookOpenIcon },
+  { title: 'Dashboard', url: '.', icon: IconHome },
+  { title: 'Leads', url: 'leads', icon: IconUsers },
+  { title: 'Bookings', url: 'bookings', icon: IconCalendar },
+  { title: 'Locations', url: 'locations', icon: IconMapPin },
+  { title: 'Classes', url: 'classes', icon: IconBook },
 ];
 
 const secondaryMenuItems = [
-  { title: 'Profile', url: 'profile', icon: UserIcon },
-  { title: 'Settings', url: 'settings', icon: SettingsIcon },
-  { title: 'Help', url: 'help', icon: HelpCircleIcon },
+  { title: 'Profile', url: 'profile', icon: IconUser },
+  { title: 'Settings', url: 'settings', icon: IconSettings },
+  { title: 'Help', url: 'help', icon: IconHelp },
 ];
 
 export function AppSidebar() {
@@ -75,120 +62,100 @@ export function AppSidebar() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const handleLogout = () => {
+    // TODO: Implement logout functionality
+    console.log('Logout clicked');
+  };
+
   if (!isPortalSection) {
     return null;
   }
 
   return (
-    <Sidebar 
-      variant="sidebar" 
-      collapsible="icon"
-      className="border-r"
-    >
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex flex-col gap-2 px-2 py-2">
-          <div className="flex items-center gap-2 px-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <span className="text-sm font-semibold">FTF</span>
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Fill the Field</span>
-              <span className="truncate text-xs text-muted-foreground">
-                {franchiseeData?.business_name || 'Portal'}
-              </span>
-            </div>
+    <Navbar width={{ base: 260 }} p="md" withBorder>
+      {/* Header */}
+      <Navbar.Section>
+        <Group>
+          <div style={{ 
+            width: 32, 
+            height: 32, 
+            backgroundColor: 'var(--mantine-primary-color-filled)',
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: 14,
+            fontWeight: 600
+          }}>
+            FTF
           </div>
-        </div>
-      </SidebarHeader>
+          <div>
+            <Text size="sm" fw={600}>Fill the Field</Text>
+            <Text size="xs" c="dimmed">
+              {franchiseeData?.business_name || 'Portal'}
+            </Text>
+          </div>
+        </Group>
+      </Navbar.Section>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Portal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    onClick={() => handleNavigation(item.url)}
-                    isActive={isActiveRoute(item.url)}
-                    tooltip={item.title}
-                    className="ui-hover ui-pressed ui-focus"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              
-              {/* Landing Page item with copy button */}
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={handleLandingPageNavigation}
-                  tooltip="Landing Page"
-                  className="flex items-center justify-between pr-2 ui-hover ui-pressed ui-focus"
-                >
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
-                    <span>Landing Page</span>
-                  </div>
-                  {landingPageUrl && (
-                    <CopyButton 
-                      url={landingPageUrl}
-                      className="ml-auto h-4 w-4 opacity-50 hover:opacity-100"
-                    />
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      {/* Main Navigation */}
+      <Navbar.Section grow component={ScrollArea} mt="md">
+        <Text size="xs" tt="uppercase" fw={500} c="dimmed" mb="xs">Portal</Text>
+        <Stack gap={2}>
+          {mainMenuItems.map((item) => (
+            <NavLink
+              key={item.title}
+              label={item.title}
+              leftSection={<item.icon size={18} />}
+              active={isActiveRoute(item.url)}
+              onClick={() => handleNavigation(item.url)}
+            />
+          ))}
+          
+          {/* Landing Page item with copy button */}
+          <NavLink
+            label="Landing Page"
+            leftSection={<IconWorld size={18} />}
+            onClick={handleLandingPageNavigation}
+            rightSection={
+              landingPageUrl ? (
+                <CopyButton 
+                  url={landingPageUrl}
+                  className="opacity-50 hover:opacity-100"
+                />
+              ) : undefined
+            }
+          />
+        </Stack>
 
-        <SidebarSeparator />
+        <Text size="xs" tt="uppercase" fw={500} c="dimmed" mb="xs" mt="md">Account</Text>
+        <Stack gap={2}>
+          {secondaryMenuItems.map((item) => (
+            <NavLink
+              key={item.title}
+              label={item.title}
+              leftSection={<item.icon size={18} />}
+              active={isActiveRoute(item.url)}
+              onClick={() => handleNavigation(item.url)}
+            />
+          ))}
+        </Stack>
+      </Navbar.Section>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    onClick={() => handleNavigation(item.url)}
-                    isActive={isActiveRoute(item.url)}
-                    tooltip={item.title}
-                    className="ui-hover ui-pressed ui-focus"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="w-full justify-start gap-2 ui-hover ui-pressed ui-focus"
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-              <span className="group-data-[collapsible=icon]:hidden">
-                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-              </span>
-            </Button>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+      {/* Footer */}
+      <Navbar.Section>
+        <NavLink
+          label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          leftSection={theme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
+          onClick={toggleTheme}
+        />
+        <NavLink
+          label="Logout"
+          leftSection={<IconLogout size={18} />}
+          onClick={handleLogout}
+        />
+      </Navbar.Section>
+    </Navbar>
   );
 }

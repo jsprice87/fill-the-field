@@ -37,7 +37,6 @@ export * from './toggle';
 export * from './toggle-group';
 export * from './pagination';
 export * from './drawer';
-export * from './sidebar';
 export * from './resizable';
 export * from './label';
 export * from './form';
@@ -65,6 +64,9 @@ export * from './toast';
 export { Toaster } from './toaster';
 export { toast } from './sonner';
 export * from './use-toast';
+
+// Simplified sidebar exports (compatibility)
+export { default as AppSidebar } from './sidebar';
 
 // Ensure these exports exist (SearchInput and TableRowMenu)
 export { default as SearchInput } from '../shared/SearchInput';

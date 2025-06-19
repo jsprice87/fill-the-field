@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { AppShell } from '@mantine/core';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
@@ -31,25 +31,24 @@ const DashboardLayout = () => {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div 
-        className={`min-h-screen flex w-full bg-background ${sectionType === 'portal' ? 'portal-layout' : ''} ${sectionType === 'admin' ? 'admin-layout' : ''}`}
-        data-section={sectionType}
-      >
+    <AppShell
+      navbar={{ width: 260, breakpoint: 'sm' }}
+      padding="md"
+      className={`${sectionType === 'portal' ? 'portal-layout' : ''} ${sectionType === 'admin' ? 'admin-layout' : ''}`}
+      data-section={sectionType}
+    >
+      <AppShell.Navbar>
         <AppSidebar />
-        <SidebarInset className="flex flex-col">
-          <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
-            <SidebarTrigger className="-ml-1" />
-          </header>
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="mx-auto max-w-app">
-              <Outlet />
-            </div>
-          </main>
-        </SidebarInset>
-        <Toaster />
-      </div>
-    </SidebarProvider>
+      </AppShell.Navbar>
+      
+      <AppShell.Main>
+        <div className="mx-auto max-w-app">
+          <Outlet />
+        </div>
+      </AppShell.Main>
+      
+      <Toaster />
+    </AppShell>
   );
 };
 
