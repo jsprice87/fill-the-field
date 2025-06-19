@@ -65,10 +65,7 @@ export default function WebhookUrlFields({
           placeholder="https://your-production-webhook-endpoint.com/webhook/..."
           error={!!prodUrlError}
         />
-        {prodUrl
-
-
-{prodUrlError && (
+        {prodUrlError && (
           <p className="text-sm text-red-600 mt-1">{prodUrlError}</p>
         )}
         <p className="text-sm text-gray-500 mt-1">
