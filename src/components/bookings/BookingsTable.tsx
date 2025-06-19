@@ -7,7 +7,7 @@ import { Archive, ArchiveRestore } from 'lucide-react';
 import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
 import { useDeleteBooking } from '@/hooks/useDeleteActions';
 import { useStatusMutation } from '@/hooks/useStatusMutation';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import DateTimeCell from './DateTimeCell';
 import ParticipantCell from './ParticipantCell';
 import StatusCell from './StatusCell';
@@ -59,11 +59,11 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
       );
       await Promise.all(promises);
       
-      toast.success(`${selectedBookings.size} booking${selectedBookings.size > 1 ? 's' : ''} ${showArchived ? 'unarchived' : 'archived'} successfully`);
+      notify('success', `${selectedBookings.size} booking${selectedBookings.size > 1 ? 's' : ''} ${showArchived ? 'unarchived' : 'archived'} successfully`);
       setSelectedBookings(new Set());
     } catch (error) {
       console.error('Error in bulk archive operation:', error);
-      toast.error(`Failed to ${showArchived ? 'unarchive' : 'archive'} bookings`);
+      notify('error', `Failed to ${showArchived ? 'unarchive' : 'archive'} bookings`);
     }
   };
 
@@ -74,10 +74,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
         id: bookingId,
         status: newStatus as any
       });
-      toast.success('Booking status updated successfully');
+      notify('success', 'Booking status updated successfully');
     } catch (error) {
       console.error('Error updating booking status:', error);
-      toast.error('Failed to update booking status');
+      notify('error', 'Failed to update booking status');
     }
   };
 
@@ -88,14 +88,14 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
 
       if (booking.archived_at) {
         await unarchiveBooking.mutateAsync(bookingId);
-        toast.success('Booking unarchived successfully');
+        notify('success', 'Booking unarchived successfully');
       } else {
         await archiveBooking.mutateAsync(bookingId);
-        toast.success('Booking archived successfully');
+        notify('success', 'Booking archived successfully');
       }
     } catch (error) {
       console.error('Error toggling archive status:', error);
-      toast.error('Failed to update booking');
+      notify('error', 'Failed to update booking');
     }
   };
 
@@ -106,10 +106,10 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
 
     try {
       await deleteBooking.mutateAsync(bookingId);
-      toast.success('Booking deleted successfully');
+      notify('success', 'Booking deleted successfully');
     } catch (error) {
       console.error('Error deleting booking:', error);
-      toast.error('Failed to delete booking');
+      notify('error', 'Failed to delete booking');
     }
   };
 

@@ -1,7 +1,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 
 export const useArchiveLead = (franchiseeId?: string, includeArchived: boolean = false) => {
   const queryClient = useQueryClient();
@@ -49,7 +49,7 @@ export const useArchiveLead = (franchiseeId?: string, includeArchived: boolean =
         queryClient.setQueryData(['leads', franchiseeId, includeArchived], context.previousLeads);
       }
       console.error('Error archiving lead:', err);
-      toast.error('Failed to archive lead');
+      notify('error', 'Failed to archive lead');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
@@ -104,7 +104,7 @@ export const useUnarchiveLead = (franchiseeId?: string, includeArchived: boolean
         queryClient.setQueryData(['leads', franchiseeId, includeArchived], context.previousLeads);
       }
       console.error('Error unarchiving lead:', err);
-      toast.error('Failed to unarchive lead');
+      notify('error', 'Failed to unarchive lead');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads', franchiseeId] });
@@ -167,7 +167,7 @@ export const useArchiveBooking = (franchiseeId?: string, includeArchived: boolea
         queryClient.setQueryData(['bookings', franchiseeId, includeArchived], context.previousBookings);
       }
       console.error('Error archiving booking:', err);
-      toast.error('Failed to archive booking');
+      notify('error', 'Failed to archive booking');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', franchiseeId] });
@@ -230,7 +230,7 @@ export const useUnarchiveBooking = (franchiseeId?: string, includeArchived: bool
         queryClient.setQueryData(['bookings', franchiseeId, includeArchived], context.previousBookings);
       }
       console.error('Error unarchiving booking:', err);
-      toast.error('Failed to unarchive booking');
+      notify('error', 'Failed to unarchive booking');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', franchiseeId] });

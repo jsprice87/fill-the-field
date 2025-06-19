@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getSlugFromFranchiseeId } from '@/utils/slugUtils';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 
 /**
  * Component that redirects users from non-slug portal URLs to their slug-based equivalents
@@ -33,7 +33,7 @@ const PortalRedirect: React.FC = () => {
         
         if (error || !franchisee) {
           console.error("Error fetching franchisee:", error);
-          toast.error("Unable to find franchisee account");
+          notify('error', "Unable to find franchisee account");
           navigate('/login', { replace: true });
           return;
         }
@@ -50,7 +50,7 @@ const PortalRedirect: React.FC = () => {
         navigate(fullPath, { replace: true });
       } catch (error) {
         console.error("Error in portal redirect:", error);
-        toast.error("Failed to load portal");
+        notify('error', "Failed to load portal");
         navigate('/login', { replace: true });
       } finally {
         setIsLoading(false);

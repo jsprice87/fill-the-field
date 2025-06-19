@@ -1,7 +1,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 
 export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = false) => {
   const queryClient = useQueryClient();
@@ -112,7 +112,7 @@ export const useDeleteLead = (franchiseeId?: string, includeArchived: boolean = 
       
       // Show specific error message
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete lead';
-      toast.error(errorMessage);
+      notify('error', errorMessage);
     },
     onSuccess: () => {
       console.log('Lead deletion successful, invalidating related queries');
@@ -224,7 +224,7 @@ export const useDeleteBooking = (franchiseeId?: string) => {
       
       // Show specific error message
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete booking';
-      toast.error(errorMessage);
+      notify('error', errorMessage);
     },
     onSuccess: () => {
       console.log('Booking deletion successful, invalidating related queries');

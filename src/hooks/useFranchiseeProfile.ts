@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import { useEnsureFranchiseeProfile } from './useEnsureFranchiseeProfile';
 
 // Session storage key for safety net check
@@ -119,10 +119,10 @@ export const useUpdateFranchiseeProfile = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['franchisee-profile'] });
       queryClient.invalidateQueries({ queryKey: ['franchisee-data'] });
-      toast.success('Business information updated successfully');
+      notify('success', 'Business information updated successfully');
     },
     onError: (error) => {
-      toast.error('Failed to update business information');
+      notify('error', 'Failed to update business information');
       console.error('Profile update error:', error);
     }
   });

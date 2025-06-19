@@ -1,6 +1,7 @@
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import type { LocationFormData } from '@/components/locations/LocationForm';
 import { geocodeAddress } from '@/utils/geocoding';
 import { useFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
@@ -19,11 +20,11 @@ export const useArchiveLocation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast.success('Location archived successfully');
+      notify('success', 'Location archived successfully');
     },
     onError: (error) => {
       console.error('Error archiving location:', error);
-      toast.error('Failed to archive location');
+      notify('error', 'Failed to archive location');
     }
   });
 };
@@ -42,11 +43,11 @@ export const useUnarchiveLocation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast.success('Location unarchived successfully');
+      notify('success', 'Location unarchived successfully');
     },
     onError: (error) => {
       console.error('Error unarchiving location:', error);
-      toast.error('Failed to unarchive location');
+      notify('error', 'Failed to unarchive location');
     }
   });
 };
@@ -65,11 +66,11 @@ export const useDeleteLocation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast.success('Location deleted successfully');
+      notify('success', 'Location deleted successfully');
     },
     onError: (error) => {
       console.error('Error deleting location:', error);
-      toast.error('Failed to delete location');
+      notify('error', 'Failed to delete location');
     }
   });
 };
@@ -91,7 +92,7 @@ export const useToggleLocationStatus = () => {
     },
     onError: (error) => {
       console.error('Error updating location status:', error);
-      toast.error('Failed to update location status');
+      notify('error', 'Failed to update location status');
     }
   });
 };
@@ -142,11 +143,11 @@ export const useUpdateLocation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast.success('Location updated successfully');
+      notify('success', 'Location updated successfully');
     },
     onError: (error) => {
       console.error('Error updating location:', error);
-      toast.error('Failed to update location');
+      notify('error', 'Failed to update location');
     }
   });
 };
@@ -198,11 +199,11 @@ export const useCreateLocation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast.success('Location created successfully');
+      notify('success', 'Location created successfully');
     },
     onError: (error) => {
       console.error('Error creating location:', error);
-      toast.error('Failed to create location');
+      notify('error', 'Failed to create location');
     }
   });
 };

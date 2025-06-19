@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import { useFranchiseeProfile } from './useFranchiseeProfile';
 
 export const useFranchiseeSettings = () => {
@@ -64,11 +64,11 @@ export const useUpdateFranchiseeSetting = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['franchisee-settings'] });
-      toast.success('Setting updated successfully');
+      notify('success', 'Setting updated successfully');
     },
     onError: (error) => {
       console.error('Setting update mutation error:', error);
-      toast.error(`Failed to update setting: ${error.message}`);
+      notify('error', `Failed to update setting: ${error.message}`);
     }
   });
 };

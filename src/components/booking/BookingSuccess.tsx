@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Share2, Calendar, MapPin, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 
 interface BookingSuccessProps {
   bookingData: {
@@ -68,7 +68,7 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
       }
     } else {
       await navigator.clipboard.writeText(message);
-      toast.success('Booking link copied to clipboard!');
+      notify('success', 'Booking link copied to clipboard!');
     }
   };
 

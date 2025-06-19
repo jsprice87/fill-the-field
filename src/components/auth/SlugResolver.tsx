@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getFranchiseeIdFromSlug } from '@/utils/slugUtils';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { FranchiseeProvider } from '@/contexts/FranchiseeContext';
 
@@ -28,7 +28,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
       try {
         if (!franchiseeSlug) {
           if (requireAuth) {
-            toast.error('Invalid URL - missing franchisee identifier');
+            notify('error', 'Invalid URL - missing franchisee identifier');
             navigate('/login');
           } else {
             setIsPublicError(true);
@@ -91,7 +91,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
                 }
               }
               
-              toast.error('Invalid account URL - franchisee not found');
+              notify('error', 'Invalid account URL - franchisee not found');
               navigate('/login');
             } else {
               setIsPublicError(true);
@@ -101,7 +101,7 @@ const SlugResolver = ({ children, requireAuth = true }: SlugResolverProps) => {
       } catch (error) {
         console.error('SlugResolver: Error resolving slug:', error);
         if (requireAuth) {
-          toast.error('Error loading account information');
+          notify('error', 'Error loading account information');
           navigate('/login');
         } else {
           setIsPublicError(true);

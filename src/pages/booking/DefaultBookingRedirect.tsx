@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 
 const DefaultBookingRedirect: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const DefaultBookingRedirect: React.FC = () => {
 
         if (error || !franchisee?.slug) {
           console.error('No active franchisee with slug found:', error);
-          toast.error('No booking pages are currently available');
+          notify('error', 'No booking pages are currently available');
           navigate('/');
           return;
         }
@@ -35,7 +35,7 @@ const DefaultBookingRedirect: React.FC = () => {
         
       } catch (error) {
         console.error('Error finding default franchisee:', error);
-        toast.error('Unable to load booking page');
+        notify('error', 'Unable to load booking page');
         navigate('/');
       } finally {
         setIsLoading(false);

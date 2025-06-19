@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import { useFranchiseeProfile } from './useFranchiseeProfile';
 
 export const useFranchiseeData = () => {
@@ -49,10 +49,10 @@ export const useUpdateFranchiseeData = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['franchisee-data'] });
       queryClient.invalidateQueries({ queryKey: ['franchisee-profile'] });
-      toast.success('Business information updated successfully');
+      notify('success', 'Business information updated successfully');
     },
     onError: (error) => {
-      toast.error('Failed to update business information');
+      notify('error', 'Failed to update business information');
       console.error('Update error:', error);
     }
   });

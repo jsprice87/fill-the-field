@@ -1,7 +1,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import type { UpdateStatusParams, LeadStatus } from '@/types';
 
 export const useStatusMutation = () => {
@@ -79,11 +79,11 @@ export const useStatusMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['lead-stats'] });
       queryClient.invalidateQueries({ queryKey: ['lead-detail'] });
       queryClient.invalidateQueries({ queryKey: ['lead-status'] });
-      toast.success('Status updated successfully');
+      notify('success', 'Status updated successfully');
     },
     onError: (error, variables, context) => {
       console.error('Error updating status:', error);
-      toast.error('Failed to update status');
+      notify('error', 'Failed to update status');
     },
     onSettled: () => {
       // Always refetch after error or success

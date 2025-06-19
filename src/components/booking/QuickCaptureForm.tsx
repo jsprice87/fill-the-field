@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { notify } from '@/utils/notify';
 import { useZodForm } from '@/hooks/useZodForm';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -89,7 +89,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
       const { leadId } = functionResponse;
       console.log('Lead created successfully with ID:', leadId);
 
-      toast.success('Information saved! Let\'s find classes near you.');
+      notify('success', 'Information saved! Let\'s find classes near you.');
       
       // Track Meta Pixel Lead event
       if (onLeadCreated) {
@@ -108,7 +108,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
     } catch (error) {
       console.error('Error in form submission:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      toast.error(`Failed to save information: ${errorMessage}`);
+      notify('error', `Failed to save information: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
