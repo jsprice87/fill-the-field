@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { showNotification } from '@mantine/notifications';
 import { IconCheck, IconX, IconInfoCircle } from '@tabler/icons-react';
 
