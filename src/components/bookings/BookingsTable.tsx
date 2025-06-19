@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollArea, Text, Table } from '@mantine/core';
+import { ScrollArea, Text, Table, Menu, ActionIcon } from '@mantine/core';
 import { TableBody, TableHead, TableHeader, TableRow } from '@/components/mantine';
 import { Button } from '@/components/mantine';
-import { MoreHorizontal, Edit, Trash2, Archive, ArchiveRestore, Eye, Phone, Mail } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { IconDotsVertical, IconPencil, IconTrash, IconArchive, IconRestore, IconEye } from '@tabler/icons-react';
+import { Archive, ArchiveRestore } from 'lucide-react';
 import { useArchiveBooking, useUnarchiveBooking } from '@/hooks/useArchiveActions';
 import { useDeleteBooking } from '@/hooks/useDeleteActions';
 import { useStatusMutation } from '@/hooks/useStatusMutation';
@@ -238,43 +238,34 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                     </div>
                   </td>
                   <td style={{ padding: '12px 16px' }}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="subtle" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="h-4 w-4 mr-2" />
+                    <Menu shadow="md" withinPortal position="bottom-end">
+                      <Menu.Target>
+                        <ActionIcon variant="subtle" size="sm">
+                          <IconDotsVertical size={16} />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item leftSection={<IconEye size={14} />}>
                           View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="h-4 w-4 mr-2" />
+                        </Menu.Item>
+                        <Menu.Item leftSection={<IconPencil size={14} />}>
                           Edit Booking
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleArchiveToggle(booking.id)}>
-                          {booking.archived_at ? (
-                            <>
-                              <ArchiveRestore className="h-4 w-4 mr-2" />
-                              Unarchive
-                            </>
-                          ) : (
-                            <>
-                              <Archive className="h-4 w-4 mr-2" />
-                              Archive
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleDelete(booking.id)}
-                          className="text-red-600 focus:text-red-600"
+                        </Menu.Item>
+                        <Menu.Item 
+                          leftSection={booking.archived_at ? <IconRestore size={14} /> : <IconArchive size={14} />}
+                          onClick={() => handleArchiveToggle(booking.id)}
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          {booking.archived_at ? 'Unarchive' : 'Archive'}
+                        </Menu.Item>
+                        <Menu.Item 
+                          leftSection={<IconTrash size={14} />}
+                          color="red"
+                          onClick={() => handleDelete(booking.id)}
+                        >
                           Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
                   </td>
                 </TableRow>
               ))}

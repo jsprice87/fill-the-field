@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollArea, Text, Table } from '@mantine/core';
+import { ScrollArea, Text, Table, Menu, ActionIcon } from '@mantine/core';
 import { TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/mantine';
 import { Button } from '@/components/mantine';
-import { MoreHorizontal, Edit, Trash2, Archive, ArchiveRestore, Eye, Phone, Mail } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { IconDotsVertical, IconPencil, IconTrash, IconArchive, IconRestore, IconEye, IconPhone, IconMail } from '@tabler/icons-react';
+import { Archive, ArchiveRestore } from 'lucide-react';
 import { useArchiveLead, useUnarchiveLead } from '@/hooks/useArchiveActions';
 import { useDeleteLead } from '@/hooks/useDeleteActions';
 import { toast } from 'sonner';
@@ -213,7 +213,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                         onClick={() => handleCallLead(lead.phone)}
                         title="Call lead"
                       >
-                        <Phone className="h-4 w-4" />
+                        <IconPhone size={16} />
                       </Button>
                       <Button
                         variant="subtle"
@@ -221,48 +221,39 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                         onClick={() => handleEmailLead(lead.email)}
                         title="Email lead"
                       >
-                        <Mail className="h-4 w-4" />
+                        <IconMail size={16} />
                       </Button>
                     </div>
                   </TableCell>
                   <TableCell style={{ padding: '12px 16px' }}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="subtle" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="h-4 w-4 mr-2" />
+                    <Menu shadow="md" withinPortal position="bottom-end">
+                      <Menu.Target>
+                        <ActionIcon variant="subtle" size="sm">
+                          <IconDotsVertical size={16} />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item leftSection={<IconEye size={14} />}>
                           View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="h-4 w-4 mr-2" />
+                        </Menu.Item>
+                        <Menu.Item leftSection={<IconPencil size={14} />}>
                           Edit Lead
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleArchiveToggle(lead.id)}>
-                          {lead.archived_at ? (
-                            <>
-                              <ArchiveRestore className="h-4 w-4 mr-2" />
-                              Unarchive
-                            </>
-                          ) : (
-                            <>
-                              <Archive className="h-4 w-4 mr-2" />
-                              Archive
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleDelete(lead.id)}
-                          className="text-red-600 focus:text-red-600"
+                        </Menu.Item>
+                        <Menu.Item 
+                          leftSection={lead.archived_at ? <IconRestore size={14} /> : <IconArchive size={14} />}
+                          onClick={() => handleArchiveToggle(lead.id)}
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          {lead.archived_at ? 'Unarchive' : 'Archive'}
+                        </Menu.Item>
+                        <Menu.Item 
+                          leftSection={<IconTrash size={14} />}
+                          color="red"
+                          onClick={() => handleDelete(lead.id)}
+                        >
                           Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
                   </TableCell>
                 </TableRow>
               ))}
