@@ -31,7 +31,7 @@ const DashboardLayout = () => {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div 
         className={`min-h-screen flex w-full bg-background ${sectionType === 'portal' ? 'portal-layout' : ''} ${sectionType === 'admin' ? 'admin-layout' : ''}`}
         data-section={sectionType}
