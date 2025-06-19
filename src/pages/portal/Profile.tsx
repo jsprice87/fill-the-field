@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { TextInput } from '@mantine/core';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -225,10 +225,10 @@ const Profile: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="gri|d grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="contact_name">Full Name</Label>
-                <Input
+                <TextInput
                   id="contact_name"
                   value={formData.contact_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
@@ -237,7 +237,7 @@ const Profile: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>
-                <Input
+                <TextInput
                   id="email"
                   type="email"
                   value={formData.email}
@@ -247,7 +247,7 @@ const Profile: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="phone">Phone</Label>
-                <Input
+                <TextInput
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
@@ -256,7 +256,7 @@ const Profile: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="company_name">Company Name</Label>
-                <Input
+                <TextInput
                   id="company_name"
                   value={formData.company_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
@@ -348,7 +348,7 @@ const Profile: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="new_password">New Password</Label>
-                  <Input
+                  <TextInput
                     id="new_password"
                     type="password"
                     value={passwordData.newPassword}
@@ -358,7 +358,7 @@ const Profile: React.FC = () => {
                 </div>
                 <div>
                   <Label htmlFor="confirm_password">Confirm New Password</Label>
-                  <Input
+                  <TextInput
                     id="confirm_password"
                     type="password"
                     value={passwordData.confirmPassword}

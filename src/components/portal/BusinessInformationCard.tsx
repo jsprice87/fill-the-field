@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { TextInput } from '@mantine/core';
 import { Button } from '@/components/ui/button';
 import { Building, Phone, MapPin } from 'lucide-react';
 import { useFranchiseeProfile, useUpdateFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
@@ -73,7 +73,7 @@ const BusinessInformationCard: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="company-name">Company Name</Label>
-            <Input
+            <TextInput
               id="company-name"
               value={formData.company_name}
               onChange={(e) => handleChange('company_name', e.target.value)}
@@ -81,7 +81,7 @@ const BusinessInformationCard: React.FC = () => {
           </div>
           <div>
             <Label htmlFor="contact-name">Contact Name</Label>
-            <Input
+            <TextInput
               id="contact-name"
               value={formData.contact_name}
               onChange={(e) => handleChange('contact_name', e.target.value)}
@@ -92,7 +92,7 @@ const BusinessInformationCard: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="business-email">Business Email</Label>
-            <Input
+            <TextInput
               id="business-email"
               type="email"
               value={formData.email}
@@ -104,7 +104,7 @@ const BusinessInformationCard: React.FC = () => {
               <Phone className="h-4 w-4" />
               Business Phone
             </Label>
-            <Input
+            <TextInput
               id="business-phone"
               type="tel"
               value={formData.phone}
@@ -118,7 +118,7 @@ const BusinessInformationCard: React.FC = () => {
             <MapPin className="h-4 w-4" />
             Business Address
           </Label>
-          <Input
+          <TextInput
             id="business-address"
             value={formData.address}
             onChange={(e) => handleChange('address', e.target.value)}
@@ -128,7 +128,7 @@ const BusinessInformationCard: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="business-city">City</Label>
-            <Input
+            <TextInput
               id="business-city"
               value={formData.city}
               onChange={(e) => handleChange('city', e.target.value)}
@@ -136,7 +136,7 @@ const BusinessInformationCard: React.FC = () => {
           </div>
           <div>
             <Label htmlFor="business-state">State</Label>
-            <Input
+            <TextInput
               id="business-state"
               value={formData.state}
               onChange={(e) => handleChange('state', e.target.value)}
@@ -144,7 +144,7 @@ const BusinessInformationCard: React.FC = () => {
           </div>
           <div>
             <Label htmlFor="business-zip">ZIP Code</Label>
-            <Input
+            <TextInput
               id="business-zip"
               value={formData.zip}
               onChange={(e) => handleChange('zip', e.target.value)}
