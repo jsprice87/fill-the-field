@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useAdminFranchisees } from '@/hooks/useAdminFranchisees';
 import { UserManagementFilters } from '@/components/admin/UserManagementFilters';
@@ -14,9 +13,10 @@ import {
   Badge,
   ActionIcon,
   Menu,
-  ScrollArea
+  ScrollArea,
+  Table
 } from '@mantine/core';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine/Table';
+import { TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine/Table';
 import { Modal } from '@/components/mantine/Modal';
 import { ConfirmModal } from '@/components/mantine/ConfirmModal';
 import { MoreVertical, Eye, Edit, Trash2, Download } from 'lucide-react';
@@ -179,76 +179,78 @@ const AdminUserManagement: React.FC = () => {
                 <Text ta="center" py="xl" c="dimmed">Loading franchisees...</Text>
               ) : (
                 <ScrollArea h="calc(100vh - 240px)">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Company</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Tier</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredFranchisees.map((franchisee) => (
-                        <TableRow key={franchisee.id}>
-                          <TableCell>
-                            <Text fw={500}>{franchisee.company_name}</Text>
-                            {franchisee.city && franchisee.state && (
-                              <Text size="sm" c="dimmed">
-                                {franchisee.city}, {franchisee.state}
-                              </Text>
-                            )}
-                          </TableCell>
-                          <TableCell>{franchisee.contact_name}</TableCell>
-                          <TableCell>{franchisee.email}</TableCell>
-                          <TableCell>
-                            <Badge color={getStatusColor(franchisee.subscription_status)} variant="light">
-                              {franchisee.subscription_status || 'Unknown'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {franchisee.subscription_tier || 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            {new Date(franchisee.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Menu shadow="md" width={200}>
-                              <Menu.Target>
-                                <ActionIcon variant="subtle" size="sm">
-                                  <MoreVertical size={16} />
-                                </ActionIcon>
-                              </Menu.Target>
-                              <Menu.Dropdown>
-                                <Menu.Item
-                                  leftSection={<Eye size={14} />}
-                                  onClick={() => handleViewUser(franchisee)}
-                                >
-                                  View Details
-                                </Menu.Item>
-                                <Menu.Item
-                                  leftSection={<Edit size={14} />}
-                                  onClick={() => handleEditUser(franchisee)}
-                                >
-                                  Edit
-                                </Menu.Item>
-                                <Menu.Item
-                                  leftSection={<Trash2 size={14} />}
-                                  onClick={() => handleDeleteUser(franchisee)}
-                                  color="red"
-                                >
-                                  Delete
-                                </Menu.Item>
-                              </Menu.Dropdown>
-                            </Menu>
-                          </TableCell>
+                  <Table.ScrollContainer minWidth={900}>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Company</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Tier</TableHead>
+                          <TableHead>Joined</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredFranchisees.map((franchisee) => (
+                          <TableRow key={franchisee.id}>
+                            <TableCell>
+                              <Text fw={500}>{franchisee.company_name}</Text>
+                              {franchisee.city && franchisee.state && (
+                                <Text size="sm" c="dimmed">
+                                  {franchisee.city}, {franchisee.state}
+                                </Text>
+                              )}
+                            </TableCell>
+                            <TableCell>{franchisee.contact_name}</TableCell>
+                            <TableCell>{franchisee.email}</TableCell>
+                            <TableCell>
+                              <Badge color={getStatusColor(franchisee.subscription_status)} variant="light">
+                                {franchisee.subscription_status || 'Unknown'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {franchisee.subscription_tier || 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              {new Date(franchisee.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Menu shadow="md" width={200}>
+                                <Menu.Target>
+                                  <ActionIcon variant="subtle" size="sm">
+                                    <MoreVertical size={16} />
+                                  </ActionIcon>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                  <Menu.Item
+                                    leftSection={<Eye size={14} />}
+                                    onClick={() => handleViewUser(franchisee)}
+                                  >
+                                    View Details
+                                  </Menu.Item>
+                                  <Menu.Item
+                                    leftSection={<Edit size={14} />}
+                                    onClick={() => handleEditUser(franchisee)}
+                                  >
+                                    Edit
+                                  </Menu.Item>
+                                  <Menu.Item
+                                    leftSection={<Trash2 size={14} />}
+                                    onClick={() => handleDeleteUser(franchisee)}
+                                    color="red"
+                                  >
+                                    Delete
+                                  </Menu.Item>
+                                </Menu.Dropdown>
+                              </Menu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Table.ScrollContainer>
                 </ScrollArea>
               )}
             </Stack>

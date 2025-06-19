@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
-import { ScrollArea, Switch, Text, rem } from '@mantine/core';
+import { ScrollArea, Switch, Text, rem, Table } from '@mantine/core';
 import { MoreVertical, Edit, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/mantine/Table';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/mantine/Table';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
 import { useArchiveLocation, useUnarchiveLocation, useDeleteLocation, useToggleLocationStatus } from '@/hooks/useLocationActions';
 import { LocationProps } from './LocationCard';
@@ -56,85 +55,87 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
 
   return (
     <ScrollArea h="calc(100vh - 240px)" scrollbarSize={8} offsetScrollbars type="scroll">
-      <Table stickyHeader>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Location</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>City</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Classes</TableHead>
-            <TableHead className="w-12">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {locations.map((location) => {
-            const isArchived = location.is_active === false;
-            
-            return (
-              <TableRow 
-                key={location.id}
-                interactive
-                style={{ opacity: isArchived ? 0.6 : 1 }}
-              >
-                <TableCell>
-                  <div>
-                    <Text fw={500} size="sm">
-                      {location.name}
-                    </Text>
-                    {location.phone && (
-                      <Text size="xs" c="dimmed">
-                        {location.phone}
+      <Table.ScrollContainer minWidth={900}>
+        <Table stickyHeader>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Location</TableHead>
+              <TableHead>Address</TableHead>
+              <TableHead>City</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Classes</TableHead>
+              <TableHead className="w-12">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {locations.map((location) => {
+              const isArchived = location.is_active === false;
+              
+              return (
+                <TableRow 
+                  key={location.id}
+                  interactive
+                  style={{ opacity: isArchived ? 0.6 : 1 }}
+                >
+                  <TableCell>
+                    <div>
+                      <Text fw={500} size="sm">
+                        {location.name}
                       </Text>
-                    )}
-                  </div>
-                </TableCell>
-                
-                <TableCell>
-                  <Text size="sm">
-                    {location.address}
-                  </Text>
-                </TableCell>
-                
-                <TableCell>
-                  <Text size="sm">
-                    {location.city}, {location.state} {location.zip}
-                  </Text>
-                </TableCell>
-                
-                <TableCell>
-                  <Switch
-                    checked={location.is_active ?? true}
-                    onChange={(event) => handleStatusToggle(location.id, event.currentTarget.checked)}
-                    color="soccerGreen"
-                    size="sm"
-                    disabled={toggleStatus.isPending}
-                    aria-label={`Toggle ${location.name} status`}
-                  />
-                </TableCell>
-                
-                <TableCell>
-                  <Text size="sm" c="dimmed">
-                    0 classes
-                  </Text>
-                </TableCell>
-                
-                <TableCell>
-                  <TableRowMenu
-                    onEdit={() => onEdit(location.id)}
-                    onArchiveToggle={() => handleArchiveToggle(location.id, isArchived)}
-                    onDelete={() => handleDelete(location.id)}
-                    isArchived={isArchived}
-                    isLoading={archiveLocation.isPending || unarchiveLocation.isPending || deleteLocation.isPending}
-                    editLabel="Edit Location"
-                    deleteLabel="Delete Location"
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                      {location.phone && (
+                        <Text size="xs" c="dimmed">
+                          {location.phone}
+                        </Text>
+                      )}
+                    </div>
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Text size="sm">
+                      {location.address}
+                    </Text>
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Text size="sm">
+                      {location.city}, {location.state} {location.zip}
+                    </Text>
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Switch
+                      checked={location.is_active ?? true}
+                      onChange={(event) => handleStatusToggle(location.id, event.currentTarget.checked)}
+                      color="soccerGreen"
+                      size="sm"
+                      disabled={toggleStatus.isPending}
+                      aria-label={`Toggle ${location.name} status`}
+                    />
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Text size="sm" c="dimmed">
+                      0 classes
+                    </Text>
+                  </TableCell>
+                  
+                  <TableCell>
+                    <TableRowMenu
+                      onEdit={() => onEdit(location.id)}
+                      onArchiveToggle={() => handleArchiveToggle(location.id, isArchived)}
+                      onDelete={() => handleDelete(location.id)}
+                      isArchived={isArchived}
+                      isLoading={archiveLocation.isPending || unarchiveLocation.isPending || deleteLocation.isPending}
+                      editLabel="Edit Location"
+                      deleteLabel="Delete Location"
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Table.ScrollContainer>
     </ScrollArea>
   );
 };
