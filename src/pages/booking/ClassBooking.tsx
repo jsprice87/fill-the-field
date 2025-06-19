@@ -23,7 +23,7 @@ const ClassBooking: React.FC<ClassBookingProps> = ({ franchiseeId: propFranchise
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [classData, setClassData<{
+  const [classData, setClassData] = useState <{
     class_name: string;
     min_age: number;
     max_age: number;
