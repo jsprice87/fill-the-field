@@ -59,10 +59,6 @@ export * from './field-group';
 export * from './form-section';
 export * from './menubar';
 export * from './navigation-menu';
-export * from './toast';
-export { Toaster } from './toaster';
-export { toast } from './sonner';
-export * from './use-toast';
 
 // Simplified sidebar exports (compatibility)
 export { default as AppSidebar } from './sidebar';
