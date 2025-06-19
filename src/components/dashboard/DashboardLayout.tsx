@@ -4,7 +4,6 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AppShell, Burger, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { AppSidebar } from '@/components/AppSidebar';
-import { Toaster } from '@/components/ui/toaster';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 
 const DashboardLayout = () => {
@@ -66,8 +65,6 @@ const DashboardLayout = () => {
           <Outlet />
         </div>
       </AppShell.Main>
-      
-      <Toaster />
     </AppShell>
   );
 };

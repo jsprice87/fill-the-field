@@ -2,7 +2,7 @@
 import React from 'react';
 import { ActionIcon } from '@mantine/core';
 import { IconCopy } from '@tabler/icons-react';
-import { useToast } from '@/hooks/use-toast';
+import { notify } from '@/utils/notify';
 import { Tooltip } from '@mantine/core';
 
 interface CopyButtonProps {
@@ -11,25 +11,16 @@ interface CopyButtonProps {
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({ url, className = '' }) => {
-  const { toast } = useToast();
-
   const handleCopy = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     try {
       await navigator.clipboard.writeText(url);
-      toast({
-        title: "Link copied ✓",
-        duration: 2000,
-      });
+      notify('success', 'Link copied ✓');
     } catch (error) {
       console.error('Failed to copy URL:', error);
-      toast({
-        title: "Failed to copy link",
-        variant: "destructive",
-        duration: 2000,
-      });
+      notify('error', 'Failed to copy link');
     }
   };
 
