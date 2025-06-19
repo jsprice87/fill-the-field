@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams, Link } from 'react-router-dom';
 import ScheduleRow from '@/components/classes/ScheduleRow';
 
 export interface ScheduleRow {
@@ -299,3 +299,89 @@ const PortalClasses: React.FC<PortalClassesProps> = ({ franchiseeId: propFranchi
       </div>
 
       <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Select Location</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select onValueChange={setSelectedLocationId}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a location" />
+              </SelectTrigger>
+              <SelectContent>
+                {/* TODO: Fetch locations for the specific franchisee */}
+                <SelectItem value="location-1">Location 1</SelectItem>
+                <SelectItem value="location-2">Location 2</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Global Day of Week</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select onValueChange={(value) => setGlobalDayOfWeek(parseInt(value, 10))}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a day" />
+              </SelectTrigger>
+              <SelectContent>
+                {[...Array(7)].map((_, i) => {
+                  const day = i + 1;
+                  const dayName = new Date(2023, 0, day).toLocaleDateString('en-US', { weekday: 'long' });
+                  return <SelectItem key={day} value={day.toString()}>{dayName}</SelectItem>;
+                })}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Class Name</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Time Start</TableHead>
+              <TableHead>Time End</TableHead>
+              <TableHead>Date Start</TableHead>
+              <TableHead>Date End</TableHead>
+              <TableHead>Min Age</TableHead>
+              <TableHead>Max Age</TableHead>
+              <TableHead>Capacity</TableHead>
+              <TableHead>Day of Week</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {scheduleRows.map((row, index) => (
+              <ScheduleRow
+                key={index}
+                index={index}
+                className={row.className}
+                duration={row.duration}
+                timeStart={row.timeStart}
+                timeEnd={row.timeEnd}
+                dateStart={row.dateStart}
+                dateEnd={row.dateEnd}
+                overrideDates={row.overrideDates}
+                minAge={row.minAge}
+                maxAge={row.maxAge}
+                capacity={row.capacity}
+                dayOfWeek={row.dayOfWeek}
+                onRowChange={handleRowChange}
+                onRemoveRow={handleRemoveRow}
+              />
+            ))}
+          </TableBody>
+        </Table>
+
+        <Button onClick={handleAddRow} variant="outline" leftIcon={<Plus />}>
+          Add Schedule
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default PortalClasses;
