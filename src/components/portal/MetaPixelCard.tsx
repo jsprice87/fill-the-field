@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { TextInput } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Facebook } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
@@ -95,7 +95,7 @@ const MetaPixelCard: React.FC = () => {
       <CardContent className="space-y-4">
         <div>
           <Label htmlFor="meta_pixel_id">Meta Pixel ID</Label>
-          <Input
+          <TextInput
             id="meta_pixel_id"
             placeholder="123456789012345 (12-17 digits)"
             value={metaPixelId}

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { TextInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
@@ -285,7 +285,7 @@ const EditClass: React.FC = () => {
           
           <div className="space-y-2">
             <Label htmlFor="class-name">Class Name</Label>
-            <Input
+            <TextInput
               id="class-name"
               value={classData.class_name}
               onChange={(e) => setClassData({...classData, class_name: e.target.value, name: e.target.value})}
@@ -295,7 +295,7 @@ const EditClass: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Input
+            <TextInput
               id="description"
               value={classData.description}
               onChange={(e) => setClassData({...classData, description: e.target.value})}
@@ -324,7 +324,7 @@ const EditClass: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="duration">Duration (minutes)</Label>
-            <Input
+            <TextInput
               id="duration"
               type="number"
               min="15"
@@ -347,7 +347,7 @@ const EditClass: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="capacity">Max Capacity</Label>
-            <Input
+            <TextInput
               id="capacity"
               type="number"
               min="1"
@@ -398,7 +398,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="start-time">Start Time</Label>
-                <Input
+                <TextInput
                   id="start-time"
                   type="time"
                   value={classData.schedule.start_time}
@@ -415,7 +415,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="end-time">End Time</Label>
-                <Input
+                <TextInput
                   id="end-time"
                   type="time"
                   value={classData.schedule.end_time}
@@ -427,7 +427,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="date-start">Start Date</Label>
-                <Input
+                <TextInput
                   id="date-start"
                   type="date"
                   value={classData.schedule.date_start || ''}
@@ -440,7 +440,7 @@ const EditClass: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="date-end">End Date</Label>
-                <Input
+                <TextInput
                   id="date-end"
                   type="date"
                   value={classData.schedule.date_end || ''}
@@ -452,19 +452,13 @@ const EditClass: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Override Dates</Label>
+                <Label>Exception Dates</Label>
                 <MultiDatePicker
                   selectedDates={classData.exceptions}
                   onDatesChange={(dates) => setClassData({...classData, exceptions: dates})}
                 />
               </div>
             </>
-          )}
-
-          {!classData.schedule && (
-            <div className="text-muted-foreground">
-              No schedule information available for this class.
-            </div>
           )}
         </div>
       </div>
