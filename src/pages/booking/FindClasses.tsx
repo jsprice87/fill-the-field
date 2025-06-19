@@ -59,7 +59,7 @@ const FindClasses: React.FC = () => {
       return 'America/New_York'; // Default timezone
     }
 
-    const settingsData = data as any; // TODO: replace with proper type
+    const settingsData = data as any;
     if (settingsData && settingsData.length > 0) {
       return settingsData[0].setting_value || 'America/New_York';
     }
@@ -73,10 +73,10 @@ const FindClasses: React.FC = () => {
       setError(null);
 
       try {
-        const { data: settings, error: settingsError } = await supabase
+        const { data: settings, error: settingsError } = (await supabase
           .from('franchisee_settings')
           .select('setting_key, setting_value')
-          .eq('franchisee_slug', franchiseeSlug) as any;
+          .eq('franchisee_slug', franchiseeSlug)) as any;
 
         if (settingsError) {
           console.error('Error fetching franchisee settings:', settingsError);
@@ -84,11 +84,11 @@ const FindClasses: React.FC = () => {
           return;
         }
 
-        const settingsData = settings as any; // TODO: replace with proper type
+        const settingsData = settings as any;
         const pixelSetting = settingsData?.find((s: any) => s.setting_key === 'meta_pixel_id');
         setMetaPixelId(pixelSetting?.setting_value || null);
 
-        const { data: classScheduleData, error: classScheduleError } = await supabase
+        const { data: classScheduleData, error: classScheduleError } = (await supabase
           .from('class_schedules')
           .select(`
             id,
@@ -113,7 +113,7 @@ const FindClasses: React.FC = () => {
               )
             )
           `)
-          .eq('classes.locations.franchisee_slug', franchiseeSlug) as any;
+          .eq('classes.locations.franchisee_slug', franchiseeSlug)) as any;
 
         if (classScheduleError) {
           console.error('Error fetching class schedules:', classScheduleError);
@@ -126,17 +126,16 @@ const FindClasses: React.FC = () => {
           return;
         }
 
-        setClassSchedules(classScheduleData as any); // TODO: replace with proper type
+        setClassSchedules(classScheduleData as any);
 
         // Extract unique locations for filtering
-        const uniqueLocations = [
-          ...new Set(
-            classScheduleData.map((schedule: any) => ({
-              value: schedule.classes.locations.name,
-              label: schedule.classes.locations.name,
-            }))
-          ),
-        ];
+        const locationNames = new Set(
+          classScheduleData.map((schedule: any) => schedule.classes.locations.name)
+        );
+        const uniqueLocations = Array.from(locationNames).map(name => ({
+          value: name,
+          label: name,
+        }));
         setLocationOptions([{ value: 'all', label: 'All Locations' }, ...uniqueLocations]);
       } catch (err: any) {
         console.error('Error fetching data:', err);

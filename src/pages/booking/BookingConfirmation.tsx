@@ -69,7 +69,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
       }
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = (await supabase
           .from('bookings')
           .select(`
             booking_reference,
@@ -96,13 +96,13 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
           `)
           .eq('booking_reference', bookingReference)
           .eq('franchisee_id', currentFranchiseeId)
-          .single() as any;
+          .single()) as any;
 
         if (error) {
           console.error('Error fetching booking:', error);
           setError('Failed to load booking confirmation.');
         } else if (data) {
-          setBookingData(data as any); // TODO: replace with proper type
+          setBookingData(data as any);
         } else {
           setError('Booking not found.');
         }
