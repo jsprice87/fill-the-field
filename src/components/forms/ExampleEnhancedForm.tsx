@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
 import { EnhancedSelect, EnhancedSelectItem } from '@/components/ui/enhanced-select';

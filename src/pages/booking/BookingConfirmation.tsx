@@ -1,12 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { Button } from '@mantine/core';
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, MapPin, Phone, Mail, Clock, User, Share2, Printer } from 'lucide-react';
-import { useBookingConfirmation } from '@/hooks/useBookingConfirmation';
-import BookingNotFound from '@/components/booking/BookingNotFound';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 interface BookingData {
   id: string;
@@ -60,7 +60,6 @@ const BookingConfirmation: React.FC = () => {
   const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
   const [franchiseeSettings, setFranchiseeSettings] = useState<FranchiseeSettings>({});
   const [isLoading, setIsLoading] = useState(true);
-  const bookingConfirmationRef = useRef(null);
 
   useEffect(() => {
     if (!franchiseeSlug) {

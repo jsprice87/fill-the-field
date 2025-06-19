@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Share2, Calendar, MapPin, User } from 'lucide-react';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { notify } from '@/utils/notify';
 

@@ -1,150 +1,338 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { MapPin, Calendar, Users, Clock, Star, ArrowRight, Phone, Mail } from 'lucide-react';
+import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
+import { MetaPixelProvider, useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
+import { useBookingFlow } from '@/hooks/useBookingFlow';
+import { useFranchiseeOptional } from '@/contexts/FranchiseeContext';
 import { toast } from 'sonner';
-import { Button } from '@mantine/core';
-import { useFranchiseeBySlug } from '@/hooks/useFranchiseeBySlug';
-import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
-import { useActiveClassSchedules } from '@/hooks/useActiveClassSchedules';
-import ErrorBoundary from '@/components/shared/ErrorBoundary';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { LeadGenerationProvider } from '@/components/booking/LeadGenerationProvider';
-import LeadCaptureForm from '@/components/booking/LeadCaptureForm';
-import { MetaPixelProvider } from '@/components/booking/MetaPixelProvider';
+import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-interface BookingLandingProps {
-  franchiseeId?: string;
-}
-
-const BookingLanding: React.FC<BookingLandingProps> = ({ franchiseeId: propFranchiseeId }) => {
+const BookingLandingContent: React.FC = () => {
   const { franchiseeSlug } = useParams();
   const navigate = useNavigate();
-  const [showLeadCapture, setShowLeadCapture] = useState(false);
+  const { createFlow } = useBookingFlow();
+  const { trackEvent } = useMetaPixelTracking();
+  const [isCreatingFlow, setIsCreatingFlow] = useState(false);
+  
+  // Get franchisee data from context
+  const franchiseeContext = useFranchiseeOptional();
+  const franchiseeId = franchiseeContext?.franchiseeId;
 
-  // Fetch franchisee details
-  const { data: franchisee, isLoading: isFranchiseeLoading, isError: isFranchiseeError } = useFranchiseeBySlug(franchiseeSlug);
+  const handleLeadCreated = () => {
+    // Track Meta Pixel Lead event
+    trackEvent('Lead');
+  };
 
-  // Fetch franchisee settings
-  const { data: settings, isLoading: isSettingsLoading, isError: isSettingsError } = useFranchiseeSettings();
-
-  // Fetch active class schedules
-  const { data: classSchedules, isLoading: isClassesLoading, isError: isClassesError } = useActiveClassSchedules();
-
-  const isLoading = isFranchiseeLoading || isSettingsLoading || isClassesLoading;
-  const isError = isFranchiseeError || isSettingsError || isClassesError;
-
-  const handleClassSelect = (classScheduleId: string) => {
-    if (settings?.require_lead_capture) {
-      setShowLeadCapture(true);
-    } else {
-      // If lead capture is not required, navigate directly to the class booking page
-      navigate(`/${franchiseeSlug}/booking/class/${classScheduleId}`);
+  const handleFormSuccess = async (leadId: string, leadData: any) => {
+    if (!franchiseeId || !franchiseeSlug) {
+      console.error('Missing required data for flow creation:', { franchiseeId, franchiseeSlug });
+      toast.error('Unable to start booking process. Please try again.');
+      return;
+    }
+    
+    setIsCreatingFlow(true);
+    try {
+      const flowId = await createFlow(franchiseeId, {
+        leadId,
+        leadData: {
+          firstName: leadData.first_name,
+          lastName: leadData.last_name,
+          email: leadData.email,
+          phone: leadData.phone,
+          zip: leadData.zip
+        }
+      });
+      
+      navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
+    } catch (error) {
+      console.error('Error creating flow:', error);
+      toast.error('Failed to start booking process. Please try again.');
+    } finally {
+      setIsCreatingFlow(false);
     }
   };
 
-  const handleLeadCaptureComplete = (classScheduleId: string) => {
-    // After successful lead capture, navigate to the class booking page
-    navigate(`/${franchiseeSlug}/booking/class/${classScheduleId}`);
-  };
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (isError || !franchisee) {
+  if (!franchiseeId) {
     return (
-      <ErrorBoundary>
-        <p>Failed to load booking page.</p>
-      </ErrorBoundary>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Account Not Found</h1>
+          <p className="font-poppins text-brand-grey">The requested account could not be found.</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <MetaPixelProvider franchiseeId={franchisee.id}>
-      <LeadGenerationProvider>
-        <div className="min-h-screen bg-gray-50 py-12">
-          <div className="max-w-4xl mx-auto px-4">
-            {showLeadCapture ? (
-              <LeadCaptureForm
-                onLeadCaptureComplete={handleLeadCaptureComplete}
-                onClose={() => setShowLeadCapture(false)}
-              />
-            ) : (
-              <Card>
-                <CardHeader className="flex flex-col space-y-1.5 p-6">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-2xl font-bold">{franchisee.business_name}</CardTitle>
-                    {settings?.show_star_rating && (
-                      <Badge variant="secondary">
-                        <Star className="h-4 w-4 mr-1" />
-                        4.5
-                      </Badge>
-                    )}
+    <div className="min-h-screen bg-white">
+      {/* Hero Section - 70-100vh with background image and overlay */}
+      <section className="hero-section relative flex items-center justify-center">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `linear-gradient(rgba(2, 29, 73, 0.8), rgba(0, 59, 206, 0.8)), url('/lovable-uploads/091e49b6-e2e1-413d-a1ac-f2763a697649.png')`
+          }}
+        />
+        
+        <div className="relative z-10 container mx-auto px-4 py-24">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Side - Brand and Value Props */}
+            <div className="text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start mb-8">
+                <img 
+                  src="/lovable-uploads/73ddb431-9bcb-476d-b5a8-e7cde1c58b51.png" 
+                  alt="Soccer Stars Logo" 
+                  className="h-16 md:h-20 w-auto"
+                  loading="eager"
+                />
+              </div>
+              
+              <h1 className="font-anton text-4xl md:text-6xl lg:text-7xl text-white mb-6">
+                FREE TRIAL CLASSES
+              </h1>
+              
+              <h2 className="font-agrandir text-xl md:text-2xl text-white mb-8">
+                Fun Soccer for Kids Ages 12 months to 12 years!
+              </h2>
+              
+              {/* Three Key Value Props */}
+              <div className="space-y-4 mb-8 text-white">
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <Users className="w-3 h-3 text-white" />
                   </div>
-                  <p className="text-sm text-gray-500">
-                    {settings?.booking_page_description || 'Find a class and book your free trial!'}
-                  </p>
-                </CardHeader>
-                <CardContent className="p-6">
-                  {classSchedules && classSchedules.length > 0 ? (
-                    <div className="space-y-4">
-                      {classSchedules.map((schedule) => (
-                        <div key={schedule.id} className="border rounded-lg">
-                          <div className="flex items-center justify-between p-4">
-                            <div>
-                              <h3 className="text-lg font-semibold">{schedule.classes.class_name}</h3>
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <MapPin className="h-4 w-4" />
-                                <span>{schedule.classes.locations.name}, {schedule.classes.locations.city}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Calendar className="h-4 w-4" />
-                                <span>{new Date(schedule.date_start || '').toLocaleDateString()}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Clock className="h-4 w-4" />
-                                <span>{schedule.start_time} - {schedule.end_time}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Users className="h-4 w-4" />
-                                <span>{schedule.classes.max_capacity} spots available</span>
-                              </div>
-                            </div>
-                            <Button onClick={() => handleClassSelect(schedule.id)} className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins">
-                              Select Class
-                              <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
-                          <Separator />
-                          <div className="flex items-center justify-between p-4">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-2">
-                                <Phone className="h-4 w-4" />
-                                <span>{schedule.classes.locations.phone}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Mail className="h-4 w-4" />
-                                <span>{schedule.classes.locations.email}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center p-8">
-                      <p className="text-gray-600">No classes available at this time.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                  <p className="font-poppins text-lg">Professional coaching in a fun environment</p>
+                </div>
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <Star className="w-3 h-3 text-white" />
+                  </div>
+                  <p className="font-poppins text-lg">Build confidence & skills through play</p>
+                </div>
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <Clock className="w-3 h-3 text-white" />
+                  </div>
+                  <p className="font-poppins text-lg">Non-competitive, inclusive for all abilities</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Lead Capture Form */}
+            <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-auto">
+              {isCreatingFlow ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
+                  <p className="font-poppins text-brand-grey">Starting your booking...</p>
+                </div>
+              ) : (
+                <QuickCaptureForm 
+                  franchiseeId={franchiseeId}
+                  onSuccess={handleFormSuccess}
+                  onLeadCreated={handleLeadCreated}
+                  showTitle={true}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </LeadGenerationProvider>
+      </section>
+
+      {/* Value-Prop Strip - Three Equal Columns */}
+      <section className="py-20 px-4 bg-gray-50">
+        <div className="container mx-auto">
+          <h3 className="font-agrandir text-4xl text-brand-navy text-center mb-16">
+            Why Choose Soccer Stars?
+          </h3>
+          
+          <div className="value-prop-strip">
+            <div className="text-center">
+              <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" 
+                  alt="Toddler Soccer Fun" 
+                  className="w-full h-64 object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
+              <p className="font-poppins text-brand-grey text-lg">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" 
+                  alt="Youth Soccer Development" 
+                  className="w-full h-64 object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-10+: Super Soccer Stars</h4>
+              <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto">
+          <h3 className="font-agrandir text-4xl text-brand-navy text-center mb-12">
+            See the Joy in Action
+          </h3>
+          
+          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            <div className="space-y-8">
+              <div className="bg-gray-50 p-8 rounded-xl border-l-4 border-l-brand-red">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="font-poppins text-xl text-gray-700 mb-4 italic">
+                  "My daughter absolutely loves Soccer Stars! She's gained so much confidence and made great friends. The coaches are amazing with kids."
+                </p>
+                <p className="font-poppins font-semibold text-brand-navy">- Sarah M., Parent</p>
+              </div>
+              
+              <div className="bg-gray-50 p-8 rounded-xl border-l-4 border-l-brand-blue">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="font-poppins text-xl text-gray-700 mb-4 italic">
+                  "The non-competitive environment is perfect for our son. He's learning skills while having a blast!"
+                </p>
+                <p className="font-poppins font-semibold text-brand-navy">- Mike D., Parent</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <img 
+                src="/lovable-uploads/f5c00969-26f0-44a8-8551-f73f45e5fec2.png" 
+                alt="Happy Soccer Kid" 
+                className="rounded-lg shadow-lg w-full h-48 object-cover"
+                loading="lazy"
+              />
+              <img 
+                src="/lovable-uploads/80139c96-b766-49d4-83b6-10e210326cd7.png" 
+                alt="Excited Soccer Player" 
+                className="rounded-lg shadow-lg w-full h-48 object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Band - Navy background with white text and red button */}
+      <section className="cta-band">
+        <div className="container mx-auto px-4">
+          <h3 className="font-agrandir text-3xl md:text-4xl mb-6 text-white">
+            Ready to Get Started?
+          </h3>
+          <p className="font-poppins text-xl mb-8 text-white max-w-2xl mx-auto">
+            Join thousands of families who have discovered the joy of Soccer Stars. Your free trial is just a click away!
+          </p>
+          <Button 
+            variant="soccer_primary"
+            size="soccer"
+            onClick={() => {
+              document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="text-xl"
+          >
+            Find Your Free Trial
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer - Navy background, three columns */}
+      <footer className="soccer-footer">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {/* Column 1: Sitemap Links */}
+            <div>
+              <h4 className="font-agrandir text-lg mb-4 text-white">Programs</h4>
+              <div className="space-y-2">
+                <p className="font-poppins text-gray-300">Parent & Me (Ages 12-24 months)</p>
+                <p className="font-poppins text-gray-300">Super Soccer Stars (Ages 2-10+ years)</p>
+                <p className="font-poppins text-gray-300">Free Trial Classes</p>
+              </div>
+            </div>
+            
+            {/* Column 2: Contact Info */}
+            <div>
+              <h4 className="font-agrandir text-lg mb-4 text-white">Contact Us</h4>
+              <div className="space-y-2">
+                <div className="flex items-center text-gray-300">
+                  <Phone className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">720-432-9084</span>
+                </div>
+                <div className="flex items-center text-gray-300">
+                  <Mail className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">southdenver@soccerstars.com</span>
+                </div>
+                <div className="flex items-center text-gray-300">
+                  <MapPin className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">Find Local Programs</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Column 3: Social Icons */}
+            <div>
+              <h4 className="font-agrandir text-lg mb-4 text-white">Follow Us</h4>
+              <div className="flex space-x-4">
+                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
+                  <span className="text-white font-poppins text-sm">f</span>
+                </div>
+                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
+                  <span className="text-white font-poppins text-sm">ig</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-600 pt-6 text-center">
+            <p className="font-poppins text-gray-400 text-sm">
+              © {new Date().getFullYear()} Soccer Stars. All rights reserved. | Backed by 25 years of experience
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+const BookingLanding: React.FC = () => {
+  const franchiseeContext = useFranchiseeOptional();
+  const franchiseeId = franchiseeContext?.franchiseeId;
+
+  if (!franchiseeId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <h1 className="font-agrandir text-2xl text-brand-navy mb-2">Account Not Found</h1>
+          <p className="font-poppins text-brand-grey">The requested account could not be found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <MetaPixelProvider franchiseeId={franchiseeId}>
+      <BookingLandingContent />
     </MetaPixelProvider>
   );
 };

@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mantine/core';
-import { Plus, Calendar, Users, Clock, MapPin, ArrowLeft } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Title, SimpleGrid, Stack, Group } from '@mantine/core';
-import { StickyHeader } from '@/components/mantine';
-import { MetricCard } from '@/components/mantine/MetricCard';
-import { PortalShell } from '@/layout/PortalShell';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import ScheduleRow from '@/components/classes/ScheduleRow';
-import { supabase } from '@/integrations/supabase/client';
-import { useFranchiseeData } from '@/hooks/useFranchiseeData';
-import { useLocations } from '@/hooks/useLocations';
+import { supabase } from "@/integrations/supabase/client";
+import { Link, useParams } from "react-router-dom";
+import LocationSelector from '@/components/classes/LocationSelector';
+import GlobalDayPicker from '@/components/classes/GlobalDayPicker';
+import ScheduleGrid from '@/components/classes/ScheduleGrid';
 
 export interface ScheduleRow {
   id?: string;

@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@mantine/core';
+import { Button } from '@/components/ui/button';
 import { Calendar, AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDateSelection } from '@/hooks/useDateSelection';

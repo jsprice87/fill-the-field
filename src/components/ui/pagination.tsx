@@ -2,7 +2,7 @@ import * as React from "react"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { ButtonProps } from "@/components/ui/button"
+import { ButtonProps, buttonVariants } from "@/components/ui/button"
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
@@ -44,17 +44,19 @@ const PaginationLink = ({
   isActive,
   size = "icon",
   ...props
-}: PaginationLinkProps) => {
-  const linkClass = `px-2 py-1 text-sm rounded-md ${isActive ? 'border' : 'hover:bg-gray-100'}`;
-  
-  return (
-    <a
-      aria-current={isActive ? "page" : undefined}
-      className={cn(linkClass, className)}
-      {...props}
-    />
-  );
-}
+}: PaginationLinkProps) => (
+  <a
+    aria-current={isActive ? "page" : undefined}
+    className={cn(
+      buttonVariants({
+        variant: isActive ? "outline" : "ghost",
+        size,
+      }),
+      className
+    )}
+    {...props}
+  />
+)
 PaginationLink.displayName = "PaginationLink"
 
 const PaginationPrevious = ({
