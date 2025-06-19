@@ -9,8 +9,7 @@ export type { InputProps } from '../mantine/TextInput';
 export { Textarea } from '../mantine/Textarea';
 export type { TextareaProps } from '../mantine/Textarea';
 
-export { Badge } from '../mantine/Badge';
-export type { BadgeProps } from '../mantine/Badge';
+export { Badge } from '@mantine/core';
 
 export { Select } from '../mantine/Select';
 export type { SelectProps } from '../mantine/Select';
