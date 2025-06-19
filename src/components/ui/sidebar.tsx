@@ -1,21 +1,14 @@
 
 import React from 'react';
-import { Navbar, NavLink, ScrollArea, Stack } from '@mantine/core';
+import { AppShell, NavLink, ScrollArea, Stack } from '@mantine/core';
 import { IconHome, IconUsers, IconSettings, IconLogout } from '@tabler/icons-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const links = [
-  { label: 'Dashboard', href: '/portal/dashboard', icon: <IconHome size={18} /> },
-  { label: 'Leads', href: '/portal/leads', icon: <IconUsers size={18} /> },
-  { label: 'Bookings', href: '/portal/bookings', icon: <IconUsers size={18} /> },
-  { label: 'Locations', href: '/portal/locations', icon: <IconSettings size={18} /> },
-  { label: 'Classes', href: '/portal/classes', icon: <IconSettings size={18} /> },
-];
-
-const secondaryLinks = [
-  { label: 'Profile', href: '/portal/profile', icon: <IconUsers size={18} /> },
-  { label: 'Settings', href: '/portal/settings', icon: <IconSettings size={18} /> },
-  { label: 'Help', href: '/portal/help', icon: <IconUsers size={18} /> },
+  { label: 'Dashboard', href: '/dashboard', icon: <IconHome size={18} /> },
+  { label: 'Bookings', href: '/bookings', icon: <IconUsers size={18} /> },
+  { label: 'Franchisees', href: '/franchisees', icon: <IconUsers size={18} /> },
+  { label: 'Settings', href: '/settings', icon: <IconSettings size={18} /> },
 ];
 
 export default function AppSidebar() {
@@ -27,43 +20,32 @@ export default function AppSidebar() {
   };
 
   return (
-    <Navbar width={{ base: 260 }} p="md" withBorder>
-      <Navbar.Section grow component={ScrollArea}>
-        <Stack gap="xs">
-          {links.map((l) => (
+    <div style={{ width: 260, padding: 16, borderRight: '1px solid var(--mantine-color-gray-3)', height: '100vh' }}>
+      <ScrollArea style={{ height: '100%' }}>
+        <Stack gap="xs" style={{ height: '100%' }}>
+          <div style={{ flex: 1 }}>
+            {links.map((l) => (
+              <NavLink
+                key={l.href}
+                label={l.label}
+                component={Link}
+                to={l.href}
+                leftSection={l.icon}
+                active={pathname.startsWith(l.href)}
+              />
+            ))}
+          </div>
+          
+          <div>
             <NavLink
-              key={l.href}
-              label={l.label}
-              component={Link}
-              to={l.href}
-              leftSection={l.icon}
-              active={pathname.startsWith(l.href)}
+              label="Logout"
+              leftSection={<IconLogout size={18} />}
+              onClick={handleLogout}
             />
-          ))}
+          </div>
         </Stack>
-        
-        <Stack gap="xs" mt="md">
-          {secondaryLinks.map((l) => (
-            <NavLink
-              key={l.href}
-              label={l.label}
-              component={Link}
-              to={l.href}
-              leftSection={l.icon}
-              active={pathname.startsWith(l.href)}
-            />
-          ))}
-        </Stack>
-      </Navbar.Section>
-
-      <Navbar.Section>
-        <NavLink
-          label="Logout"
-          leftSection={<IconLogout size={18} />}
-          onClick={handleLogout}
-        />
-      </Navbar.Section>
-    </Navbar>
+      </ScrollArea>
+    </div>
   );
 }
 

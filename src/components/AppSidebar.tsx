@@ -2,7 +2,7 @@
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from 'next-themes';
-import { Navbar, NavLink, ScrollArea, Stack, Group, Text, ActionIcon } from '@mantine/core';
+import { ScrollArea, Stack, Group, Text, NavLink } from '@mantine/core';
 import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconWorld, IconMoon, IconSun, IconLogout } from '@tabler/icons-react';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -72,35 +72,33 @@ export function AppSidebar() {
   }
 
   return (
-    <Navbar width={{ base: 260 }} p="md" withBorder>
+    <div style={{ width: 260, padding: 16, borderRight: '1px solid var(--mantine-color-gray-3)', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <Navbar.Section>
-        <Group>
-          <div style={{ 
-            width: 32, 
-            height: 32, 
-            backgroundColor: 'var(--mantine-primary-color-filled)',
-            borderRadius: 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: 14,
-            fontWeight: 600
-          }}>
-            FTF
-          </div>
-          <div>
-            <Text size="sm" fw={600}>Fill the Field</Text>
-            <Text size="xs" c="dimmed">
-              {franchiseeData?.business_name || 'Portal'}
-            </Text>
-          </div>
-        </Group>
-      </Navbar.Section>
+      <Group mb="md">
+        <div style={{ 
+          width: 32, 
+          height: 32, 
+          backgroundColor: 'var(--mantine-primary-color-filled)',
+          borderRadius: 8,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: 14,
+          fontWeight: 600
+        }}>
+          FTF
+        </div>
+        <div>
+          <Text size="sm" fw={600}>Fill the Field</Text>
+          <Text size="xs" c="dimmed">
+            {franchiseeData?.business_name || 'Portal'}
+          </Text>
+        </div>
+      </Group>
 
       {/* Main Navigation */}
-      <Navbar.Section grow component={ScrollArea} mt="md">
+      <ScrollArea style={{ flex: 1 }}>
         <Text size="xs" tt="uppercase" fw={500} c="dimmed" mb="xs">Portal</Text>
         <Stack gap={2}>
           {mainMenuItems.map((item) => (
@@ -141,10 +139,10 @@ export function AppSidebar() {
             />
           ))}
         </Stack>
-      </Navbar.Section>
+      </ScrollArea>
 
       {/* Footer */}
-      <Navbar.Section>
+      <div>
         <NavLink
           label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
           leftSection={theme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
@@ -155,7 +153,7 @@ export function AppSidebar() {
           leftSection={<IconLogout size={18} />}
           onClick={handleLogout}
         />
-      </Navbar.Section>
-    </Navbar>
+      </div>
+    </div>
   );
 }
