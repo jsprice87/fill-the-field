@@ -3,7 +3,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
-import { ColorSchemeProvider } from '@mantine/core';
 import { useLocalStorage, useHotkeys } from '@mantine/hooks';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
@@ -36,17 +35,16 @@ function AppWithColorScheme() {
   useHotkeys([['mod+J', () => toggleColorScheme()]]);
 
   return (
-    <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
-      <MantineProvider
-        withCssVariables
-        theme={{ ...theme, colorScheme }}
-      >
-        <ModalsProvider>
-          <Notifications />
-          <App />
-        </ModalsProvider>
-      </MantineProvider>
-    </ColorSchemeProvider>
+    <MantineProvider
+      theme={theme}
+      defaultColorScheme="light"
+      forceColorScheme={colorScheme}
+    >
+      <ModalsProvider>
+        <Notifications />
+        <App />
+      </ModalsProvider>
+    </MantineProvider>
   );
 }
 
