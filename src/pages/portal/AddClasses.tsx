@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@mantine/core";
 import { Plus, ArrowLeft } from "lucide-react";
@@ -34,8 +33,7 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
   const [globalDayOfWeek, setGlobalDayOfWeek] = useState<number>(1); // Monday default
   const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [franchiseeDb
-Id, setFranchiseeDbId] = useState<string | null>(propFranchiseeId || null);
+  const [franchiseeDbId, setFranchiseeDbId] = useState<string | null>(propFranchiseeId || null);
 
   // Get franchisee ID on component mount
   useEffect(() => {
