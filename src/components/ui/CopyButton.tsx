@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { ClipboardCopy } from 'lucide-react';
+import { ActionIcon } from '@mantine/core';
+import { IconCopy } from '@tabler/icons-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip } from '@mantine/core';
 
@@ -42,15 +43,16 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ url, className = '' }) =
 
   return (
     <Tooltip label="Copy link" position="right" withArrow>
-      <button
+      <ActionIcon
+        variant="subtle"
         onClick={handleCopy}
         onKeyDown={handleKeyDown}
-        className={`h-6 w-6 flex items-center justify-center rounded hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors ${className}`}
+        className={className}
         aria-label="Copy landing page URL"
-        tabIndex={0}
+        size="sm"
       >
-        <ClipboardCopy className="h-4 w-4" />
-      </button>
+        <IconCopy size={16} />
+      </ActionIcon>
     </Tooltip>
   );
 };
