@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@mantine/core';
@@ -68,23 +67,20 @@ const BookingConfirmation: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Create the booking
+      // Create the booking - fix field names to match database schema
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert({
-          franchisee_id: franchisee.id,
           location_id: bookingData.locationId,
           class_id: bookingData.classId,
           class_schedule_id: bookingData.scheduleId,
-          parent_name: bookingData.parentName,
-          parent_email: bookingData.parentEmail,
-          parent_phone: bookingData.parentPhone,
-          child_name: bookingData.childName,
-          child_age: bookingData.childAge,
+          first_name: bookingData.childName,
+          last_name: '', // Add empty last name since it's required
+          email: bookingData.parentEmail,
+          phone: bookingData.parentPhone,
           booking_date: new Date().toISOString(),
-          class_date: bookingData.classDate,
           status: 'confirmed',
-          notes: '',
+          notes: `Parent: ${bookingData.parentName}, Child Age: ${bookingData.childAge}`,
         })
         .select()
         .single();
@@ -95,22 +91,21 @@ const BookingConfirmation: React.FC = () => {
         return;
       }
 
-      // Create or update lead
+      // Create or update lead - fix field names to match database schema
       const { error: leadError } = await supabase
         .from('leads')
         .upsert({
           franchisee_id: franchisee.id,
-          parent_name: bookingData.parentName,
-          parent_email: bookingData.parentEmail,
-          parent_phone: bookingData.parentPhone,
-          child_name: bookingData.childName,
-          child_age: bookingData.childAge,
+          first_name: bookingData.parentName,
+          last_name: '', // Add empty last name
+          email: bookingData.parentEmail,
+          phone: bookingData.parentPhone,
           source: 'booking_form',
           status: 'new',
-          notes: `Booked ${bookingData.className} at ${bookingData.locationName}`,
+          notes: `Booked ${bookingData.className} at ${bookingData.locationName}, Child: ${bookingData.childName}, Age: ${bookingData.childAge}`,
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'parent_email,franchisee_id'
+          onConflict: 'email,franchisee_id'
         });
 
       if (leadError) {

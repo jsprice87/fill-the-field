@@ -57,3 +57,6 @@ export const useUpdateFranchiseeData = () => {
     }
   });
 };
+
+// temporary alias so existing pages compile and run
+export const useFranchiseeBySlug = useFranchiseeData;
