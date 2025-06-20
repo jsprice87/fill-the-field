@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, Users, Clock, ArrowLeft, Loader, Search, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';

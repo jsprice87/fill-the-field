@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Calendar, Clock } from 'lucide-react';
@@ -24,13 +23,13 @@ const BookingRestrictionsCard: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <Card.Section>
+        <Card.Section className="flex items-center gap-2 p-3 border-b">
           <Calendar className="h-5 w-5" />
           Booking Restrictions
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </Card.Section>
+      </Card.Section>
+      <Card.Section className="space-y-6 p-3">
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="max-days-ahead" className="flex items-center gap-2">
@@ -62,7 +61,7 @@ const BookingRestrictionsCard: React.FC = () => {
             <li>• Only dates matching the class day of the week are bookable</li>
           </ul>
         </div>
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

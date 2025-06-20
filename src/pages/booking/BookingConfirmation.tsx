@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@mantine/core';
 import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Download, ArrowLeft } from 'lucide-react';
@@ -176,17 +175,17 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
   return (
     <div className="container mx-auto py-10">
       <Card className="max-w-2xl mx-auto">
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 p-6 pb-0">
+        <Card.Section className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 p-6 pb-0">
           <div className="flex items-center space-x-4">
             <CheckCircle className="h-8 w-8 text-green-500" />
             <div>
-              <CardTitle className="text-xl font-semibold">Booking Confirmed!</CardTitle>
+              <h3 className="text-xl font-semibold">Booking Confirmed!</h3>
               <p className="text-gray-500">Reference: {bookingData.booking_reference}</p>
             </div>
           </div>
           <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Confirmed</Badge>
-        </CardHeader>
-        <CardContent className="p-6">
+        </Card.Section>
+        <Card.Section className="p-6">
           <p className="text-gray-700 mb-4">
             Dear {bookingData.parent_first_name} {bookingData.parent_last_name},
             <br />
@@ -231,7 +230,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
               A confirmation email has been sent to {bookingData.parent_email}.
             </p>
           </div>
-        </CardContent>
+        </Card.Section>
       </Card>
       <Button
         component="a"

@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Clock } from 'lucide-react';
@@ -31,13 +30,13 @@ const TimezoneSettingsCard: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <Card.Header>
+        <Card.Title className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
           Timezone Settings
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </Card.Title>
+      </Card.Header>
+      <Card.Section className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="timezone">Business Timezone</Label>
           <Select
@@ -69,7 +68,7 @@ const TimezoneSettingsCard: React.FC = () => {
             <li>• Changes affect how customers see available dates and times</li>
           </ul>
         </div>
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

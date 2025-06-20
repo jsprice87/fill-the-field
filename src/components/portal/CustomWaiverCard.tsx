@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@mantine/core';
@@ -30,13 +29,13 @@ I grant permission for emergency medical treatment if needed during program acti
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <Card.Section>
+        <div className="flex items-center gap-2 p-4 border-b">
           <FileText className="h-5 w-5" />
-          Custom Waiver
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+          <h3 className="text-lg font-semibold">Custom Waiver</h3>
+        </div>
+      </Card.Section>
+      <Card.Section className="space-y-4 p-4">
         <div>
           <Label htmlFor="waiver-text">Waiver Text</Label>
           <Textarea
@@ -99,7 +98,7 @@ I grant permission for emergency medical treatment if needed during program acti
             <li>• Waiver acceptance is recorded with each booking</li>
           </ul>
         </div>
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };
