@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button, Box } from '@mantine/core';
 import { Plus, Filter } from 'lucide-react';
@@ -135,7 +136,13 @@ const ClassesList: React.FC = () => {
         </StickyHeader>
 
         <Box w="100%" style={{ overflowX: 'auto' }}>
-          <ClassesTable classes={classes} onDelete={handleDeleteClass} />
+          <ClassesTable 
+            classes={classes} 
+            onDelete={handleDeleteClass}
+            franchiseeId={franchiseeData?.id}
+            locationId={selectedLocationId}
+            search={searchTerm}
+          />
         </Box>
       </Stack>
     </PortalShell>

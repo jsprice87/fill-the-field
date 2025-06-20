@@ -45,14 +45,26 @@ interface ClassSchedule {
 interface ClassesTableProps {
   classes: ClassSchedule[];
   onDelete?: (id: string) => void;
+  franchiseeId?: string;
+  locationId?: string;
+  search?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
 
-const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onDelete }) => {
+const ClassesTable: React.FC<ClassesTableProps> = ({ 
+  classes, 
+  onDelete, 
+  franchiseeId, 
+  locationId, 
+  search 
+}) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
+
+  // Construct the exact query key as used in useClasses
+  const queryKey = ['classes', franchiseeId, locationId ?? 'all', search ?? ''] as const;
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -67,26 +79,25 @@ const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onDelete }) => {
       return id;
     },
     onMutate: async (deletedId: string) => {
-      // We need to update all possible query keys since we don't have access to the specific filters here
-      // The hook will handle the filtering, we just remove from all relevant caches
-      const queryKeys = queryClient.getQueryCache().findAll(['classes']);
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey });
       
-      for (const query of queryKeys) {
-        await queryClient.cancelQueries({ queryKey: query.queryKey });
-        
-        const previousData = queryClient.getQueryData(query.queryKey);
-        
-        queryClient.setQueryData(query.queryKey, (old: ClassSchedule[] | undefined) => {
-          if (!old) return [];
-          return old.filter(cls => cls.id !== deletedId);
-        });
-      }
+      // Snapshot the previous value
+      const previousClasses = queryClient.getQueryData<ClassSchedule[]>(queryKey);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData<ClassSchedule[]>(queryKey, (old) => {
+        if (!old) return [];
+        return old.filter(cls => cls.id !== deletedId);
+      });
 
-      return { deletedId };
+      return { previousClasses };
     },
     onError: (error: any, deletedId: string, context: any) => {
-      // Invalidate all classes queries to refetch fresh data
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousClasses) {
+        queryClient.setQueryData(queryKey, context.previousClasses);
+      }
       
       showNotification({
         color: 'red',
@@ -109,7 +120,7 @@ const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onDelete }) => {
     },
     onSettled: () => {
       // Always refetch after error or success to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
+      queryClient.invalidateQueries({ queryKey });
     }
   });
 
