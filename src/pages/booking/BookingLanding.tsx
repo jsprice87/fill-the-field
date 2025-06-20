@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '@mantine/core';
@@ -6,12 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, Users, Clock, Star, ArrowRight, Phone, Mail, Globe } from 'lucide-react';
 import { useFranchiseeBySlug } from '@/hooks/useFranchiseeBySlug';
 import { useClassSchedules } from '@/hooks/useClassSchedules';
-import { notify } from '@/utils/notify';
 
 const BookingLanding: React.FC = () => {
   const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
-  const { data: franchisee, isLoading: isFranchiseeLoading } = useFranchiseeBySlug(franchiseeSlug || '');
-  const { data: classSchedules = [], isLoading: isLoading } = useClassSchedules(franchisee?.id || '');
+  const { data: franchisee, isLoading: isFranchiseeLoading, error: franchiseeError } = useFranchiseeBySlug(franchiseeSlug || '');
+  const { data: classSchedules = [], isLoading: isClassSchedulesLoading, error: classSchedulesError } = useClassSchedules(franchisee?.id || '');
 
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
 
@@ -21,11 +21,21 @@ const BookingLanding: React.FC = () => {
     }
   }, [classSchedules, selectedClassId]);
 
+  // Loading state
   if (isFranchiseeLoading) {
     return (
       <div className="text-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto"></div>
         <p className="font-poppins text-gray-600 mt-2">Loading franchisee information...</p>
+      </div>
+    );
+  }
+
+  // Error states
+  if (franchiseeError) {
+    return (
+      <div className="text-center py-20">
+        <p className="font-poppins text-red-600">Error loading franchisee: {franchiseeError.message}</p>
       </div>
     );
   }
@@ -86,11 +96,18 @@ const BookingLanding: React.FC = () => {
       {/* Classes Section */}
       <div id="classes" className="mb-16">
         <h2 className="font-agrandir text-3xl text-brand-navy text-center mb-8">Available Classes</h2>
-        {isLoading ? (
+        
+        {isClassSchedulesLoading ? (
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto"></div>
             <p className="font-poppins text-gray-600 mt-2">Loading classes...</p>
           </div>
+        ) : classSchedulesError ? (
+          <Card className="text-center p-8">
+            <Card.Section>
+              <p className="font-poppins text-red-600">Error loading classes: {classSchedulesError.message}</p>
+            </Card.Section>
+          </Card>
         ) : classSchedules.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {classSchedules.map((schedule) => (

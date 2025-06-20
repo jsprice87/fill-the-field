@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { ScrollArea } from '@mantine/core';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine';
+import { ScrollArea, Table } from '@mantine/core';
+import { TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@mantine/core';
 import { Pagination } from '@/components/ui/pagination';
