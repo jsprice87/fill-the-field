@@ -68,13 +68,18 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  // Debug: Log table rows
+  console.log('Table rows', classes.length);
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('class_schedules')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();           // return deleted row for visibility
 
+      console.log('DELETE-resp', { data, error });
       if (error) throw error;
       return id;
     },
@@ -119,6 +124,9 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
       }
     },
     onSettled: () => {
+      // Debug: Check cache after delete
+      console.log('Cache after delete', queryClient.getQueryData(queryKey));
+      
       // Always refetch after error or success to ensure consistency
       queryClient.invalidateQueries({ queryKey });
     }

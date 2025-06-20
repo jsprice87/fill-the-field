@@ -66,15 +66,17 @@ export const useClasses = (
             min_age,
             max_age,
             location_id,
-            locations (
+            locations!inner (
               name,
               address,
               city,
               state,
-              zip
+              zip,
+              franchisee_id
             )
           )
-        `);
+        `)
+        .eq('classes.locations.franchisee_id', franchiseeId);
 
       // Filter by location if specified
       if (locationId && locationId !== 'all') {
