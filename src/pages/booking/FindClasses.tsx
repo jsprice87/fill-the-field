@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -244,20 +243,7 @@ const FindClasses: React.FC = () => {
             <div className="lg:col-span-3 mb-8 lg:mb-0">
               <div className="relative">
                 <ErrorBoundary 
-                  fallback={
-                    <div className="h-[400px] flex items-center justify-center bg-gray-100 rounded-lg">
-                      <div className="text-center">
-                        <p className="font-poppins text-gray-600 mb-4">Map component failed to load</p>
-                        <Button 
-                          onClick={() => setViewMode('list')}
-                          variant="outline"
-                          size="sm"
-                        >
-                          View List Instead
-                        </Button>
-                      </div>
-                    </div>
-                  }
+                  FallbackComponent={BookingErrorFallback}
                   onReset={handleMapError}
                 >
                   <InteractiveMap
