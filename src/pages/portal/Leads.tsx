@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Title, Text, SimpleGrid, ScrollArea, rem, Stack, Group } from '@mantine/core';
+import { Title, Text, SimpleGrid, ScrollArea, rem, Stack, Group, Box } from '@mantine/core';
 import { MetricCard, StickyHeader, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, User, Users, Filter } from 'lucide-react';
@@ -133,19 +133,21 @@ const PortalLeads: React.FC = () => {
         </StickyHeader>
 
         {/* Scrollable Table Area */}
-        <ScrollArea
-          scrollbarSize={8}
-          offsetScrollbars
-          type="scroll"
-          h={`calc(100vh - ${rem(180)})`}
-          w="100%"
-        >
-          <LeadsTable 
-            leads={finalLeads} 
-            searchQuery={searchQuery} 
-            showArchived={includeArchived}
-          />
-        </ScrollArea>
+        <Box w="100%" style={{ overflowX: 'auto' }}>
+          <ScrollArea
+            scrollbarSize={8}
+            offsetScrollbars
+            type="scroll"
+            h={`calc(100vh - ${rem(180)})`}
+            w="100%"
+          >
+            <LeadsTable 
+              leads={finalLeads} 
+              searchQuery={searchQuery} 
+              showArchived={includeArchived}
+            />
+          </ScrollArea>
+        </Box>
       </Stack>
     </PortalShell>
   );

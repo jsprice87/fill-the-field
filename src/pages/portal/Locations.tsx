@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mantine/core';
+import { Button, Box } from '@mantine/core';
 import { Plus, MapPin, Building, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -184,11 +185,13 @@ const PortalLocations: React.FC = () => {
         </StickyHeader>
 
         {/* Table Content */}
-        <LocationsTable 
-          locations={locations}
-          onEdit={handleEditLocation}
-          hideInactive={hideInactive}
-        />
+        <Box w="100%" style={{ overflowX: 'auto' }}>
+          <LocationsTable 
+            locations={locations}
+            onEdit={handleEditLocation}
+            hideInactive={hideInactive}
+          />
+        </Box>
       </Stack>
 
       <LocationForm 

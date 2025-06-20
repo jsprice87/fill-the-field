@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mantine/core';
+import { Button, Box } from '@mantine/core';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -130,9 +130,9 @@ const ClassesList: React.FC = () => {
           </Group>
         </StickyHeader>
 
-        <div className="flex-1 overflow-auto p-4">
+        <Box w="100%" style={{ overflowX: 'auto' }}>
           <ClassesTable classes={classes} onDelete={handleDeleteClass} />
-        </div>
+        </Box>
       </Stack>
     </PortalShell>
   );
