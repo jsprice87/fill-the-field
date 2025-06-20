@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
@@ -19,7 +20,7 @@ interface Lead {
   source: string;
   status: string;
   notes: string | null;
-  is_archived: boolean;
+  archived_at: string | null;
   classes: Array<{
     id: string;
     name: string;
@@ -75,7 +76,7 @@ const LeadDetail: React.FC = () => {
           console.error("Error fetching lead:", error);
           toast.error("Failed to load lead details");
         } else {
-          setLead(data);
+          setLead(data as Lead);
         }
       } catch (error) {
         console.error("Error fetching lead:", error);
@@ -96,16 +97,18 @@ const LeadDetail: React.FC = () => {
 
     setIsArchiving(true);
     try {
+      const newArchivedAt = lead?.archived_at ? null : new Date().toISOString();
+      
       const { error } = await supabase
         .from('leads')
-        .update({ is_archived: !lead?.is_archived })
+        .update({ archived_at: newArchivedAt })
         .eq('id', leadId);
 
       if (error) {
         console.error("Error archiving lead:", error);
         toast.error("Failed to archive lead");
       } else {
-        toast.success(`Lead ${lead?.is_archived ? 'restored' : 'archived'} successfully`);
+        toast.success(`Lead ${lead?.archived_at ? 'restored' : 'archived'} successfully`);
         navigate(`/${franchiseeSlug}/portal/leads`);
       }
     } catch (error) {
@@ -143,7 +146,7 @@ const LeadDetail: React.FC = () => {
         >
           {isArchiving ? (
             <span className="animate-pulse">Updating...</span>
-          ) : lead.is_archived ? (
+          ) : lead.archived_at ? (
             <>
               <ArchiveRestore className="h-4 w-4 mr-2" />
               Restore Lead
