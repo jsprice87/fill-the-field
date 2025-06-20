@@ -7,7 +7,8 @@ import { Button } from '@mantine/core';
 import { Pagination } from '@/components/ui/pagination';
 import { Edit, Trash, MapPin, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { showNotification } from '@mantine/notifications';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ClassSchedule {
@@ -51,38 +52,71 @@ const ITEMS_PER_PAGE = 10;
 const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onDelete }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('class_schedules')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return id;
+    },
+    onMutate: async (deletedId: string) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['classes'] });
+
+      // Snapshot the previous value
+      const previousClasses = queryClient.getQueryData(['classes']);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['classes'], (old: ClassSchedule[] | undefined) => {
+        if (!old) return [];
+        return old.filter(cls => cls.id !== deletedId);
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousClasses, deletedId };
+    },
+    onError: (error: any, deletedId: string, context: any) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousClasses) {
+        queryClient.setQueryData(['classes'], context.previousClasses);
+      }
+      
+      showNotification({
+        color: 'red',
+        title: 'Delete Failed',
+        message: error.message || 'Failed to delete class'
+      });
+    },
+    onSuccess: (deletedId: string) => {
+      showNotification({
+        color: 'green',
+        title: 'Success',
+        message: 'Class deleted successfully'
+      });
+      
+      if (onDelete) {
+        onDelete(deletedId);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
+    }
+  });
 
   const handleDeleteClass = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this class?')) {
       return;
     }
 
-    setIsDeleting(id);
-    try {
-      const { error } = await supabase
-        .from('class_schedules')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting class:', error);
-        toast.error('Failed to delete class');
-        return;
-      }
-
-      toast.success('Class deleted successfully');
-      if (onDelete) {
-        onDelete(id);
-      }
-    } catch (error) {
-      console.error('Error deleting class:', error);
-      toast.error('Failed to delete class');
-    } finally {
-      setIsDeleting(null);
-    }
+    deleteMutation.mutate(id);
   };
 
   // Pagination logic
@@ -173,7 +207,7 @@ const ClassesTable: React.FC<ClassesTableProps> = ({ classes, onDelete }) => {
                         size="sm"
                         className="text-red-500 hover:bg-red-50"
                         onClick={() => handleDeleteClass(classSchedule.id)}
-                        disabled={isDeleting === classSchedule.id}
+                        disabled={deleteMutation.isPending}
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
