@@ -15,7 +15,7 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useClasses } from '@/hooks/useClasses';
 
 const ClassesList: React.FC = () => {
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   
@@ -52,7 +52,7 @@ const ClassesList: React.FC = () => {
       label: 'Total Classes',
       value: classes.length,
       icon: Calendar,
-      description: searchTerm || selectedLocationId !== 'all'
+      description: searchTerm || selectedLocationId
         ? 'Current filter' 
         : 'All locations'
     },
@@ -95,7 +95,7 @@ const ClassesList: React.FC = () => {
                       <SelectValue placeholder="Filter by location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Locations</SelectItem>
+                      <SelectItem value="">All Locations</SelectItem>
                       {locations.map((location) => (
                         <SelectItem key={location.id} value={location.id}>
                           {location.name}
