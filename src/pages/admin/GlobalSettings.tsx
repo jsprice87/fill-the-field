@@ -42,7 +42,7 @@ const GlobalSettings: React.FC = () => {
   const handleBlur = async (key: string, value: string) => {
     if (settings?.[key] === value) return;
     try {
-      await updateSetting.mutateAsync({ key, value });
+      await updateSetting.update({ key, value });
     } catch (err) {
       console.error(`Error updating global setting ${key}:`, err);
     }
@@ -89,7 +89,7 @@ const GlobalSettings: React.FC = () => {
               value={formData.mapbox_public_token}
               onChange={(e) => handleChange('mapbox_public_token', e.target.value)}
               onBlur={(e) => handleBlur('mapbox_public_token', e.target.value)}
-              disabled={updateSetting.isPending}
+              disabled={updateSetting.isLoading}
             />
             <Text size="sm" color="dimmed">
               This token is used for all Mapbox maps across the platform.
@@ -119,7 +119,7 @@ const GlobalSettings: React.FC = () => {
                 value={formData.webhook_url}
                 onChange={(e) => handleChange('webhook_url', e.target.value)}
                 onBlur={(e) => handleBlur('webhook_url', e.target.value)}
-                disabled={updateSetting.isPending}
+                disabled={updateSetting.isLoading}
               />
               <Text size="sm" color="dimmed">
                 URL to receive webhook notifications for system events.
@@ -133,7 +133,7 @@ const GlobalSettings: React.FC = () => {
                 value={formData.webhook_auth_header}
                 onChange={(e) => handleChange('webhook_auth_header', e.target.value)}
                 onBlur={(e) => handleBlur('webhook_auth_header', e.target.value)}
-                disabled={updateSetting.isPending}
+                disabled={updateSetting.isLoading}
               />
               <Text size="sm" color="dimmed">
                 Optional HTTP header for webhook authentication.
@@ -157,7 +157,7 @@ const GlobalSettings: React.FC = () => {
                 value={formData.support_email}
                 onChange={(e) => handleChange('support_email', e.target.value)}
                 onBlur={(e) => handleBlur('support_email', e.target.value)}
-                disabled={updateSetting.isPending}
+                disabled={updateSetting.isLoading}
               />
             </div>
             <div>
@@ -169,7 +169,7 @@ const GlobalSettings: React.FC = () => {
                 value={formData.support_phone}
                 onChange={(e) => handleChange('support_phone', e.target.value)}
                 onBlur={(e) => handleBlur('support_phone', e.target.value)}
-                disabled={updateSetting.isPending}
+                disabled={updateSetting.isLoading}
               />
             </div>
           </Card.Section>
@@ -200,7 +200,7 @@ const GlobalSettings: React.FC = () => {
                 });
               }
             }}
-            disabled={updateSetting.isPending}
+            disabled={updateSetting.isLoading}
           >
             Reset
           </Button>

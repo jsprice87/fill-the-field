@@ -40,12 +40,19 @@ export const useGlobalSetting = (settingKey: string) => {
 type UpdatePayload = { key: string; value: string };
 
 export const useUpdateGlobalSetting = () => {
-  const { mutate, isPending, error } = useMutation({
+  const mutation = useMutation({
     mutationFn: async (payload: UpdatePayload) =>
       supabase.from('global_settings').upsert({
         setting_key: payload.key,
         setting_value: payload.value
       }).throwOnError(),
   });
-  return { mutateAsync: mutate, isPending, error };
+
+  return {
+    update: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: Boolean(mutation.error),
+    isSuccess: mutation.isSuccess,
+    error: mutation.error,
+  };
 };

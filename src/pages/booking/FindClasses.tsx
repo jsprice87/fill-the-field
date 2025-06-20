@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,23 @@ interface BookingLocation {
   email?: string;
   latitude?: number;
   longitude?: number;
+}
+
+function BookingError() {
+  return (
+    <div className="h-[400px] flex items-center justify-center bg-gray-100 rounded-lg">
+      <div className="text-center">
+        <p className="font-poppins text-gray-600 mb-4">Map component failed to load</p>
+        <Button 
+          onClick={() => window.location.reload()}
+          variant="outline"
+          size="sm"
+        >
+          Try Again
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 const FindClasses: React.FC = () => {
@@ -243,7 +261,7 @@ const FindClasses: React.FC = () => {
             <div className="lg:col-span-3 mb-8 lg:mb-0">
               <div className="relative">
                 <ErrorBoundary 
-                  FallbackComponent={BookingErrorFallback}
+                  fallback={BookingError}
                   onReset={handleMapError}
                 >
                   <InteractiveMap
