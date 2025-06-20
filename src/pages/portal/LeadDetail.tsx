@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
@@ -76,7 +75,8 @@ const LeadDetail: React.FC = () => {
           console.error("Error fetching lead:", error);
           toast.error("Failed to load lead details");
         } else {
-          setLead(data as Lead);
+          const { classes, ...rest } = data;
+          setLead(rest as unknown as Lead);
         }
       } catch (error) {
         console.error("Error fetching lead:", error);
@@ -218,33 +218,6 @@ const LeadDetail: React.FC = () => {
           </div>
         </Card.Section>
       </Card>
-
-      {lead.classes && lead.classes.length > 0 && (
-        <Card>
-          <Card.Section>
-            <Card.Section className="flex items-center gap-2 p-4 border-b">
-              <Calendar className="h-5 w-5" />
-              <h3 className="text-lg font-semibold">Classes</h3>
-            </Card.Section>
-          </Card.Section>
-          <Card.Section className="space-y-4 p-4">
-            {lead.classes.map((cls) => (
-              <div key={cls.id} className="border rounded-md p-4">
-                <div className="font-semibold">{cls.name}</div>
-                <div className="text-sm">{cls.class_name}</div>
-                <div className="text-sm">
-                  <MapPin className="inline-block h-4 w-4 mr-1" />
-                  {cls.locations.name}, {cls.locations.city}, {cls.locations.state}
-                </div>
-                <div className="text-sm">
-                  <Clock className="inline-block h-4 w-4 mr-1" />
-                  {cls.start_time} - {cls.end_time} ({['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][cls.day_of_week]})
-                </div>
-              </div>
-            ))}
-          </Card.Section>
-        </Card>
-      )}
 
       <Card>
         <Card.Section>
