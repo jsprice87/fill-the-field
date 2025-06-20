@@ -1,8 +1,9 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@mantine/core';
 import { Button } from '@mantine/core';
-import { Sparkles, ArrowRight, Target, Users, BarChart3 } from 'lucide-react';
+import { Sparkles, ArrowRight, Target, Users, BarChart3, Globe, Calendar } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { Text } from "@mantine/core";
 

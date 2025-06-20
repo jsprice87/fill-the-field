@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Title, Text, Stack, Group, Alert } from '@mantine/core';
 import { Button } from '@mantine/core';
@@ -69,7 +70,7 @@ const GlobalSettings: React.FC = () => {
 
   return (
     <AdminShell>
-      <Stack spacing="xl" p="md" maxWidth={600} mx="auto">
+      <Stack gap="xl" p="md" style={{ maxWidth: 600 }} mx="auto">
         <Title order={2} mb="md" className="flex items-center gap-2">
           <Settings size={24} />
           Global Settings
@@ -78,7 +79,7 @@ const GlobalSettings: React.FC = () => {
         <Card>
           <Card.Section className="flex items-center gap-2 p-4 border-b">
             <Key size={20} />
-            <Text weight={600}>Mapbox Public Token</Text>
+            <Text fw={600}>Mapbox Public Token</Text>
           </Card.Section>
           <Card.Section className="p-4 space-y-2">
             <Label htmlFor="mapbox_public_token">Mapbox Token</Label>
@@ -107,7 +108,7 @@ const GlobalSettings: React.FC = () => {
         <Card>
           <Card.Section className="flex items-center gap-2 p-4 border-b">
             <Webhook size={20} />
-            <Text weight={600}>Webhook Settings</Text>
+            <Text fw={600}>Webhook Settings</Text>
           </Card.Section>
           <Card.Section className="p-4 space-y-4">
             <div>
@@ -144,7 +145,7 @@ const GlobalSettings: React.FC = () => {
         <Card>
           <Card.Section className="flex items-center gap-2 p-4 border-b">
             <ExternalLink size={20} />
-            <Text weight={600}>Support Contact Information</Text>
+            <Text fw={600}>Support Contact Information</Text>
           </Card.Section>
           <Card.Section className="p-4 space-y-4">
             <div>
@@ -186,7 +187,7 @@ const GlobalSettings: React.FC = () => {
           </Alert>
         )}
 
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button
             onClick={() => {
               if (settings) {

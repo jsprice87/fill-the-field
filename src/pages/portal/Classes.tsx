@@ -38,6 +38,20 @@ interface ClassSchedule {
   };
 }
 
+export interface ScheduleRow {
+  className: string;
+  dayOfWeek: number;
+  duration: number;
+  timeStart: string;
+  timeEnd: string;
+  dateStart: string;
+  dateEnd: string;
+  overrideDates: string[];
+  minAge: number;
+  maxAge: number;
+  capacity: number;
+}
+
 const ClassesList: React.FC = () => {
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);

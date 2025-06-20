@@ -1,5 +1,5 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useGlobalSettings = () => {
@@ -35,4 +35,21 @@ export const useGlobalSetting = (settingKey: string) => {
     ...rest,
     data: settings?.[settingKey] || null,
   };
+};
+
+export const useUpdateGlobalSetting = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const { error } = await supabase
+        .from('global_settings')
+        .upsert({ setting_key: key, setting_value: value });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['global-settings'] });
+    },
+  });
 };

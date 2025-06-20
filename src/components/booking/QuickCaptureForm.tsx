@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -140,7 +141,6 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
                 {...form.getInputProps('firstName')}
                 required
                 placeholder="Enter first name"
-                soccer
                 className="h-12"
               />
             </div>
@@ -154,7 +154,6 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
                 {...form.getInputProps('lastName')}
                 required
                 placeholder="Enter last name"
-                soccer
                 className="h-12"
               />
             </div>
@@ -170,7 +169,6 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               {...form.getInputProps('email')}
               required
               placeholder="your.email@example.com"
-              soccer
               className="h-12"
             />
           </div>
@@ -185,7 +183,6 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               {...form.getInputProps('phone')}
               required
               placeholder="(555) 123-4567"
-              soccer
               className="h-12"
             />
           </div>
@@ -201,7 +198,6 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
               required
               placeholder="12345"
               maxLength={5}
-              soccer
               className="h-12"
             />
           </div>
