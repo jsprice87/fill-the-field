@@ -170,72 +170,77 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedClasses.map((classSchedule) => (
-                <TableRow key={classSchedule.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{classSchedule.classes.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {classSchedule.classes.class_name}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {daysOfWeek[classSchedule.day_of_week]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">
-                        {classSchedule.start_time} - {classSchedule.end_time}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <div className="text-sm">
-                        <div>{classSchedule.classes.locations.name}</div>
-                        <div className="text-muted-foreground">
-                          {classSchedule.classes.locations.city}
+              {paginatedClasses.map((classSchedule) => {
+                // Safe access to nested location data
+                const location = classSchedule.classes?.locations;
+                
+                return (
+                  <TableRow key={classSchedule.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{classSchedule.classes.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {classSchedule.classes.class_name}
                         </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {classSchedule.current_bookings || 0} / {classSchedule.classes.max_capacity}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={classSchedule.is_active ? "default" : "secondary"}>
-                      {classSchedule.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/portal/classes/edit/${classSchedule.id}`)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:bg-red-50"
-                        onClick={() => handleDeleteClass(classSchedule.id)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {daysOfWeek[classSchedule.day_of_week]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">
+                          {classSchedule.start_time} - {classSchedule.end_time}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <div className="text-sm">
+                          <div>{location ? location.name : '—'}</div>
+                          <div className="text-muted-foreground">
+                            {location ? location.city : '—'}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {classSchedule.current_bookings || 0} / {classSchedule.classes.max_capacity}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={classSchedule.is_active ? "default" : "secondary"}>
+                        {classSchedule.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/portal/classes/edit/${classSchedule.id}`)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:bg-red-50"
+                          onClick={() => handleDeleteClass(classSchedule.id)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Table.ScrollContainer>
