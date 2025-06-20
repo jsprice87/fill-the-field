@@ -30,13 +30,13 @@ const TimezoneSettingsCard: React.FC = () => {
 
   return (
     <Card>
-      <Card.Header>
-        <Card.Title className="flex items-center gap-2">
+      <Card.Section>
+        <Card.Section className="flex items-center gap-2 p-4 border-b">
           <Clock className="h-5 w-5" />
-          Timezone Settings
-        </Card.Title>
-      </Card.Header>
-      <Card.Section className="space-y-4">
+          <h3 className="text-lg font-semibold">Timezone Settings</h3>
+        </Card.Section>
+      </Card.Section>
+      <Card.Section className="space-y-4 p-4">
         <div className="space-y-2">
           <Label htmlFor="timezone">Business Timezone</Label>
           <Select

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@mantine/core';
 
@@ -33,13 +33,13 @@ class ErrorBoundary extends React.Component<Props, State> {
       // You can render any custom fallback UI
       return (
         <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+          <Card.Section>
+            <Card.Section className="flex items-center space-x-2 p-4 border-b">
               <AlertTriangle className="h-4 w-4 text-red-500" />
               <span>Something went wrong!</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-4">
+            </Card.Section>
+          </Card.Section>
+          <Card.Section className="py-4 p-4">
             <p className="text-sm text-muted-foreground">
               There was an error rendering this section. Please try again.
             </p>
@@ -50,7 +50,7 @@ class ErrorBoundary extends React.Component<Props, State> {
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
-          </CardContent>
+          </Card.Section>
         </Card>
       );
     }

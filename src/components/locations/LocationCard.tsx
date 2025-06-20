@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { MapPin, Phone, Mail, Edit, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -46,17 +45,19 @@ const LocationCard: React.FC<LocationProps> = ({
   
   return (
     <Card className="h-full">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-xl">{name}</CardTitle>
-          {activeStatus ? (
-            <Badge variant="default" className="bg-green-500">Active</Badge>
-          ) : (
-            <Badge variant="outline" className="text-gray-500">Inactive</Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2 pb-4">
+      <Card.Section>
+        <Card.Section className="pb-2">
+          <div className="flex justify-between items-start">
+            <h3 className="text-xl">{name}</h3>
+            {activeStatus ? (
+              <Badge variant="default" className="bg-green-500">Active</Badge>
+            ) : (
+              <Badge variant="outline" className="text-gray-500">Inactive</Badge>
+            )}
+          </div>
+        </Card.Section>
+      </Card.Section>
+      <Card.Section className="space-y-2 pb-4">
         <div className="flex items-start gap-2">
           <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
           <div>
@@ -78,8 +79,8 @@ const LocationCard: React.FC<LocationProps> = ({
             <p className="text-sm">{email}</p>
           </div>
         )}
-      </CardContent>
-      <CardFooter className="flex justify-end gap-2 pt-0">
+      </Card.Section>
+      <Card.Section className="flex justify-end gap-2 pt-0">
         {onEdit && (
           <Button variant="outline" size="sm" onClick={() => onEdit(id)}>
             <Edit className="h-4 w-4 mr-1" />
@@ -92,7 +93,7 @@ const LocationCard: React.FC<LocationProps> = ({
             Delete
           </Button>
         )}
-      </CardFooter>
+      </Card.Section>
     </Card>
   );
 };

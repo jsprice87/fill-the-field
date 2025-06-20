@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
@@ -61,10 +60,12 @@ const ExampleEnhancedForm: React.FC = () => {
 
   return (
     <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Enhanced Form Components Demo</CardTitle>
-      </CardHeader>
-      <CardContent>
+      <Card.Section>
+        <Card.Section className="p-6 pb-0">
+          <h2 className="text-lg font-semibold">Enhanced Form Components Demo</h2>
+        </Card.Section>
+      </Card.Section>
+      <Card.Section className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <FormSection
             title="Personal Information"
@@ -199,7 +200,7 @@ const ExampleEnhancedForm: React.FC = () => {
             </Button>
           </div>
         </form>
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

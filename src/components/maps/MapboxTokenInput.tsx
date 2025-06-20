@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Button } from '@mantine/core';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { ExternalLink, Key } from 'lucide-react';
 
 interface MapboxTokenInputProps {
@@ -29,18 +28,18 @@ const MapboxTokenInput: React.FC<MapboxTokenInputProps> = ({ onTokenSubmit, clas
   return (
     <div className={`flex items-center justify-center ${className}`}>
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+        <Card.Section className="text-center">
           <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-fit">
             <Key className="h-6 w-6 text-blue-600" />
           </div>
-          <CardTitle className="font-agrandir text-xl text-brand-navy">
+          <h3 className="font-agrandir text-xl text-brand-navy">
             Mapbox Token Required
-          </CardTitle>
+          </h3>
           <p className="font-poppins text-gray-600 text-sm">
             To show locations on the map, please enter your Mapbox public token.
           </p>
-        </CardHeader>
-        <CardContent>
+        </Card.Section>
+        <Card.Section>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Input
@@ -76,7 +75,7 @@ const MapboxTokenInput: React.FC<MapboxTokenInputProps> = ({ onTokenSubmit, clas
               </a>
             </div>
           </form>
-        </CardContent>
+        </Card.Section>
       </Card>
     </div>
   );

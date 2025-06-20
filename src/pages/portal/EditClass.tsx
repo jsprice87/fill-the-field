@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, Trash } from 'lucide-react';
 import { toast } from 'sonner';
@@ -240,10 +240,12 @@ const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId })
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Class Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <Card.Section>
+          <Card.Section>
+            Class Details
+          </Card.Section>
+        </Card.Section>
+        <Card.Section className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="class-name">Class Name</Label>
             <Input
@@ -298,7 +300,7 @@ const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId })
               onChange={() => setIsActive(!isActive)}
             />
           </div>
-        </CardContent>
+        </Card.Section>
       </Card>
     </div>
   );

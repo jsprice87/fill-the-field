@@ -1,283 +1,175 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Card } from '@mantine/core';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, Users, Clock, Star, ArrowRight, Phone, Mail } from 'lucide-react';
 import { Button } from '@mantine/core';
-import { supabase } from '@/integrations/supabase/client';
-import { useGeocodedLocations } from '@/hooks/useGeocodedLocations';
-import { toast } from 'sonner';
-import LocationsMap from '@/components/maps/LocationsMap';
-import { MetaPixelProvider } from '@/components/booking/MetaPixelProvider';
-import { Loader } from '@/components/ui/Loader';
-
-interface ClassInfo {
-  id: string;
-  name: string;
-  description: string;
-  duration_minutes: number;
-  max_capacity: number;
-  min_age: number;
-  max_age: number;
-}
-
-interface LocationInfo {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  latitude: number | null;
-  longitude: number | null;
-  phone: string | null;
-  email: string | null;
-}
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Calendar, Users, Clock, Star, ArrowRight, Phone, Mail, Globe } from 'lucide-react';
+import { useFranchiseeBySlug } from '@/hooks/useFranchiseeBySlug';
+import { useClassSchedules } from '@/hooks/useClassSchedules';
+import { notify } from '@/utils/notify';
 
 const BookingLanding: React.FC = () => {
-  const { franchiseeSlug } = useParams();
-  const navigate = useNavigate();
-  const [selectedClass, setSelectedClass] = useState<ClassInfo | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<LocationInfo | null>(null);
-  const [availableClasses, setAvailableClasses] = useState<ClassInfo[]>([]);
-  const [availableLocations, setAvailableLocations] = useState<LocationInfo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
-  const [showMapTokenInput, setShowMapTokenInput] = useState(false);
-  const { geocodedLocations, isLoading: isGeocoding, error: geocodingError, retryGeocode } = useGeocodedLocations(availableLocations, mapboxToken);
+  const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
+  const { data: franchisee, isLoading: isFranchiseeLoading } = useFranchiseeBySlug(franchiseeSlug || '');
+  const { data: classSchedules = [], isLoading: isLoading } = useClassSchedules(franchisee?.id || '');
+
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Fetch franchisee profile
-        const { data: franchisee, error: franchiseeError } = await supabase
-          .from('franchisees')
-          .select('id')
-          .eq('slug', franchiseeSlug)
-          .single();
-
-        if (franchiseeError) {
-          console.error("Error fetching franchisee:", franchiseeError);
-          setError("Unable to find franchisee. Please check the URL.");
-          return;
-        }
-
-        const franchiseeId = franchisee.id;
-
-        // Fetch classes
-        const { data: classes, error: classesError } = await (supabase as any)
-          .from('classes')
-          .select('*')
-          .eq('franchisee_id', franchiseeId)
-          .eq('is_active', true);
-
-        if (classesError) {
-          console.error("Error fetching classes:", classesError);
-          setError("Failed to load classes. Please try again.");
-          return;
-        }
-        setAvailableClasses(classes || []);
-
-        // Fetch locations
-        const { data: locations, error: locationsError } = await (supabase as any)
-          .from('locations')
-          .select('*')
-          .eq('franchisee_id', franchiseeId)
-          .eq('is_active', true);
-
-        if (locationsError) {
-          console.error("Error fetching locations:", locationsError);
-          setError("Failed to load locations. Please try again.");
-          return;
-        }
-        setAvailableLocations(locations || []);
-
-        // Fetch global settings for Mapbox token with type casting
-        const { data: globalSettings, error: globalSettingsError } = await supabase
-          .from('global_settings')
-          .select('setting_value')
-          .eq('setting_key', 'mapbox_public_token')
-          .single();
-
-        if (globalSettingsError) {
-          console.error("Error fetching Mapbox token:", globalSettingsError);
-        }
-
-        const settingsData = globalSettings as any;
-        if (settingsData && settingsData.setting_value) {
-          setMapboxToken(String(settingsData.setting_value));
-        } else {
-          setShowMapTokenInput(true);
-        }
-
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        setError("An unexpected error occurred. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, [franchiseeSlug]);
-
-  const handleClassSelect = (classItem: ClassInfo) => {
-    setSelectedClass(classItem);
-  };
-
-  const handleLocationSelect = (location: LocationInfo) => {
-    setSelectedLocation(location);
-  };
-
-  const handleContinue = () => {
-    if (!selectedClass || !selectedLocation) {
-      toast.error("Please select a class and a location to continue.");
-      return;
+    if (classSchedules.length > 0 && !selectedClassId) {
+      setSelectedClassId(classSchedules[0].id);
     }
+  }, [classSchedules, selectedClassId]);
 
-    navigate(`/${franchiseeSlug}/booking/class?classId=${selectedClass.id}&locationId=${selectedLocation.id}`);
-  };
-
-  const handleMapboxTokenSubmit = (token: string) => {
-    setMapboxToken(token);
-    setShowMapTokenInput(false);
-  };
-
-  if (loading) {
+  if (isFranchiseeLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="h-6 w-6 animate-spin" />
+      <div className="text-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto"></div>
+        <p className="font-poppins text-gray-600 mt-2">Loading franchisee information...</p>
       </div>
     );
   }
 
-  if (error) {
+  if (!franchisee) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-red-500">Error: {error}</div>
+      <div className="text-center py-20">
+        <p className="font-poppins text-red-600">Franchisee not found.</p>
       </div>
     );
   }
 
   return (
-    <MetaPixelProvider franchiseeSlug={franchiseeSlug}>
-      <div className="container mx-auto mt-8 p-4 max-w-4xl">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-2xl font-bold">Book a Free Trial Class</CardTitle>
-            <Badge variant="secondary">Free Trial</Badge>
-          </CardHeader>
-          <CardContent className="grid gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-xl font-semibold mb-2">1. Choose a Class</h3>
-                <div className="space-y-2">
-                  {availableClasses.map((classItem) => (
-                    <Card key={classItem.id}
-                      className={`border-2 rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 ${selectedClass?.id === classItem.id ? 'border-brand-blue' : 'border-gray-200'
-                        }`}
-                    >
-                      <CardContent className="p-3 cursor-pointer" onClick={() => handleClassSelect(classItem)}>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="font-semibold text-lg">{classItem.name}</h4>
-                            <p className="text-sm text-gray-500">{classItem.description}</p>
-                          </div>
-                          <Star className="h-5 w-5 text-yellow-500" />
-                        </div>
-                        <Separator className="my-2" />
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            <span>{classItem.min_age}-{classItem.max_age} years</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{classItem.duration_minutes} minutes</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {availableClasses.length === 0 && (
-                    <div className="text-gray-500">No classes available.</div>
-                  )}
-                </div>
-              </div>
+    <div className="container mx-auto px-4 py-12">
+      <header className="mb-12 text-center">
+        <h1 className="font-agrandir text-4xl text-brand-navy mb-2">{franchisee.company_name}</h1>
+        <p className="font-poppins text-gray-600">{franchisee.tagline || 'Welcome to our soccer classes!'}</p>
+      </header>
 
-              <div>
-                <h3 className="text-xl font-semibold mb-2">2. Choose a Location</h3>
-                <div className="space-y-2">
-                  {availableLocations.map((location) => (
-                    <Card key={location.id}
-                      className={`border-2 rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 ${selectedLocation?.id === location.id ? 'border-brand-blue' : 'border-gray-200'
-                        }`}
-                    >
-                      <CardContent className="p-3 cursor-pointer" onClick={() => handleLocationSelect(location)}>
-                        <h4 className="font-semibold text-lg">{location.name}</h4>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <MapPin className="h-4 w-4" />
-                          <span>{location.address}, {location.city}, {location.state} {location.zip}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <Phone className="h-4 w-4" />
-                          <span>{location.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <Mail className="h-4 w-4" />
-                          <span>{location.email}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {availableLocations.length === 0 && (
-                    <div className="text-gray-500">No locations available.</div>
-                  )}
-                </div>
-              </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <Card className="text-center">
+          <Card.Section className="p-6">
+            <div className="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-4">
+              <Star className="h-6 w-6 text-white" />
             </div>
+            <h3 className="font-agrandir text-xl text-brand-navy mb-3">Fun & Engaging</h3>
+            <p className="font-poppins text-gray-600">
+              Age-appropriate activities that make learning soccer fundamentals enjoyable for every child.
+            </p>
+          </Card.Section>
+        </Card>
 
-            <div className="border rounded-md">
-              {mapboxToken ? (
-                <LocationsMap
-                  locations={geocodedLocations}
-                  loading={isGeocoding}
-                  error={geocodingError}
-                  onRetry={retryGeocode}
-                  selectedLocationId={selectedLocation?.id}
-                />
-              ) : (
-                <div className="p-6 text-center">
-                  {showMapTokenInput ? (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-4">
-                        A valid Mapbox token is required to display the map.
-                      </p>
-                      {/*  MapboxTokenInput component here if needed */}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">Loading map...</p>
-                  )}
-                </div>
-              )}
+        <Card className="text-center">
+          <Card.Section className="p-6">
+            <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-6 w-6 text-white" />
             </div>
+            <h3 className="font-agrandir text-xl text-brand-navy mb-3">Expert Coaches</h3>
+            <p className="font-poppins text-gray-600">
+              Trained instructors who specialize in child development and soccer skills.
+            </p>
+          </Card.Section>
+        </Card>
 
-            <Button
-              className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
-              onClick={handleContinue}
-              disabled={!selectedClass || !selectedLocation}
-            >
-              Continue to Booking <ArrowRight className="ml-2" />
-            </Button>
-          </CardContent>
+        <Card className="text-center">
+          <Card.Section className="p-6">
+            <div className="w-12 h-12 bg-brand-yellow rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="font-agrandir text-xl text-brand-navy mb-3">Flexible Scheduling</h3>
+            <p className="font-poppins text-gray-600">
+              Multiple class times and locations to fit your family's busy schedule.
+            </p>
+          </Card.Section>
         </Card>
       </div>
-    </MetaPixelProvider>
+
+      {/* Classes Section */}
+      <div id="classes" className="mb-16">
+        <h2 className="font-agrandir text-3xl text-brand-navy text-center mb-8">Available Classes</h2>
+        {isLoading ? (
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue mx-auto"></div>
+            <p className="font-poppins text-gray-600 mt-2">Loading classes...</p>
+          </div>
+        ) : classSchedules.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {classSchedules.map((schedule) => (
+              <Card key={schedule.id} className="hover:shadow-lg transition-shadow">
+                <Card.Section className="p-6">
+                  <h3 className="font-agrandir text-xl text-brand-navy mb-2">{schedule.classes.name}</h3>
+                  <div className="flex items-center gap-2 mb-2 justify-center">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-poppins text-sm text-gray-600">
+                      {schedule.date_start ? new Date(schedule.date_start).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2 justify-center">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-poppins text-sm text-gray-600">
+                      {schedule.start_time} - {schedule.end_time}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2 justify-center">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-poppins text-sm text-gray-600">
+                      {schedule.classes.locations.name}, {schedule.classes.locations.city}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-4 justify-center">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-poppins text-sm text-gray-600">
+                      Capacity: {schedule.classes.max_capacity}
+                    </span>
+                  </div>
+                  <Button
+                    fullWidth
+                    variant={selectedClassId === schedule.id ? 'filled' : 'outline'}
+                    onClick={() => setSelectedClassId(schedule.id)}
+                    rightIcon={<ArrowRight />}
+                  >
+                    {selectedClassId === schedule.id ? 'Selected' : 'Select Class'}
+                  </Button>
+                </Card.Section>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="text-center p-8">
+            <Card.Section>
+              <p className="font-poppins text-gray-600">No classes are currently available. Please check back soon!</p>
+            </Card.Section>
+          </Card>
+        )}
+      </div>
+
+      {/* Contact Section */}
+      <div className="text-center max-w-xl mx-auto">
+        <h2 className="font-agrandir text-3xl text-brand-navy mb-6">Get in Touch</h2>
+        <p className="font-poppins text-gray-600 mb-6">
+          Have questions? Contact us to learn more about our programs and schedule.
+        </p>
+        <div className="flex justify-center gap-6">
+          {franchisee.phone && (
+            <a href={`tel:${franchisee.phone}`} className="flex items-center gap-2 text-brand-blue hover:underline">
+              <Phone className="h-5 w-5" />
+              {franchisee.phone}
+            </a>
+          )}
+          {franchisee.email && (
+            <a href={`mailto:${franchisee.email}`} className="flex items-center gap-2 text-brand-blue hover:underline">
+              <Mail className="h-5 w-5" />
+              {franchisee.email}
+            </a>
+          )}
+          {franchisee.website_url && (
+            <a href={franchisee.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-brand-blue hover:underline">
+              <Globe className="h-5 w-5" />
+              Website
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

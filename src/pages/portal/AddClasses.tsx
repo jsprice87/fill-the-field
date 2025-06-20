@@ -1,47 +1,47 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import LocationSelector from '@/components/classes/LocationSelector';
-import GlobalDayPicker from '@/components/classes/GlobalDayPicker';
-import ScheduleGrid from '@/components/classes/ScheduleGrid';
+import { useFranchiseeData } from '@/hooks/useFranchiseeData';
+import { useLocations } from '@/hooks/useLocations';
 
-export interface ScheduleRow {
-  id?: string;
-  className: string;
-  duration: number;
-  timeStart: string;
-  timeEnd: string;
-  dateStart: string;
-  dateEnd: string;
-  overrideDates: string[];
-  minAge: number;
-  maxAge: number;
-  capacity: number;
-  dayOfWeek: number;
-}
-
-interface AddClassesProps {
+interface AddClassProps {
   franchiseeId?: string;
 }
 
-const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId }) => {
+interface Location {
+  id: string;
+  name: string;
+}
+
+const AddClasses: React.FC<AddClassProps> = ({ franchiseeId: propFranchiseeId }) => {
+  const [className, setClassName] = useState('');
+  const [description, setDescription] = useState('');
+  const [duration, setDuration] = useState(60);
+  const [capacity, setCapacity] = useState(12);
+  const [minAge, setMinAge] = useState(5);
+  const [maxAge, setMaxAge] = useState(12);
+  const [locationId, setLocationId] = useState('');
+  const [dayOfWeek, setDayOfWeek] = useState(0);
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('10:00');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [currentFranchiseeId, setCurrentFranchiseeId] = useState<string | null>(propFranchiseeId || null);
   const navigate = useNavigate();
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('');
-  const [globalDayOfWeek, setGlobalDayOfWeek] = useState<number>(1); // Monday default
-  const [scheduleRows, setScheduleRows] = useState<ScheduleRow[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [franchiseeId, setFranchiseeId] = useState<string | null>(propFranchiseeId || null);
 
   useEffect(() => {
     if (propFranchiseeId) {
-      setFranchiseeId(propFranchiseeId);
+      setCurrentFranchiseeId(propFranchiseeId);
       return;
     }
 
@@ -58,14 +58,14 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
           .select('id')
           .eq('user_id', session.user.id)
           .single();
-        
+
         if (error || !franchisee) {
           console.error("Error fetching franchisee:", error);
           toast.error("Unable to find franchisee account");
           return;
         }
-        
-        setFranchiseeId(franchisee.id);
+
+        setCurrentFranchiseeId(franchisee.id);
       } catch (error) {
         console.error("Error getting franchisee:", error);
         toast.error("Failed to authenticate");
@@ -75,195 +75,96 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
     getFranchiseeId();
   }, [propFranchiseeId]);
 
-  const calculateEndTime = (startTime: string, duration: number): string => {
-    if (!startTime) return '';
-    
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(hours, minutes, 0, 0);
-    
-    const endDate = new Date(startDate.getTime() + duration * 60000);
-    
-    return `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-  };
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (!currentFranchiseeId) {
+        return;
+      }
 
-  const handleAddRow = () => {
-    const lastRow = scheduleRows[scheduleRows.length - 1];
-    const newRow: ScheduleRow = lastRow ? {
-      ...lastRow,
-      id: undefined, // New row gets new ID
-      className: '', // Reset class name for new row
-    } : {
-      className: '',
-      duration: 60,
-      timeStart: '09:00',
-      timeEnd: '10:00',
-      dateStart: '',
-      dateEnd: '',
-      overrideDates: [],
-      minAge: 3,
-      maxAge: 12,
-      capacity: 12,
-      dayOfWeek: globalDayOfWeek,
+      try {
+        const { data, error } = await supabase
+          .from('locations')
+          .select('id, name')
+          .eq('franchisee_id', currentFranchiseeId);
+
+        if (error) {
+          console.error("Error fetching locations:", error);
+          toast.error("Failed to load locations");
+          return;
+        }
+
+        setLocations(data || []);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        toast.error("Failed to load locations");
+      }
     };
-    
-    setScheduleRows([...scheduleRows, newRow]);
-  };
 
-  const handleRowChange = (index: number, field: keyof ScheduleRow, value: any) => {
-    const updatedRows = [...scheduleRows];
-    updatedRows[index] = { ...updatedRows[index], [field]: value };
-    
-    // Auto-calculate end time when start time or duration changes
-    if (field === 'timeStart' || field === 'duration') {
-      const startTime = field === 'timeStart' ? value : updatedRows[index].timeStart;
-      const duration = field === 'duration' ? value : updatedRows[index].duration;
-      updatedRows[index].timeEnd = calculateEndTime(startTime, duration);
-    }
-    
-    setScheduleRows(updatedRows);
-  };
+    fetchLocations();
+  }, [currentFranchiseeId]);
 
-  const handleRemoveRow = (index: number) => {
-    const updatedRows = scheduleRows.filter((_, i) => i !== index);
-    setScheduleRows(updatedRows);
-  };
-
-  const handleSaveAll = async () => {
-    if (!selectedLocationId) {
-      toast.error("Please select a location first");
+  const handleSave = async () => {
+    if (!currentFranchiseeId) {
+      toast.error("Franchisee ID is missing");
       return;
     }
 
-    if (scheduleRows.length === 0) {
-      toast.error("Please add at least one schedule");
-      return;
-    }
-
-    // Validate that all rows have class names
-    const rowsWithoutNames = scheduleRows.filter(row => !row.className.trim());
-    if (rowsWithoutNames.length > 0) {
-      toast.error("Please provide a class name for all rows");
-      return;
-    }
-
-    setIsLoading(true);
-    
-    const results = {
-      successful: [] as string[],
-      failed: [] as { className: string; error: string }[]
-    };
-    
+    setIsSaving(true);
     try {
-      // Process each class individually with its own error handling
-      for (const [index, row] of scheduleRows.entries()) {
-        try {
-          console.log(`Creating class ${index + 1}: ${row.className}`);
-          
-          // Create the class
-          const { data: classData, error: classError } = await supabase
-            .from('classes')
-            .insert({
-              location_id: selectedLocationId,
-              name: row.className,
-              class_name: row.className,
-              description: `${row.className} - Soccer class for kids`,
-              duration_minutes: row.duration,
-              max_capacity: row.capacity,
-              min_age: row.minAge,
-              max_age: row.maxAge,
-              is_active: true
-            })
-            .select()
-            .single();
+      // Insert into classes table
+      const { data: classData, error: classError } = await supabase
+        .from('classes')
+        .insert([
+          {
+            franchisee_id: currentFranchiseeId,
+            name: className,
+            class_name: className,
+            description: description,
+            duration_minutes: duration,
+            max_capacity: capacity,
+            min_age: minAge,
+            max_age: maxAge,
+            location_id: locationId,
+            is_active: true,
+          },
+        ])
+        .select()
 
-          if (classError) {
-            console.error(`Error creating class ${index + 1}:`, classError);
-            throw new Error(`Failed to create class: ${classError.message}`);
-          }
-
-          console.log(`Created class ${index + 1}:`, classData);
-
-          // Create the schedule for this class
-          const { data: scheduleData, error: scheduleError } = await supabase
-            .from('class_schedules')
-            .insert({
-              class_id: classData.id,
-              start_time: row.timeStart,
-              end_time: row.timeEnd,
-              date_start: row.dateStart || null,
-              date_end: row.dateEnd || null,
-              day_of_week: row.dayOfWeek,
-              current_bookings: 0,
-              is_active: true
-            })
-            .select()
-            .single();
-
-          if (scheduleError) {
-            console.error(`Error creating schedule for class ${index + 1}:`, scheduleError);
-            throw new Error(`Failed to create schedule: ${scheduleError.message}`);
-          }
-
-          console.log(`Created schedule for class ${index + 1}:`, scheduleData);
-
-          // Handle override dates if any
-          if (row.overrideDates.length > 0) {
-            const exceptionInserts = row.overrideDates.map(date => ({
-              class_schedule_id: scheduleData.id,
-              exception_date: date,
-              is_cancelled: true
-            }));
-
-            const { error: exceptionError } = await supabase
-              .from('schedule_exceptions')
-              .insert(exceptionInserts);
-
-            if (exceptionError) {
-              console.error(`Error creating exceptions for class ${index + 1}:`, exceptionError);
-              throw new Error(`Failed to create override dates: ${exceptionError.message}`);
-            }
-          }
-
-          // If we get here, the class was created successfully
-          results.successful.push(row.className);
-          
-        } catch (error) {
-          console.error(`Failed to create class ${index + 1} (${row.className}):`, error);
-          results.failed.push({
-            className: row.className,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
-        }
+      if (classError) {
+        console.error("Error creating class:", classError);
+        toast.error("Failed to create class");
+        return;
       }
 
-      // Provide comprehensive feedback to the user
-      if (results.successful.length > 0 && results.failed.length === 0) {
-        toast.success(`Successfully created ${results.successful.length} class schedule${results.successful.length > 1 ? 's' : ''}!`);
-        // Reset form only if all classes saved successfully
-        setScheduleRows([]);
-        setSelectedLocationId('');
-      } else if (results.successful.length > 0 && results.failed.length > 0) {
-        toast.success(`${results.successful.length} class${results.successful.length > 1 ? 'es' : ''} created successfully`);
-        toast.error(`${results.failed.length} class${results.failed.length > 1 ? 'es' : ''} failed to save: ${results.failed.map(f => f.className).join(', ')}`);
-        
-        // Remove successful classes from the form
-        setScheduleRows(scheduleRows.filter(row => 
-          results.failed.some(failed => failed.className === row.className)
-        ));
-      } else {
-        toast.error(`All classes failed to save. Please check your input and try again.`);
-        // Show detailed error for the first failed class
-        if (results.failed.length > 0) {
-          console.error('First error details:', results.failed[0].error);
-        }
+      // Insert into class_schedules table
+      const { error: scheduleError } = await supabase
+        .from('class_schedules')
+        .insert([
+          {
+            class_id: classData?.[0]?.id,
+            start_time: startTime,
+            end_time: endTime,
+            date_start: startDate || null,
+            date_end: endDate || null,
+            day_of_week: dayOfWeek,
+            current_bookings: 0,
+            is_active: true,
+          },
+        ]);
+
+      if (scheduleError) {
+        console.error("Error creating class schedule:", scheduleError);
+        toast.error("Failed to create class schedule");
+        return;
       }
-      
+
+      toast.success("Class created successfully");
+      navigate('/portal/classes/list');
     } catch (error) {
-      console.error("Unexpected error during save:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Error saving class:", error);
+      toast.error("Failed to save class");
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -271,61 +172,185 @@ const AddClasses: React.FC<AddClassesProps> = ({ franchiseeId: propFranchiseeId 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/portal/classes/list')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Back to Classes
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">Add Class Schedules</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Add Class</h1>
         </div>
-        <Button 
-          onClick={handleSaveAll} 
-          disabled={!selectedLocationId || scheduleRows.length === 0 || isLoading}
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
         >
-          {isLoading ? "Saving..." : "Save All Schedules"}
+          {isSaving ? (
+            <>
+              <span className="animate-pulse">Saving...</span>
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Save
+            </>
+          )}
         </Button>
       </div>
 
-      <div className="space-y-4">
-        <LocationSelector
-          franchiseeId={franchiseeId}
-          selectedLocationId={selectedLocationId}
-          onLocationChange={setSelectedLocationId}
-        />
-
-        {selectedLocationId && (
-          <>
-            <GlobalDayPicker
-              selectedDay={globalDayOfWeek}
-              onDayChange={setGlobalDayOfWeek}
+      <Card>
+        <Card.Section>
+          <Card.Section className="flex items-center gap-2 p-4 border-b">
+            <BookOpen className="h-5 w-5" />
+            <h3 className="text-lg font-semibold">Class Details</h3>
+          </Card.Section>
+        </Card.Section>
+        <Card.Section className="space-y-4 p-4">
+          <div className="grid gap-2">
+            <Label htmlFor="class-name">Class Name</Label>
+            <Input
+              id="class-name"
+              type="text"
+              placeholder="Enter class name"
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
             />
-
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Schedule Grid</h3>
-                <Button onClick={handleAddRow} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Row
-                </Button>
-              </div>
-
-              <ScheduleGrid
-                rows={scheduleRows}
-                onRowChange={handleRowChange}
-                onRemoveRow={handleRemoveRow}
-                globalDayOfWeek={globalDayOfWeek}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="class-description">Class Description</Label>
+            <Textarea
+              id="class-description"
+              placeholder="Enter class description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="duration">Duration (minutes)</Label>
+              <Input
+                id="duration"
+                type="number"
+                placeholder="Enter duration"
+                value={duration}
+                onChange={(e) => setDuration(Number(e.target.value))}
               />
             </div>
-          </>
-        )}
-
-        {!selectedLocationId && (
-          <div className="rounded-md border border-dashed border-gray-300">
-            <div className="p-8 flex items-center justify-center">
-              <p className="text-muted-foreground">Select a location to start creating class schedules.</p>
+            <div>
+              <Label htmlFor="capacity">Capacity</Label>
+              <Input
+                id="capacity"
+                type="number"
+                placeholder="Enter capacity"
+                value={capacity}
+                onChange={(e) => setCapacity(Number(e.target.value))}
+              />
             </div>
           </div>
-        )}
-      </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="min-age">Min Age</Label>
+              <Input
+                id="min-age"
+                type="number"
+                placeholder="Enter minimum age"
+                value={minAge}
+                onChange={(e) => setMinAge(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="max-age">Max Age</Label>
+              <Input
+                id="max-age"
+                type="number"
+                placeholder="Enter maximum age"
+                value={maxAge}
+                onChange={(e) => setMaxAge(Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="location">Location</Label>
+            <Select value={locationId} onValueChange={setLocationId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((location) => (
+                  <SelectItem key={location.id} value={location.id}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card.Section>
+      </Card>
+
+      <Card>
+        <Card.Section>
+          <Card.Section className="flex items-center gap-2 p-4 border-b">
+            <Calendar className="h-5 w-5" />
+            <h3 className="text-lg font-semibold">Schedule Details</h3>
+          </Card.Section>
+        </Card.Section>
+        <Card.Section className="space-y-4 p-4">
+          <div className="grid gap-2">
+            <Label htmlFor="day-of-week">Day of Week</Label>
+            <Select value={dayOfWeek.toString()} onValueChange={(value) => setDayOfWeek(Number(value))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a day" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Sunday</SelectItem>
+                <SelectItem value="1">Monday</SelectItem>
+                <SelectItem value="2">Tuesday</SelectItem>
+                <SelectItem value="3">Wednesday</SelectItem>
+                <SelectItem value="4">Thursday</SelectItem>
+                <SelectItem value="5">Friday</SelectItem>
+                <SelectItem value="6">Saturday</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="start-time">Start Time</Label>
+              <Input
+                id="start-time"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="end-time">End Time</Label>
+              <Input
+                id="end-time"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="start-date">Start Date (Optional)</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="end-date">End Date (Optional)</Label>
+              <Input
+                id="end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </Card.Section>
+      </Card>
     </div>
   );
 };

@@ -47,7 +47,7 @@ const BusinessInformationCard: React.FC = () => {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="p-6">
+        <Card.Section className="p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/3"></div>
             <div className="space-y-2">
@@ -55,20 +55,20 @@ const BusinessInformationCard: React.FC = () => {
               <div className="h-10 bg-gray-200 rounded"></div>
             </div>
           </div>
-        </CardContent>
+        </Card.Section>
       </Card>
     );
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <Card.Section>
+        <Card.Section className="flex items-center gap-2 p-4 border-b">
           <Building className="h-5 w-5" />
-          Business Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+          <h3 className="text-lg font-semibold">Business Information</h3>
+        </Card.Section>
+      </Card.Section>
+      <Card.Section className="space-y-4 p-4">
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="company-name">Company Name</Label>
@@ -168,7 +168,7 @@ const BusinessInformationCard: React.FC = () => {
             <li>• Company name appears throughout the booking experience</li>
           </ul>
         </div>
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

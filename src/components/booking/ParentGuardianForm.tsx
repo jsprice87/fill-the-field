@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { User } from 'lucide-react';
 import type { BookingFlowData } from '@/hooks/useBookingFlow';
 import { ParentGuardianFormFields } from './ParentGuardianFormFields';
@@ -132,13 +131,13 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({
 
   return (
     <Card className="border-l-4 border-l-brand-red">
-      <CardHeader>
-        <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
+      <Card.Section>
+        <Card.Section className="font-agrandir text-xl text-brand-navy flex items-center gap-2 p-4 border-b">
           <User className="h-5 w-5" />
           Parent/Guardian Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </Card.Section>
+      </Card.Section>
+      <Card.Section className="space-y-4 p-4">
         <ParentGuardianFormFields
           formData={formData}
           onInputChange={handleInputChange}
@@ -176,7 +175,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({
           waiverText={waiverText}
           franchiseeData={franchiseeData}
         />
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

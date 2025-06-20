@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { MapPin, AlertCircle } from 'lucide-react';
 import { Button } from '@mantine/core';
 
@@ -16,7 +16,7 @@ const MapErrorFallback: React.FC<MapErrorFallbackProps> = ({
 }) => {
   return (
     <Card className="border-yellow-200 bg-yellow-50 h-full flex items-center justify-center">
-      <CardContent className="p-6 text-center">
+      <Card.Section className="p-6 text-center">
         <div className="flex items-center justify-center mb-4">
           <MapPin className="h-8 w-8 text-yellow-600 mr-2" />
           <AlertCircle className="h-8 w-8 text-yellow-600" />
@@ -37,7 +37,7 @@ const MapErrorFallback: React.FC<MapErrorFallbackProps> = ({
             Retry Map
           </Button>
         )}
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

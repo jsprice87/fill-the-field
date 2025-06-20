@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import MapboxMap from './MapboxMap';
 import ProgressiveMapLoader from './ProgressiveMapLoader';
 import MapboxTokenInput from './MapboxTokenInput';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { useGlobalSetting } from '@/hooks/useGlobalSettings';
 
 interface Location {
@@ -104,7 +103,7 @@ const EnhancedMapLoader: React.FC<EnhancedMapLoaderProps> = ({
       <div className={`flex flex-col items-center justify-center ${className}`} 
            style={{ height: aspectRatio ? undefined : height }}>
         <Card className="max-w-md w-full">
-          <CardContent className="p-6">
+          <Card.Section className="p-6">
             <div className="text-center mb-4">
               <h3 className="text-lg font-medium text-gray-900 mb-2">Mapbox Configuration Required</h3>
               <p className="text-sm text-gray-600 mb-4">
@@ -120,7 +119,7 @@ const EnhancedMapLoader: React.FC<EnhancedMapLoaderProps> = ({
                 Skip Mapbox and use basic map instead
               </button>
             </div>
-          </CardContent>
+          </Card.Section>
         </Card>
       </div>
     );
@@ -132,11 +131,11 @@ const EnhancedMapLoader: React.FC<EnhancedMapLoaderProps> = ({
       <div className="relative">
         {mapboxError && (
           <Card className="mb-4 border-yellow-200 bg-yellow-50">
-            <CardContent className="p-4">
+            <Card.Section className="p-4">
               <p className="text-yellow-800 text-sm">
                 Mapbox unavailable ({mapboxError}). Using basic map instead.
               </p>
-            </CardContent>
+            </Card.Section>
           </Card>
         )}
         <ProgressiveMapLoader

@@ -1,155 +1,212 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Title, Text, Stack, Group, Alert } from '@mantine/core';
 import { Button } from '@mantine/core';
-import { Input } from '@/components/ui/input';
+import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Settings, Key, Webhook, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
+import { useGlobalSettings, useUpdateGlobalSetting } from '@/hooks/useGlobalSettings';
+import { AdminShell } from '@/layout/AdminShell';
 
-const AdminGlobalSettings: React.FC = () => {
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+const GlobalSettings: React.FC = () => {
+  const { data: settings, isLoading, error } = useGlobalSettings();
+  const updateSetting = useUpdateGlobalSetting();
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
+  const [formData, setFormData] = useState({
+    mapbox_public_token: settings?.mapbox_public_token || '',
+    webhook_url: settings?.webhook_url || '',
+    webhook_auth_header: settings?.webhook_auth_header || '',
+    support_email: settings?.support_email || '',
+    support_phone: settings?.support_phone || '',
+  });
 
-  const loadSettings = async () => {
-    setIsLoading(true);
-    try {
-      // Use raw query to access global_settings table
-      const { data, error } = await supabase
-        .from('global_settings' as any)
-        .select('*')
-        .eq('setting_key', 'mapbox_public_token')
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading global settings:', error);
-        toast.error('Failed to load settings');
-        return;
-      }
-
-      if (data && 'setting_value' in data && data.setting_value) {
-        setMapboxToken(String(data.setting_value) || '');
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-      toast.error('Failed to load settings');
-    } finally {
-      setIsLoading(false);
+  React.useEffect(() => {
+    if (settings) {
+      setFormData({
+        mapbox_public_token: settings.mapbox_public_token || '',
+        webhook_url: settings.webhook_url || '',
+        webhook_auth_header: settings.webhook_auth_header || '',
+        support_email: settings.support_email || '',
+        support_phone: settings.support_phone || '',
+      });
     }
+  }, [settings]);
+
+  const handleChange = (key: string, value: string) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
   };
 
-  const saveMapboxToken = async () => {
-    if (!mapboxToken.trim()) {
-      toast.error('Please enter a valid Mapbox token');
-      return;
-    }
-
-    if (!mapboxToken.startsWith('pk.')) {
-      toast.error('Mapbox public token must start with "pk."');
-      return;
-    }
-
-    setIsSaving(true);
+  const handleBlur = async (key: string, value: string) => {
+    if (settings?.[key] === value) return;
     try {
-      const { error } = await supabase
-        .from('global_settings' as any)
-        .upsert({
-          setting_key: 'mapbox_public_token',
-          setting_value: mapboxToken.trim(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'setting_key'
-        });
-
-      if (error) {
-        console.error('Error saving Mapbox token:', error);
-        toast.error('Failed to save Mapbox token');
-        return;
-      }
-
-      toast.success('Mapbox token saved successfully');
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      toast.error('Failed to save Mapbox token');
-    } finally {
-      setIsSaving(false);
+      await updateSetting.mutateAsync({ key, value });
+    } catch (err) {
+      console.error(`Error updating global setting ${key}:`, err);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Global Settings</h1>
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-gray-200 rounded"></div>
-        </div>
-      </div>
+      <AdminShell>
+        <Stack h="100vh" justify="center" align="center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </Stack>
+      </AdminShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminShell>
+        <Alert icon={<AlertTriangle size={16} />} title="Error" color="red" variant="filled">
+          Failed to load global settings. Please try again later.
+        </Alert>
+      </AdminShell>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Global Settings</h1>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>System Configuration</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="system-name">System Name</Label>
-            <Input 
-              id="system-name" 
-              defaultValue="SuperLeadStar" 
-              disabled
-            />
-          </div>
-        </CardContent>
-      </Card>
+    <AdminShell>
+      <Stack spacing="xl" p="md" maxWidth={600} mx="auto">
+        <Title order={2} mb="md" className="flex items-center gap-2">
+          <Settings size={24} />
+          Global Settings
+        </Title>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Mapbox Configuration</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="mapbox-token">Mapbox Public Token</Label>
+        <Card>
+          <Card.Section className="flex items-center gap-2 p-4 border-b">
+            <Key size={20} />
+            <Text weight={600}>Mapbox Public Token</Text>
+          </Card.Section>
+          <Card.Section className="p-4 space-y-2">
+            <Label htmlFor="mapbox_public_token">Mapbox Token</Label>
             <Input
-              id="mapbox-token"
-              type="text"
+              id="mapbox_public_token"
               placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwia..."
-              value={mapboxToken}
-              onChange={(e) => setMapboxToken(e.target.value)}
-              className="font-mono text-sm"
+              value={formData.mapbox_public_token}
+              onChange={(e) => handleChange('mapbox_public_token', e.target.value)}
+              onBlur={(e) => handleBlur('mapbox_public_token', e.target.value)}
+              disabled={updateSetting.isPending}
             />
-            <p className="text-sm text-gray-500">
-              Your Mapbox public token for geocoding and map services. Get yours at{' '}
-              <a 
-                href="https://account.mapbox.com/access-tokens/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                account.mapbox.com
-              </a>
-            </p>
-          </div>
-          <Button 
-            onClick={saveMapboxToken}
-            disabled={isSaving || !mapboxToken.trim()}
-            className="w-full"
+            <Text size="sm" color="dimmed">
+              This token is used for all Mapbox maps across the platform.
+            </Text>
+            <a
+              href="https://account.mapbox.com/access-tokens/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+            >
+              Get your Mapbox token <ExternalLink size={14} />
+            </a>
+          </Card.Section>
+        </Card>
+
+        <Card>
+          <Card.Section className="flex items-center gap-2 p-4 border-b">
+            <Webhook size={20} />
+            <Text weight={600}>Webhook Settings</Text>
+          </Card.Section>
+          <Card.Section className="p-4 space-y-4">
+            <div>
+              <Label htmlFor="webhook_url">Webhook URL</Label>
+              <Input
+                id="webhook_url"
+                placeholder="https://your-webhook-url.com/endpoint"
+                value={formData.webhook_url}
+                onChange={(e) => handleChange('webhook_url', e.target.value)}
+                onBlur={(e) => handleBlur('webhook_url', e.target.value)}
+                disabled={updateSetting.isPending}
+              />
+              <Text size="sm" color="dimmed">
+                URL to receive webhook notifications for system events.
+              </Text>
+            </div>
+            <div>
+              <Label htmlFor="webhook_auth_header">Webhook Auth Header</Label>
+              <Input
+                id="webhook_auth_header"
+                placeholder="Authorization: Bearer token"
+                value={formData.webhook_auth_header}
+                onChange={(e) => handleChange('webhook_auth_header', e.target.value)}
+                onBlur={(e) => handleBlur('webhook_auth_header', e.target.value)}
+                disabled={updateSetting.isPending}
+              />
+              <Text size="sm" color="dimmed">
+                Optional HTTP header for webhook authentication.
+              </Text>
+            </div>
+          </Card.Section>
+        </Card>
+
+        <Card>
+          <Card.Section className="flex items-center gap-2 p-4 border-b">
+            <ExternalLink size={20} />
+            <Text weight={600}>Support Contact Information</Text>
+          </Card.Section>
+          <Card.Section className="p-4 space-y-4">
+            <div>
+              <Label htmlFor="support_email">Support Email</Label>
+              <Input
+                id="support_email"
+                type="email"
+                placeholder="support@example.com"
+                value={formData.support_email}
+                onChange={(e) => handleChange('support_email', e.target.value)}
+                onBlur={(e) => handleBlur('support_email', e.target.value)}
+                disabled={updateSetting.isPending}
+              />
+            </div>
+            <div>
+              <Label htmlFor="support_phone">Support Phone</Label>
+              <Input
+                id="support_phone"
+                type="tel"
+                placeholder="(555) 123-4567"
+                value={formData.support_phone}
+                onChange={(e) => handleChange('support_phone', e.target.value)}
+                onBlur={(e) => handleBlur('support_phone', e.target.value)}
+                disabled={updateSetting.isPending}
+              />
+            </div>
+          </Card.Section>
+        </Card>
+
+        {updateSetting.isError && (
+          <Alert icon={<AlertTriangle size={16} />} title="Error" color="red" variant="filled">
+            Failed to update settings. Please try again.
+          </Alert>
+        )}
+
+        {updateSetting.isSuccess && (
+          <Alert icon={<CheckCircle size={16} />} title="Success" color="green" variant="filled">
+            Settings updated successfully.
+          </Alert>
+        )}
+
+        <Group position="right" mt="md">
+          <Button
+            onClick={() => {
+              if (settings) {
+                setFormData({
+                  mapbox_public_token: settings.mapbox_public_token || '',
+                  webhook_url: settings.webhook_url || '',
+                  webhook_auth_header: settings.webhook_auth_header || '',
+                  support_email: settings.support_email || '',
+                  support_phone: settings.support_phone || '',
+                });
+              }
+            }}
+            disabled={updateSetting.isPending}
           >
-            {isSaving ? 'Saving...' : 'Save Mapbox Token'}
+            Reset
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </Group>
+      </Stack>
+    </AdminShell>
   );
 };
 
-export default AdminGlobalSettings;
+export default GlobalSettings;

@@ -1,5 +1,14 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@mantine/core';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card } from '@mantine/core';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Phone, Mail, User, MapPin, Sparkles } from 'lucide-react';
+import { z } from 'zod';
+import { useQuickCapture } from '@/hooks/useQuickCapture';
+import { notify } from '@/utils/notify';
 import { z } from 'zod';
 import { Button } from '@/components/mantine/Button';
 import { TextInput } from '@/components/mantine/TextInput';

@@ -1,10 +1,8 @@
-
-import { Button } from "@mantine/core";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, Play, Zap, Shield, Heart, Award, Target } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { ArrowRight, CheckCircle, Globe, Calendar, Users } from "lucide-react";
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card } from '@mantine/core';
+import { Button } from '@mantine/core';
+import { Sparkles, ArrowRight, Target, Users, BarChart3 } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { Text } from "@mantine/core";
 
@@ -63,75 +61,66 @@ const Index = () => {
         
         <div className="grid md:grid-cols-3 gap-8">
           <Card>
-            <CardHeader>
+            <Card.Section>
               <Globe className="h-10 w-10 text-indigo-600 mb-2" />
-              <CardTitle>Custom Landing Pages</CardTitle>
+              <Text size="lg" fw={500}>Custom Landing Pages</Text>
               <Text size="sm" c="dimmed">Create beautiful landing pages that match your brand in minutes.</Text>
-            </CardHeader>
-            <CardContent>
+            </Card.Section>
+            <Card.Section>
               <ul className="space-y-2">
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Easy drag-and-drop editor</span>
+                <li>
+                  Easy drag-and-drop editor
                 </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Custom colors and branding</span>
+                <li>
+                  Custom colors and branding
                 </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Mobile responsive design</span>
+                <li>
+                  Mobile responsive design
                 </li>
               </ul>
-            </CardContent>
+            </Card.Section>
           </Card>
 
           <Card>
-            <CardHeader>
+            <Card.Section>
               <Calendar className="h-10 w-10 text-indigo-600 mb-2" />
-              <CardTitle>Booking Management</CardTitle>
+              <Text size="lg" fw={500}>Booking Management</Text>
               <Text size="sm" c="dimmed">Streamline your class scheduling and booking process.</Text>
-            </CardHeader>
-            <CardContent>
+            </Card.Section>
+            <Card.Section>
               <ul className="space-y-2">
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Automated booking system</span>
+                <li>
+                  Automated booking system
                 </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Class capacity management</span>
+                <li>
+                  Class capacity management
                 </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Multi-participant registration</span>
+                <li>
+                  Multi-participant registration
                 </li>
               </ul>
-            </CardContent>
+            </Card.Section>
           </Card>
 
           <Card>
-            <CardHeader>
+            <Card.Section>
               <Users className="h-10 w-10 text-indigo-600 mb-2" />
-              <CardTitle>Lead Conversion</CardTitle>
+              <Text size="lg" fw={500}>Lead Conversion</Text>
               <Text size="sm" c="dimmed">Turn trial participants into loyal paying customers.</Text>
-            </CardHeader>
-            <CardContent>
+            </Card.Section>
+            <Card.Section>
               <ul className="space-y-2">
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Lead tracking dashboard</span>
+                <li>
+                  Lead tracking dashboard
                 </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Automated follow-up emails</span>
+                <li>
+                  Automated follow-up emails
                 </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span>Conversion analytics</span>
+                <li>
+                  Conversion analytics
                 </li>
               </ul>
-            </CardContent>
+            </Card.Section>
           </Card>
         </div>
       </section>

@@ -67,31 +67,31 @@ const MetaPixelCard: React.FC = () => {
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <Card.Section>
+          <Card.Section className="flex items-center gap-2 p-4 border-b">
             <Facebook className="h-5 w-5" />
-            Meta Pixel Tracking
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+            <h3 className="text-lg font-semibold">Meta Pixel Tracking</h3>
+          </Card.Section>
+        </Card.Section>
+        <Card.Section className="p-6">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
             <div className="h-10 bg-gray-200 rounded"></div>
           </div>
-        </CardContent>
+        </Card.Section>
       </Card>
     );
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <Card.Section>
+        <Card.Section className="flex items-center gap-2 p-4 border-b">
           <Facebook className="h-5 w-5" />
-          Meta Pixel Tracking
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+          <h3 className="text-lg font-semibold">Meta Pixel Tracking</h3>
+        </Card.Section>
+      </Card.Section>
+      <Card.Section className="space-y-4 p-4">
         <div>
           <Label htmlFor="meta_pixel_id">Meta Pixel ID</Label>
           <Input
@@ -119,7 +119,7 @@ const MetaPixelCard: React.FC = () => {
             {updateSetting.isPending ? 'Saving...' : 'Save Pixel ID'}
           </Button>
         )}
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

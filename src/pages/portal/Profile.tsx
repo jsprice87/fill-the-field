@@ -1,417 +1,229 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
+import { Button } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button, Badge, Divider } from '@mantine/core';
-import { Building, User, Mail, Phone, MapPin, Save } from 'lucide-react';
-import { 
-  IconEdit, 
-  IconX, 
-  IconCreditCard, 
-  IconShield, 
-  IconCalendar 
-} from '@tabler/icons-react';
-import { useFranchiseeProfile, useUpdateFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
-import { supabase } from '@/integrations/supabase/client';
+import { User, Mail, Building, Phone, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ProfileData {
+  company_name: string | null;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+}
 
 const Profile: React.FC = () => {
-  const { data: profile, isLoading, error } = useFranchiseeProfile();
-  const updateProfile = useUpdateFranchiseeProfile();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    contact_name: '',
-    email: '',
-    phone: '',
-    company_name: ''
+  const [profile, setProfile] = useState<ProfileData>({
+    company_name: null,
+    contact_name: null,
+    email: null,
+    phone: null,
+    address: null,
+    city: null,
+    state: null,
+    zip: null,
   });
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Remove the manual refetch call since the query is now enabled by default
-  React.useEffect(() => {
-    if (profile) {
-      setFormData({
-        contact_name: profile.contact_name || '',
-        email: profile.email || '',
-        phone: profile.phone || '',
-        company_name: profile.company_name || ''
-      });
-    }
-  }, [profile]);
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  const fetchProfile = async () => {
+    setIsLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast.error("Authentication required");
+        return;
+      }
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    if (profile) {
-      setFormData({
-        contact_name: profile.contact_name || '',
-        email: profile.email || '',
-        phone: profile.phone || '',
-        company_name: profile.company_name || ''
-      });
+      const { data, error } = await supabase
+        .from('franchisees')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        toast.error("Failed to load profile");
+        return;
+      }
+
+      setProfile(data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to load profile");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
-      await updateProfile.mutateAsync(formData);
-      setIsEditing(false);
-      toast.success('Profile updated successfully');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('franchisees')
+        .update(profile)
+        .eq('user_id', session.user.id);
+
+      if (error) {
+        console.error("Error updating profile:", error);
+        toast.error("Failed to update profile");
+        return;
+      }
+
+      toast.success("Profile updated successfully");
     } catch (error) {
-      toast.error('Failed to update profile');
+      console.error("Error saving profile:", error);
+      toast.error("Failed to save profile");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handlePasswordChange = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match');
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long');
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: passwordData.newPassword
-      });
-
-      if (error) throw error;
-
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      setIsChangingPassword(false);
-      toast.success('Password updated successfully');
-    } catch (error) {
-      toast.error('Failed to update password');
-    }
-  };
-
-  const getSubscriptionBadgeColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'green';
-      case 'inactive':
-        return 'red';
-      case 'cancelled':
-        return 'gray';
-      default:
-        return 'blue';
-    }
-  };
-
-  const getTierBadgeColor = (tier: string) => {
-    switch (tier?.toLowerCase()) {
-      case 'premium':
-        return 'violet';
-      case 'pro':
-        return 'blue';
-      case 'free':
-        return 'gray';
-      default:
-        return 'gray';
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProfile(prev => ({ ...prev, [name]: value }));
   };
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="space-y-4">
-            <div className="h-48 bg-gray-200 rounded"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">Setting Up Your Profile</h2>
-          <p className="text-blue-600 mb-4">
-            We're creating your profile automatically. This usually takes just a moment...
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
-            <span className="text-sm text-blue-600">Creating profile...</span>
-          </div>
-          <div className="mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.reload()}
-              className="text-blue-600 border-blue-600 hover:bg-blue-50"
-            >
-              Refresh Page
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="p-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">Setting Up Your Profile</h2>
-          <p className="text-blue-600 mb-4">
-            We're creating your profile automatically. Please wait a moment...
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-600"></div>
-            <span className="text-sm text-blue-600">Creating profile...</span>
-          </div>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Profile</h1>
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-gray-200 rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
-      </div>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Profile</h1>
 
-      <div className="grid gap-6">
-        {/* Account Information */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Information
-              </CardTitle>
-              {!isEditing ? (
-                <Button variant="outline" size="sm" onClick={handleEdit}>
-                  <IconEdit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={handleCancel}>
-                    <IconX className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save
-                  </Button>
-                </div>
-              )}
+      <Card>
+        <Card.Section>
+          <Card.Section className="flex items-center gap-2 p-4 border-b">
+            <User className="h-5 w-5" />
+            <h3 className="text-lg font-semibold">Business Information</h3>
+          </Card.Section>
+        </Card.Section>
+        <Card.Section className="space-y-4 p-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="company-name">Company Name</Label>
+              <Input
+                id="company-name"
+                name="company_name"
+                type="text"
+                value={profile.company_name || ''}
+                onChange={handleChange}
+              />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="contact_name">Full Name</Label>
-                <Input
-                  id="contact_name"
-                  value={formData.contact_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="company_name">Company Name</Label>
-                <Input
-                  id="company_name"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
+            <div>
+              <Label htmlFor="contact-name">Contact Name</Label>
+              <Input
+                id="contact-name"
+                name="contact_name"
+                type="text"
+                value={profile.contact_name || ''}
+                onChange={handleChange}
+              />
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Subscription & Billing */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconCreditCard className="h-5 w-5" />
-              Subscription & Billing
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Current Plan</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge color={getTierBadgeColor(profile.subscription_tier)}>
-                    {profile.subscription_tier?.toUpperCase() || 'FREE'}
-                  </Badge>
-                  <Badge color={getSubscriptionBadgeColor(profile.subscription_status)}>
-                    {profile.subscription_status?.toUpperCase() || 'ACTIVE'}
-                  </Badge>
-                </div>
-              </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={profile.email || ''}
+                onChange={handleChange}
+              />
             </div>
-
-            <Divider />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Subscription Start</p>
-                <p className="font-medium">
-                  {profile.subscription_start_date 
-                    ? new Date(profile.subscription_start_date).toLocaleDateString()
-                    : 'Not set'
-                  }
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Subscription End</p>
-                <p className="font-medium">
-                  {profile.subscription_end_date 
-                    ? new Date(profile.subscription_end_date).toLocaleDateString()
-                    : 'Not set'
-                  }
-                </p>
-              </div>
+            <div>
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={profile.phone || ''}
+                onChange={handleChange}
+              />
             </div>
+          </div>
 
-            <div className="pt-4">
-              <Button variant="outline" disabled>
-                <IconCreditCard className="h-4 w-4 mr-2" />
-                Manage Billing (Coming Soon)
-              </Button>
+          <div>
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              name="address"
+              type="text"
+              value={profile.address || ''}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                name="city"
+                type="text"
+                value={profile.city || ''}
+                onChange={handleChange}
+              />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                name="state"
+                type="text"
+                value={profile.state || ''}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <Label htmlFor="zip">ZIP Code</Label>
+              <Input
+                id="zip"
+                name="zip"
+                type="text"
+                value={profile.zip || ''}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
 
-        {/* Security */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconShield className="h-5 w-5" />
-              Security
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!isChangingPassword ? (
-              <div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Keep your account secure by using a strong password
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsChangingPassword(true)}
-                >
-                  <IconShield className="h-4 w-4 mr-2" />
-                  Change Password
-                </Button>
-              </div>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <span className="animate-pulse">Saving...</span>
             ) : (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="new_password">New Password</Label>
-                  <Input
-                    id="new_password"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    placeholder="Enter new password"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirm_password">Confirm New Password</Label>
-                  <Input
-                    id="confirm_password"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setIsChangingPassword(false);
-                      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handlePasswordChange}>
-                    Update Password
-                  </Button>
-                </div>
-              </div>
+              <>
+                Save Changes
+              </>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Account Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconCalendar className="h-5 w-5" />
-              Account Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Member Since</p>
-                <p className="font-medium">
-                  {profile.created_at 
-                    ? new Date(profile.created_at).toLocaleDateString()
-                    : 'Unknown'
-                  }
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Last Updated</p>
-                <p className="font-medium">
-                  {profile.updated_at 
-                    ? new Date(profile.updated_at).toLocaleDateString()
-                    : 'Unknown'
-                  }
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </Button>
+        </Card.Section>
+      </Card>
     </div>
   );
 };
