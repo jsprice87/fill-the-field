@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Users, MapPin, Calendar, TrendingUp } from 'lucide-react';
 import { useLeadStats } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
@@ -25,55 +25,55 @@ const PortalDashboard: React.FC = () => {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-body-sm font-medium">Total Leads</CardTitle>
+          <Card.Section className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <div className="text-body-sm font-medium">Total Leads</div>
             <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+          </Card.Section>
+          <Card.Section className="p-4">
             <div className="text-h1 font-bold">{leadStats?.totalLeads || 0}</div>
             <p className="text-body-sm text-muted-foreground">
               +{leadStats?.monthlyGrowth || 0}% from last month
             </p>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-body-sm font-medium">Active Classes</CardTitle>
+          <Card.Section className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <div className="text-body-sm font-medium">Active Classes</div>
             <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+          </Card.Section>
+          <Card.Section className="p-4">
             <div className="text-h1 font-bold">-</div>
             <p className="text-body-sm text-muted-foreground">
               Loading...
             </p>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-body-sm font-medium">Total Locations</CardTitle>
+          <Card.Section className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <div className="text-body-sm font-medium">Total Locations</div>
             <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+          </Card.Section>
+          <Card.Section className="p-4">
             <div className="text-h1 font-bold">-</div>
             <p className="text-body-sm text-muted-foreground">
               Loading...
             </p>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-body-sm font-medium">Conversion Rate</CardTitle>
+          <Card.Section className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <div className="text-body-sm font-medium">Conversion Rate</div>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+          </Card.Section>
+          <Card.Section className="p-4">
             <div className="text-h1 font-bold">{leadStats?.conversionRate || 0}%</div>
             <p className="text-body-sm text-muted-foreground">
               Leads to bookings
             </p>
-          </CardContent>
+          </Card.Section>
         </Card>
       </div>
     </div>

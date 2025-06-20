@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Plus, Calendar, MapPin, Users, Clock, Edit, Trash, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -144,15 +145,15 @@ const ClassesList: React.FC = () => {
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {classes.map((classSchedule) => (
             <Card key={classSchedule.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {classSchedule.classes.name}
+              <Card.Section>
+                <div className="flex items-center justify-between p-4">
+                  <div className="font-medium">{classSchedule.classes.name}</div>
                   <Badge variant="secondary">
                     {daysOfWeek[classSchedule.day_of_week]}
                   </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
+                </div>
+              </Card.Section>
+              <Card.Section className="space-y-2 p-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span>{classSchedule.date_start ? new Date(classSchedule.date_start).toLocaleDateString() : 'N/A'}</span>
@@ -169,7 +170,7 @@ const ClassesList: React.FC = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span>{classSchedule.classes.max_capacity}</span>
                 </div>
-              </CardContent>
+              </Card.Section>
               <div className="flex justify-end space-x-2 p-4">
                 <Button
                   variant="ghost"

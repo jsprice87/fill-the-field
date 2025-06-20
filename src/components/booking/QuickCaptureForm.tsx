@@ -1,5 +1,5 @@
+
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card } from '@mantine/core';
@@ -7,13 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Phone, Mail, User, MapPin, Sparkles } from 'lucide-react';
 import { z } from 'zod';
-import { useQuickCapture } from '@/hooks/useQuickCapture';
-import { notify } from '@/utils/notify';
-import { z } from 'zod';
 import { Button } from '@/components/mantine/Button';
 import { TextInput } from '@/components/mantine/TextInput';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/utils/notify';
@@ -126,16 +121,16 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   return (
     <Card className="w-full border-0 shadow-none">
       {showTitle && (
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="font-agrandir text-2xl text-brand-navy">
+        <Card.Section className="text-center pb-4">
+          <div className="font-agrandir text-2xl text-brand-navy">
             Get Started with Your Free Trial
-          </CardTitle>
+          </div>
           <p className="font-poppins text-brand-grey text-sm">
             Just a few details to find classes near you
           </p>
-        </CardHeader>
+        </Card.Section>
       )}
-      <CardContent className="p-0">
+      <Card.Section className="p-0">
         <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -236,7 +231,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             We respect your privacy and won't spam you.
           </p>
         </form>
-      </CardContent>
+      </Card.Section>
     </Card>
   );
 };

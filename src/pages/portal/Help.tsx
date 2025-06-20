@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
@@ -23,13 +24,13 @@ const HelpPage: React.FC = () => {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Card.Section className="space-y-1 p-4">
+            <div className="text-lg font-semibold flex items-center gap-2">
               <HelpCircle className="h-4 w-4" />
               Getting Started
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </div>
+          </Card.Section>
+          <Card.Section className="space-y-2 p-4">
             <p className="text-sm text-muted-foreground">
               New to the platform? Here are some helpful resources to get you started.
             </p>
@@ -41,17 +42,17 @@ const HelpPage: React.FC = () => {
               <Video className="h-4 w-4 mr-2" />
               Watch Video Tutorials
             </Button>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Card.Section className="space-y-1 p-4">
+            <div className="text-lg font-semibold flex items-center gap-2">
               <MessageCircle className="h-4 w-4" />
               Frequently Asked Questions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </div>
+          </Card.Section>
+          <Card.Section className="space-y-2 p-4">
             <p className="text-sm text-muted-foreground">
               Find answers to common questions about our product and services.
             </p>
@@ -69,17 +70,17 @@ const HelpPage: React.FC = () => {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Card.Section className="space-y-1 p-4">
+            <div className="text-lg font-semibold flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Terms & Conditions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </div>
+          </Card.Section>
+          <Card.Section className="space-y-2 p-4">
             <p className="text-sm text-muted-foreground">
               Review our terms of service and privacy policy.
             </p>
@@ -89,17 +90,17 @@ const HelpPage: React.FC = () => {
             <Button variant="link" className="justify-start">
               Privacy Policy
             </Button>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Card.Section className="space-y-1 p-4">
+            <div className="text-lg font-semibold flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Account Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </div>
+          </Card.Section>
+          <Card.Section className="space-y-2 p-4">
             <p className="text-sm text-muted-foreground">
               Manage your account settings, including profile information and billing details.
             </p>
@@ -109,17 +110,17 @@ const HelpPage: React.FC = () => {
             <Button variant="link" className="justify-start">
               Change Password
             </Button>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Card.Section className="space-y-1 p-4">
+            <div className="text-lg font-semibold flex items-center gap-2">
               <Users className="h-4 w-4" />
               User Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </div>
+          </Card.Section>
+          <Card.Section className="space-y-2 p-4">
             <p className="text-sm text-muted-foreground">
               Learn how to manage users and permissions within your organization.
             </p>
@@ -129,17 +130,17 @@ const HelpPage: React.FC = () => {
             <Button variant="link" className="justify-start">
               Edit User Permissions
             </Button>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Card.Section className="space-y-1 p-4">
+            <div className="text-lg font-semibold flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Class Scheduling
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </div>
+          </Card.Section>
+          <Card.Section className="space-y-2 p-4">
             <p className="text-sm text-muted-foreground">
               Get help with scheduling and managing your classes.
             </p>
@@ -149,14 +150,14 @@ const HelpPage: React.FC = () => {
             <Button variant="link" className="justify-start">
               Edit Class Schedule
             </Button>
-          </CardContent>
+          </Card.Section>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Contact Support</CardTitle>
-          <CardContent className="space-y-2">
+        <Card.Section className="p-4">
+          <div className="font-medium">Contact Support</div>
+          <Card.Section className="space-y-2 p-4">
             <p className="text-sm text-muted-foreground">
               Need further assistance? Contact our support team.
             </p>
@@ -170,8 +171,8 @@ const HelpPage: React.FC = () => {
                 Email Us
               </Button>
             </div>
-          </CardContent>
-        </CardHeader>
+          </Card.Section>
+        </Card.Section>
       </Card>
     </div>
   );

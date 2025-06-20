@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -70,13 +70,13 @@ const Settings: React.FC = () => {
 
         {/* Website & Social Media Settings */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <Card.Section className="p-4">
+            <div className="flex items-center gap-2">
               <Globe className="h-5 w-5" />
               Website & Social Media
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </div>
+          </Card.Section>
+          <Card.Section className="space-y-4 p-4">
             <div>
               <Label htmlFor="website_url">Website URL</Label>
               <Input
@@ -112,18 +112,18 @@ const Settings: React.FC = () => {
                 disabled={updateSetting.isPending}
               />
             </div>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         {/* Share Message Settings */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <Card.Section className="p-4">
+            <div className="flex items-center gap-2">
               <Share2 className="h-5 w-5" />
               Share Message Template
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </div>
+          </Card.Section>
+          <Card.Section className="p-4">
             <div>
               <Label htmlFor="share_message_template">Custom Share Message</Label>
               <Textarea
@@ -139,7 +139,7 @@ const Settings: React.FC = () => {
                 Use {"{company_name}"} and {"{url}"} as placeholders that will be automatically replaced.
               </p>
             </div>
-          </CardContent>
+          </Card.Section>
         </Card>
 
         {/* Meta Pixel Tracking */}
