@@ -1,14 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Card } from '@mantine/core';
+import { Card, Button, TextInput } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Phone, Mail, User, MapPin, Sparkles } from 'lucide-react';
 import { z } from 'zod';
-import { Button } from '@/components/mantine/Button';
-import { TextInput } from '@/components/mantine/TextInput';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/utils/notify';

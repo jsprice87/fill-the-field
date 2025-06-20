@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Share2, Calendar, MapPin, User } from 'lucide-react';
@@ -77,20 +78,20 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="border-l-4 border-l-green-500">
-        <CardHeader>
+        <Card.Section className="p-6">
           <div className="flex items-center gap-3">
             <CheckCircle className="h-8 w-8 text-green-500" />
             <div>
-              <CardTitle className="font-agrandir text-xl text-brand-navy">
+              <div className="font-agrandir text-xl text-brand-navy">
                 Booking Confirmed!
-              </CardTitle>
+              </div>
               <p className="font-poppins text-gray-600 mt-1">
                 Reference: {bookingData.booking_reference}
               </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
+        </Card.Section>
+        <Card.Section className="p-6">
           <p className="font-poppins text-gray-700 mb-6">
             Thank you {bookingData.parent_first_name}! Your free trial has been successfully booked. 
             We're excited to see {appointment?.participant_name} on the field!
@@ -147,7 +148,7 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
               📧 A confirmation email has been sent to {bookingData.parent_email}
             </p>
           </div>
-        </CardContent>
+        </Card.Section>
       </Card>
     </div>
   );
