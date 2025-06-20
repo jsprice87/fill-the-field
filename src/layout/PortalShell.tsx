@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AppShell, Box } from '@mantine/core';
+import { AppShell, Box, useMantineTheme } from '@mantine/core';
 
 interface PortalShellProps {
   children: React.ReactNode;
@@ -8,6 +8,8 @@ interface PortalShellProps {
 }
 
 export const PortalShell: React.FC<PortalShellProps> = ({ children, navbar }) => {
+  const theme = useMantineTheme();
+
   return (
     <AppShell
       navbar={{
@@ -15,6 +17,14 @@ export const PortalShell: React.FC<PortalShellProps> = ({ children, navbar }) =>
         breakpoint: 'lg',
       }}
       padding="md"
+      styles={{
+        main: {
+          paddingLeft: 0,
+          [`@media (min-width: ${theme.breakpoints.sm})`]: {
+            paddingLeft: 0,
+          },
+        },
+      }}
     >
       {navbar && (
         <AppShell.Navbar>
