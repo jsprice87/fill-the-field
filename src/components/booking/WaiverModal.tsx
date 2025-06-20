@@ -6,14 +6,14 @@ import { FileText } from 'lucide-react';
 interface WaiverModalProps {
   opened: boolean;
   onClose: () => void;
-  waiverText?: string;
+  waiverText: string;
   franchiseeData?: any;
 }
 
 export const WaiverModal: React.FC<WaiverModalProps> = ({
   opened,
   onClose,
-  waiverText = '',
+  waiverText,
   franchiseeData
 }) => {
   return (
@@ -42,5 +42,3 @@ export const WaiverModal: React.FC<WaiverModalProps> = ({
     </Modal>
   );
 };
-
-export default WaiverModal;

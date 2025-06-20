@@ -2,8 +2,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Share2, Calendar, MapPin, User } from 'lucide-react';
-import { Button } from '@mantine/core';
-import { Card } from '@mantine/core';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { notify } from '@/utils/notify';
 
 interface BookingSuccessProps {
@@ -78,20 +78,20 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="border-l-4 border-l-green-500">
-        <Card.Section className="p-6">
+        <CardHeader>
           <div className="flex items-center gap-3">
             <CheckCircle className="h-8 w-8 text-green-500" />
             <div>
-              <div className="font-agrandir text-xl text-brand-navy">
+              <CardTitle className="font-agrandir text-xl text-brand-navy">
                 Booking Confirmed!
-              </div>
+              </CardTitle>
               <p className="font-poppins text-gray-600 mt-1">
                 Reference: {bookingData.booking_reference}
               </p>
             </div>
           </div>
-        </Card.Section>
-        <Card.Section className="p-6">
+        </CardHeader>
+        <CardContent>
           <p className="font-poppins text-gray-700 mb-6">
             Thank you {bookingData.parent_first_name}! Your free trial has been successfully booked. 
             We're excited to see {appointment?.participant_name} on the field!
@@ -148,7 +148,7 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
               📧 A confirmation email has been sent to {bookingData.parent_email}
             </p>
           </div>
-        </Card.Section>
+        </CardContent>
       </Card>
     </div>
   );
