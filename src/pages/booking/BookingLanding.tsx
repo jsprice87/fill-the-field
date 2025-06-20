@@ -125,7 +125,7 @@ const BookingLanding: React.FC = () => {
                     fullWidth
                     variant={selectedClassId === schedule.id ? 'filled' : 'outline'}
                     onClick={() => setSelectedClassId(schedule.id)}
-                    rightIcon={<ArrowRight />}
+                    rightSection={<ArrowRight />}
                   >
                     {selectedClassId === schedule.id ? 'Selected' : 'Select Class'}
                   </Button>

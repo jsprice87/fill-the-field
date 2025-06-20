@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -41,6 +40,7 @@ export interface BookingFlowData {
   communicationPermission?: boolean;
   marketingPermission?: boolean;
   childSpeaksEnglish?: boolean;
+  selectedDate?: string;
 }
 
 export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
@@ -202,6 +202,11 @@ export const useBookingFlow = (flowId?: string, franchiseeId?: string) => {
     addParticipant,
     removeParticipant,
     getParticipantCountForClass,
+    resetFlow: () => setFlowData({}),
+    isSubmitting: false,
+    submitBooking: async () => {},
+    bookingSuccessData: null,
+    error: null,
     
     // Compatibility functions with existing code
     getLeadData: () => flowData.leadData,

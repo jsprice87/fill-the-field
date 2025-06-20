@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/utils/notify';
@@ -16,6 +15,17 @@ export const useFranchiseeData = () => {
     enabled: !!profile, // Only run when profile is available
     staleTime: 10 * 60 * 1000, // 10 minutes stale time
     initialData: profile, // Use profile data as initial data
+  });
+};
+
+export const useFranchiseeBySlug = (slug: string) => {
+  return useQuery({
+    queryKey: ['franchisee-by-slug', slug],
+    queryFn: async () => {
+      // Stub implementation - returns null
+      return null;
+    },
+    enabled: !!slug,
   });
 };
 

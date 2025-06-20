@@ -85,7 +85,7 @@ const ClassBooking: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Button variant="outline" onClick={handleBack} leftIcon={<ArrowLeft />}>
+      <Button variant="outline" onClick={handleBack} leftSection={<ArrowLeft />}>
         Back to Classes
       </Button>
 
@@ -99,7 +99,7 @@ const ClassBooking: React.FC = () => {
         </Card.Section>
 
         <Card.Section className="p-4 space-y-4">
-          <ClassDetails classSchedule={classSchedule} />
+          <ClassDetails />
 
           <DateSelector
             classScheduleId={classScheduleId || ''}
@@ -109,10 +109,7 @@ const ClassBooking: React.FC = () => {
 
           <ParentGuardianForm flowData={flowData} updateFlow={updateFlow} />
 
-          <ParticipantForms
-            flowData={flowData}
-            updateFlow={updateFlow}
-          />
+          <ParticipantForms />
 
           {error && (
             <p className="text-red-600 font-poppins text-sm">{error}</p>
