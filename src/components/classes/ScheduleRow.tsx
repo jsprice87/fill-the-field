@@ -7,7 +7,20 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
 import MultiDatePicker from './MultiDatePicker';
 import AgeRangeInput from './AgeRangeInput';
-import type { ScheduleRow as ScheduleRowType } from '@/pages/portal/Classes';
+
+interface ScheduleRowType {
+  className: string;
+  dayOfWeek: number;
+  duration: number;
+  timeStart: string;
+  timeEnd: string;
+  dateStart: string;
+  dateEnd: string;
+  overrideDates: string[];
+  minAge: number;
+  maxAge: number;
+  capacity: number;
+}
 
 interface ScheduleRowProps {
   row: ScheduleRowType;

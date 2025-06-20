@@ -2,7 +2,20 @@
 import React from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import ScheduleRow from './ScheduleRow';
-import type { ScheduleRow as ScheduleRowType } from '@/pages/portal/Classes';
+
+interface ScheduleRowType {
+  className: string;
+  dayOfWeek: number;
+  duration: number;
+  timeStart: string;
+  timeEnd: string;
+  dateStart: string;
+  dateEnd: string;
+  overrideDates: string[];
+  minAge: number;
+  maxAge: number;
+  capacity: number;
+}
 
 interface ScheduleGridProps {
   rows: ScheduleRowType[];
