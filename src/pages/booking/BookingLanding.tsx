@@ -5,7 +5,7 @@ import { Card } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, Users, Clock, Star, ArrowRight, Phone, Mail, Globe } from 'lucide-react';
-import { useFranchiseeBySlug } from '@/hooks/useFranchiseeBySlug';
+import { useFranchiseeBySlug } from '@/hooks/useFranchiseeData';
 import { useClassSchedules } from '@/hooks/useClassSchedules';
 
 const BookingLanding: React.FC = () => {

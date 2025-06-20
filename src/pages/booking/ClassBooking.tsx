@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@mantine/core';
@@ -33,8 +34,9 @@ const ClassBooking: React.FC = () => {
 
   useEffect(() => {
     if (classSchedule && !selectedDate) {
-      // Set default selected date to the first available date
-      setSelectedDate(classSchedule.availableDates?.[0]?.date);
+      // Set default selected date if available
+      const today = new Date().toISOString().split('T')[0];
+      setSelectedDate(today);
     }
   }, [classSchedule, selectedDate]);
 
