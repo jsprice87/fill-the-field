@@ -171,16 +171,17 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
             </TableHeader>
             <TableBody>
               {paginatedClasses.map((classSchedule) => {
-                // Safe access to nested location data
-                const location = classSchedule.classes?.locations;
+                // Safe access to nested data
+                const cls = classSchedule.classes;
+                const location = cls?.locations;
                 
                 return (
                   <TableRow key={classSchedule.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{classSchedule.classes.name}</div>
+                        <div className="font-medium">{cls?.name ?? '—'}</div>
                         <div className="text-sm text-muted-foreground">
-                          {classSchedule.classes.class_name}
+                          {cls?.class_name ?? '—'}
                         </div>
                       </div>
                     </TableCell>
@@ -201,16 +202,16 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                         <div className="text-sm">
-                          <div>{location ? location.name : '—'}</div>
+                          <div>{location?.name ?? '—'}</div>
                           <div className="text-muted-foreground">
-                            {location ? location.city : '—'}
+                            {location?.city ?? '—'}
                           </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {classSchedule.current_bookings || 0} / {classSchedule.classes.max_capacity}
+                        {classSchedule.current_bookings || 0} / {cls?.max_capacity ?? 0}
                       </div>
                     </TableCell>
                     <TableCell>
