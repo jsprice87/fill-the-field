@@ -81,7 +81,7 @@ const PortalBookings: React.FC = () => {
 
   return (
     <PortalShell>
-      <Stack h="100vh" gap={0}>
+      <Stack h="100vh" gap={0} w="100%">
         {/* Sticky Header with Page Title and Filters */}
         <StickyHeader>
           <Stack gap="md">
@@ -142,8 +142,7 @@ const PortalBookings: React.FC = () => {
           offsetScrollbars
           type="scroll"
           h={`calc(100vh - ${rem(180)})`}
-          px="md"
-          pb="md"
+          w="100%"
         >
           <BookingsTable 
             bookings={finalBookings} 

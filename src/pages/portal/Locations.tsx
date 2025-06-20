@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@mantine/core';
 import { Plus, MapPin, Building, Users, Clock } from "lucide-react";
@@ -138,7 +137,7 @@ const PortalLocations: React.FC = () => {
 
   return (
     <PortalShell>
-      <Stack h="100vh" gap={0}>
+      <Stack h="100vh" gap={0} w="100%">
         {/* Sticky Header with Metrics */}
         <StickyHeader>
           <Stack gap="md">

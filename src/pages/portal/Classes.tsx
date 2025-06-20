@@ -1,11 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@mantine/core';
-import { Card } from '@mantine/core';
-import { Plus, Calendar, MapPin, Users, Clock, Edit, Trash } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Title, Stack, Group } from '@mantine/core';
+import { StickyHeader } from '@/components/mantine';
+import { PortalShell } from '@/layout/PortalShell';
+import ClassesTable from '@/components/classes/ClassesTable';
 
 interface ClassSchedule {
   id: string;
@@ -36,20 +39,6 @@ interface ClassSchedule {
       zip: string;
     };
   };
-}
-
-export interface ScheduleRow {
-  className: string;
-  dayOfWeek: number;
-  duration: number;
-  timeStart: string;
-  timeEnd: string;
-  dateStart: string;
-  dateEnd: string;
-  overrideDates: string[];
-  minAge: number;
-  maxAge: number;
-  capacity: number;
 }
 
 const ClassesList: React.FC = () => {
@@ -112,102 +101,40 @@ const ClassesList: React.FC = () => {
     }
   };
 
-  const handleDeleteClass = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this class?')) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from('class_schedules')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting class:', error);
-        toast.error('Failed to delete class');
-        return;
-      }
-
-      toast.success('Class deleted successfully');
-      fetchClasses(); // Refresh the class list
-    } catch (error) {
-      console.error('Error deleting class:', error);
-      toast.error('Failed to delete class');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleDeleteClass = (deletedId: string) => {
+    setClasses(prev => prev.filter(cls => cls.id !== deletedId));
   };
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  if (isLoading) {
+    return (
+      <PortalShell>
+        <Stack h="100vh" justify="center" align="center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+        </Stack>
+      </PortalShell>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">All Classes</h1>
-        <Button onClick={() => navigate('/portal/classes/add')}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Class
-        </Button>
-      </div>
+    <PortalShell>
+      <Stack h="100vh" gap={0} w="100%">
+        <StickyHeader>
+          <Group justify="space-between" align="center">
+            <Title order={1} size="30px" lh="36px" fw={600}>
+              All Classes
+            </Title>
+            <Button onClick={() => navigate('/portal/classes/add')}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Class
+            </Button>
+          </Group>
+        </StickyHeader>
 
-      {isLoading ? (
-        <div className="text-center">Loading classes...</div>
-      ) : (
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {classes.map((classSchedule) => (
-            <Card key={classSchedule.id}>
-              <Card.Section>
-                <Card.Section className="flex items-center justify-between p-4 border-b">
-                  {classSchedule.classes.name}
-                  <Badge variant="secondary">
-                    {daysOfWeek[classSchedule.day_of_week]}
-                  </Badge>
-                </Card.Section>
-              </Card.Section>
-              <Card.Section className="space-y-2 p-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.date_start ? new Date(classSchedule.date_start).toLocaleDateString() : 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.start_time} - {classSchedule.end_time}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.classes.locations.name}, {classSchedule.classes.locations.city}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.classes.max_capacity}</span>
-                </div>
-              </Card.Section>
-              <Card.Section className="flex justify-end space-x-2 p-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(`/portal/classes/edit/${classSchedule.id}`)}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:bg-red-50"
-                  onClick={() => handleDeleteClass(classSchedule.id)}
-                >
-                  <Trash className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </Card.Section>
-            </Card>
-          ))}
+        <div className="flex-1 overflow-auto p-4">
+          <ClassesTable classes={classes} onDelete={handleDeleteClass} />
         </div>
-      )}
-    </div>
+      </Stack>
+    </PortalShell>
   );
 };
 
