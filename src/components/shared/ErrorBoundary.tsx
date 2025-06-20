@@ -5,6 +5,7 @@ import { Button } from '@mantine/core';
 
 interface Props {
   children: React.ReactNode;
+  fallback?: React.ComponentType;
   onReset: () => void;
 }
 
@@ -30,7 +31,13 @@ class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // You can render any custom fallback UI
+      // If a fallback component is provided, use it
+      if (this.props.fallback) {
+        const FallbackComponent = this.props.fallback;
+        return <FallbackComponent />;
+      }
+      
+      // Otherwise, use the default fallback UI
       return (
         <Card className="w-full">
           <Card.Section>
