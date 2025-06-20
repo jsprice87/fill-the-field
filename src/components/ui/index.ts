@@ -15,6 +15,11 @@ export type { BadgeProps } from '../mantine/Badge';
 export { Select } from '../mantine/Select';
 export type { SelectProps } from '../mantine/Select';
 
+// Legacy adapters for booking pages
+export { Button as LegacyButton } from './button';
+export { Card, CardContent, CardHeader, CardTitle } from './card';
+export { Input as LegacyInput } from './input';
+
 // Still using shadcn/ui - will be migrated in future phases
 export * from './dialog';
 export * from './table';
