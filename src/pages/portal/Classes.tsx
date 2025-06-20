@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button, Box } from '@mantine/core';
 import { Plus, Filter } from 'lucide-react';
@@ -15,7 +14,7 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useClasses } from '@/hooks/useClasses';
 
 const ClassesList: React.FC = () => {
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   
@@ -23,7 +22,7 @@ const ClassesList: React.FC = () => {
   const { data: locations = [] } = useLocations(franchiseeData?.id);
   const { data: classes = [], isLoading } = useClasses(
     franchiseeData?.id,
-    selectedLocationId,
+    selectedLocationId === 'all' ? null : selectedLocationId,
     searchTerm
   );
 
@@ -52,7 +51,7 @@ const ClassesList: React.FC = () => {
       label: 'Total Classes',
       value: classes.length,
       icon: Calendar,
-      description: searchTerm || selectedLocationId
+      description: searchTerm || selectedLocationId !== 'all'
         ? 'Current filter' 
         : 'All locations'
     },
@@ -95,7 +94,7 @@ const ClassesList: React.FC = () => {
                       <SelectValue placeholder="Filter by location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Locations</SelectItem>
+                      <SelectItem value="all">All Locations</SelectItem>
                       {locations.map((location) => (
                         <SelectItem key={location.id} value={location.id}>
                           {location.name}
@@ -140,7 +139,7 @@ const ClassesList: React.FC = () => {
             classes={classes} 
             onDelete={handleDeleteClass}
             franchiseeId={franchiseeData?.id}
-            locationId={selectedLocationId}
+            locationId={selectedLocationId === 'all' ? null : selectedLocationId}
             search={searchTerm}
           />
         </Box>
