@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
@@ -73,10 +74,10 @@ const FindClasses: React.FC = () => {
       setError(null);
 
       try {
-        const { data: settings, error: settingsError } = await (supabase
+        const { data: settings, error: settingsError } = await (supabase as any)
           .from('franchisee_settings')
           .select('setting_key, setting_value')
-          .eq('franchisee_slug', franchiseeSlug) as any);
+          .eq('franchisee_slug', franchiseeSlug);
 
         if (settingsError) {
           console.error('Error fetching franchisee settings:', settingsError);
@@ -88,7 +89,7 @@ const FindClasses: React.FC = () => {
         const pixelSetting = settingsData?.find((s: any) => s.setting_key === 'meta_pixel_id');
         setMetaPixelId(pixelSetting?.setting_value || null);
 
-        const { data: classScheduleData, error: classScheduleError } = await (supabase
+        const { data: classScheduleData, error: classScheduleError } = await (supabase as any)
           .from('class_schedules')
           .select(`
             id,
@@ -113,7 +114,7 @@ const FindClasses: React.FC = () => {
               )
             )
           `)
-          .eq('classes.locations.franchisee_slug', franchiseeSlug) as any);
+          .eq('classes.locations.franchisee_slug', franchiseeSlug);
 
         if (classScheduleError) {
           console.error('Error fetching class schedules:', classScheduleError);

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,7 +70,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
       }
 
       try {
-        const { data, error } = await (supabase
+        const { data, error } = await (supabase as any)
           .from('bookings')
           .select(`
             booking_reference,
@@ -95,7 +96,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ franchiseeId:
             )
           `)
           .eq('booking_reference', bookingReference)
-          .eq('franchisee_id', currentFranchiseeId) as any)
+          .eq('franchisee_id', currentFranchiseeId)
           .single();
 
         if (error) {

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,11 +71,11 @@ const BookingLanding: React.FC = () => {
         const franchiseeId = franchisee.id;
 
         // Fetch classes
-        const { data: classes, error: classesError } = await (supabase
+        const { data: classes, error: classesError } = await (supabase as any)
           .from('classes')
           .select('*')
           .eq('franchisee_id', franchiseeId)
-          .eq('is_active', true) as any);
+          .eq('is_active', true);
 
         if (classesError) {
           console.error("Error fetching classes:", classesError);
@@ -84,11 +85,11 @@ const BookingLanding: React.FC = () => {
         setAvailableClasses(classes || []);
 
         // Fetch locations
-        const { data: locations, error: locationsError } = await (supabase
+        const { data: locations, error: locationsError } = await (supabase as any)
           .from('locations')
           .select('*')
           .eq('franchisee_id', franchiseeId)
-          .eq('is_active', true) as any);
+          .eq('is_active', true);
 
         if (locationsError) {
           console.error("Error fetching locations:", locationsError);
