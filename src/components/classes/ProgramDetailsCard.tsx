@@ -5,17 +5,11 @@ import { Calendar, MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { DateInput } from '@/components/mantine/DateInput';
 import LocationSelector from './LocationSelector';
-
-interface ProgramData {
-  locationId: string;
-  daysOfWeek: number[];
-  startDate: Date | null;
-  endDate: Date | null;
-}
+import { ProgramFormData } from '@/types/domain';
 
 interface ProgramDetailsCardProps {
-  programData: ProgramData;
-  onProgramDataChange: (data: ProgramData) => void;
+  programData: ProgramFormData;
+  onProgramDataChange: (data: ProgramFormData) => void;
   franchiseeId?: string;
 }
 

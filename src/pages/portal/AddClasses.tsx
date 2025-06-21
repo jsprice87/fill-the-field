@@ -9,18 +9,8 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import ProgramDetailsCard from '@/components/classes/ProgramDetailsCard';
 import EditableClassesTable from '@/components/classes/EditableClassesTable';
 import { useProgramForm } from '@/hooks/useProgramForm';
-import dayjs from 'dayjs';
-
-interface ClassRowData {
-  id: string;
-  className: string;
-  startTime: string;
-  duration: number;
-  endTime: string;
-  minAge: number;
-  maxAge: number;
-  capacity: number;
-}
+import { toDtoClassSchedule, toISODate } from '@/utils/mappers/class';
+import { ClassFormData } from '@/types/domain';
 
 const AddClasses: React.FC = () => {
   const navigate = useNavigate();
@@ -37,10 +27,6 @@ const AddClasses: React.FC = () => {
     removeClassRow,
     updateClassRow
   } = useProgramForm();
-
-  // Helper function to convert Date to ISO string
-  const iso = (d: Date | null): string | null => 
-    d ? dayjs(d).format('YYYY-MM-DD') : null;
 
   const handleSave = async () => {
     if (!franchiseeData?.id || !isProgramValid || classRows.length === 0) {
@@ -89,20 +75,20 @@ const AddClasses: React.FC = () => {
 
         // Create class schedule for each selected day
         for (const dayOfWeek of programData.daysOfWeek) {
+          const scheduleInput = toDtoClassSchedule({
+            classId: classData.id,
+            startTime: classRow.startTime,
+            endTime: classRow.endTime,
+            dateStart: programData.startDate,
+            dateEnd: programData.endDate,
+            dayOfWeek,
+            currentBookings: 0,
+            isActive: true,
+          });
+
           const { error: scheduleError } = await supabase
             .from('class_schedules')
-            .insert([
-              {
-                class_id: classData.id,
-                start_time: classRow.startTime,
-                end_time: classRow.endTime,
-                date_start: iso(programData.startDate),
-                date_end: iso(programData.endDate),
-                day_of_week: dayOfWeek,
-                current_bookings: 0,
-                is_active: true,
-              },
-            ]);
+            .insert([scheduleInput]);
 
           if (scheduleError) {
             console.error("Error creating class schedule:", scheduleError);

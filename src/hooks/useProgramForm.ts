@@ -1,26 +1,9 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
+import { ProgramFormData, ClassFormData } from '@/types/domain';
 
-interface ProgramData {
-  locationId: string;
-  daysOfWeek: number[];
-  startDate: Date | null;
-  endDate: Date | null;
-}
-
-interface ClassRowData {
-  id: string;
-  className: string;
-  startTime: string;
-  duration: number;
-  endTime: string;
-  minAge: number;
-  maxAge: number;
-  capacity: number;
-}
-
-const createDefaultClassRow = (existingRow?: ClassRowData): ClassRowData => {
+const createDefaultClassRow = (existingRow?: ClassFormData): ClassFormData => {
   const baseData = existingRow || {
     startTime: '09:00',
     duration: 60,
@@ -47,14 +30,15 @@ const createDefaultClassRow = (existingRow?: ClassRowData): ClassRowData => {
 };
 
 export const useProgramForm = () => {
-  const [programData, setProgramData] = useState<ProgramData>({
+  const [programData, setProgramData] = useState<ProgramFormData>({
+    programName: '',
     locationId: '',
     daysOfWeek: [],
     startDate: null,
     endDate: null,
   });
 
-  const [classRows, setClassRows] = useState<ClassRowData[]>([
+  const [classRows, setClassRows] = useState<ClassFormData[]>([
     createDefaultClassRow()
   ]);
 
@@ -75,7 +59,7 @@ export const useProgramForm = () => {
     setClassRows(prev => prev.filter(row => row.id !== id));
   }, []);
 
-  const updateClassRow = useCallback((id: string, field: keyof ClassRowData, value: any) => {
+  const updateClassRow = useCallback((id: string, field: keyof ClassFormData, value: any) => {
     setClassRows(prev => prev.map(row => {
       if (row.id !== id) return row;
 

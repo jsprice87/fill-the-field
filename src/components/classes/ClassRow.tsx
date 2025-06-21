@@ -4,22 +4,11 @@ import { Button, Group } from '@mantine/core';
 import { TableCell, TableRow } from '@/components/mantine';
 import { Input } from '@/components/ui/input';
 import { Trash } from 'lucide-react';
-import dayjs from 'dayjs';
-
-interface ClassRowData {
-  id: string;
-  className: string;
-  startTime: string;
-  duration: number;
-  endTime: string;
-  minAge: number;
-  maxAge: number;
-  capacity: number;
-}
+import { ClassFormData } from '@/types/domain';
 
 interface ClassRowProps {
-  classData: ClassRowData;
-  onUpdate: (id: string, field: keyof ClassRowData, value: any) => void;
+  classData: ClassFormData;
+  onUpdate: (id: string, field: keyof ClassFormData, value: any) => void;
   onRemove: (id: string) => void;
   canRemove: boolean;
   disabled?: boolean;
@@ -32,7 +21,7 @@ const ClassRow: React.FC<ClassRowProps> = ({
   canRemove,
   disabled = false,
 }) => {
-  const handleFieldChange = (field: keyof ClassRowData, value: any) => {
+  const handleFieldChange = (field: keyof ClassFormData, value: any) => {
     onUpdate(classData.id, field, value);
   };
 

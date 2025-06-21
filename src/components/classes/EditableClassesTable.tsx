@@ -4,21 +4,11 @@ import { Card, Table, Button, Stack } from '@mantine/core';
 import { TableHeader, TableBody, TableRow, TableHead } from '@/components/mantine';
 import { BookOpen, Trash } from 'lucide-react';
 import ClassRow from './ClassRow';
-
-interface ClassRowData {
-  id: string;
-  className: string;
-  startTime: string;
-  duration: number;
-  endTime: string;
-  minAge: number;
-  maxAge: number;
-  capacity: number;
-}
+import { ClassFormData } from '@/types/domain';
 
 interface EditableClassesTableProps {
-  classRows: ClassRowData[];
-  onUpdateRow: (id: string, field: keyof ClassRowData, value: any) => void;
+  classRows: ClassFormData[];
+  onUpdateRow: (id: string, field: keyof ClassFormData, value: any) => void;
   onRemoveRow: (id: string) => void;
   disabled?: boolean;
 }
