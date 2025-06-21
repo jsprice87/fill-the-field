@@ -1,4 +1,3 @@
-
 import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon, HelpCircleIcon } from "lucide-react";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
@@ -12,6 +11,7 @@ import PortalLocations from "./pages/portal/Locations";
 import PortalClasses from "./pages/portal/Classes";
 import ClassesList from "./pages/portal/ClassesList";
 import AddClasses from "./pages/portal/AddClasses";
+import AddClassesProgram from "./pages/portal/AddClassesProgram";
 import EditClass from "./pages/portal/EditClass";
 import PortalProfile from "./pages/portal/Profile";
 import PortalSettings from "./pages/portal/Settings";
@@ -256,6 +256,12 @@ export const navItems = [
         to: "classes/add",
         icon: <BookOpenIcon className="h-4 w-4" />,
         page: <AddClasses />,
+      },
+      {
+        title: "Add Classes Program",
+        to: "classes/add-program",
+        icon: <BookOpenIcon className="h-4 w-4" />,
+        page: <AddClassesProgram />,
       },
       {
         title: "Edit Class",

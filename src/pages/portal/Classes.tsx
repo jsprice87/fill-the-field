@@ -112,10 +112,16 @@ const ClassesList: React.FC = () => {
                   className="w-64"
                 />
 
-                <Button onClick={() => navigate('/portal/classes/add')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Class
-                </Button>
+                <Group gap="xs">
+                  <Button variant="outline" onClick={() => navigate('/portal/classes/add')}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Single Class
+                  </Button>
+                  <Button onClick={() => navigate('/portal/classes/add-program')}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Program
+                  </Button>
+                </Group>
               </Group>
             </Group>
 
