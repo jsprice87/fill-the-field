@@ -1,0 +1,91 @@
+
+import React from 'react';
+import { Card, Table, Button, Stack } from '@mantine/core';
+import { TableHeader, TableBody, TableRow, TableHead } from '@/components/mantine';
+import { BookOpen, Trash } from 'lucide-react';
+import ClassRow from './ClassRow';
+
+interface ClassRowData {
+  id: string;
+  className: string;
+  startTime: string;
+  duration: number;
+  endTime: string;
+  minAge: number;
+  maxAge: number;
+  capacity: number;
+}
+
+interface EditableClassesTableProps {
+  classRows: ClassRowData[];
+  onUpdateRow: (id: string, field: keyof ClassRowData, value: any) => void;
+  onRemoveRow: (id: string) => void;
+  disabled?: boolean;
+}
+
+const EditableClassesTable: React.FC<EditableClassesTableProps> = ({
+  classRows,
+  onUpdateRow,
+  onRemoveRow,
+  disabled = false,
+}) => {
+  if (classRows.length === 0) {
+    return (
+      <Card withBorder>
+        <Card.Section className="flex items-center gap-2 p-4 border-b">
+          <BookOpen className="h-5 w-5" />
+          <h3 className="text-lg font-semibold">Classes</h3>
+        </Card.Section>
+        <Card.Section className="p-8">
+          <div className="text-center text-gray-500">
+            Fill in the program details above to start adding classes.
+          </div>
+        </Card.Section>
+      </Card>
+    );
+  }
+
+  return (
+    <Card withBorder>
+      <Card.Section className="flex items-center gap-2 p-4 border-b">
+        <BookOpen className="h-5 w-5" />
+        <h3 className="text-lg font-semibold">Classes</h3>
+        <span className="text-sm text-gray-500">({classRows.length} class{classRows.length !== 1 ? 'es' : ''})</span>
+      </Card.Section>
+      
+      <Card.Section className="p-4">
+        <div className="overflow-x-auto">
+          <Table.ScrollContainer minWidth={800}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Class Name</TableHead>
+                  <TableHead>Start Time</TableHead>
+                  <TableHead>Duration (min)</TableHead>
+                  <TableHead>End Time</TableHead>
+                  <TableHead>Age Range</TableHead>
+                  <TableHead>Capacity</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {classRows.map((row) => (
+                  <ClassRow
+                    key={row.id}
+                    classData={row}
+                    onUpdate={onUpdateRow}
+                    onRemove={onRemoveRow}
+                    canRemove={classRows.length > 1}
+                    disabled={disabled}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </Table.ScrollContainer>
+        </div>
+      </Card.Section>
+    </Card>
+  );
+};
+
+export default EditableClassesTable;

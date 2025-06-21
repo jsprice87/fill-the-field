@@ -1,168 +1,120 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@mantine/core';
-import { Card } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, BookOpen, Plus, Edit, Trash, Save } from 'lucide-react';
+import { Button, Stack, Group, Title } from '@mantine/core';
+import { ArrowLeft, Save, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
-import { useLocations } from '@/hooks/useLocations';
+import ProgramDetailsCard from '@/components/classes/ProgramDetailsCard';
+import EditableClassesTable from '@/components/classes/EditableClassesTable';
+import { useProgramForm } from '@/hooks/useProgramForm';
 
-interface AddClassProps {
-  franchiseeId?: string;
-}
-
-interface Location {
+interface ClassRowData {
   id: string;
-  name: string;
+  className: string;
+  startTime: string;
+  duration: number;
+  endTime: string;
+  minAge: number;
+  maxAge: number;
+  capacity: number;
 }
 
-const AddClasses: React.FC<AddClassProps> = ({ franchiseeId: propFranchiseeId }) => {
-  const [className, setClassName] = useState('');
-  const [description, setDescription] = useState('');
-  const [duration, setDuration] = useState(60);
-  const [capacity, setCapacity] = useState(12);
-  const [minAge, setMinAge] = useState(5);
-  const [maxAge, setMaxAge] = useState(12);
-  const [locationId, setLocationId] = useState('');
-  const [dayOfWeek, setDayOfWeek] = useState(0);
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('10:00');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [currentFranchiseeId, setCurrentFranchiseeId] = useState<string | null>(propFranchiseeId || null);
+const AddClasses: React.FC = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (propFranchiseeId) {
-      setCurrentFranchiseeId(propFranchiseeId);
-      return;
-    }
-
-    const getFranchiseeId = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          toast.error("Authentication required");
-          return;
-        }
-
-        const { data: franchisee, error } = await supabase
-          .from('franchisees')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (error || !franchisee) {
-          console.error("Error fetching franchisee:", error);
-          toast.error("Unable to find franchisee account");
-          return;
-        }
-
-        setCurrentFranchiseeId(franchisee.id);
-      } catch (error) {
-        console.error("Error getting franchisee:", error);
-        toast.error("Failed to authenticate");
-      }
-    };
-
-    getFranchiseeId();
-  }, [propFranchiseeId]);
-
-  useEffect(() => {
-    const fetchLocations = async () => {
-      if (!currentFranchiseeId) {
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('locations')
-          .select('id, name')
-          .eq('franchisee_id', currentFranchiseeId);
-
-        if (error) {
-          console.error("Error fetching locations:", error);
-          toast.error("Failed to load locations");
-          return;
-        }
-
-        setLocations(data || []);
-      } catch (error) {
-        console.error("Error fetching locations:", error);
-        toast.error("Failed to load locations");
-      }
-    };
-
-    fetchLocations();
-  }, [currentFranchiseeId]);
+  const { data: franchiseeData } = useFranchiseeData();
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const {
+    programData,
+    setProgramData,
+    classRows,
+    setClassRows,
+    isProgramValid,
+    addClassRow,
+    removeClassRow,
+    updateClassRow
+  } = useProgramForm();
 
   const handleSave = async () => {
-    if (!currentFranchiseeId) {
-      toast.error("Franchisee ID is missing");
+    if (!franchiseeData?.id || !isProgramValid || classRows.length === 0) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
     setIsSaving(true);
     try {
-      // Insert into classes table
-      const { data: classData, error: classError } = await supabase
-        .from('classes')
-        .insert([
-          {
-            franchisee_id: currentFranchiseeId,
-            name: className,
-            class_name: className,
-            description: description,
-            duration_minutes: duration,
-            max_capacity: capacity,
-            min_age: minAge,
-            max_age: maxAge,
-            location_id: locationId,
-            is_active: true,
-          },
-        ])
-        .select()
+      const createdClasses = [];
+      
+      // Create each class with merged program + class data
+      for (const classRow of classRows) {
+        if (!classRow.className.trim()) {
+          toast.error("All classes must have a name");
+          setIsSaving(false);
+          return;
+        }
 
-      if (classError) {
-        console.error("Error creating class:", classError);
-        toast.error("Failed to create class");
-        return;
+        // Create class record
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .insert([
+            {
+              franchisee_id: franchiseeData.id,
+              name: classRow.className,
+              class_name: classRow.className,
+              description: `${classRow.className} program`,
+              duration_minutes: classRow.duration,
+              max_capacity: classRow.capacity,
+              min_age: classRow.minAge,
+              max_age: classRow.maxAge,
+              location_id: programData.locationId,
+              is_active: true,
+            },
+          ])
+          .select()
+          .single();
+
+        if (classError) {
+          console.error("Error creating class:", classError);
+          toast.error(`Failed to create class: ${classRow.className}`);
+          setIsSaving(false);
+          return;
+        }
+
+        // Create class schedule for each selected day
+        for (const dayOfWeek of programData.daysOfWeek) {
+          const { error: scheduleError } = await supabase
+            .from('class_schedules')
+            .insert([
+              {
+                class_id: classData.id,
+                start_time: classRow.startTime,
+                end_time: classRow.endTime,
+                date_start: programData.startDate || null,
+                date_end: programData.endDate || null,
+                day_of_week: dayOfWeek,
+                current_bookings: 0,
+                is_active: true,
+              },
+            ]);
+
+          if (scheduleError) {
+            console.error("Error creating class schedule:", scheduleError);
+            toast.error(`Failed to create schedule for ${classRow.className}`);
+            setIsSaving(false);
+            return;
+          }
+        }
+
+        createdClasses.push(classData);
       }
 
-      // Insert into class_schedules table
-      const { error: scheduleError } = await supabase
-        .from('class_schedules')
-        .insert([
-          {
-            class_id: classData?.[0]?.id,
-            start_time: startTime,
-            end_time: endTime,
-            date_start: startDate || null,
-            date_end: endDate || null,
-            day_of_week: dayOfWeek,
-            current_bookings: 0,
-            is_active: true,
-          },
-        ]);
-
-      if (scheduleError) {
-        console.error("Error creating class schedule:", scheduleError);
-        toast.error("Failed to create class schedule");
-        return;
-      }
-
-      toast.success("Class created successfully");
+      toast.success(`Successfully created ${createdClasses.length} classes`);
       navigate('/portal/classes/list');
     } catch (error) {
-      console.error("Error saving class:", error);
-      toast.error("Failed to save class");
+      console.error("Error saving program:", error);
+      toast.error("Failed to save program");
     } finally {
       setIsSaving(false);
     }
@@ -176,181 +128,51 @@ const AddClasses: React.FC<AddClassProps> = ({ franchiseeId: propFranchiseeId })
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Classes
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">Add Class</h1>
+          <Title order={1} size="30px" lh="36px" fw={600}>
+            Create Program
+          </Title>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <>
-              <span className="animate-pulse">Saving...</span>
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </>
-          )}
-        </Button>
+        <Group gap="md">
+          <Button
+            variant="outline"
+            onClick={addClassRow}
+            disabled={!isProgramValid}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Class
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || !isProgramValid || classRows.length === 0}
+          >
+            {isSaving ? (
+              <>
+                <span className="animate-pulse">Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Create Program & Save All
+              </>
+            )}
+          </Button>
+        </Group>
       </div>
 
-      <Card>
-        <Card.Section>
-          <Card.Section className="flex items-center gap-2 p-4 border-b">
-            <BookOpen className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Class Details</h3>
-          </Card.Section>
-        </Card.Section>
-        <Card.Section className="space-y-4 p-4">
-          <div className="grid gap-2">
-            <Label htmlFor="class-name">Class Name</Label>
-            <Input
-              id="class-name"
-              type="text"
-              placeholder="Enter class name"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="class-description">Class Description</Label>
-            <Textarea
-              id="class-description"
-              placeholder="Enter class description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="duration">Duration (minutes)</Label>
-              <Input
-                id="duration"
-                type="number"
-                placeholder="Enter duration"
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="capacity">Capacity</Label>
-              <Input
-                id="capacity"
-                type="number"
-                placeholder="Enter capacity"
-                value={capacity}
-                onChange={(e) => setCapacity(Number(e.target.value))}
-              />
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="min-age">Min Age</Label>
-              <Input
-                id="min-age"
-                type="number"
-                placeholder="Enter minimum age"
-                value={minAge}
-                onChange={(e) => setMinAge(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="max-age">Max Age</Label>
-              <Input
-                id="max-age"
-                type="number"
-                placeholder="Enter maximum age"
-                value={maxAge}
-                onChange={(e) => setMaxAge(Number(e.target.value))}
-              />
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="location">Location</Label>
-            <Select value={locationId} onValueChange={setLocationId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a location" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((location) => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </Card.Section>
-      </Card>
+      <Stack gap="lg">
+        <ProgramDetailsCard
+          programData={programData}
+          onProgramDataChange={setProgramData}
+          franchiseeId={franchiseeData?.id}
+        />
 
-      <Card>
-        <Card.Section>
-          <Card.Section className="flex items-center gap-2 p-4 border-b">
-            <Calendar className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Schedule Details</h3>
-          </Card.Section>
-        </Card.Section>
-        <Card.Section className="space-y-4 p-4">
-          <div className="grid gap-2">
-            <Label htmlFor="day-of-week">Day of Week</Label>
-            <Select value={dayOfWeek.toString()} onValueChange={(value) => setDayOfWeek(Number(value))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a day" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Sunday</SelectItem>
-                <SelectItem value="1">Monday</SelectItem>
-                <SelectItem value="2">Tuesday</SelectItem>
-                <SelectItem value="3">Wednesday</SelectItem>
-                <SelectItem value="4">Thursday</SelectItem>
-                <SelectItem value="5">Friday</SelectItem>
-                <SelectItem value="6">Saturday</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="start-time">Start Time</Label>
-              <Input
-                id="start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="end-time">End Time</Label>
-              <Input
-                id="end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="start-date">Start Date (Optional)</Label>
-              <Input
-                id="start-date"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="end-date">End Date (Optional)</Label>
-              <Input
-                id="end-date"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-        </Card.Section>
-      </Card>
+        <EditableClassesTable
+          classRows={classRows}
+          onUpdateRow={updateClassRow}
+          onRemoveRow={removeClassRow}
+          disabled={!isProgramValid}
+        />
+      </Stack>
     </div>
   );
 };
