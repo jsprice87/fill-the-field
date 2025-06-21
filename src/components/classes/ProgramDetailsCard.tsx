@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Card, Stack, Group, Checkbox, Grid } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
 import { Calendar, MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { DateInput } from '@/components/mantine/DateInput';
 import LocationSelector from './LocationSelector';
 
 interface ProgramData {
