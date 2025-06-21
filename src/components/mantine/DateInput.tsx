@@ -1,6 +1,8 @@
 
-import { DateInput as MantineDateInput, DateInputProps } from '@mantine/dates';
+import { DateInput as MantineDateInput, DateInputProps as MantineDateInputProps } from '@mantine/dates';
 import { forwardRef } from 'react';
+
+export type DateInputProps = MantineDateInputProps<Date | null>;
 
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
   (props, ref) => {
@@ -9,5 +11,3 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
 );
 
 DateInput.displayName = 'DateInput';
-
-export type { DateInputProps };
