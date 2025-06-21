@@ -9,8 +9,8 @@ import LocationSelector from './LocationSelector';
 interface ProgramData {
   locationId: string;
   daysOfWeek: number[];
-  startDate: string;
-  endDate: string;
+  startDate: Date | null;
+  endDate: Date | null;
 }
 
 interface ProgramDetailsCardProps {
@@ -48,14 +48,14 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
   const handleStartDateChange = (date: Date | null) => {
     onProgramDataChange({
       ...programData,
-      startDate: date ? date.toISOString().split('T')[0] : ''
+      startDate: date
     });
   };
 
   const handleEndDateChange = (date: Date | null) => {
     onProgramDataChange({
       ...programData,
-      endDate: date ? date.toISOString().split('T')[0] : ''
+      endDate: date
     });
   };
 
@@ -98,7 +98,7 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
               <div className="space-y-2">
                 <Label className="text-base font-medium">Program Start Date</Label>
                 <DateInput
-                  value={programData.startDate ? new Date(programData.startDate) : null}
+                  value={programData.startDate}
                   onChange={handleStartDateChange}
                   placeholder="Select start date"
                   leftSection={<Calendar className="h-4 w-4" />}
@@ -109,11 +109,11 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
               <div className="space-y-2">
                 <Label className="text-base font-medium">Program End Date</Label>
                 <DateInput
-                  value={programData.endDate ? new Date(programData.endDate) : null}
+                  value={programData.endDate}
                   onChange={handleEndDateChange}
                   placeholder="Select end date"
                   leftSection={<Calendar className="h-4 w-4" />}
-                  minDate={programData.startDate ? new Date(programData.startDate) : undefined}
+                  minDate={programData.startDate || undefined}
                 />
               </div>
             </Grid.Col>

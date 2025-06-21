@@ -9,6 +9,7 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import ProgramDetailsCard from '@/components/classes/ProgramDetailsCard';
 import EditableClassesTable from '@/components/classes/EditableClassesTable';
 import { useProgramForm } from '@/hooks/useProgramForm';
+import dayjs from 'dayjs';
 
 interface ClassRowData {
   id: string;
@@ -36,6 +37,10 @@ const AddClasses: React.FC = () => {
     removeClassRow,
     updateClassRow
   } = useProgramForm();
+
+  // Helper function to convert Date to ISO string
+  const iso = (d: Date | null): string | null => 
+    d ? dayjs(d).format('YYYY-MM-DD') : null;
 
   const handleSave = async () => {
     if (!franchiseeData?.id || !isProgramValid || classRows.length === 0) {
@@ -91,8 +96,8 @@ const AddClasses: React.FC = () => {
                 class_id: classData.id,
                 start_time: classRow.startTime,
                 end_time: classRow.endTime,
-                date_start: programData.startDate || null,
-                date_end: programData.endDate || null,
+                date_start: iso(programData.startDate),
+                date_end: iso(programData.endDate),
                 day_of_week: dayOfWeek,
                 current_bookings: 0,
                 is_active: true,

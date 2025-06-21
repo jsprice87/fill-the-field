@@ -5,8 +5,8 @@ import dayjs from 'dayjs';
 interface ProgramData {
   locationId: string;
   daysOfWeek: number[];
-  startDate: string;
-  endDate: string;
+  startDate: Date | null;
+  endDate: Date | null;
 }
 
 interface ClassRowData {
@@ -50,8 +50,8 @@ export const useProgramForm = () => {
   const [programData, setProgramData] = useState<ProgramData>({
     locationId: '',
     daysOfWeek: [],
-    startDate: '',
-    endDate: '',
+    startDate: null,
+    endDate: null,
   });
 
   const [classRows, setClassRows] = useState<ClassRowData[]>([
