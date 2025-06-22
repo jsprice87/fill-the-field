@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { z } from 'zod';
 import { Stack, Alert } from '@mantine/core';
 import { Modal } from '@/components/mantine/Modal';
@@ -10,6 +10,7 @@ import { Button, Group } from '@mantine/core';
 import { toDate } from '@/utils/normalize';
 import { useZodForm } from '@/hooks/useZodForm';
 import { calculateAgeFromDate } from '@/utils/ageCalculator';
+import DateSelector from './DateSelector';
 
 // Fixed schema to use Date type for birth_date
 const participantSchema = z.object({
@@ -30,6 +31,7 @@ interface ParticipantModalProps {
   initialData?: Partial<ParticipantFormData>;
   title?: string;
   classSchedule?: {
+    id: string;
     classes: {
       min_age?: number;
       max_age?: number;
@@ -49,6 +51,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   classSchedule,
   dayNames,
 }) => {
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  
   const form = useZodForm(participantSchema, {
     first_name: initialData?.first_name ?? '',
     birth_date: toDate(initialData?.birth_date) ?? null,
@@ -85,23 +89,35 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
      (classSchedule.classes.max_age && age > classSchedule.classes.max_age));
 
   const handleSubmit = async (data: ParticipantFormData) => {
-    // Convert Date to ISO string only at submission time
-    const { notes, ...rest } = data;
-    const payload = {
-      ...rest,
-      birth_date: data.birth_date instanceof Date 
+    if (!selectedDate) {
+      alert('Please select a class date');
+      return;
+    }
+
+    // Convert Date to ISO string and prepare participant data
+    const participantData = {
+      id: crypto.randomUUID(),
+      firstName: data.first_name,
+      lastName: '', // Will be handled by parent form
+      age: age || 0,
+      birthDate: data.birth_date instanceof Date 
         ? data.birth_date.toISOString().split('T')[0] 
         : null,
-      notes: notes || undefined,
+      classScheduleId: classSchedule?.id || '',
+      className: classSchedule?.classes.name || '',
+      classTime: '', // Will be filled from schedule
+      selectedDate: selectedDate,
+      healthConditions: data.notes || undefined,
+      ageOverride: isOutOfRange || false
     };
 
-    console.log('Submitting participant with payload:', payload);
+    console.log('Submitting participant with payload:', participantData);
     console.log('form.isValid', form.isValid());
 
     if (onAddParticipant) {
-      await onAddParticipant(payload);
+      await onAddParticipant(participantData);
     } else {
-      onSubmit(payload);
+      onSubmit(participantData);
     }
     onClose();
   };
@@ -140,6 +156,14 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             </Alert>
           )}
 
+          {classSchedule && (
+            <DateSelector
+              classScheduleId={classSchedule.id}
+              onDateSelect={setSelectedDate}
+              selectedDate={selectedDate}
+            />
+          )}
+
           <Textarea
             label="Notes (Optional)"
             placeholder="Any special notes about this child..."
@@ -158,7 +182,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             <Button
               type="submit"
               loading={form.submitting}
-              disabled={!form.isValid() || form.submitting}
+              disabled={!form.isValid() || form.submitting || !selectedDate}
               data-autofocus
             >
               Save Participant

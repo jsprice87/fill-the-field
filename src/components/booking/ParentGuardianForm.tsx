@@ -1,183 +1,253 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User } from 'lucide-react';
-import type { BookingFlowData } from '@/hooks/useBookingFlow';
-import { ParentGuardianFormFields } from './ParentGuardianFormFields';
-import { ParentGuardianAgreements } from './ParentGuardianAgreements';
-import { WaiverModal } from './WaiverModal';
+import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { User, Phone, Mail, MapPin, Users, FileText, MessageSquare, Heart } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useFranchiseeWaiver } from '@/hooks/useFranchiseeWaiver';
+import type { BookingFlowData } from '@/hooks/useBookingFlow';
 
 interface ParentGuardianFormProps {
   flowData: BookingFlowData;
   updateFlow: (updates: Partial<BookingFlowData>) => Promise<void>;
 }
 
-const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ 
-  flowData, 
-  updateFlow 
-}) => {
-  const [waiverModalOpened, setWaiverModalOpened] = useState(false);
-  const { franchiseeData, waiverText } = useFranchiseeWaiver(flowData);
-  
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    zip: '',
-    relationship: 'Parent'
-  });
+const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updateFlow }) => {
+  const { waiverText } = useFranchiseeWaiver(flowData);
+  const parentInfo = flowData.parentGuardianInfo || {};
 
-  // Pre-fill form with lead data on component mount
-  useEffect(() => {
-    console.log('ParentGuardianForm: Setting up form data', { flowData });
-    
-    const leadData = flowData.leadData;
-    const parentInfo = flowData.parentGuardianInfo;
-    
-    const initialData = {
-      firstName: parentInfo?.firstName || leadData?.firstName || '',
-      lastName: parentInfo?.lastName || leadData?.lastName || '',
-      email: parentInfo?.email || leadData?.email || '',
-      phone: parentInfo?.phone || leadData?.phone || '',
-      zip: parentInfo?.zip || leadData?.zip || '',
-      relationship: parentInfo?.relationship || 'Parent'
-    };
-    
-    console.log('ParentGuardianForm: Initial data set to:', initialData);
-    setFormData(initialData);
-    
-    // If we have lead data and no existing parent info, update the flow immediately
-    if (leadData && (!parentInfo?.firstName || !parentInfo?.email)) {
-      console.log('ParentGuardianForm: Updating flow with lead data');
-      updateParentGuardianInfo(initialData);
-    }
-  }, [flowData.leadData, flowData.parentGuardianInfo]);
-
-  const updateParentGuardianInfo = async (info: any) => {
-    console.log('🔄 Updating parent guardian info:', info);
-    try {
-      await updateFlow({ parentGuardianInfo: info });
-      console.log('✅ Parent guardian info updated successfully');
-    } catch (error) {
-      console.error('❌ Error updating parent guardian info:', error);
-    }
+  const handleFieldChange = async (field: string, value: any) => {
+    await updateFlow({
+      parentGuardianInfo: {
+        ...parentInfo,
+        [field]: value
+      }
+    });
   };
 
-  const updateWaiverAccepted = async (accepted: boolean) => {
-    console.log('🔄 Updating waiver accepted:', accepted);
-    try {
-      await updateFlow({ waiverAccepted: accepted });
-      console.log('✅ Waiver acceptance updated successfully');
-    } catch (error) {
-      console.error('❌ Error updating waiver acceptance:', error);
-    }
+  const handleAgreementChange = async (field: keyof BookingFlowData, value: boolean) => {
+    await updateFlow({ [field]: value });
   };
-
-  const updateCommunicationPermission = async (permission: boolean) => {
-    console.log('🔄 Updating communication permission:', permission);
-    try {
-      await updateFlow({ communicationPermission: permission });
-      console.log('✅ Communication permission updated successfully');
-    } catch (error) {
-      console.error('❌ Error updating communication permission:', error);
-    }
-  };
-
-  const updateMarketingPermission = async (permission: boolean) => {
-    console.log('🔄 Updating marketing permission:', permission);
-    try {
-      await updateFlow({ marketingPermission: permission });
-      console.log('✅ Marketing permission updated successfully');
-    } catch (error) {
-      console.error('❌ Error updating marketing permission:', error);
-    }
-  };
-
-  const handleInputChange = async (field: string, value: string) => {
-    console.log(`📝 Input changed - ${field}:`, value);
-    const newFormData = { ...formData, [field]: value };
-    setFormData(newFormData);
-    
-    // Immediately update the flow with the new data
-    await updateParentGuardianInfo(newFormData);
-  };
-
-  const handleWaiverChange = async (checked: boolean) => {
-    console.log('☑️ Waiver checkbox changed:', checked);
-    await updateWaiverAccepted(checked);
-  };
-
-  const handleCommunicationPermissionChange = async (checked: boolean) => {
-    console.log('📞 Communication permission changed:', checked);
-    await updateCommunicationPermission(checked);
-  };
-
-  const handleMarketingPermissionChange = async (checked: boolean) => {
-    console.log('📧 Marketing permission changed:', checked);
-    await updateMarketingPermission(checked);
-  };
-
-  const isFormComplete = formData.firstName && formData.lastName && formData.email && formData.phone && formData.zip;
-
-  // Debug log to see current flow state
-  console.log('Current flow data in ParentGuardianForm:', {
-    waiverAccepted: flowData.waiverAccepted,
-    communicationPermission: flowData.communicationPermission,
-    marketingPermission: flowData.marketingPermission,
-    parentGuardianInfo: flowData.parentGuardianInfo,
-    formData
-  });
 
   return (
-    <Card className="border-l-4 border-l-brand-red">
-      <CardHeader>
-        <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Parent/Guardian Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <ParentGuardianFormFields
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
-
-        <ParentGuardianAgreements
-          waiverAccepted={flowData.waiverAccepted || false}
-          communicationPermission={flowData.communicationPermission || false}
-          marketingPermission={flowData.marketingPermission || false}
-          onWaiverChange={handleWaiverChange}
-          onCommunicationPermissionChange={handleCommunicationPermissionChange}
-          onMarketingPermissionChange={handleMarketingPermissionChange}
-          onOpenWaiver={() => setWaiverModalOpened(true)}
-        />
-
-        {!isFormComplete && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm text-blue-800 font-poppins">
-              Please complete all required parent/guardian information above.
-            </p>
+    <div className="space-y-6">
+      {/* Parent/Guardian Information */}
+      <Card className="border-l-4 border-l-brand-blue">
+        <CardHeader>
+          <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Parent/Guardian Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
+                <User className="h-4 w-4 inline mr-1" />
+                First Name *
+              </Label>
+              <Input
+                id="firstName"
+                value={parentInfo.firstName || ''}
+                onChange={(e) => handleFieldChange('firstName', e.target.value)}
+                placeholder="Enter first name"
+                className="font-poppins"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
+                <User className="h-4 w-4 inline mr-1" />
+                Last Name *
+              </Label>
+              <Input
+                id="lastName"
+                value={parentInfo.lastName || ''}
+                onChange={(e) => handleFieldChange('lastName', e.target.value)}
+                placeholder="Enter last name"
+                className="font-poppins"
+                required
+              />
+            </div>
           </div>
-        )}
 
-        {(!flowData.waiverAccepted || !flowData.communicationPermission) && isFormComplete && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-sm text-yellow-800 font-poppins">
-              Please accept the required agreements to continue.
-            </p>
+          <div>
+            <Label htmlFor="email" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
+              <Mail className="h-4 w-4 inline mr-1" />
+              Email Address *
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={parentInfo.email || ''}
+              onChange={(e) => handleFieldChange('email', e.target.value)}
+              placeholder="Enter email address"
+              className="font-poppins"
+              required
+            />
           </div>
-        )}
 
-        <WaiverModal
-          opened={waiverModalOpened}
-          onClose={() => setWaiverModalOpened(false)}
-          waiverText={waiverText}
-          franchiseeData={franchiseeData}
-        />
-      </CardContent>
-    </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="phone" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
+                <Phone className="h-4 w-4 inline mr-1" />
+                Phone Number *
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={parentInfo.phone || ''}
+                onChange={(e) => handleFieldChange('phone', e.target.value)}
+                placeholder="(000) 000-0000"
+                className="font-poppins"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="zip" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
+                <MapPin className="h-4 w-4 inline mr-1" />
+                ZIP Code *
+              </Label>
+              <Input
+                id="zip"
+                value={parentInfo.zip || ''}
+                onChange={(e) => handleFieldChange('zip', e.target.value)}
+                placeholder="12345"
+                className="font-poppins"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="relationship" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
+              <Users className="h-4 w-4 inline mr-1" />
+              Relationship to Child *
+            </Label>
+            <Select value={parentInfo.relationship || ''} onValueChange={(value) => handleFieldChange('relationship', value)}>
+              <SelectTrigger className="font-poppins">
+                <SelectValue placeholder="Select relationship" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Parent">Parent</SelectItem>
+                <SelectItem value="Guardian">Legal Guardian</SelectItem>
+                <SelectItem value="Grandparent">Grandparent</SelectItem>
+                <SelectItem value="Aunt/Uncle">Aunt/Uncle</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Required Agreements */}
+      <Card className="border-l-4 border-l-green-500">
+        <CardHeader>
+          <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Required Agreements
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              id="waiver"
+              checked={flowData.waiverAccepted || false}
+              onCheckedChange={(checked) => handleAgreementChange('waiverAccepted', !!checked)}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <Label 
+                htmlFor="waiver" 
+                className="font-poppins text-sm cursor-pointer"
+              >
+                I agree to the{' '}
+                <a 
+                  href={`/${window.location.pathname.split('/')[1]}/waiver`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-blue hover:text-brand-blue/80 underline"
+                >
+                  liability waiver and agreement
+                </a>
+                . *
+              </Label>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              id="communication"
+              checked={flowData.communicationPermission || false}
+              onCheckedChange={(checked) => handleAgreementChange('communicationPermission', !!checked)}
+              className="mt-1"
+            />
+            <div className="flex-1">
+              <Label 
+                htmlFor="communication" 
+                className="font-poppins text-sm cursor-pointer"
+              >
+                <MessageSquare className="h-4 w-4 inline mr-1" />
+                I agree to receive communication about my child's soccer classes and important updates. *
+              </Label>
+            </div>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              id="marketing"
+              checked={flowData.marketingPermission || false}
+              onCheckedChange={(checked) => handleAgreementChange('marketingPermission', !!checked)}
+            />
+            <div className="flex-1">
+              <Label 
+                htmlFor="marketing" 
+                className="font-poppins text-sm cursor-pointer"
+              >
+                <Heart className="h-4 w-4 inline mr-1" />
+                I would like to receive promotional offers and news about Soccer Stars programs (optional).
+              </Label>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Child Language */}
+      <Card className="border-l-4 border-l-blue-400">
+        <CardHeader>
+          <CardTitle className="font-agrandir text-xl text-brand-navy">
+            Language Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <Label className="font-poppins text-sm font-medium text-gray-700 mb-3 block">
+              Does your child speak English fluently?
+            </Label>
+            <RadioGroup
+              value={flowData.childSpeaksEnglish === true ? 'yes' : flowData.childSpeaksEnglish === false ? 'no' : ''}
+              onValueChange={(value) => handleAgreementChange('childSpeaksEnglish', value === 'yes')}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="yes" id="english-yes" />
+                <Label htmlFor="english-yes" className="font-poppins">Yes</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="no" id="english-no" />
+                <Label htmlFor="english-no" className="font-poppins">No</Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

@@ -105,10 +105,23 @@ Deno.serve(async (req) => {
       // Generate secure booking reference as fallback
       const fallbackBookingReference = generateBookingReference()
       
+      // Ensure we have a class_schedule_id from the appointments or the booking data
+      let classScheduleId = bookingData.class_schedule_id;
+      
+      // If not in main booking data, try to get it from first appointment
+      if (!classScheduleId && bookingData.appointments && bookingData.appointments.length > 0) {
+        classScheduleId = bookingData.appointments[0].class_schedule_id;
+      }
+      
+      if (!classScheduleId) {
+        throw new Error('class_schedule_id is required but not provided in booking data or appointments')
+      }
+      
       // Ensure the booking uses the real lead ID and generated reference
       const bookingPayload = {
         ...bookingData,
         lead_id: leadId,
+        class_schedule_id: classScheduleId,
         booking_reference: fallbackBookingReference
       }
 

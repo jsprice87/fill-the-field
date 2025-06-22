@@ -198,6 +198,7 @@ const ClassBooking: React.FC = () => {
 
   const handleParticipantAdded = async (participant: any) => {
     try {
+      console.log('participant-pill', participant);
       console.log('Participant added:', participant);
       await addParticipant(participant);
       toast.success(`${participant.firstName} ${participant.lastName} added to ${participant.className}`);
@@ -269,41 +270,56 @@ const ClassBooking: React.FC = () => {
       });
 
       // Call the edge function to create lead and booking atomically
-      const { data: result, error: functionError } = await supabase.functions.invoke('create-lead-and-booking', {
-        body: {
-          leadData,
-          bookingData,
-          franchiseeId: franchiseeData.id
+      try {
+        const { data: result, error: functionError } = await supabase.functions.invoke('create-lead-and-booking', {
+          body: {
+            leadData,
+            bookingData,
+            franchiseeId: franchiseeData.id
+          }
+        });
+
+        console.log('Edge function result:', { data: result, error: functionError });
+
+        if (functionError) {
+          console.error('Edge function error:', functionError);
+          throw new Error(`Function call failed: ${functionError.message}`);
         }
-      });
 
-      // LOG: Full result from edge function
-      console.log('🔍 EDGE FUNCTION RESULT - Full JSON:', JSON.stringify(result, null, 2));
-      console.log('🔍 EDGE FUNCTION RESULT - bookingReference value:', result?.bookingReference);
+        if (!result.success) {
+          console.error('Edge function returned error:', result.error);
+          throw new Error(result.error || 'Failed to create booking');
+        }
 
-      if (functionError) {
-        console.error('Edge function error:', functionError);
-        throw new Error(`Function call failed: ${functionError.message}`);
-      }
+        console.log('Booking created successfully:', result);
 
-      if (!result.success) {
-        console.error('Edge function returned error:', result.error);
-        throw new Error(result.error || 'Failed to create booking');
-      }
-
-      console.log('Booking created successfully:', result);
-
-      // Navigate to confirmation page using booking_reference
-      if (result.bookingReference) {
-        const navigationUrl = `/${franchiseeSlug}/free-trial/confirmation?booking_reference=${result.bookingReference}`;
+        // Navigate to confirmation page using booking_reference
+        if (result.bookingReference) {
+          const navigationUrl = `/${franchiseeSlug}/free-trial/confirmation?booking_reference=${result.bookingReference}`;
+          
+          // LOG: URL being navigated to
+          console.log('🚀 NAVIGATING TO URL:', navigationUrl);
+          console.log('🚀 BOOKING REFERENCE IN URL:', result.bookingReference);
+          
+          navigate(navigationUrl);
+        } else {
+          throw new Error('No booking reference returned from function');
+        }
         
-        // LOG: URL being navigated to
-        console.log('🚀 NAVIGATING TO URL:', navigationUrl);
-        console.log('🚀 BOOKING REFERENCE IN URL:', result.bookingReference);
+      } catch (functionInvokeError: any) {
+        console.error('Function invoke error:', functionInvokeError);
         
-        navigate(navigationUrl);
-      } else {
-        throw new Error('No booking reference returned from function');
+        // Enhanced error logging for edge function failures
+        if (functionInvokeError.context) {
+          try {
+            const errorBody = await functionInvokeError.context.json();
+            console.log('edge-error-body', errorBody);
+          } catch (parseError) {
+            console.log('edge-error-body', 'Failed to parse error response');
+          }
+        }
+        
+        throw functionInvokeError;
       }
       
     } catch (error) {
@@ -555,26 +571,36 @@ const ClassBooking: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {flowData.participants?.map((participant, index) => (
-                    <div key={participant.id || index} className="flex items-center justify-between bg-gray-50 rounded p-3">
-                      <div className="flex-1">
-                        <div className="font-poppins font-medium">
-                          {participant.firstName} {participant.lastName}
+                  {flowData.participants?.map((participant, index) => {
+                    console.log('participant-pill', participant);
+                    
+                    // Calculate age display
+                    const birthDate = participant.birthDate ? new Date(participant.birthDate) : null;
+                    const ageDisplay = birthDate ? 
+                      `${Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000))} years old` : 
+                      `${participant.age} years old`;
+                    
+                    return (
+                      <div key={participant.id || index} className="flex items-center justify-between bg-gray-50 rounded p-3">
+                        <div className="flex-1">
+                          <div className="font-poppins font-medium">
+                            {participant.firstName} {participant.lastName}
+                          </div>
+                          <div className="text-sm text-gray-600 font-poppins">
+                            {participant.className} - {ageDisplay}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600 font-poppins">
-                          {participant.className} - {participant.age} years old
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeParticipant(participant.id || `temp-${index}`)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeParticipant(participant.id || `temp-${index}`)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
               </Card>
             )}
