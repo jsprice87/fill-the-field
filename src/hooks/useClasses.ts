@@ -29,6 +29,7 @@ interface ClassSchedule {
       city: string;
       state: string;
       zip: string;
+      franchisee_id: string;
     };
   };
 }
