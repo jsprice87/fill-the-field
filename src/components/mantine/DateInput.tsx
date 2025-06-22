@@ -12,7 +12,12 @@ export interface DateInputProps
 }
 
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
-  (props, ref) => <MantineDateInput ref={ref} {...(props as MantineBaseProps)} />
+  (props, ref) => (
+    <MantineDateInput
+      ref={ref}
+      {...(props as unknown as MantineBaseProps)}
+    />
+  )
 );
 
 DateInput.displayName = 'DateInput';

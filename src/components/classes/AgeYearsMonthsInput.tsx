@@ -35,7 +35,6 @@ const AgeYearsMonthsInput: React.FC<AgeYearsMonthsInputProps> = ({
         className="w-16"
         title={`${placeholder} years`}
         allowDecimal={false}
-        removeTrailingZeros
       />
       <span className="text-gray-400 text-sm">y</span>
       <NumberInput
@@ -49,7 +48,6 @@ const AgeYearsMonthsInput: React.FC<AgeYearsMonthsInputProps> = ({
         className="w-16"
         title={`${placeholder} months`}
         allowDecimal={false}
-        removeTrailingZeros
       />
       <span className="text-gray-400 text-sm">m</span>
     </Group>

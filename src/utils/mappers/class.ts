@@ -1,6 +1,7 @@
 
 import { DbClass, DbClassSchedule, DbClassInput, DbClassScheduleInput } from '@/types/db';
 import { Class, ClassSchedule } from '@/types/domain';
+import dayjs from 'dayjs';
 
 // Convert database class to domain class
 export function toDomainClass(dto: DbClass): Class {
@@ -66,6 +67,13 @@ export function toDomainClassSchedule(dto: DbClassSchedule): ClassSchedule {
   };
 }
 
+// Helper function for converting Date to ISO date string
+export function toISODate(date: Date | null | string | undefined): string | null {
+  if (!date) return null;
+  if (typeof date === 'string') return dayjs(date).format('YYYY-MM-DD');
+  return date.toISOString().split('T')[0];
+}
+
 // Convert domain class schedule to database input
 export function toDtoClassSchedule(entity: {
   classId: string;
@@ -81,15 +89,10 @@ export function toDtoClassSchedule(entity: {
     class_id: entity.classId,
     start_time: entity.startTime,
     end_time: entity.endTime,
-    date_start: entity.dateStart ? entity.dateStart.toISOString().split('T')[0] : null,
-    date_end: entity.dateEnd ? entity.dateEnd.toISOString().split('T')[0] : null,
+    date_start: toISODate(entity.dateStart),
+    date_end: toISODate(entity.dateEnd),
     day_of_week: entity.dayOfWeek,
     current_bookings: entity.currentBookings || 0,
     is_active: entity.isActive !== false,
   };
-}
-
-// Helper function for converting Date to ISO date string
-export function toISODate(date: Date | null): string | null {
-  return date ? date.toISOString().split('T')[0] : null;
 }

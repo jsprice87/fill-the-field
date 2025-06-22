@@ -3,12 +3,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProgramFormData, ClassFormData } from '@/types/domain';
 import { toDtoClassSchedule } from '@/utils/mappers/class';
+import dayjs from 'dayjs';
 
 interface CreateProgramWithClassesData {
   programData: ProgramFormData;
   classRows: ClassFormData[];
   franchiseeId: string;
 }
+
+// Helper function to safely convert dates to ISO string
+const toISODate = (date: Date | null | string | undefined): string | null => {
+  if (!date) return null;
+  if (typeof date === 'string') return dayjs(date).format('YYYY-MM-DD');
+  return date.toISOString().split('T')[0];
+};
 
 export const useCreateProgramWithClasses = () => {
   const queryClient = useQueryClient();
@@ -86,7 +94,7 @@ export const useCreateProgramWithClasses = () => {
           if (programData.overrideDates.length > 0) {
             const exceptionInserts = programData.overrideDates.map(date => ({
               class_schedule_id: createdSchedules[createdSchedules.length - programData.daysOfWeek.length]?.id,
-              exception_date: date.toISOString().split('T')[0],
+              exception_date: toISODate(date),
               is_cancelled: true,
             }));
 
