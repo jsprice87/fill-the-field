@@ -19,7 +19,7 @@ const createDefaultClassRow = (existingRow?: ClassFormData): ClassFormData => {
 
   return {
     id: Math.random().toString(36).substr(2, 9),
-    className: '',
+    className: '', // Always empty for new rows
     startTime: baseData.startTime,
     duration: baseData.duration,
     endTime,
@@ -48,6 +48,16 @@ export const useProgramForm = () => {
       programData.daysOfWeek.length > 0
     );
   }, [programData]);
+
+  const areClassesValid = useMemo(() => {
+    return classRows.every(row => 
+      row.className.trim() !== '' &&
+      row.startTime !== '' &&
+      row.duration >= 15 && row.duration <= 120 &&
+      row.capacity > 0 &&
+      row.minAge <= row.maxAge
+    );
+  }, [classRows]);
 
   const addClassRow = useCallback(() => {
     const lastRow = classRows[classRows.length - 1];
@@ -87,6 +97,7 @@ export const useProgramForm = () => {
     classRows,
     setClassRows,
     isProgramValid,
+    areClassesValid,
     addClassRow,
     removeClassRow,
     updateClassRow,

@@ -25,16 +25,22 @@ const ClassRow: React.FC<ClassRowProps> = ({
     onUpdate(classData.id, field, value);
   };
 
+  // Validation helpers
+  const isClassNameValid = classData.className.trim() !== '';
+  const isDurationValid = classData.duration >= 15 && classData.duration <= 120;
+  const isAgeRangeValid = classData.minAge <= classData.maxAge;
+  const isCapacityValid = classData.capacity > 0;
+
   return (
     <TableRow>
       <TableCell>
         <Input
           type="text"
-          placeholder="Enter class name"
+          placeholder="Enter class name *"
           value={classData.className}
           onChange={(e) => handleFieldChange('className', e.target.value)}
           disabled={disabled}
-          className="min-w-48"
+          className={`min-w-48 ${!isClassNameValid && classData.className !== '' ? 'border-red-500' : ''}`}
           required
         />
       </TableCell>
@@ -53,12 +59,13 @@ const ClassRow: React.FC<ClassRowProps> = ({
         <Input
           type="number"
           min="15"
-          max="180"
+          max="120"
           step="15"
           value={classData.duration}
           onChange={(e) => handleFieldChange('duration', parseInt(e.target.value) || 60)}
           disabled={disabled}
-          className="w-24"
+          className={`w-24 ${!isDurationValid ? 'border-red-500' : ''}`}
+          title="Duration must be between 15-120 minutes"
         />
       </TableCell>
 
@@ -81,8 +88,9 @@ const ClassRow: React.FC<ClassRowProps> = ({
             value={classData.minAge}
             onChange={(e) => handleFieldChange('minAge', parseInt(e.target.value) || 3)}
             disabled={disabled}
-            className="w-16"
+            className={`w-16 ${!isAgeRangeValid ? 'border-red-500' : ''}`}
             placeholder="Min"
+            title="Minimum age"
           />
           <span className="text-gray-400">-</span>
           <Input
@@ -92,8 +100,9 @@ const ClassRow: React.FC<ClassRowProps> = ({
             value={classData.maxAge}
             onChange={(e) => handleFieldChange('maxAge', parseInt(e.target.value) || 12)}
             disabled={disabled}
-            className="w-16"
+            className={`w-16 ${!isAgeRangeValid ? 'border-red-500' : ''}`}
             placeholder="Max"
+            title="Maximum age"
           />
         </Group>
       </TableCell>
@@ -106,7 +115,7 @@ const ClassRow: React.FC<ClassRowProps> = ({
           value={classData.capacity}
           onChange={(e) => handleFieldChange('capacity', parseInt(e.target.value) || 12)}
           disabled={disabled}
-          className="w-20"
+          className={`w-20 ${!isCapacityValid ? 'border-red-500' : ''}`}
         />
       </TableCell>
 
