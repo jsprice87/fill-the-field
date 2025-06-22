@@ -6,6 +6,8 @@ export const useClass = (classId: string | undefined) => {
   return useQuery({
     queryKey: ['class', classId],
     queryFn: async () => {
+      console.time('useClass-fetch');
+      
       if (!classId) throw new Error('Class ID is required');
 
       const { data, error } = await supabase
@@ -20,15 +22,33 @@ export const useClass = (classId: string | undefined) => {
             state,
             zip,
             franchisee_id
+          ),
+          class_schedules (
+            id,
+            start_time,
+            end_time,
+            day_of_week,
+            date_start,
+            date_end,
+            current_bookings,
+            is_active
+          ),
+          schedule_exceptions (
+            id,
+            exception_date,
+            is_cancelled
           )
         `)
         .eq('id', classId)
         .single();
 
+      console.timeEnd('useClass-fetch');
+      
       if (error) throw error;
       return data;
     },
-    enabled: !!classId
+    enabled: !!classId,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
   });
 };
 

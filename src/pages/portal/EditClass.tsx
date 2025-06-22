@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Stack, Group, Title, Card, Table } from '@mantine/core';
 import { TableHeader, TableBody, TableRow, TableHead } from '@/components/mantine';
@@ -10,6 +10,7 @@ import { useClass, useUpdateClass } from '@/hooks/useClass';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { ClassFormData } from '@/types/domain';
 import ClassRow from '@/components/classes/ClassRow';
+import { Loader } from '@/components/ui/Loader';
 import dayjs from 'dayjs';
 
 const EditClass: React.FC = () => {
@@ -33,32 +34,50 @@ const EditClass: React.FC = () => {
     capacity: 12,
   });
 
-  useEffect(() => {
-    if (classData) {
-      // Convert min/max age from months to years+months
-      const minAgeYears = Math.floor((classData.min_age || 0) / 12);
-      const minAgeMonths = (classData.min_age || 0) % 12;
-      const maxAgeYears = Math.floor((classData.max_age || 0) / 12);
-      const maxAgeMonths = (classData.max_age || 0) % 12;
+  // Memoized form initialization to prevent unnecessary re-renders
+  const initializedFormData = useMemo(() => {
+    if (!classData) return null;
 
-      const endTime = dayjs(`2000-01-01 09:00`)
-        .add(classData.duration_minutes, 'minute')
-        .format('HH:mm');
+    console.time('form-initialization');
+    
+    // Convert min/max age from months to years+months
+    const minAgeYears = Math.floor((classData.min_age || 0) / 12);
+    const minAgeMonths = (classData.min_age || 0) % 12;
+    const maxAgeYears = Math.floor((classData.max_age || 0) / 12);
+    const maxAgeMonths = (classData.max_age || 0) % 12;
 
-      setFormData({
-        id: classData.id,
-        className: classData.name,
-        startTime: '09:00', // Default since we don't store start time in classes table
-        duration: classData.duration_minutes,
-        endTime,
-        minAgeYears,
-        minAgeMonths,
-        maxAgeYears,
-        maxAgeMonths,
-        capacity: classData.max_capacity,
-      });
-    }
+    // Get schedule data from the first schedule if available
+    const schedule = classData.class_schedules?.[0];
+    const startTime = schedule?.start_time || '09:00';
+    const endTime = schedule?.end_time || dayjs(`2000-01-01 ${startTime}`)
+      .add(classData.duration_minutes, 'minute')
+      .format('HH:mm');
+
+    // Remove "(copy)" suffix if present
+    const cleanClassName = classData.name.replace(/\s*\(copy\)\s*$/, '').trim();
+
+    const formData: ClassFormData = {
+      id: classData.id,
+      className: cleanClassName,
+      startTime,
+      duration: classData.duration_minutes,
+      endTime,
+      minAgeYears,
+      minAgeMonths,
+      maxAgeYears,
+      maxAgeMonths,
+      capacity: classData.max_capacity,
+    };
+
+    console.timeEnd('form-initialization');
+    return formData;
   }, [classData]);
+
+  useEffect(() => {
+    if (initializedFormData) {
+      setFormData(initializedFormData);
+    }
+  }, [initializedFormData]);
 
   const handleFieldUpdate = (id: string, field: keyof ClassFormData, value: any) => {
     setFormData(prev => {
@@ -100,7 +119,7 @@ const EditClass: React.FC = () => {
           duration_minutes: formData.duration,
           max_capacity: formData.capacity,
           min_age: Math.floor(minAgeMonths / 12), // Store as years for compatibility
-          max_age: Math.floor(maxAgeMonths / 12), // Store as years for compatibility
+          max_age: Math.floor(maxAgeMonths / 12), // Store as years for compatibility  
           is_active: true,
         }
       });
@@ -158,8 +177,19 @@ const EditClass: React.FC = () => {
     return (
       <div className="space-y-6">
         <Title order={1} size="30px" lh="36px" fw={600}>Edit Class</Title>
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-gray-200 rounded"></div>
+        <div className="flex justify-center p-8">
+          <Loader className="animate-spin h-8 w-8" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!classData) {
+    return (
+      <div className="space-y-6">
+        <Title order={1} size="30px" lh="36px" fw={600}>Edit Class</Title>
+        <div className="text-center p-8">
+          <p className="text-muted-foreground">Class not found</p>
         </div>
       </div>
     );
