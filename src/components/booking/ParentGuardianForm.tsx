@@ -19,7 +19,22 @@ interface ParentGuardianFormProps {
 
 const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updateFlow }) => {
   const { waiverText } = useFranchiseeWaiver(flowData);
-  const parentInfo = flowData.parentGuardianInfo || {};
+  
+  // Pre-populate with lead data if available
+  const leadData = flowData.leadData;
+  console.log('form-initial-values', {
+    leadData,
+    parentGuardianInfo: flowData.parentGuardianInfo
+  });
+  
+  const parentInfo = flowData.parentGuardianInfo || {
+    firstName: leadData?.firstName || '',
+    lastName: leadData?.lastName || '',
+    email: leadData?.email || '',
+    phone: leadData?.phone || '',
+    zip: leadData?.zip || '',
+    relationship: ''
+  };
 
   const handleFieldChange = async (field: string, value: any) => {
     await updateFlow({
