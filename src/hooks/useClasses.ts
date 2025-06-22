@@ -57,7 +57,7 @@ export const useClasses = (
           is_active,
           created_at,
           updated_at,
-          classes (
+          classes!fk_class_schedules_class_id (
             name,
             class_name,
             description,
@@ -89,6 +89,15 @@ export const useClasses = (
       }
 
       const { data, error } = await query.order('start_time');
+
+      // Debug logging
+      console.log('useClasses raw', { 
+        locationId, 
+        data, 
+        error, 
+        count: data?.length || 0,
+        franchiseeId
+      });
       
       if (error) throw error;
       return data as ClassSchedule[];

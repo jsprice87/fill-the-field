@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button, Box } from '@mantine/core';
 import { Plus, Filter } from 'lucide-react';
@@ -25,6 +26,16 @@ const ClassesList: React.FC = () => {
     selectedLocationId === 'all' ? null : selectedLocationId,
     searchTerm
   );
+
+  // Debug logging - render rows count
+  console.log('render rows', classes.length);
+  console.log('currentFranchiseeId', franchiseeData?.id);
+  if (classes.length > 0) {
+    console.log('first row franchisee check', {
+      rowFranchiseeId: classes[0]?.classes?.locations?.franchisee_id,
+      currentFranchiseeId: franchiseeData?.id
+    });
+  }
 
   const handleDeleteClass = (deletedId: string) => {
     // This is no longer needed since React Query handles the cache updates
