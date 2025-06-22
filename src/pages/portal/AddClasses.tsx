@@ -20,15 +20,18 @@ const AddClasses: React.FC = () => {
     classRows,
     isProgramValid,
     areClassesValid,
+    areOverrideDatesValid,
     addClassRow,
     removeClassRow,
-    updateClassRow
+    updateClassRow,
+    addOverrideDate,
+    removeOverrideDate,
   } = useProgramForm();
 
   const createProgramMutation = useCreateProgramWithClasses();
 
   const handleSave = async () => {
-    if (!franchiseeData?.id || !isProgramValid || !areClassesValid || classRows.length === 0) {
+    if (!franchiseeData?.id || !isProgramValid || !areClassesValid || !areOverrideDatesValid || classRows.length === 0) {
       toast.error("Please fill in all required fields and fix any validation errors");
       return;
     }
@@ -48,7 +51,7 @@ const AddClasses: React.FC = () => {
     }
   };
 
-  const canSave = isProgramValid && areClassesValid && classRows.length > 0;
+  const canSave = isProgramValid && areClassesValid && areOverrideDatesValid && classRows.length > 0;
 
   return (
     <div className="space-y-6">
@@ -69,6 +72,8 @@ const AddClasses: React.FC = () => {
           programData={programData}
           onProgramDataChange={setProgramData}
           franchiseeId={franchiseeData?.id}
+          onAddOverrideDate={addOverrideDate}
+          onRemoveOverrideDate={removeOverrideDate}
         />
 
         <EditableClassesTable

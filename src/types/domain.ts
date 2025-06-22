@@ -1,4 +1,3 @@
-
 // Domain types - rich Date objects for business logic
 export interface Class {
   id: string;
@@ -49,6 +48,7 @@ export interface ProgramFormData {
   daysOfWeek: number[];
   startDate: Date | null;
   endDate: Date | null;
+  overrideDates: Date[];
 }
 
 export interface ClassFormData {

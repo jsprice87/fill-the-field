@@ -40,6 +40,7 @@ export const useProgramForm = () => {
     daysOfWeek: [],
     startDate: null,
     endDate: null,
+    overrideDates: [],
   });
 
   const [classRows, setClassRows] = useState<ClassFormData[]>([
@@ -68,9 +69,21 @@ export const useProgramForm = () => {
     });
   }, [classRows]);
 
+  const areOverrideDatesValid = useMemo(() => {
+    if (!programData.startDate || !programData.endDate) return true;
+    
+    return programData.overrideDates.every(date => 
+      date >= programData.startDate! && date <= programData.endDate!
+    );
+  }, [programData.overrideDates, programData.startDate, programData.endDate]);
+
   const addClassRow = useCallback(() => {
     const lastRow = classRows[classRows.length - 1];
     const newRow = createDefaultClassRow(lastRow);
+    // Copy the class name with "(copy)" suffix
+    if (lastRow.className.trim()) {
+      newRow.className = `${lastRow.className} (copy)`;
+    }
     setClassRows(prev => [...prev, newRow]);
   }, [classRows]);
 
@@ -100,6 +113,28 @@ export const useProgramForm = () => {
     }));
   }, []);
 
+  const addOverrideDate = useCallback((date: Date) => {
+    setProgramData(prev => {
+      // Prevent duplicates
+      const existingDates = prev.overrideDates.map(d => d.toDateString());
+      if (existingDates.includes(date.toDateString())) {
+        return prev;
+      }
+      
+      return {
+        ...prev,
+        overrideDates: [...prev.overrideDates, date].sort((a, b) => a.getTime() - b.getTime())
+      };
+    });
+  }, []);
+
+  const removeOverrideDate = useCallback((date: Date) => {
+    setProgramData(prev => ({
+      ...prev,
+      overrideDates: prev.overrideDates.filter(d => d.toDateString() !== date.toDateString())
+    }));
+  }, []);
+
   return {
     programData,
     setProgramData,
@@ -107,8 +142,11 @@ export const useProgramForm = () => {
     setClassRows,
     isProgramValid,
     areClassesValid,
+    areOverrideDatesValid,
     addClassRow,
     removeClassRow,
     updateClassRow,
+    addOverrideDate,
+    removeOverrideDate,
   };
 };
