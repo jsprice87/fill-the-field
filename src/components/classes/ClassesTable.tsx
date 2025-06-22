@@ -172,10 +172,15 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedClasses.map((classSchedule) => {
+              {paginatedClasses.map((classSchedule, index) => {
                 // Safe access to nested data
                 const cls = classSchedule.classes;
                 const location = cls?.locations;
+                
+                // Log first row model to inspect structure
+                if (index === 0) {
+                  console.log('row model', classSchedule);
+                }
                 
                 return (
                   <TableRow key={classSchedule.id}>
@@ -223,7 +228,7 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                     </TableCell>
                     <TableCell>
                       <TableRowMenu
-                        onEdit={() => handleEditClass(classSchedule.id)}
+                        onEdit={() => handleEditClass(classSchedule.class_id)}
                         onDelete={() => handleDeleteClass(classSchedule.id)}
                         isLoading={deleteMutation.isPending}
                         editLabel="Edit Class"

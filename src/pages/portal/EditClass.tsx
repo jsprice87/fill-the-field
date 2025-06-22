@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Stack, Group, Title, Card, Table } from '@mantine/core';
@@ -55,7 +56,17 @@ const EditClass: React.FC = () => {
         }
       }
       
-      // Additional DB check as requested
+      // Additional DB check as requested - DB sanity check
+      console.log('DB sanity check for route id:', classId);
+      const { data: dbSanityData, error: dbSanityError } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('id', classId)
+        .maybeSingle();
+      
+      console.log('DB sanity check result:', { data: dbSanityData, error: dbSanityError });
+      
+      // Original DB check
       console.log('DB check for route id:', classId);
       const { data: dbCheckData, error: dbCheckError } = await supabase
         .from('classes')
