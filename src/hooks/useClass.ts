@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -10,6 +9,27 @@ export const useClass = (classId: string | undefined) => {
       
       if (!classId) throw new Error('Class ID is required');
 
+      // First, test simple query to verify row exists
+      console.log('Testing simple query for classId:', classId);
+      const { data: simpleData, error: simpleError } = await supabase
+        .from('classes')
+        .select('id, name, location_id')
+        .eq('id', classId)
+        .maybeSingle();
+      
+      console.log('Simple query result:', { data: simpleData, error: simpleError });
+
+      if (simpleError) {
+        console.error('Simple query failed:', simpleError);
+        throw simpleError;
+      }
+
+      if (!simpleData) {
+        console.log('No row found for classId:', classId);
+        return null;
+      }
+
+      // Row exists, now try full nested query
       const selectQuery = `
         id,
         name,

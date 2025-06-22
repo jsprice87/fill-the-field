@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Stack, Group, Title, Card, Table } from '@mantine/core';
@@ -17,6 +16,48 @@ const EditClass: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();
   const navigate = useNavigate();
   const { data: franchiseeData } = useFranchiseeData();
+  
+  // Debug: Log the classId from route params
+  console.log('EditClass classId from useParams:', classId);
+  
+  // Debug: Test raw query without joins
+  useEffect(() => {
+    const testRawQuery = async () => {
+      if (!classId) return;
+      
+      console.log('Testing raw query for classId:', classId);
+      const { data, error } = await supabase
+        .from('classes')
+        .select('id, name, location_id')
+        .eq('id', classId)
+        .maybeSingle();
+      
+      console.log('Raw query result:', { data, error });
+      
+      if (data) {
+        console.log('Row exists, testing with franchisee filter...');
+        // Test with franchisee filter if we have franchisee data
+        if (franchiseeData?.id) {
+          const { data: franchiseeFilteredData, error: franchiseeError } = await supabase
+            .from('classes')
+            .select(`
+              id, name, location_id,
+              locations!inner (franchisee_id)
+            `)
+            .eq('id', classId)
+            .eq('locations.franchisee_id', franchiseeData.id)
+            .maybeSingle();
+          
+          console.log('Franchisee-filtered query result:', { 
+            data: franchiseeFilteredData, 
+            error: franchiseeError 
+          });
+        }
+      }
+    };
+    
+    testRawQuery();
+  }, [classId, franchiseeData?.id]);
   
   const { data: classData, isLoading } = useClass(classId);
   const updateClassMutation = useUpdateClass();
