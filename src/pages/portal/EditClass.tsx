@@ -36,6 +36,7 @@ const EditClass: React.FC = () => {
 
   // Memoized form initialization to prevent unnecessary re-renders
   const initializedFormData = useMemo(() => {
+    // Only proceed if classData exists (not null)
     if (!classData) return null;
 
     console.time('form-initialization');
@@ -184,12 +185,25 @@ const EditClass: React.FC = () => {
     );
   }
 
-  if (!classData) {
+  // Show "not found" only when data is explicitly null (not undefined during loading)
+  if (classData === null) {
     return (
       <div className="space-y-6">
         <Title order={1} size="30px" lh="36px" fw={600}>Edit Class</Title>
         <div className="text-center p-8">
           <p className="text-muted-foreground">Class not found</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render form if classData is still undefined (loading state)
+  if (!classData) {
+    return (
+      <div className="space-y-6">
+        <Title order={1} size="30px" lh="36px" fw={600}>Edit Class</Title>
+        <div className="flex justify-center p-8">
+          <Loader className="animate-spin h-8 w-8" />
         </div>
       </div>
     );

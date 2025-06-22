@@ -55,16 +55,21 @@ export const useClass = (classId: string | undefined) => {
         .from('classes')
         .select(selectQuery)
         .eq('id', classId)
-        .single();
+        .maybeSingle();
 
       console.timeEnd('useClass-fetch');
+      
+      console.log('useClass-fetch', { data, error });
+      
+      if (data) {
+        console.table(data);
+      }
       
       if (error) {
         console.error('Supabase query error:', error);
         throw error;
       }
 
-      console.log('Supabase response data:', data);
       return data;
     },
     enabled: !!classId,
