@@ -180,6 +180,7 @@ const ClassBooking: React.FC = () => {
       }
 
       console.log('Classes loaded:', classesData?.length || 0, 'classes found');
+      console.log('schedules', classesData?.length);
       setClasses(classesData || []);
     } catch (error) {
       console.error('Error loading classes:', error);
@@ -628,6 +629,7 @@ const ClassBooking: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleParticipantAdded}
           title="Add Participant"
+          classSchedule={selectedClass}
         />
       )}
     </div>

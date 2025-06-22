@@ -65,10 +65,11 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     }
   }, [initialData, form]);
 
-  // Fixed birth date change handler with better logging
-  const handleBirthDateChange = (value: Date | null) => {
+  // Fixed birth date change handler - convert string to Date
+  const handleBirthDateChange = (value: string | null) => {
     console.log('birthDate raw', value, typeof value);
-    form.setFieldValue('birth_date', value);
+    const dateValue = value ? new Date(value) : null;
+    form.setFieldValue('birth_date', dateValue);
   };
 
   // Calculate age from birth date - with null safety
@@ -95,6 +96,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     };
 
     console.log('Submitting participant with payload:', payload);
+    console.log('form.isValid', form.isValid());
 
     if (onAddParticipant) {
       await onAddParticipant(payload);
@@ -125,7 +127,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             label="Birth Date"
             placeholder="Select birth date"
             valueFormat="DD/MM/YYYY"
-            value={form.values.birth_date}
+            value={form.values.birth_date ? form.values.birth_date.toISOString().split('T')[0] : ''}
             onChange={handleBirthDateChange}
             error={form.errors.birth_date}
           />
@@ -156,7 +158,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             <Button
               type="submit"
               loading={form.submitting}
-              disabled={!form.isValid()}
+              disabled={!form.isValid() || form.submitting}
               data-autofocus
             >
               Save Participant
