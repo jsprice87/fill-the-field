@@ -25,6 +25,10 @@ export const useCreateProgramWithClasses = () => {
             throw new Error("All classes must have a name");
           }
 
+          // Convert age years/months to total months for storage
+          const minAgeMonths = classRow.minAgeYears * 12 + classRow.minAgeMonths;
+          const maxAgeMonths = classRow.maxAgeYears * 12 + classRow.maxAgeMonths;
+
           // Create class record
           const { data: classData, error: classError } = await supabase
             .from('classes')
@@ -35,8 +39,8 @@ export const useCreateProgramWithClasses = () => {
                 description: `${classRow.className} program`,
                 duration_minutes: classRow.duration,
                 max_capacity: classRow.capacity,
-                min_age: classRow.minAge,
-                max_age: classRow.maxAge,
+                min_age: Math.floor(minAgeMonths / 12), // Store as years for compatibility
+                max_age: Math.floor(maxAgeMonths / 12), // Store as years for compatibility
                 location_id: programData.locationId,
                 is_active: true,
               },

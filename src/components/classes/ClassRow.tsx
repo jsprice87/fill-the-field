@@ -5,6 +5,7 @@ import { TableCell, TableRow } from '@/components/mantine';
 import { Input } from '@/components/ui/input';
 import { Trash } from 'lucide-react';
 import { ClassFormData } from '@/types/domain';
+import AgeYearsMonthsInput from './AgeYearsMonthsInput';
 
 interface ClassRowProps {
   classData: ClassFormData;
@@ -28,8 +29,11 @@ const ClassRow: React.FC<ClassRowProps> = ({
   // Validation helpers
   const isClassNameValid = classData.className.trim() !== '';
   const isDurationValid = classData.duration >= 15 && classData.duration <= 120;
-  const isAgeRangeValid = classData.minAge <= classData.maxAge;
   const isCapacityValid = classData.capacity > 0;
+  
+  const isAgeRangeValid = 
+    classData.minAgeYears < classData.maxAgeYears || 
+    (classData.minAgeYears === classData.maxAgeYears && classData.minAgeMonths <= classData.maxAgeMonths);
 
   return (
     <TableRow>
@@ -80,30 +84,29 @@ const ClassRow: React.FC<ClassRowProps> = ({
       </TableCell>
 
       <TableCell>
-        <Group gap="xs">
-          <Input
-            type="number"
-            min="3"
-            max="18"
-            value={classData.minAge}
-            onChange={(e) => handleFieldChange('minAge', parseInt(e.target.value) || 3)}
-            disabled={disabled}
-            className={`w-16 ${!isAgeRangeValid ? 'border-red-500' : ''}`}
-            placeholder="Min"
-            title="Minimum age"
-          />
-          <span className="text-gray-400">-</span>
-          <Input
-            type="number"
-            min="3"
-            max="18"
-            value={classData.maxAge}
-            onChange={(e) => handleFieldChange('maxAge', parseInt(e.target.value) || 12)}
-            disabled={disabled}
-            className={`w-16 ${!isAgeRangeValid ? 'border-red-500' : ''}`}
-            placeholder="Max"
-            title="Maximum age"
-          />
+        <Group gap="xs" className={!isAgeRangeValid ? 'border border-red-500 rounded p-2' : ''}>
+          <div>
+            <div className="text-xs text-gray-500 mb-1">Min</div>
+            <AgeYearsMonthsInput
+              years={classData.minAgeYears}
+              months={classData.minAgeMonths}
+              onYearsChange={(value) => handleFieldChange('minAgeYears', value)}
+              onMonthsChange={(value) => handleFieldChange('minAgeMonths', value)}
+              placeholder="Min age"
+              disabled={disabled}
+            />
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 mb-1">Max</div>
+            <AgeYearsMonthsInput
+              years={classData.maxAgeYears}
+              months={classData.maxAgeMonths}
+              onYearsChange={(value) => handleFieldChange('maxAgeYears', value)}
+              onMonthsChange={(value) => handleFieldChange('maxAgeMonths', value)}
+              placeholder="Max age"
+              disabled={disabled}
+            />
+          </div>
         </Group>
       </TableCell>
 

@@ -7,8 +7,10 @@ const createDefaultClassRow = (existingRow?: ClassFormData): ClassFormData => {
   const baseData = existingRow || {
     startTime: '09:00',
     duration: 60,
-    minAge: 5,
-    maxAge: 12,
+    minAgeYears: 5,
+    minAgeMonths: 0,
+    maxAgeYears: 12,
+    maxAgeMonths: 0,
     capacity: 12,
   };
 
@@ -19,12 +21,14 @@ const createDefaultClassRow = (existingRow?: ClassFormData): ClassFormData => {
 
   return {
     id: Math.random().toString(36).substr(2, 9),
-    className: '', // Always empty for new rows
+    className: existingRow?.className ? `${existingRow.className} (copy)` : '',
     startTime: baseData.startTime,
     duration: baseData.duration,
     endTime,
-    minAge: baseData.minAge,
-    maxAge: baseData.maxAge,
+    minAgeYears: baseData.minAgeYears,
+    minAgeMonths: baseData.minAgeMonths,
+    maxAgeYears: baseData.maxAgeYears,
+    maxAgeMonths: baseData.maxAgeMonths,
     capacity: baseData.capacity,
   };
 };
@@ -50,13 +54,18 @@ export const useProgramForm = () => {
   }, [programData]);
 
   const areClassesValid = useMemo(() => {
-    return classRows.every(row => 
-      row.className.trim() !== '' &&
-      row.startTime !== '' &&
-      row.duration >= 15 && row.duration <= 120 &&
-      row.capacity > 0 &&
-      row.minAge <= row.maxAge
-    );
+    return classRows.every(row => {
+      const isClassNameValid = row.className.trim() !== '';
+      const isDurationValid = row.duration >= 15 && row.duration <= 120;
+      const isCapacityValid = row.capacity > 0;
+      
+      // Compare min and max ages (years first, then months)
+      const isAgeRangeValid = 
+        row.minAgeYears < row.maxAgeYears || 
+        (row.minAgeYears === row.maxAgeYears && row.minAgeMonths <= row.maxAgeMonths);
+      
+      return isClassNameValid && isDurationValid && isCapacityValid && isAgeRangeValid;
+    });
   }, [classRows]);
 
   const addClassRow = useCallback(() => {

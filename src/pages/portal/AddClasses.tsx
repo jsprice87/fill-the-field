@@ -62,14 +62,6 @@ const AddClasses: React.FC = () => {
             Create Program
           </Title>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={createProgramMutation.isPending || !canSave}
-          loading={createProgramMutation.isPending}
-        >
-          <Save className="h-4 w-4 mr-2" />
-          Create Program & Save All
-        </Button>
       </div>
 
       <Stack gap="lg">
@@ -86,6 +78,18 @@ const AddClasses: React.FC = () => {
           onAddRow={addClassRow}
           disabled={!isProgramValid}
         />
+
+        <div className="flex justify-center pt-4">
+          <Button
+            onClick={handleSave}
+            disabled={createProgramMutation.isPending || !canSave}
+            loading={createProgramMutation.isPending}
+            size="lg"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Create Program & Save All
+          </Button>
+        </div>
       </Stack>
     </div>
   );

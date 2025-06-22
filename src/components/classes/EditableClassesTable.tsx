@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, Table, Button, Stack } from '@mantine/core';
 import { TableHeader, TableBody, TableRow, TableHead } from '@/components/mantine';
-import { BookOpen, Trash, Plus } from 'lucide-react';
+import { BookOpen, Plus } from 'lucide-react';
 import ClassRow from './ClassRow';
 import { ClassFormData } from '@/types/domain';
 
@@ -45,47 +45,52 @@ const EditableClassesTable: React.FC<EditableClassesTableProps> = ({
           <h3 className="text-lg font-semibold">Classes</h3>
           <span className="text-sm text-gray-500">({classRows.length} class{classRows.length !== 1 ? 'es' : ''})</span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onAddRow}
-          disabled={disabled}
-          leftSection={<Plus className="h-4 w-4" />}
-        >
-          Add Class
-        </Button>
       </Card.Section>
       
       <Card.Section className="p-4">
-        <div className="overflow-x-auto">
-          <Table.ScrollContainer minWidth={800}>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Class Name</TableHead>
-                  <TableHead>Start Time</TableHead>
-                  <TableHead>Duration (min)</TableHead>
-                  <TableHead>End Time</TableHead>
-                  <TableHead>Age Range</TableHead>
-                  <TableHead>Capacity</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {classRows.map((row) => (
-                  <ClassRow
-                    key={row.id}
-                    classData={row}
-                    onUpdate={onUpdateRow}
-                    onRemove={onRemoveRow}
-                    canRemove={classRows.length > 1}
-                    disabled={disabled}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </Table.ScrollContainer>
-        </div>
+        <Stack gap="md">
+          <div className="overflow-x-auto">
+            <Table.ScrollContainer minWidth={800}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Class Name</TableHead>
+                    <TableHead>Start Time</TableHead>
+                    <TableHead>Duration (min)</TableHead>
+                    <TableHead>End Time</TableHead>
+                    <TableHead>Age Range</TableHead>
+                    <TableHead>Capacity</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {classRows.map((row) => (
+                    <ClassRow
+                      key={row.id}
+                      classData={row}
+                      onUpdate={onUpdateRow}
+                      onRemove={onRemoveRow}
+                      canRemove={classRows.length > 1}
+                      disabled={disabled}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </Table.ScrollContainer>
+          </div>
+          
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddRow}
+              disabled={disabled}
+              leftSection={<Plus className="h-4 w-4" />}
+            >
+              Add Class
+            </Button>
+          </div>
+        </Stack>
       </Card.Section>
     </Card>
   );

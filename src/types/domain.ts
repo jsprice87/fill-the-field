@@ -57,7 +57,9 @@ export interface ClassFormData {
   startTime: string;
   duration: number;
   endTime: string;
-  minAge: number;
-  maxAge: number;
+  minAgeYears: number;
+  minAgeMonths: number;
+  maxAgeYears: number;
+  maxAgeMonths: number;
   capacity: number;
 }
