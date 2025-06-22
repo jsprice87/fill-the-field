@@ -40,7 +40,7 @@ export const useClasses = (
   search?: string
 ) => {
   return useQuery({
-    queryKey: ['classes', franchiseeId, locationId ?? 'all', search ?? ''],
+    queryKey: ['classes', franchiseeId, locationId ?? 'ALL', search ?? ''],
     queryFn: async () => {
       if (!franchiseeId) throw new Error('Franchisee ID is required');
 
@@ -79,8 +79,8 @@ export const useClasses = (
         `)
         .eq('classes.locations.franchisee_id', franchiseeId);
 
-      // Filter by location if specified
-      if (locationId) {
+      // Filter by location if specified (and not 'ALL')
+      if (locationId && locationId !== 'ALL') {
         query = query.eq('classes.location_id', locationId);
       }
 

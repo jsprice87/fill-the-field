@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button, Box } from '@mantine/core';
 import { Plus, Filter } from 'lucide-react';
@@ -14,7 +15,7 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useClasses } from '@/hooks/useClasses';
 
 const ClassesList: React.FC = () => {
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   
@@ -22,12 +23,19 @@ const ClassesList: React.FC = () => {
   const { data: locations = [] } = useLocations(franchiseeData?.id);
   const { data: classes = [], isLoading } = useClasses(
     franchiseeData?.id,
-    selectedLocationId === 'all' ? null : selectedLocationId,
+    selectedLocationId === 'ALL' ? null : selectedLocationId,
     searchTerm
   );
 
-  // Debug logging - render rows count
-  console.log('render rows', classes.length);
+  // Build location options array
+  const locationOptions = [
+    { value: 'ALL', label: 'All locations' },
+    ...locations.map(l => ({ value: l.id, label: l.name }))
+  ];
+
+  // Debug logging - initial and render rows count
+  console.log('initial rows', classes.length);
+  console.log('render rows', classes.length, 'location filter', selectedLocationId);
   console.log('currentFranchiseeId', franchiseeData?.id);
   if (classes.length > 0) {
     console.log('first row franchisee check', {
@@ -61,7 +69,7 @@ const ClassesList: React.FC = () => {
       label: 'Total Classes',
       value: classes.length,
       icon: Calendar,
-      description: searchTerm || selectedLocationId !== 'all'
+      description: searchTerm || selectedLocationId !== 'ALL'
         ? 'Current filter' 
         : 'All locations'
     },
@@ -104,10 +112,9 @@ const ClassesList: React.FC = () => {
                       <SelectValue placeholder="Filter by location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Locations</SelectItem>
-                      {locations.map((location) => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
+                      {locationOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -149,7 +156,7 @@ const ClassesList: React.FC = () => {
             classes={classes} 
             onDelete={handleDeleteClass}
             franchiseeId={franchiseeData?.id}
-            locationId={selectedLocationId === 'all' ? null : selectedLocationId}
+            locationId={selectedLocationId === 'ALL' ? null : selectedLocationId}
             search={searchTerm}
           />
         </Box>
