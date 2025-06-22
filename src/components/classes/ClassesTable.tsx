@@ -12,39 +12,39 @@ import { showNotification } from '@mantine/notifications';
 import { supabase } from '@/integrations/supabase/client';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
 
-interface ClassSchedule {
+interface ClassData {
   id: string;
-  class_id: string;
-  start_time: string;
-  end_time: string;
-  date_start: string | null;
-  date_end: string | null;
-  day_of_week: number;
-  current_bookings: number;
+  name: string;
+  class_name: string;
+  description: string;
+  duration_minutes: number;
+  max_capacity: number;
+  min_age: number;
+  max_age: number;
+  location_id: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  classes: {
+  locations: {
+    id: string;
     name: string;
-    class_name: string;
-    description: string;
-    duration_minutes: number;
-    max_capacity: number;
-    min_age: number;
-    max_age: number;
-    location_id: string;
-    locations: {
-      name: string;
-      address: string;
-      city: string;
-      state: string;
-      zip: string;
-    };
+    city: string;
+    state: string;
   };
+  class_schedules: Array<{
+    id: string;
+    start_time: string;
+    end_time: string;
+    day_of_week: number;
+    date_start: string | null;
+    date_end: string | null;
+    current_bookings: number;
+    is_active: boolean;
+  }>;
 }
 
 interface ClassesTableProps {
-  classes: ClassSchedule[];
+  classes: ClassData[];
   onDelete?: (id: string) => void;
   franchiseeId?: string;
   locationId?: string;
@@ -65,7 +65,7 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   const queryClient = useQueryClient();
 
   // Construct the exact query key as used in useClasses
-  const queryKey = ['classes', franchiseeId, locationId ?? 'all', search ?? ''] as const;
+  const queryKey = ['classes', franchiseeId, locationId ?? 'ALL', search ?? ''] as const;
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -75,10 +75,10 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { data, error } = await supabase
-        .from('class_schedules')
+        .from('classes')
         .delete()
         .eq('id', id)
-        .select();           // return deleted row for visibility
+        .select();
 
       console.log('DELETE-resp', { data, error });
       if (error) throw error;
@@ -89,10 +89,10 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
       await queryClient.cancelQueries({ queryKey });
       
       // Snapshot the previous value
-      const previousClasses = queryClient.getQueryData<ClassSchedule[]>(queryKey);
+      const previousClasses = queryClient.getQueryData<ClassData[]>(queryKey);
       
       // Optimistically update to the new value
-      queryClient.setQueryData<ClassSchedule[]>(queryKey, (old) => {
+      queryClient.setQueryData<ClassData[]>(queryKey, (old) => {
         if (!old) return [];
         return old.filter(cls => cls.id !== deletedId);
       });
@@ -163,73 +163,81 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Day</TableHead>
-                <TableHead>Time</TableHead>
+                <TableHead>Schedule</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Capacity</TableHead>
+                <TableHead>Age Range</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedClasses.map((classSchedule, index) => {
-                // Safe access to nested data
-                const cls = classSchedule.classes;
-                const location = cls?.locations;
-                
+              {paginatedClasses.map((classData, index) => {
                 // Log first row model to inspect structure
                 if (index === 0) {
-                  console.log('row model', classSchedule);
+                  console.log('row model', classData);
                 }
                 
+                // Get first active schedule for display
+                const activeSchedule = classData.class_schedules?.find(s => s.is_active) || classData.class_schedules?.[0];
+                
                 return (
-                  <TableRow key={classSchedule.id}>
+                  <TableRow key={classData.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{cls?.name ?? '—'}</div>
+                        <div className="font-medium">{classData.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {cls?.class_name ?? '—'}
+                          {classData.class_name}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {daysOfWeek[classSchedule.day_of_week]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          {classSchedule.start_time} - {classSchedule.end_time}
-                        </span>
-                      </div>
+                      {activeSchedule ? (
+                        <div>
+                          <Badge variant="secondary">
+                            {daysOfWeek[activeSchedule.day_of_week]}
+                          </Badge>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">
+                              {activeSchedule.start_time} - {activeSchedule.end_time}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">No schedule</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                         <div className="text-sm">
-                          <div>{location?.name ?? '—'}</div>
+                          <div>{classData.locations?.name ?? '—'}</div>
                           <div className="text-muted-foreground">
-                            {location?.city ?? '—'}
+                            {classData.locations?.city ?? '—'}
                           </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {classSchedule.current_bookings || 0} / {cls?.max_capacity ?? 0}
+                        {activeSchedule?.current_bookings || 0} / {classData.max_capacity}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={classSchedule.is_active ? "default" : "secondary"}>
-                        {classSchedule.is_active ? "Active" : "Inactive"}
+                      <div className="text-sm">
+                        {classData.min_age}-{classData.max_age} years
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={classData.is_active ? "default" : "secondary"}>
+                        {classData.is_active ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <TableRowMenu
-                        onEdit={() => handleEditClass(classSchedule.class_id)}
-                        onDelete={() => handleDeleteClass(classSchedule.id)}
+                        onEdit={() => handleEditClass(classData.id)}
+                        onDelete={() => handleDeleteClass(classData.id)}
                         isLoading={deleteMutation.isPending}
                         editLabel="Edit Class"
                         deleteLabel="Delete Class"
