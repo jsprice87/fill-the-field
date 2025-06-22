@@ -31,12 +31,12 @@ export const useClass = (classId: string | undefined) => {
             date_start,
             date_end,
             current_bookings,
-            is_active
-          ),
-          schedule_exceptions (
-            id,
-            exception_date,
-            is_cancelled
+            is_active,
+            schedule_exceptions (
+              id,
+              exception_date,
+              is_cancelled
+            )
           )
         `)
         .eq('id', classId)
