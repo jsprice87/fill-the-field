@@ -1,118 +1,84 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@mantine/core';
-import { Card } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button, Stack, Group, Title, Card, Table } from '@mantine/core';
+import { TableHeader, TableBody, TableRow, TableHead } from '@/components/mantine';
 import { ArrowLeft, Save, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useClass, useUpdateClass } from '@/hooks/useClass';
+import { useFranchiseeData } from '@/hooks/useFranchiseeData';
+import { ClassFormData } from '@/types/domain';
+import ClassRow from '@/components/classes/ClassRow';
+import dayjs from 'dayjs';
 
-interface EditClassProps {
-  franchiseeId?: string;
-}
-
-const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId }) => {
-  const { classId, franchiseeSlug } = useParams<{ classId: string; franchiseeSlug: string }>();
+const EditClass: React.FC = () => {
+  const { classId } = useParams<{ classId: string }>();
   const navigate = useNavigate();
-
-  const [className, setClassName] = useState('');
-  const [duration, setDuration] = useState(60);
-  const [capacity, setCapacity] = useState(12);
-  const [locationId, setLocationId] = useState('');
-  const [isActive, setIsActive] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [locations, setLocations] = useState([]);
-  const [currentFranchiseeId, setCurrentFranchiseeId] = useState<string | null>(propFranchiseeId || null);
+  const { data: franchiseeData } = useFranchiseeData();
+  
+  const { data: classData, isLoading } = useClass(classId);
+  const updateClassMutation = useUpdateClass();
+  
+  const [formData, setFormData] = useState<ClassFormData>({
+    id: '',
+    className: '',
+    startTime: '09:00',
+    duration: 60,
+    endTime: '10:00',
+    minAgeYears: 5,
+    minAgeMonths: 0,
+    maxAgeYears: 12,
+    maxAgeMonths: 0,
+    capacity: 12,
+  });
 
   useEffect(() => {
-    if (propFranchiseeId) {
-      setCurrentFranchiseeId(propFranchiseeId);
-      return;
+    if (classData) {
+      // Convert min/max age from months to years+months
+      const minAgeYears = Math.floor((classData.min_age || 0) / 12);
+      const minAgeMonths = (classData.min_age || 0) % 12;
+      const maxAgeYears = Math.floor((classData.max_age || 0) / 12);
+      const maxAgeMonths = (classData.max_age || 0) % 12;
+
+      const endTime = dayjs(`2000-01-01 09:00`)
+        .add(classData.duration_minutes, 'minute')
+        .format('HH:mm');
+
+      setFormData({
+        id: classData.id,
+        className: classData.name,
+        startTime: '09:00', // Default since we don't store start time in classes table
+        duration: classData.duration_minutes,
+        endTime,
+        minAgeYears,
+        minAgeMonths,
+        maxAgeYears,
+        maxAgeMonths,
+        capacity: classData.max_capacity,
+      });
     }
+  }, [classData]);
 
-    const getFranchiseeId = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          toast.error("Authentication required");
-          return;
+  const handleFieldUpdate = (id: string, field: keyof ClassFormData, value: any) => {
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+
+      // Auto-calculate end time when start time or duration changes
+      if (field === 'startTime' || field === 'duration') {
+        const startTime = field === 'startTime' ? value : prev.startTime;
+        const duration = field === 'duration' ? value : prev.duration;
+        
+        if (startTime && duration) {
+          updated.endTime = dayjs(`2000-01-01 ${startTime}`)
+            .add(duration, 'minute')
+            .format('HH:mm');
         }
-
-        const { data: franchisee, error } = await supabase
-          .from('franchisees')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (error || !franchisee) {
-          console.error("Error fetching franchisee:", error);
-          toast.error("Unable to find franchisee account");
-          return;
-        }
-
-        setCurrentFranchiseeId(franchisee.id);
-      } catch (error) {
-        console.error("Error getting franchisee:", error);
-        toast.error("Failed to authenticate");
-      }
-    };
-
-    getFranchiseeId();
-  }, [propFranchiseeId]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!classId || !currentFranchiseeId) {
-        return;
       }
 
-      setIsLoading(true);
-      try {
-        // Fetch class details
-        const { data: classData, error: classError } = await supabase
-          .from('classes')
-          .select('*')
-          .eq('id', classId)
-          .single();
-
-        if (classError) {
-          console.error("Error fetching class:", classError);
-          toast.error("Failed to load class details");
-          return;
-        }
-
-        setClassName(classData.name);
-        setDuration(classData.duration_minutes);
-        setCapacity(classData.max_capacity);
-        setLocationId(classData.location_id);
-        setIsActive(classData.is_active);
-
-        // Fetch locations for the franchisee
-        const { data: locationsData, error: locationsError } = await supabase
-          .from('locations')
-          .select('*')
-          .eq('franchisee_id', currentFranchiseeId);
-
-        if (locationsError) {
-          console.error("Error fetching locations:", locationsError);
-          toast.error("Failed to load locations");
-          return;
-        }
-
-        setLocations(locationsData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [classId, currentFranchiseeId]);
+      return updated;
+    });
+  };
 
   const handleSave = async () => {
     if (!classId) {
@@ -120,33 +86,30 @@ const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId })
       return;
     }
 
-    setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from('classes')
-        .update({
-          name: className,
-          class_name: className,
-          duration_minutes: duration,
-          max_capacity: capacity,
-          location_id: locationId,
-          is_active: isActive,
-        })
-        .eq('id', classId);
+      // Convert age years/months back to total months for storage
+      const minAgeMonths = formData.minAgeYears * 12 + formData.minAgeMonths;
+      const maxAgeMonths = formData.maxAgeYears * 12 + formData.maxAgeMonths;
 
-      if (error) {
-        console.error("Error updating class:", error);
-        toast.error("Failed to update class");
-        return;
-      }
+      await updateClassMutation.mutateAsync({
+        classId,
+        updates: {
+          name: formData.className,
+          class_name: formData.className,
+          description: `${formData.className} program`,
+          duration_minutes: formData.duration,
+          max_capacity: formData.capacity,
+          min_age: Math.floor(minAgeMonths / 12), // Store as years for compatibility
+          max_age: Math.floor(maxAgeMonths / 12), // Store as years for compatibility
+          is_active: true,
+        }
+      });
 
       toast.success("Class updated successfully");
-      navigate(`/${franchiseeSlug}/portal/classes/list`);
+      navigate('/portal/classes');
     } catch (error) {
-      console.error("Error saving class:", error);
-      toast.error("Failed to save class");
-    } finally {
-      setIsSaving(false);
+      console.error("Error updating class:", error);
+      toast.error("Failed to update class");
     }
   };
 
@@ -160,7 +123,6 @@ const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId })
       return;
     }
 
-    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('classes')
@@ -174,19 +136,28 @@ const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId })
       }
 
       toast.success("Class deleted successfully");
-      navigate(`/${franchiseeSlug}/portal/classes/list`);
+      navigate('/portal/classes');
     } catch (error) {
       console.error("Error deleting class:", error);
       toast.error("Failed to delete class");
-    } finally {
-      setIsSaving(false);
     }
+  };
+
+  const isFormValid = () => {
+    const isClassNameValid = formData.className.trim() !== '';
+    const isDurationValid = formData.duration >= 15 && formData.duration <= 120;
+    const isCapacityValid = formData.capacity > 0;
+    const isAgeRangeValid = 
+      formData.minAgeYears < formData.maxAgeYears || 
+      (formData.minAgeYears === formData.maxAgeYears && formData.minAgeMonths <= formData.maxAgeMonths);
+    
+    return isClassNameValid && isDurationValid && isCapacityValid && isAgeRangeValid;
   };
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Edit Class</h1>
+        <Title order={1} size="30px" lh="36px" fw={600}>Edit Class</Title>
         <div className="animate-pulse space-y-4">
           <div className="h-32 bg-gray-200 rounded"></div>
         </div>
@@ -198,108 +169,61 @@ const EditClass: React.FC<EditClassProps> = ({ franchiseeId: propFranchiseeId })
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/${franchiseeSlug}/portal/classes/list`)}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/portal/classes')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Classes
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">Edit Class</h1>
+          <Title order={1} size="30px" lh="36px" fw={600}>
+            Edit Class
+          </Title>
         </div>
-        <div className="flex gap-2">
+        <Group gap="sm">
           <Button
-            variant="destructive"
+            variant="outline"
+            color="red"
             onClick={handleDelete}
-            disabled={isSaving}
+            disabled={updateClassMutation.isPending}
           >
-            {isSaving ? (
-              <>
-                <span className="animate-pulse">Deleting...</span>
-              </>
-            ) : (
-              <>
-                <Trash className="h-4 w-4 mr-2" />
-                Delete
-              </>
-            )}
+            <Trash className="h-4 w-4 mr-2" />
+            Delete
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isSaving}
+            disabled={updateClassMutation.isPending || !isFormValid()}
+            loading={updateClassMutation.isPending}
           >
-            {isSaving ? (
-              <>
-                <span className="animate-pulse">Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </>
-            )}
+            <Save className="h-4 w-4 mr-2" />
+            Save Changes
           </Button>
-        </div>
+        </Group>
       </div>
 
       <Card>
-        <Card.Section>
-          <Card.Section>
-            Class Details
-          </Card.Section>
-        </Card.Section>
-        <Card.Section className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="class-name">Class Name</Label>
-            <Input
-              id="class-name"
-              type="text"
-              placeholder="Enter class name"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
-            <Input
-              id="duration"
-              type="number"
-              placeholder="Enter duration"
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="capacity">Capacity</Label>
-            <Input
-              id="capacity"
-              type="number"
-              placeholder="Enter capacity"
-              value={capacity}
-              onChange={(e) => setCapacity(Number(e.target.value))}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="location">Location</Label>
-            <Select value={locationId} onValueChange={setLocationId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a location" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((location) => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="is-active">Active</Label>
-            <Input
-              id="is-active"
-              type="checkbox"
-              checked={isActive}
-              onChange={() => setIsActive(!isActive)}
-            />
-          </div>
+        <Card.Section className="p-6">
+          <Title order={3} mb="md">Class Details</Title>
+          
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Class Name</TableHead>
+                <TableHead>Start Time</TableHead>
+                <TableHead>Duration (min)</TableHead>
+                <TableHead>End Time</TableHead>
+                <TableHead>Age Range</TableHead>
+                <TableHead>Capacity</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <ClassRow
+                classData={formData}
+                onUpdate={handleFieldUpdate}
+                onRemove={() => {}} // No remove in edit mode
+                canRemove={false}
+                disabled={updateClassMutation.isPending}
+              />
+            </TableBody>
+          </Table>
         </Card.Section>
       </Card>
     </div>

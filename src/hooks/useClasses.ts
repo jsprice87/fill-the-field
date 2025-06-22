@@ -78,11 +78,9 @@ export const useClasses = (
         `)
         .eq('classes.locations.franchisee_id', franchiseeId);
 
-      // Filter by location if specified - use inner join style to ensure valid location data
+      // Filter by location if specified
       if (locationId) {
-        query = query
-          .eq('classes.locations.id', locationId)
-          .not('classes.locations', 'is', null);
+        query = query.eq('classes.location_id', locationId);
       }
 
       // Filter by search term if specified

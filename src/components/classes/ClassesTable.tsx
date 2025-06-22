@@ -5,11 +5,12 @@ import { TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/compon
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@mantine/core';
 import { Pagination } from '@/components/ui/pagination';
-import { Edit, Trash, MapPin, Clock } from 'lucide-react';
+import { Clock, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { showNotification } from '@mantine/notifications';
 import { supabase } from '@/integrations/supabase/client';
+import { TableRowMenu } from '@/components/ui/TableRowMenu';
 
 interface ClassSchedule {
   id: string;
@@ -133,11 +134,11 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   });
 
   const handleDeleteClass = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this class?')) {
-      return;
-    }
-
     deleteMutation.mutate(id);
+  };
+
+  const handleEditClass = (id: string) => {
+    navigate(`/portal/classes/edit/${id}`);
   };
 
   // Pagination logic
@@ -220,24 +221,13 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/portal/classes/edit/${classSchedule.id}`)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:bg-red-50"
-                          onClick={() => handleDeleteClass(classSchedule.id)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <TableRowMenu
+                        onEdit={() => handleEditClass(classSchedule.id)}
+                        onDelete={() => handleDeleteClass(classSchedule.id)}
+                        isLoading={deleteMutation.isPending}
+                        editLabel="Edit Class"
+                        deleteLabel="Delete Class"
+                      />
                     </TableCell>
                   </TableRow>
                 );

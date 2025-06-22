@@ -10,7 +10,6 @@ import LeadDetail from "./pages/portal/LeadDetail";
 import PortalBookings from "./pages/portal/Bookings";
 import PortalLocations from "./pages/portal/Locations";
 import PortalClasses from "./pages/portal/Classes";
-import ClassesList from "./pages/portal/ClassesList";
 import AddClasses from "./pages/portal/AddClasses";
 import EditClass from "./pages/portal/EditClass";
 import PortalProfile from "./pages/portal/Profile";
@@ -103,12 +102,6 @@ export const navItems = [
   {
     title: "Portal Classes Redirect",
     to: "/portal/classes",
-    icon: <BookOpenIcon className="h-4 w-4" />,
-    page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
-  },
-  {
-    title: "Classes List Redirect",
-    to: "/portal/classes/list",
     icon: <BookOpenIcon className="h-4 w-4" />,
     page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
@@ -244,12 +237,6 @@ export const navItems = [
         to: "classes",
         icon: <BookOpenIcon className="h-4 w-4" />,
         page: <PortalClasses />,
-      },
-      {
-        title: "Classes List",
-        to: "classes/list",
-        icon: <BookOpenIcon className="h-4 w-4" />,
-        page: <ClassesList />,
       },
       {
         title: "Add Classes",

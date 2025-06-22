@@ -37,14 +37,14 @@ const AddClasses: React.FC = () => {
     }
 
     try {
-      await createProgramMutation.mutateAsync({
+      const result = await createProgramMutation.mutateAsync({
         programData,
         classRows,
         franchiseeId: franchiseeData.id
       });
 
       toast.success(`Successfully created ${classRows.length} classes`);
-      navigate('/portal/classes/list');
+      navigate('/portal/classes');
     } catch (error) {
       console.error("Error saving program:", error);
       toast.error(error instanceof Error ? error.message : "Failed to save program");
@@ -57,7 +57,7 @@ const AddClasses: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/portal/classes/list')}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/portal/classes')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Classes
           </Button>
