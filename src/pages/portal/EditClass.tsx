@@ -18,7 +18,7 @@ const EditClass: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
   
   // Debug: Log the classId from route params
-  console.log('EditClass classId from useParams:', classId);
+  console.log('Route id', classId);
   
   // Debug: Test raw query without joins
   useEffect(() => {
@@ -53,6 +53,20 @@ const EditClass: React.FC = () => {
             error: franchiseeError 
           });
         }
+      }
+      
+      // Additional DB check as requested
+      console.log('DB check for route id:', classId);
+      const { data: dbCheckData, error: dbCheckError } = await supabase
+        .from('classes')
+        .select('id, location_id, locations!inner(franchisee_id)')
+        .eq('id', classId)
+        .maybeSingle();
+      
+      console.log('DB check', { data: dbCheckData, error: dbCheckError });
+      if (dbCheckData?.locations) {
+        console.log('Class franchisee_id:', dbCheckData.locations.franchisee_id);
+        console.log('Current franchisee_id:', franchiseeData?.id);
       }
     };
     

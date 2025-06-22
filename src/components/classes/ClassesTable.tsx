@@ -138,6 +138,7 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   };
 
   const handleEditClass = (id: string) => {
+    console.log('Edit click id', id);
     navigate(`/portal/classes/edit/${id}`);
   };
 
