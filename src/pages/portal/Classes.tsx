@@ -39,7 +39,7 @@ const ClassesList: React.FC = () => {
   console.log('currentFranchiseeId', franchiseeData?.id);
   if (classes.length > 0) {
     console.log('first row franchisee check', {
-      rowFranchiseeId: classes[0]?.classes?.locations?.franchisee_id,
+      rowFranchiseeId: classes[0]?.locations?.franchisee_id,
       currentFranchiseeId: franchiseeData?.id
     });
   }
@@ -63,7 +63,7 @@ const ClassesList: React.FC = () => {
     );
   }
 
-  // Prepare metrics data
+  // Prepare metrics data - fixed to work with classes data structure
   const metrics = [
     {
       label: 'Total Classes',
@@ -81,7 +81,12 @@ const ClassesList: React.FC = () => {
     },
     {
       label: 'Total Bookings',
-      value: classes.reduce((sum, cls) => sum + (cls.current_bookings || 0), 0),
+      value: classes.reduce((sum, cls) => {
+        // Sum up current_bookings from all schedules for this class
+        const classBookings = cls.class_schedules?.reduce((scheduleSum, schedule) => 
+          scheduleSum + (schedule.current_bookings || 0), 0) || 0;
+        return sum + classBookings;
+      }, 0),
       icon: Clock,
       description: 'Across all classes'
     },
@@ -92,6 +97,8 @@ const ClassesList: React.FC = () => {
       description: 'Active locations'
     }
   ];
+
+  console.log('render ok');
 
   return (
     <PortalShell>

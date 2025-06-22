@@ -11,6 +11,7 @@ import { toDate } from '@/utils/normalize';
 import { useZodForm } from '@/hooks/useZodForm';
 import { calculateAgeFromDate } from '@/utils/ageCalculator';
 
+// Fixed schema to use Date type for birth_date
 const participantSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   birth_date: z
@@ -64,8 +65,14 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
     }
   }, [initialData, form]);
 
-  // Calculate age from birth date
-  const age = form.values.birth_date
+  // Fixed birth date change handler with better logging
+  const handleBirthDateChange = (value: Date | null) => {
+    console.log('birthDate raw', value, typeof value);
+    form.setFieldValue('birth_date', value);
+  };
+
+  // Calculate age from birth date - with null safety
+  const age = form.values.birth_date && form.values.birth_date instanceof Date
     ? calculateAgeFromDate(form.values.birth_date)
     : null;
 
@@ -77,13 +84,17 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
      (classSchedule.classes.max_age && age > classSchedule.classes.max_age));
 
   const handleSubmit = async (data: ParticipantFormData) => {
-    // Convert to ISO string only at submission time
+    // Convert Date to ISO string only at submission time
     const { notes, ...rest } = data;
     const payload = {
       ...rest,
-      birth_date: data.birth_date.toISOString(),
+      birth_date: data.birth_date instanceof Date 
+        ? data.birth_date.toISOString().split('T')[0] 
+        : null,
       notes: notes || undefined,
     };
+
+    console.log('Submitting participant with payload:', payload);
 
     if (onAddParticipant) {
       await onAddParticipant(payload);
@@ -114,7 +125,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             label="Birth Date"
             placeholder="Select birth date"
             valueFormat="DD/MM/YYYY"
-            {...form.getInputProps('birth_date')}
+            value={form.values.birth_date}
+            onChange={handleBirthDateChange}
+            error={form.errors.birth_date}
           />
 
           {isOutOfRange && classSchedule?.classes && (
