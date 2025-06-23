@@ -148,36 +148,38 @@ const BookingLandingContent: React.FC = () => {
           </h3>
           
           <div className="value-prop-strip">
-            <div className="text-center">
-              <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" 
-                  alt="Toddler Soccer Fun" 
-                  className="w-full h-64 object-cover"
-                  loading="lazy"
-                />
+            <div className="grid md:grid-cols-2 gap-12 items-start">
+              <div>
+                <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
+                  <img 
+                    src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" 
+                    alt="Toddler Soccer Fun" 
+                    className="w-full h-64 object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
+                <p className="font-poppins text-brand-grey text-lg">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
               </div>
-              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-white" />
+              
+              <div>
+                <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
+                  <img 
+                    src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" 
+                    alt="Youth Soccer Development" 
+                    className="w-full h-64 object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mb-4">
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-10+: Super Soccer Stars</h4>
+                <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
               </div>
-              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
-              <p className="font-poppins text-brand-grey text-lg">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" 
-                  alt="Youth Soccer Development" 
-                  className="w-full h-64 object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="w-6 h-6 text-white" />
-              </div>
-              <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-10+: Super Soccer Stars</h4>
-              <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
             </div>
           </div>
         </div>
