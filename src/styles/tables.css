@@ -1,0 +1,21 @@
+
+/* Table scroll container and sticky headers */
+.table-scroll {
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.sticky-header th,
+.sticky-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+  background: var(--mantine-color-body) !important;
+}
+
+/* Ensure proper background for sticky headers in dark mode */
+[data-mantine-color-scheme="dark"] .sticky-header th,
+[data-mantine-color-scheme="dark"] .sticky-header {
+  background: var(--mantine-color-dark-7) !important;
+}

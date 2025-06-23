@@ -124,143 +124,139 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
         </div>
       )}
 
-      <ScrollArea h="calc(100vh - 240px)">
-        <Table.ScrollContainer minWidth={900}>
-          <Table stickyHeader>
-            <TableHeader>
-              <TableRow>
-                <TableHead style={{ width: '48px' }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedLeads.size === leads.length && leads.length > 0}
-                    onChange={handleSelectAll}
-                    className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
-                  />
-                </TableHead>
-                <TableHead>Lead Info</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Quick Actions</TableHead>
-                <TableHead style={{ width: '48px' }}>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {leads.map((lead) => (
-                <TableRow 
-                  key={lead.id} 
-                  interactive
-                  style={{
-                    backgroundColor: selectedLeads.has(lead.id) ? 'var(--mantine-color-primary-1)' : 
-                                    hoveredRow === lead.id ? 'var(--mantine-color-gray-1)' : 'transparent',
-                    opacity: lead.archived_at ? 0.6 : 1
-                  }}
-                  onMouseEnter={() => setHoveredRow(lead.id)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                >
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedLeads.has(lead.id)}
-                      onChange={(e) => handleLeadSelection(lead.id, e.target.checked)}
-                      className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
-                    />
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <LeadInfoCell 
-                      firstName={lead.first_name}
-                      lastName={lead.last_name}
-                      email={lead.email}
-                      phone={lead.phone}
-                      notes={lead.notes}
-                      archivedAt={lead.archived_at}
-                    />
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <LeadContactCell 
-                      email={lead.email}
-                      phone={lead.phone}
-                    />
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <Text size="sm" c="dimmed">
-                      {lead.locations?.name || 'Not selected'}
-                    </Text>
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <StatusSelect 
-                      leadId={lead.id}
-                      currentStatus={lead.status as any}
-                    />
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <Text size="sm" style={{ textTransform: 'capitalize' }}>
-                      {lead.source || 'Unknown'}
-                    </Text>
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <Text size="sm" c="dimmed">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </Text>
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="subtle"
-                        size="sm"
-                        onClick={() => handleCallLead(lead.phone)}
-                        title="Call lead"
-                      >
-                        <IconPhone size={16} />
-                      </Button>
-                      <Button
-                        variant="subtle"
-                        size="sm"
-                        onClick={() => handleEmailLead(lead.email)}
-                        title="Email lead"
-                      >
-                        <IconMail size={16} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell style={{ padding: '12px 16px' }}>
-                    <Menu shadow="md" withinPortal position="bottom-end">
-                      <Menu.Target>
-                        <ActionIcon variant="subtle" size="sm">
-                          <IconDotsVertical size={16} />
-                        </ActionIcon>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item leftSection={<IconEye size={14} />}>
-                          View Details
-                        </Menu.Item>
-                        <Menu.Item leftSection={<IconPencil size={14} />}>
-                          Edit Lead
-                        </Menu.Item>
-                        <Menu.Item 
-                          leftSection={lead.archived_at ? <IconRestore size={14} /> : <IconArchive size={14} />}
-                          onClick={() => handleArchiveToggle(lead.id)}
-                        >
-                          {lead.archived_at ? 'Unarchive' : 'Archive'}
-                        </Menu.Item>
-                        <Menu.Item 
-                          leftSection={<IconTrash size={14} />}
-                          color="red"
-                          onClick={() => handleDelete(lead.id)}
-                        >
-                          Delete
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Table.ScrollContainer>
-      </ScrollArea>
+      <Table stickyHeader id="leads-table">
+        <TableHeader>
+          <TableRow>
+            <TableHead style={{ width: '48px' }}>
+              <input
+                type="checkbox"
+                checked={selectedLeads.size === leads.length && leads.length > 0}
+                onChange={handleSelectAll}
+                className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+              />
+            </TableHead>
+            <TableHead>Lead Info</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Source</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Quick Actions</TableHead>
+            <TableHead style={{ width: '48px' }}>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {leads.map((lead) => (
+            <TableRow 
+              key={lead.id} 
+              interactive
+              style={{
+                backgroundColor: selectedLeads.has(lead.id) ? 'var(--mantine-color-primary-1)' : 
+                                hoveredRow === lead.id ? 'var(--mantine-color-gray-1)' : 'transparent',
+                opacity: lead.archived_at ? 0.6 : 1
+              }}
+              onMouseEnter={() => setHoveredRow(lead.id)}
+              onMouseLeave={() => setHoveredRow(null)}
+            >
+              <TableCell style={{ padding: '12px 16px' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedLeads.has(lead.id)}
+                  onChange={(e) => handleLeadSelection(lead.id, e.target.checked)}
+                  className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                />
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <LeadInfoCell 
+                  firstName={lead.first_name}
+                  lastName={lead.last_name}
+                  email={lead.email}
+                  phone={lead.phone}
+                  notes={lead.notes}
+                  archivedAt={lead.archived_at}
+                />
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <LeadContactCell 
+                  email={lead.email}
+                  phone={lead.phone}
+                />
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <Text size="sm" c="dimmed">
+                  {lead.locations?.name || 'Not selected'}
+                </Text>
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <StatusSelect 
+                  leadId={lead.id}
+                  currentStatus={lead.status as any}
+                />
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <Text size="sm" style={{ textTransform: 'capitalize' }}>
+                  {lead.source || 'Unknown'}
+                </Text>
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <Text size="sm" c="dimmed">
+                  {new Date(lead.created_at).toLocaleDateString()}
+                </Text>
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <div className="flex gap-2">
+                  <Button
+                    variant="subtle"
+                    size="sm"
+                    onClick={() => handleCallLead(lead.phone)}
+                    title="Call lead"
+                  >
+                    <IconPhone size={16} />
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    size="sm"
+                    onClick={() => handleEmailLead(lead.email)}
+                    title="Email lead"
+                  >
+                    <IconMail size={16} />
+                  </Button>
+                </div>
+              </TableCell>
+              <TableCell style={{ padding: '12px 16px' }}>
+                <Menu shadow="md" withinPortal position="bottom-end">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" size="sm">
+                      <IconDotsVertical size={16} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item leftSection={<IconEye size={14} />}>
+                      View Details
+                    </Menu.Item>
+                    <Menu.Item leftSection={<IconPencil size={14} />}>
+                      Edit Lead
+                    </Menu.Item>
+                    <Menu.Item 
+                      leftSection={lead.archived_at ? <IconRestore size={14} /> : <IconArchive size={14} />}
+                      onClick={() => handleArchiveToggle(lead.id)}
+                    >
+                      {lead.archived_at ? 'Unarchive' : 'Archive'}
+                    </Menu.Item>
+                    <Menu.Item 
+                      leftSection={<IconTrash size={14} />}
+                      color="red"
+                      onClick={() => handleDelete(lead.id)}
+                    >
+                      Delete
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };

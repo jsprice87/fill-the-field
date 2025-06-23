@@ -32,9 +32,16 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(
 
     if (stickyHeader) {
       return (
-        <ScrollArea type="auto">
+        <div 
+          className="table-scroll"
+          style={{
+            maxHeight: '70vh',
+            overflowY: 'auto',
+            overflowX: 'auto'
+          }}
+        >
           {tableContent}
-        </ScrollArea>
+        </div>
       );
     }
 
@@ -49,6 +56,7 @@ export const TableHeader = forwardRef<HTMLTableSectionElement, React.HTMLAttribu
     <thead 
       ref={ref} 
       {...props} 
+      className="sticky-header"
       style={{ 
         position: 'sticky', 
         top: 0, 
@@ -103,6 +111,9 @@ export const TableHead = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes
         fontWeight: 600,
         backgroundColor: 'var(--mantine-color-body)',
         borderBottom: '1px solid var(--mantine-color-gray-3)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 2,
         ...props.style 
       }}
     >
