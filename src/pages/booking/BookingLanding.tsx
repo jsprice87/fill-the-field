@@ -43,7 +43,7 @@ const BookingLandingContent: React.FC = () => {
         leadData: {
           firstName: leadData.first_name,
           lastName: leadData.last_name,
-          email: ledData.email,
+          email: leadData.email,
           phone: leadData.phone,
           zip: leadData.zip
         }
@@ -132,7 +132,7 @@ const BookingLandingContent: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-12 items-start">
               <div>
                 <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                  <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Toddler Soccer Fun" className="w-full h-64 object-cover" loading="lazy" />
+                  <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Toddler Soccer Fun" className="w-full h-auto object-cover" loading="lazy" />
                 </div>
                 <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mb-4">
                   <Users className="w-6 h-6 text-white" />
