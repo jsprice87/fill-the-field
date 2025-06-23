@@ -93,7 +93,7 @@ const BookingLandingContent: React.FC = () => {
                   <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                     <Users className="w-3 h-3 text-white" />
                   </div>
-                  <p className="font-poppins text-lg">Professional coaching in a fun environment</p>
+                  <p className="font-poppins text-lg text-slate-400">Professional coaching in a fun environment</p>
                 </div>
                 <div className="flex items-center justify-center lg:justify-start">
                   <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
