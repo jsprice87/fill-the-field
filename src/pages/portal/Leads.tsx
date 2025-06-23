@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { Title, Text, SimpleGrid, ScrollArea, rem, Stack, Group, Box } from '@mantine/core';
-import { MetricCard, StickyHeader, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine';
+import { MetricCard, StickyHeader, Button } from '@/components/mantine';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, MapPin, User, Users, Filter } from 'lucide-react';
+import { Calendar, MapPin, User, Users, Filter, Download } from 'lucide-react';
 import { useLeads } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useLocations } from '@/hooks/useLocations';
@@ -13,6 +13,8 @@ import LeadsTable from '@/components/leads/LeadsTable';
 import SearchInput from '@/components/shared/SearchInput';
 import ArchiveToggle from '@/components/shared/ArchiveToggle';
 import { PortalShell } from '@/layout/PortalShell';
+import { exportLeadsToCsv } from '@/utils/csvExport';
+import { toast } from 'sonner';
 
 const PortalLeads: React.FC = () => {
   const { data: franchiseeData } = useFranchiseeData();
@@ -30,6 +32,16 @@ const PortalLeads: React.FC = () => {
     : filteredLeads.filter(lead => 
         lead.classes?.some(cls => cls.location_id === selectedLocationId)
       );
+
+  const handleExportCsv = () => {
+    try {
+      exportLeadsToCsv(finalLeads);
+      toast.success(`Exported ${finalLeads.length} leads to CSV`);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      toast.error('Failed to export CSV');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -87,6 +99,16 @@ const PortalLeads: React.FC = () => {
               </Title>
               
               <Group gap="md">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCsv}
+                  disabled={isLoading}
+                  leftSection={<Download className="h-4 w-4" />}
+                >
+                  Export CSV
+                </Button>
+
                 <ArchiveToggle />
                 
                 {/* Location Filter */}
