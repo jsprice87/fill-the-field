@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@mantine/core';
@@ -6,7 +5,6 @@ import { Button } from '@mantine/core';
 import { Sparkles, ArrowRight, Target, Users, BarChart3, Globe, Calendar } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { Text } from "@mantine/core";
-
 const Index = () => {
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Header */}
@@ -57,85 +55,16 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-semibold text-center mb-12">Everything You Need to Grow Your Business</h2>
-        
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card>
-            <Card.Section>
-              <Globe className="h-10 w-10 text-indigo-600 mb-2" />
-              <Text size="lg" fw={500}>Custom Landing Pages</Text>
-              <Text size="sm" c="dimmed">Create beautiful landing pages that match your brand in minutes.</Text>
-            </Card.Section>
-            <Card.Section>
-              <ul className="space-y-2">
-                <li>
-                  Easy drag-and-drop editor
-                </li>
-                <li>
-                  Custom colors and branding
-                </li>
-                <li>
-                  Mobile responsive design
-                </li>
-              </ul>
-            </Card.Section>
-          </Card>
-
-          <Card>
-            <Card.Section>
-              <Calendar className="h-10 w-10 text-indigo-600 mb-2" />
-              <Text size="lg" fw={500}>Booking Management</Text>
-              <Text size="sm" c="dimmed">Streamline your class scheduling and booking process.</Text>
-            </Card.Section>
-            <Card.Section>
-              <ul className="space-y-2">
-                <li>
-                  Automated booking system
-                </li>
-                <li>
-                  Class capacity management
-                </li>
-                <li>
-                  Multi-participant registration
-                </li>
-              </ul>
-            </Card.Section>
-          </Card>
-
-          <Card>
-            <Card.Section>
-              <Users className="h-10 w-10 text-indigo-600 mb-2" />
-              <Text size="lg" fw={500}>Lead Conversion</Text>
-              <Text size="sm" c="dimmed">Turn trial participants into loyal paying customers.</Text>
-            </Card.Section>
-            <Card.Section>
-              <ul className="space-y-2">
-                <li>
-                  Lead tracking dashboard
-                </li>
-                <li>
-                  Automated follow-up emails
-                </li>
-                <li>
-                  Conversion analytics
-                </li>
-              </ul>
-            </Card.Section>
-          </Card>
-        </div>
-      </section>
+      
 
       {/* Pricing CTA Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="bg-indigo-600 rounded-2xl p-8 md:p-12 text-center text-white relative overflow-hidden">
+        <div className="rounded-2xl p-8 md:p-12 text-center text-white relative overflow-hidden bg-slate-400">
           <div className="absolute top-4 right-4 opacity-20">
-            <img src="/lovable-uploads/579556c3-1aa1-4faa-9117-3b8af0ea384c.png" alt="Fill The Field Shield" className="h-16 w-16" />
+            
           </div>
           <h2 className="text-3xl font-bold mb-4">Ready to Fill The Field?</h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of business owners who are filling their classes and growing their customer base with our fast funnels for free trials.
-          </p>
+          <p className="text-lg mb-8 max-w-2xl mx-auto text-slate-100">Join the probably around 3 or 4 (super good looking and popular) business owners who are filling their classes and growing their customer base with our fast funnels for free trials.</p>
           <Link to="/register">
             <Button size="lg" variant="secondary" className="px-8">
               Start Your Free Trial
@@ -148,7 +77,7 @@ const Index = () => {
       <footer className="bg-gray-50 border-t">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center mb-8">
-            <img src="/lovable-uploads/c5e58dba-5000-47ba-a87f-3353c2c8ad0f.png" alt="Fill The Field - Fast Funnels for Free Trials" className="h-16 w-auto mx-auto mb-4 max-w-[400px]" />
+            <img alt="Fill The Field - Fast Funnels for Free Trials" src="/lovable-uploads/db07ebae-bd0f-4203-9da2-dba6240585b9.png" className="h-auto w-auto mx-auto mb-4 max-w-[600px]" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
