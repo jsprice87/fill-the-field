@@ -1,38 +1,11 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, TextInput, PasswordInput, Stack, Text, Group, Divider } from '@mantine/core';
+import { Button, TextInput, PasswordInput, Stack, Text, Group } from '@mantine/core';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getSlugFromFranchiseeId, generateSlug, ensureUniqueSlug } from "@/utils/slugUtils";
-
-// Define dummy franchisee accounts
-const dummyFranchisees = [
-  {
-    email: "franchisee1@example.com",
-    password: "password123",
-    id: "franchise-001",
-    name: "South Denver Soccer Stars"
-  },
-  {
-    email: "franchisee2@example.com",
-    password: "password123",
-    id: "franchise-002",
-    name: "North Seattle Soccer Club"
-  },
-  {
-    email: "franchisee3@example.com",
-    password: "password123",
-    id: "franchise-003",
-    name: "East Austin Athletics"
-  }
-];
-
-// Define admin account
-const adminAccount = {
-  email: "admin@superleadstar.com",
-  password: "admin123"
-};
+import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -117,138 +90,6 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-  
-  // Create real test accounts and login
-  const createAndLoginTestUser = async (userType: 'admin' | 'franchisee1' | 'franchisee2' | 'franchisee3') => {
-    setIsLoading(true);
-    
-    try {
-      if (userType === 'admin') {
-        // Try to login first, if it fails, create the account
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-          email: adminAccount.email,
-          password: adminAccount.password,
-        });
-        
-        if (loginError && loginError.message.includes('Invalid login credentials')) {
-          // Create admin account
-          console.log("Creating admin account...");
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: adminAccount.email,
-            password: adminAccount.password,
-            options: {
-              data: {
-                role: 'admin'
-              }
-            }
-          });
-          
-          if (signUpError) {
-            throw signUpError;
-          }
-          
-          toast.success("Admin account created and logged in");
-          setFormData({
-            email: adminAccount.email,
-            password: adminAccount.password,
-          });
-          navigate("/admin/dashboard");
-        } else if (loginData.user) {
-          toast.success("Logged in as Admin");
-          setFormData({
-            email: adminAccount.email,
-            password: adminAccount.password,
-          });
-          navigate("/admin/dashboard");
-        }
-      } else {
-        const franchiseeIndex = parseInt(userType.replace('franchisee', '')) - 1;
-        if (franchiseeIndex >= 0 && franchiseeIndex < dummyFranchisees.length) {
-          const franchisee = dummyFranchisees[franchiseeIndex];
-          
-          // Try to login first, if it fails, create the account
-          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-            email: franchisee.email,
-            password: franchisee.password,
-          });
-          
-          if (loginError && loginError.message.includes('Invalid login credentials')) {
-            // Create franchisee account
-            console.log(`Creating franchisee account for ${franchisee.name}...`);
-            
-            // Generate a URL-friendly slug from company name
-            const baseSlug = generateSlug(franchisee.name);
-            
-            // Ensure slug is unique in the database
-            const uniqueSlug = await ensureUniqueSlug(baseSlug);
-            
-            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-              email: franchisee.email,
-              password: franchisee.password,
-              options: {
-                data: {
-                  company_name: franchisee.name,
-                  contact_name: franchisee.name,
-                  role: 'franchisee'
-                }
-              }
-            });
-            
-            if (signUpError) {
-              throw signUpError;
-            }
-            
-            // After successful signup, create franchisee record
-            if (signUpData.user) {
-              console.log(`Creating franchisee record for user ${signUpData.user.id}...`);
-              const { error: franchiseeError } = await supabase
-                .from("franchisees")
-                .insert({
-                  user_id: signUpData.user.id,
-                  company_name: franchisee.name,
-                  contact_name: franchisee.name,
-                  email: franchisee.email,
-                  slug: uniqueSlug,
-                });
-                
-              if (franchiseeError) {
-                console.error("Error creating franchisee record:", franchiseeError);
-              }
-            }
-            
-            toast.success(`${franchisee.name} account created and logged in`);
-            setFormData({
-              email: franchisee.email,
-              password: franchisee.password,
-            });
-            
-            // Navigate using the slug
-            navigate(`/${uniqueSlug}/portal/dashboard`);
-          } else if (loginData.user) {
-            toast.success(`Logged in as ${franchisee.name}`);
-            setFormData({
-              email: franchisee.email,
-              password: franchisee.password,
-            });
-            
-            // Get the slug for the user
-            const slug = await getSlugFromFranchiseeId(loginData.user.id);
-            
-            if (slug) {
-              navigate(`/${slug}/portal/dashboard`);
-            } else {
-              navigate(`/${loginData.user.id}/portal/dashboard`);
-            }
-          }
-        }
-      }
-    } catch (error: any) {
-      console.error("Test account creation/login error:", error);
-      toast.error(`Error: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <AuthLayout 
@@ -288,52 +129,6 @@ const Login = () => {
           <Button type="submit" fullWidth loading={isLoading}>
             {isLoading ? "Logging in..." : "Log in"}
           </Button>
-
-          {/* Test Environment: Quick Access Buttons */}
-          {(import.meta.env.DEV || window.location.hostname === 'localhost') && (
-            <>
-              <Divider label="Test Environment" labelPosition="center" />
-              
-              <Text size="xs" c="dimmed" ta="center">
-                Create/Login Test Accounts
-              </Text>
-              
-              <Button 
-                variant="outline"
-                fullWidth
-                size="sm"
-                onClick={() => createAndLoginTestUser('admin')}
-                disabled={isLoading}
-              >
-                Create/Login as Admin
-              </Button>
-              
-              <Group grow>
-                {dummyFranchisees.map((franchisee, index) => (
-                  <Button 
-                    key={index}
-                    variant="outline"
-                    size="xs"
-                    onClick={() => createAndLoginTestUser(`franchisee${index + 1}` as any)}
-                    disabled={isLoading}
-                  >
-                    Franchisee {index + 1}
-                  </Button>
-                ))}
-              </Group>
-              
-              <Stack gap="xs">
-                <Text size="xs" ta="center" c="dimmed">
-                  Test accounts (will be created if they don't exist):
-                </Text>
-                {dummyFranchisees.map((f, i) => (
-                  <Text key={i} size="10px" ta="center" c="dimmed">
-                    {f.name}: {f.email}
-                  </Text>
-                ))}
-              </Stack>
-            </>
-          )}
         </Stack>
       </form>
       

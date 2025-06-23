@@ -2,7 +2,9 @@
 import React from 'react';
 import { AppShell, NavLink, ScrollArea, Stack } from '@mantine/core';
 import { IconHome, IconUsers, IconSettings, IconLogout } from '@tabler/icons-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const links = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconHome size={18} /> },
@@ -13,10 +15,22 @@ const links = [
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // TODO: Implement logout functionality
-    console.log('Logout clicked');
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error("Error logging out");
+        console.error("Logout error:", error);
+      } else {
+        toast.success("Logged out successfully");
+        navigate('/login', { replace: true });
+      }
+    } catch (error) {
+      toast.error("Error logging out");
+      console.error("Logout error:", error);
+    }
   };
 
   return (
