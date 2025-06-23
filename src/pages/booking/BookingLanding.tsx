@@ -143,7 +143,7 @@ const BookingLandingContent: React.FC = () => {
               
               <div>
                 <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                  <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Youth Soccer Development" className="w-full h-64 object-cover" loading="lazy" />
+                  <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Youth Soccer Development" loading="lazy" className="w-full h-auto object-cover" />
                 </div>
                 <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mb-4">
                   <Star className="w-6 h-6 text-white" />
@@ -243,17 +243,7 @@ const BookingLandingContent: React.FC = () => {
             </div>
             
             {/* Column 3: Social Icons */}
-            <div>
-              <h4 className="font-agrandir text-lg mb-4 text-white">Follow Us</h4>
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
-                  <span className="text-white font-poppins text-sm">f</span>
-                </div>
-                <div className="w-10 h-10 bg-brand-red rounded-full flex items-center justify-center">
-                  <span className="text-white font-poppins text-sm">ig</span>
-                </div>
-              </div>
-            </div>
+            
           </div>
           
           <div className="border-t border-gray-600 pt-6 text-center">
