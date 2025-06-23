@@ -122,35 +122,53 @@ const BookingLandingContent: React.FC = () => {
         </div>
       </section>
 
-      {/* Value-Prop Strip - Three Equal Columns */}
+      {/* Value-Prop Strip - Two alternating sections */}
       <section className="py-20 px-4 bg-gray-50">
         <div className="container mx-auto">
           <h3 className="font-agrandir text-4xl text-brand-navy text-center mb-16">
             Why Choose Soccer Stars?
           </h3>
           
-          <div className="value-prop-strip">
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              <div>
-                <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                  <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Toddler Soccer Fun" className="w-full h-auto object-cover" loading="lazy" />
+          <div className="max-w-6xl mx-auto space-y-16">
+            {/* Super Soccer Stars - Image left, text right on desktop */}
+            <div className="flex flex-col md:flex-row items-center gap-12">
+              <div className="w-full md:w-1/2">
+                <div className="rounded-lg overflow-hidden shadow-lg">
+                  <img 
+                    src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" 
+                    alt="Youth Soccer Development" 
+                    className="w-full h-auto object-contain max-w-md mx-auto"
+                    loading="lazy" 
+                  />
                 </div>
-                <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mb-4">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
-                <p className="font-poppins text-brand-grey text-lg text-slate-500">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
               </div>
-              
-              <div>
-                <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-                  <img src="/lovable-uploads/dfb117aa-f806-4773-b546-8666f24665db.png" alt="Youth Soccer Development" loading="lazy" className="w-full h-auto object-cover" />
-                </div>
+              <div className="w-full md:w-1/2">
                 <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mb-4">
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-10+: Super Soccer Stars</h4>
                 <p className="font-poppins text-brand-grey text-lg text-slate-500">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
+              </div>
+            </div>
+
+            {/* Parent & Me - Image right, text left on desktop (row-reverse) */}
+            <div className="flex flex-col md:flex-row-reverse items-center gap-12">
+              <div className="w-full md:w-1/2">
+                <div className="rounded-lg overflow-hidden shadow-lg">
+                  <img 
+                    src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" 
+                    alt="Toddler Soccer Fun" 
+                    className="w-full h-auto object-contain max-w-md mx-auto"
+                    loading="lazy" 
+                  />
+                </div>
+              </div>
+              <div className="w-full md:w-1/2">
+                <div className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
+                <p className="font-poppins text-brand-grey text-lg text-slate-500">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
               </div>
             </div>
           </div>
