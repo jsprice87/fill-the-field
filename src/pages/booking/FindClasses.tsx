@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
@@ -17,7 +18,7 @@ const FindClasses: React.FC = () => {
   const navigate = useNavigate();
   const flowId = searchParams.get('flow');
   
-  const { getFlow, updateFlow } = useBookingFlow();
+  const { flowData, loadFlow, updateFlow } = useBookingFlow();
   const franchiseeContext = useFranchiseeOptional();
   const franchiseeId = franchiseeContext?.franchiseeId;
   
@@ -25,19 +26,19 @@ const FindClasses: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<string>('');
   
   const { data: locations } = useLocations();
-  const { data: classes } = useClasses({ locationId: selectedLocation || null });
+  const { data: classes } = useClasses({ locationId: selectedLocation || undefined });
 
   useEffect(() => {
     if (flowId && franchiseeId) {
-      const flowData = getFlow(flowId);
-      console.log('lead-info-from-landing', flowData?.leadData);
-      
-      if (!flowData) {
+      loadFlow(flowId).then((loadedFlowData) => {
+        console.log('lead-info-from-landing', loadedFlowData?.leadData);
+      }).catch((error) => {
+        console.error('Error loading flow:', error);
         toast.error('Booking session not found');
         navigate(`/${franchiseeSlug}/free-trial`);
-      }
+      });
     }
-  }, [flowId, franchiseeId, getFlow, navigate, franchiseeSlug]);
+  }, [flowId, franchiseeId, loadFlow, navigate, franchiseeSlug]);
 
   const handleLocationChange = async (locationId: string) => {
     setSelectedLocation(locationId);
@@ -53,8 +54,15 @@ const FindClasses: React.FC = () => {
       return;
     }
 
+    // Find the selected location data
+    const locationData = locations?.find(loc => loc.id === selectedLocation);
+    
     await updateFlow({
-      selectedLocation: selectedLocation,
+      selectedLocation: locationData ? {
+        id: locationData.id,
+        name: locationData.name,
+        address: locationData.address
+      } : undefined,
       selectedClass: selectedClass
     });
 
