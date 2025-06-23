@@ -37,6 +37,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
   onSubmit,
   initialData,
 }) => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  
   const form = useZodForm(locationSchema, {
     name: '',
     address: '',
@@ -50,23 +52,27 @@ const LocationForm: React.FC<LocationFormProps> = ({
   });
 
   useEffect(() => {
-    if (initialData) {
-      form.setValues(initialData);
-    } else {
-      form.setValues({
-        name: '',
-        address: '',
-        city: '',
-        state: '',
-        zip: '',
-        phone: '',
-        email: '',
-        isActive: true,
-      });
+    if (open) {
+      if (initialData) {
+        form.setValues(initialData);
+      } else {
+        form.setValues({
+          name: '',
+          address: '',
+          city: '',
+          state: '',
+          zip: '',
+          phone: '',
+          email: '',
+          isActive: true,
+        });
+      }
+      setIsSubmitting(false);
     }
-  }, [initialData, form]);
+  }, [initialData, open]);
 
   const handleSubmit = async (data: LocationFormData) => {
+    setIsSubmitting(true);
     try {
       // Build Location object for geocoding
       const locationData = {
@@ -85,9 +91,12 @@ const LocationForm: React.FC<LocationFormProps> = ({
       
       // Pass the complete data object with all form fields
       await onSubmit(data);
+      onClose();
     } catch (error) {
       console.error('Error submitting location:', error);
       toast.error('Failed to save location. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -99,6 +108,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
       onClose={onClose}
       title={initialData?.id ? 'Edit Location' : 'Add Location'}
       size="lg"
+      data-testid="add-location-modal"
     >
       <form onSubmit={onSubmitHandler}>
         <Stack gap="md">
@@ -106,6 +116,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             label="Location Name"
             placeholder="Enter location name"
             withAsterisk
+            disabled={isSubmitting}
             {...form.getInputProps('name')}
           />
 
@@ -113,6 +124,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             label="Address"
             placeholder="Enter street address"
             withAsterisk
+            disabled={isSubmitting}
             {...form.getInputProps('address')}
           />
 
@@ -121,6 +133,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               label="City"
               placeholder="Enter city"
               withAsterisk
+              disabled={isSubmitting}
               {...form.getInputProps('city')}
             />
 
@@ -128,6 +141,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               label="State"
               placeholder="Enter state"
               withAsterisk
+              disabled={isSubmitting}
               {...form.getInputProps('state')}
             />
 
@@ -135,6 +149,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
               label="ZIP Code"
               placeholder="Enter ZIP code"
               withAsterisk
+              disabled={isSubmitting}
               {...form.getInputProps('zip')}
             />
           </Stack>
@@ -142,6 +157,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
           <TextInput
             label="Phone"
             placeholder="Enter phone number (optional)"
+            disabled={isSubmitting}
             {...form.getInputProps('phone')}
           />
 
@@ -149,6 +165,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             label="Email"
             placeholder="Enter email address (optional)"
             type="email"
+            disabled={isSubmitting}
             {...form.getInputProps('email')}
           />
 
@@ -157,6 +174,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             description="Location is available for booking"
             color="soccerGreen"
             size="md"
+            disabled={isSubmitting}
             {...form.getInputProps('isActive', { type: 'checkbox' })}
           />
 
@@ -164,13 +182,13 @@ const LocationForm: React.FC<LocationFormProps> = ({
             <Button
               variant="outline"
               onClick={onClose}
-              disabled={form.submitting}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              loading={form.submitting}
+              loading={isSubmitting}
               disabled={!form.isValid()}
               data-autofocus
             >
