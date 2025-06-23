@@ -129,7 +129,7 @@ const BookingLandingContent: React.FC = () => {
           </h3>
           
           <div className="value-prop-strip">
-            <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div className="grid md:grid-rows-2 gap-12 items-start">
               <div>
                 <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
                   <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Toddler Soccer Fun" className="w-full h-auto object-cover" loading="lazy" />
