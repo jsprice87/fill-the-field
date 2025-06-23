@@ -99,13 +99,13 @@ const BookingLandingContent: React.FC = () => {
                   <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                     <Star className="w-3 h-3 text-white" />
                   </div>
-                  <p className="font-poppins text-lg">Build confidence & skills through play</p>
+                  <p className="font-poppins text-lg text-slate-400">Build confidence & skills through play</p>
                 </div>
                 <div className="flex items-center justify-center lg:justify-start">
                   <div className="w-6 h-6 bg-brand-red rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                     <Clock className="w-3 h-3 text-white" />
                   </div>
-                  <p className="font-poppins text-lg">Non-competitive, inclusive for all abilities</p>
+                  <p className="font-poppins text-lg text-slate-400">Non-competitive, inclusive for all abilities</p>
                 </div>
               </div>
             </div>
@@ -138,7 +138,7 @@ const BookingLandingContent: React.FC = () => {
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">12-24 months: Parent & Me</h4>
-                <p className="font-poppins text-brand-grey text-lg">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
+                <p className="font-poppins text-brand-grey text-lg text-slate-500">Dive into a world of stimulating play and physical engagement alongside your little one in our program.</p>
               </div>
               
               <div>
@@ -149,7 +149,7 @@ const BookingLandingContent: React.FC = () => {
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <h4 className="font-agrandir text-2xl mb-4 text-brand-navy">Ages 2-10+: Super Soccer Stars</h4>
-                <p className="font-poppins text-brand-grey text-lg">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
+                <p className="font-poppins text-brand-grey text-lg text-slate-500">Super Soccer Stars teaches the fundamentals in a fun, educational, and non-competitive environment. Our philosophy focuses on positive reinforcement, personalized attention, and a low child-to-coach ratio in every class. This approach ensures each child builds confidence and develops skills at their own pace.</p>
               </div>
             </div>
           </div>
@@ -170,17 +170,15 @@ const BookingLandingContent: React.FC = () => {
                 <p className="font-poppins text-xl text-gray-700 mb-4 italic">
                   "My daughter absolutely loves Soccer Stars! She's gained so much confidence and made great friends. The coaches are amazing with kids."
                 </p>
-                <p className="font-poppins font-semibold text-brand-navy">- Sarah M., Parent</p>
+                <p className="font-poppins font-semibold text-brand-navy">- Sarah M., Littleton Parent</p>
               </div>
               
               <div className="bg-gray-50 p-8 rounded-xl border-l-4 border-l-brand-blue">
                 <div className="flex mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />)}
                 </div>
-                <p className="font-poppins text-xl text-gray-700 mb-4 italic">
-                  "The non-competitive environment is perfect for our son. He's learning skills while having a blast!"
-                </p>
-                <p className="font-poppins font-semibold text-brand-navy">- Mike D., Parent</p>
+                <p className="font-poppins text-xl text-gray-700 mb-4 italic">&quot;This was the first team sport we have done with our 3 year old and have been impressed. The coaches have all been amazing with the toddlers and we cannot wait to start the next season!&quot;</p>
+                <p className="font-poppins font-semibold text-brand-navy">- Stacey W., Denver Parent</p>
               </div>
             </div>
             
