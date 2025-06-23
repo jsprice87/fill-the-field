@@ -8,7 +8,6 @@ import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
 import ParticipantModal from '@/components/booking/ParticipantModal';
 import ParentGuardianForm from '@/components/booking/ParentGuardianForm';
-
 interface ClassSchedule {
   id: string;
   class_id: string;
@@ -27,38 +26,34 @@ interface ClassSchedule {
     duration_minutes: number;
   };
 }
-
 interface FranchiseeData {
   id: string;
   company_name: string;
   slug: string;
 }
-
 const ClassBooking: React.FC = () => {
-  const { franchiseeSlug } = useParams();
+  const {
+    franchiseeSlug
+  } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const flowId = searchParams.get('flow');
-  
   const [franchiseeData, setFranchiseeData] = useState<FranchiseeData | null>(null);
   const [franchiseeLoading, setFranchiseeLoading] = useState(true);
-  
-  const { 
-    flowData, 
-    loadFlow, 
-    updateFlow, 
-    addParticipant, 
-    removeParticipant, 
+  const {
+    flowData,
+    loadFlow,
+    updateFlow,
+    addParticipant,
+    removeParticipant,
     getParticipantCountForClass,
-    isLoading: flowLoading 
+    isLoading: flowLoading
   } = useBookingFlow(flowId || undefined, franchiseeData?.id);
-  
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<ClassSchedule | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [flowLoaded, setFlowLoaded] = useState(false);
-
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   // First, resolve the franchisee slug to get the ID
@@ -69,24 +64,19 @@ const ClassBooking: React.FC = () => {
         navigate('/');
         return;
       }
-
       console.log('Resolving franchisee slug to ID:', franchiseeSlug);
       setFranchiseeLoading(true);
-      
       try {
-        const { data: franchisee, error } = await supabase
-          .from('franchisees')
-          .select('id, company_name, slug')
-          .eq('slug', franchiseeSlug)
-          .single();
-
+        const {
+          data: franchisee,
+          error
+        } = await supabase.from('franchisees').select('id, company_name, slug').eq('slug', franchiseeSlug).single();
         if (error || !franchisee) {
           console.error('Error resolving franchisee:', error);
           toast.error('Franchisee not found');
           navigate('/');
           return;
         }
-
         console.log('Franchisee resolved:', franchisee);
         setFranchiseeData(franchisee);
       } catch (error) {
@@ -97,27 +87,28 @@ const ClassBooking: React.FC = () => {
         setFranchiseeLoading(false);
       }
     };
-
     resolveFranchiseeId();
   }, [franchiseeSlug, navigate]);
-
   useEffect(() => {
-    console.log('ClassBooking: useEffect triggered', { flowId, franchiseeId: franchiseeData?.id, flowLoaded });
-    
+    console.log('ClassBooking: useEffect triggered', {
+      flowId,
+      franchiseeId: franchiseeData?.id,
+      flowLoaded
+    });
     if (!flowId) {
       console.log('No flow ID found, redirecting to landing');
       navigate(`/${franchiseeSlug}/free-trial`);
       return;
     }
-
     if (franchiseeData?.id && !flowLoaded) {
       loadFlowData();
     }
   }, [flowId, franchiseeData?.id]);
-
   useEffect(() => {
-    console.log('ClassBooking: Flow data effect', { flowLoaded, selectedLocation: flowData.selectedLocation });
-    
+    console.log('ClassBooking: Flow data effect', {
+      flowLoaded,
+      selectedLocation: flowData.selectedLocation
+    });
     if (flowLoaded && flowData.selectedLocation?.id) {
       console.log('Loading classes for location:', flowData.selectedLocation.id);
       loadClasses();
@@ -126,13 +117,10 @@ const ClassBooking: React.FC = () => {
       navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
     }
   }, [flowLoaded, flowData.selectedLocation]);
-
   const loadFlowData = async () => {
     if (!flowId || !franchiseeData?.id) return;
-    
     console.log('Loading flow data for ID:', flowId, 'with franchisee ID:', franchiseeData.id);
     setIsLoading(true);
-    
     try {
       await loadFlow(flowId);
       console.log('Flow data loaded successfully');
@@ -143,20 +131,18 @@ const ClassBooking: React.FC = () => {
       navigate(`/${franchiseeSlug}/free-trial`);
     }
   };
-
   const loadClasses = async () => {
     if (!flowData.selectedLocation?.id) {
       console.log('Cannot load classes: no location selected');
       return;
     }
-
     console.log('Loading classes for location:', flowData.selectedLocation.id);
     setIsLoading(true);
-    
     try {
-      const { data: classesData, error } = await supabase
-        .from('class_schedules')
-        .select(`
+      const {
+        data: classesData,
+        error
+      } = await supabase.from('class_schedules').select(`
           *,
           classes!inner(
             name,
@@ -167,18 +153,11 @@ const ClassBooking: React.FC = () => {
             duration_minutes,
             location_id
           )
-        `)
-        .eq('classes.location_id', flowData.selectedLocation.id)
-        .eq('is_active', true)
-        .eq('classes.is_active', true)
-        .order('day_of_week')
-        .order('start_time');
-
+        `).eq('classes.location_id', flowData.selectedLocation.id).eq('is_active', true).eq('classes.is_active', true).order('day_of_week').order('start_time');
       if (error) {
         console.error('Error loading classes:', error);
         throw error;
       }
-
       console.log('Classes loaded:', classesData?.length || 0, 'classes found');
       console.log('schedules', classesData?.length);
       setClasses(classesData || []);
@@ -189,13 +168,11 @@ const ClassBooking: React.FC = () => {
       setIsLoading(false);
     }
   };
-
   const handleAddParticipant = (classSchedule: ClassSchedule) => {
     console.log('Adding participant to class:', classSchedule.classes.name);
     setSelectedClass(classSchedule);
     setIsModalOpen(true);
   };
-
   const handleParticipantAdded = async (participant: any) => {
     try {
       console.log('participant-pill', participant);
@@ -207,19 +184,20 @@ const ClassBooking: React.FC = () => {
       toast.error('Failed to add participant. Please try again.');
     }
   };
-
   const handleContinueToConfirmation = async () => {
     const participants = flowData.participants || [];
     const parentInfo = flowData.parentGuardianInfo;
     const leadId = flowData.leadId;
-
-    console.log('Continue to confirmation:', { participants: participants.length, parentInfo: !!parentInfo, leadId, franchiseeId: franchiseeData?.id });
-
+    console.log('Continue to confirmation:', {
+      participants: participants.length,
+      parentInfo: !!parentInfo,
+      leadId,
+      franchiseeId: franchiseeData?.id
+    });
     if (!parentInfo || !franchiseeData?.id || participants.length === 0) {
       toast.error('Missing required information');
       return;
     }
-
     try {
       // Prepare lead data (this should already exist, but we pass it for completeness)
       const leadData = {
@@ -262,7 +240,6 @@ const ClassBooking: React.FC = () => {
         child_speaks_english: flowData.childSpeaksEnglish,
         appointments: appointments
       };
-
       console.log('Calling create-lead-and-booking edge function with:', {
         leadData,
         bookingData,
@@ -271,44 +248,44 @@ const ClassBooking: React.FC = () => {
 
       // Call the edge function to create lead and booking atomically
       try {
-        const { data: result, error: functionError } = await supabase.functions.invoke('create-lead-and-booking', {
+        const {
+          data: result,
+          error: functionError
+        } = await supabase.functions.invoke('create-lead-and-booking', {
           body: {
             leadData,
             bookingData,
             franchiseeId: franchiseeData.id
           }
         });
-
-        console.log('Edge function result:', { data: result, error: functionError });
-
+        console.log('Edge function result:', {
+          data: result,
+          error: functionError
+        });
         if (functionError) {
           console.error('Edge function error:', functionError);
           throw new Error(`Function call failed: ${functionError.message}`);
         }
-
         if (!result.success) {
           console.error('Edge function returned error:', result.error);
           throw new Error(result.error || 'Failed to create booking');
         }
-
         console.log('Booking created successfully:', result);
 
         // Navigate to confirmation page using booking_reference
         if (result.bookingReference) {
           const navigationUrl = `/${franchiseeSlug}/free-trial/confirmation?booking_reference=${result.bookingReference}`;
-          
+
           // LOG: URL being navigated to
           console.log('🚀 NAVIGATING TO URL:', navigationUrl);
           console.log('🚀 BOOKING REFERENCE IN URL:', result.bookingReference);
-          
           navigate(navigationUrl);
         } else {
           throw new Error('No booking reference returned from function');
         }
-        
       } catch (functionInvokeError: any) {
         console.error('Function invoke error:', functionInvokeError);
-        
+
         // Enhanced error logging for edge function failures
         if (functionInvokeError.context) {
           try {
@@ -318,21 +295,17 @@ const ClassBooking: React.FC = () => {
             console.log('edge-error-body', 'Failed to parse error response');
           }
         }
-        
         throw functionInvokeError;
       }
-      
     } catch (error) {
       console.error('Error creating booking:', error);
       toast.error('Failed to create booking. Please try again.');
     }
   };
-
   const handleBackToLocations = () => {
     if (!flowId) return;
     navigate(`/${franchiseeSlug}/free-trial/find-classes?flow=${flowId}`);
   };
-
   const formatTime = (timeString: string) => {
     const [hours, minutes] = timeString.split(':');
     const hour = parseInt(hours);
@@ -340,17 +313,14 @@ const ClassBooking: React.FC = () => {
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;
   };
-
   const getAvailableSpots = (classSchedule: ClassSchedule) => {
     const baseAvailable = classSchedule.classes.max_capacity - classSchedule.current_bookings;
     const sessionParticipants = getParticipantCountForClass(classSchedule.id);
     return baseAvailable - sessionParticipants;
   };
-
   const getTotalParticipants = () => {
     return flowData.participants?.length || 0;
   };
-
   const canAddMoreParticipants = () => {
     return getTotalParticipants() < 5;
   };
@@ -370,14 +340,7 @@ const ClassBooking: React.FC = () => {
 
     // Check parent/guardian info with proper field validation
     const parentInfo = flowData.parentGuardianInfo;
-    const hasValidParentInfo = !!(
-      parentInfo?.firstName?.trim() &&
-      parentInfo?.lastName?.trim() &&
-      parentInfo?.email?.trim() &&
-      parentInfo?.phone?.trim() &&
-      parentInfo?.zip?.trim() &&
-      parentInfo?.relationship?.trim()
-    );
+    const hasValidParentInfo = !!(parentInfo?.firstName?.trim() && parentInfo?.lastName?.trim() && parentInfo?.email?.trim() && parentInfo?.phone?.trim() && parentInfo?.zip?.trim() && parentInfo?.relationship?.trim());
     console.log('✅ Has valid parent info:', hasValidParentInfo, parentInfo);
 
     // Check required agreements
@@ -385,59 +348,43 @@ const ClassBooking: React.FC = () => {
     const hasCommunicationPermission = !!flowData.communicationPermission;
     console.log('✅ Has waiver:', hasWaiver);
     console.log('✅ Has communication permission:', hasCommunicationPermission);
-
     const canConfirm = hasParticipants && hasValidParentInfo && hasWaiver && hasCommunicationPermission;
     console.log('🎯 Can confirm booking:', canConfirm);
-
     return canConfirm;
   };
 
   // Show loading state while franchisee is being resolved or flow is being loaded
   if (franchiseeLoading || isLoading || flowLoading || !flowLoaded || !franchiseeData) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+    return <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
           <p className="font-poppins text-gray-600">
-            {franchiseeLoading ? 'Loading franchisee information...' : 
-             !flowLoaded ? 'Loading booking session...' : 
-             'Loading classes...'}
+            {franchiseeLoading ? 'Loading franchisee information...' : !flowLoaded ? 'Loading booking session...' : 'Loading classes...'}
           </p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-white">
+  return <div className="min-h-screen bg-white">
       <div className="bg-brand-navy text-white py-6">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-2">
-            <Button
-              variant="ghost"
-              onClick={handleBackToLocations}
-              className="text-white hover:bg-white/10 p-2"
-            >
+            <Button variant="ghost" onClick={handleBackToLocations} className="text-white hover:bg-white/10 p-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="font-anton text-3xl">SOCCER STARS</h1>
+              <h1 className="font-anton text-3xl font-medium">SOCCER STARS</h1>
               <h2 className="font-agrandir text-xl">Select Classes & Add Participants</h2>
             </div>
           </div>
-          {flowData.selectedLocation && (
-            <div className="flex items-center mt-2 ml-12">
+          {flowData.selectedLocation && <div className="flex items-center mt-2 ml-12">
               <MapPin className="h-4 w-4 mr-2" />
               <span className="font-poppins text-sm opacity-90">
                 {flowData.selectedLocation.name}
               </span>
-            </div>
-          )}
-          {flowData.leadData && (
-            <p className="font-poppins text-sm opacity-75 ml-12">
+            </div>}
+          {flowData.leadData && <p className="font-poppins text-sm opacity-75 ml-12 text-slate-400">
               Hello {flowData.leadData.firstName}, add participants to your free trial classes below
-            </p>
-          )}
+            </p>}
         </div>
       </div>
       
@@ -447,39 +394,30 @@ const ClassBooking: React.FC = () => {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-agrandir text-2xl text-brand-navy">Available Classes</h3>
-              {getTotalParticipants() >= 5 && (
-                <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg">
+              {getTotalParticipants() >= 5 && <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg">
                   <span className="font-poppins text-sm">
                     Maximum 5 participants per booking reached
                   </span>
-                </div>
-              )}
+                </div>}
             </div>
             
-            {classes.length > 0 ? (
-              classes.map((classSchedule) => {
-                const availableSpots = getAvailableSpots(classSchedule);
-                const sessionParticipants = getParticipantCountForClass(classSchedule.id);
-                
-                return (
-                  <Card key={classSchedule.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
+            {classes.length > 0 ? classes.map(classSchedule => {
+            const availableSpots = getAvailableSpots(classSchedule);
+            const sessionParticipants = getParticipantCountForClass(classSchedule.id);
+            return <Card key={classSchedule.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <CardTitle className="font-agrandir text-xl text-brand-navy mb-2">
                             {classSchedule.classes.name}
-                            {sessionParticipants > 0 && (
-                              <span className="ml-2 bg-brand-blue text-white text-sm px-2 py-1 rounded font-poppins">
+                            {sessionParticipants > 0 && <span className="ml-2 bg-brand-blue text-white text-sm px-2 py-1 rounded font-poppins">
                                 {sessionParticipants} added
-                              </span>
-                            )}
+                              </span>}
                           </CardTitle>
                           
-                          {classSchedule.classes.description && (
-                            <p className="font-poppins text-gray-600 mb-4">
+                          {classSchedule.classes.description && <p className="font-poppins text-gray-600 mb-4">
                               {classSchedule.classes.description}
-                            </p>
-                          )}
+                            </p>}
                           
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-3">
                             <div className="flex items-center text-gray-600">
@@ -504,13 +442,11 @@ const ClassBooking: React.FC = () => {
                             </div>
                           </div>
                           
-                          {(classSchedule.classes.min_age || classSchedule.classes.max_age) && (
-                            <div className="bg-blue-50 rounded-lg p-3 mb-3">
+                          {(classSchedule.classes.min_age || classSchedule.classes.max_age) && <div className="bg-blue-50 rounded-lg p-3 mb-3">
                               <span className="font-poppins text-sm text-blue-800">
                                 👶 Ages: {classSchedule.classes.min_age || 'Any'} - {classSchedule.classes.max_age || 'Any'} years old
                               </span>
-                            </div>
-                          )}
+                            </div>}
 
                           <div className="bg-green-50 rounded-lg p-3">
                             <span className="font-poppins text-sm text-green-800">
@@ -520,24 +456,14 @@ const ClassBooking: React.FC = () => {
                         </div>
                         
                         <div className="ml-6">
-                          <Button
-                            onClick={() => handleAddParticipant(classSchedule)}
-                            disabled={availableSpots <= 0 || !canAddMoreParticipants()}
-                            className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3"
-                            size="lg"
-                          >
-                            {availableSpots <= 0 ? 'Class Full' : 
-                             !canAddMoreParticipants() ? 'Max Participants' : 
-                             'Add Participant'}
+                          <Button onClick={() => handleAddParticipant(classSchedule)} disabled={availableSpots <= 0 || !canAddMoreParticipants()} className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3" size="lg">
+                            {availableSpots <= 0 ? 'Class Full' : !canAddMoreParticipants() ? 'Max Participants' : 'Add Participant'}
                           </Button>
                         </div>
                       </div>
                     </CardHeader>
-                  </Card>
-                );
-              })
-            ) : (
-              <Card className="p-8 text-center border-l-4 border-l-brand-red">
+                  </Card>;
+          }) : <Card className="p-8 text-center border-l-4 border-l-brand-red">
                 <div className="mb-6">
                   <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="font-agrandir text-xl text-brand-navy mb-2">
@@ -547,23 +473,17 @@ const ClassBooking: React.FC = () => {
                     There are currently no classes scheduled at this location.
                     Please check back later or contact the location directly for more information.
                   </p>
-                  <Button
-                    onClick={handleBackToLocations}
-                    className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
-                    size="lg"
-                  >
+                  <Button onClick={handleBackToLocations} className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins" size="lg">
                     Choose Different Location
                   </Button>
                 </div>
-              </Card>
-            )}
+              </Card>}
           </div>
 
           {/* Right Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Participants Summary */}
-            {(flowData.participants?.length || 0) > 0 && (
-              <Card className="border-l-4 border-l-brand-blue">
+            {(flowData.participants?.length || 0) > 0 && <Card className="border-l-4 border-l-brand-blue">
                 <CardHeader>
                   <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
                     <Users className="h-5 w-5" />
@@ -572,16 +492,12 @@ const ClassBooking: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {flowData.participants?.map((participant, index) => {
-                    console.log('participant-pill', participant);
-                    
-                    // Calculate age display
-                    const birthDate = participant.birthDate ? new Date(participant.birthDate) : null;
-                    const ageDisplay = birthDate ? 
-                      `${Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000))} years old` : 
-                      `${participant.age} years old`;
-                    
-                    return (
-                      <div key={participant.id || index} className="flex items-center justify-between bg-gray-50 rounded p-3">
+                console.log('participant-pill', participant);
+
+                // Calculate age display
+                const birthDate = participant.birthDate ? new Date(participant.birthDate) : null;
+                const ageDisplay = birthDate ? `${Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000))} years old` : `${participant.age} years old`;
+                return <div key={participant.id || index} className="flex items-center justify-between bg-gray-50 rounded p-3">
                         <div className="flex-1">
                           <div className="font-poppins font-medium">
                             {participant.firstName} {participant.lastName}
@@ -590,76 +506,47 @@ const ClassBooking: React.FC = () => {
                             {participant.className} - {ageDisplay}
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeParticipant(participant.id || `temp-${index}`)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => removeParticipant(participant.id || `temp-${index}`)} className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2">
                           <X className="h-4 w-4" />
                         </Button>
-                      </div>
-                    );
-                  })}
+                      </div>;
+              })}
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
 
             {/* Parent Guardian Form */}
-            <ParentGuardianForm 
-              flowData={flowData}
-              updateFlow={updateFlow}
-            />
+            <ParentGuardianForm flowData={flowData} updateFlow={updateFlow} />
 
             {/* Confirmation Button */}
             <Card className="border-l-4 border-l-green-500">
               <CardContent className="pt-6">
-                <Button
-                  onClick={handleContinueToConfirmation}
-                  disabled={!canConfirmBooking()}
-                  className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins py-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  size="lg"
-                >
+                <Button onClick={handleContinueToConfirmation} disabled={!canConfirmBooking()} className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins py-3 disabled:bg-gray-300 disabled:cursor-not-allowed" size="lg">
                   {canConfirmBooking() ? 'Confirm Booking' : 'Complete Required Information'}
                 </Button>
                 
-                {!canConfirmBooking() && (
-                  <div className="mt-3 text-center">
+                {!canConfirmBooking() && <div className="mt-3 text-center">
                     <p className="text-sm text-gray-600 font-poppins">
                       Please add at least one participant and complete all required information above.
                     </p>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
             </Card>
           </div>
         </div>
 
         {/* Help section */}
-        {classes.length > 0 && (
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
+        {classes.length > 0 && <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
             <h4 className="font-agrandir text-lg text-brand-navy mb-2">Need Help Choosing?</h4>
             <p className="font-poppins text-gray-600 text-sm">
               All classes are designed to be fun and age-appropriate. You can add multiple children to the same class
               or different classes. If you're unsure which class is best for your child, 
               feel free to contact the location directly using the phone number provided.
             </p>
-          </div>
-        )}
+          </div>}
       </div>
 
       {/* Participant Modal */}
-      {selectedClass && (
-        <ParticipantModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleParticipantAdded}
-          title="Add Participant"
-          classSchedule={selectedClass}
-        />
-      )}
-    </div>
-  );
+      {selectedClass && <ParticipantModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleParticipantAdded} title="Add Participant" classSchedule={selectedClass} />}
+    </div>;
 };
-
 export default ClassBooking;
