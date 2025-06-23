@@ -7,6 +7,7 @@ import { useFranchiseeOptional } from '@/contexts/FranchiseeContext';
 import { toast } from 'sonner';
 import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
 const BookingLandingContent: React.FC = () => {
   const {
     franchiseeSlug
@@ -74,7 +75,7 @@ const BookingLandingContent: React.FC = () => {
         <div className="relative z-10 container mx-auto px-4 py-24">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Side - Brand and Value Props */}
-            <div className="text-center lg:text-left">
+            <div className="text-center lg:text-left order-2 lg:order-1">
               <div className="flex justify-center lg:justify-start mb-8">
                 <img src="/lovable-uploads/73ddb431-9bcb-476d-b5a8-e7cde1c58b51.png" alt="Soccer Stars Logo" className="h-16 md:h-20 w-auto" loading="eager" />
               </div>
@@ -111,7 +112,7 @@ const BookingLandingContent: React.FC = () => {
             </div>
 
             {/* Right Side - Lead Capture Form */}
-            <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-auto">
+            <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-auto order-1 lg:order-2">
               {isCreatingFlow ? <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
                   <p className="font-poppins text-brand-grey">Starting your booking...</p>
@@ -129,7 +130,7 @@ const BookingLandingContent: React.FC = () => {
           </h3>
           
           <div className="value-prop-strip">
-            <div className="grid md:grid-rows-2 gap-12 items-start">
+            <div className="grid md:grid-cols-2 gap-12 items-start">
               <div>
                 <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
                   <img src="/lovable-uploads/7f7bff51-2396-4a17-a174-6c3e25b595b8.png" alt="Toddler Soccer Fun" className="w-full h-auto object-cover" loading="lazy" />
@@ -255,6 +256,7 @@ const BookingLandingContent: React.FC = () => {
       </footer>
     </div>;
 };
+
 const BookingLanding: React.FC = () => {
   const franchiseeContext = useFranchiseeOptional();
   const franchiseeId = franchiseeContext?.franchiseeId;
@@ -270,4 +272,5 @@ const BookingLanding: React.FC = () => {
       <BookingLandingContent />
     </MetaPixelProvider>;
 };
+
 export default BookingLanding;
