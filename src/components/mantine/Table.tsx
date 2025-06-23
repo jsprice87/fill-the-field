@@ -46,7 +46,18 @@ Table.displayName = "Table";
 // Individual table components for compatibility
 export const TableHeader = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
   ({ children, ...props }, ref) => (
-    <thead ref={ref} {...props} style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'var(--mantine-color-body)', ...props.style }}>
+    <thead 
+      ref={ref} 
+      {...props} 
+      style={{ 
+        position: 'sticky', 
+        top: 0, 
+        zIndex: 30, 
+        backgroundColor: 'var(--mantine-color-body)',
+        borderBottom: '1px solid var(--mantine-color-gray-3)',
+        ...props.style 
+      }}
+    >
       {children}
     </thead>
   )
@@ -84,7 +95,17 @@ TableRow.displayName = "TableRow";
 
 export const TableHead = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
   ({ children, ...props }, ref) => (
-    <th ref={ref} {...props} style={{ padding: '12px 16px', fontWeight: 600, ...props.style }}>
+    <th 
+      ref={ref} 
+      {...props} 
+      style={{ 
+        padding: '12px 16px', 
+        fontWeight: 600,
+        backgroundColor: 'var(--mantine-color-body)',
+        borderBottom: '1px solid var(--mantine-color-gray-3)',
+        ...props.style 
+      }}
+    >
       {children}
     </th>
   )
