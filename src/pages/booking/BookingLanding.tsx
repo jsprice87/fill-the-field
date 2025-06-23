@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
@@ -39,7 +38,7 @@ const BookingLandingContent: React.FC = () => {
         leadData: {
           firstName: leadData.first_name,
           lastName: leadData.last_name,
-          email: leadData.email,
+          email: ledData.email,
           phone: leadData.phone,
           zip: leadData.zip
         }
@@ -223,13 +222,13 @@ const BookingLandingContent: React.FC = () => {
               <img 
                 src="/lovable-uploads/f5c00969-26f0-44a8-8551-f73f45e5fec2.png" 
                 alt="Happy Soccer Kid" 
-                className="rounded-lg shadow-lg w-full h-48 object-cover"
+                className="rounded-lg shadow-lg w-full h-72 object-cover"
                 loading="lazy"
               />
               <img 
                 src="/lovable-uploads/80139c96-b766-49d4-83b6-10e210326cd7.png" 
                 alt="Excited Soccer Player" 
-                className="rounded-lg shadow-lg w-full h-48 object-cover"
+                className="rounded-lg shadow-lg w-full h-72 object-cover"
                 loading="lazy"
               />
             </div>
