@@ -79,7 +79,7 @@ const BookingLandingContent: React.FC = () => {
                 <img src="/lovable-uploads/73ddb431-9bcb-476d-b5a8-e7cde1c58b51.png" alt="Soccer Stars Logo" className="h-16 md:h-20 w-auto" loading="eager" />
               </div>
               
-              <h1 className="font-anton text-4xl md:text-6xl lg:text-7xl text-white mb-6">
+              <h1 className="font-anton text-4xl lg:text-7xl text-white mb-6 font-medium md:text-6xl">
                 FREE TRIAL CLASSES
               </h1>
               
