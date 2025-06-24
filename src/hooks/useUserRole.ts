@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -30,18 +31,11 @@ export const useUserRole = () => {
     queryFn: async () => {
       if (!userId) return 'unknown';
       
-      // For now, check if user email contains 'admin' as a simple role check
-      // This will be replaced with proper role column once migration is done
-      const userEmail = session?.user?.email;
-      if (userEmail?.includes('admin')) {
-        return 'admin' as UserRole;
-      }
-      
-      // Try to get role from franchisees table (temporary solution)
-      const { data: franchisee, error } = await supabase
-        .from('franchisees')
-        .select('email')
-        .eq('user_id', userId)
+      // Query role from profiles table
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
         .single();
         
       if (error) {
@@ -49,7 +43,7 @@ export const useUserRole = () => {
         return 'unknown' as UserRole;
       }
       
-      return 'franchisee' as UserRole;
+      return (profile?.role || 'franchisee') as UserRole;
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
