@@ -1,4 +1,3 @@
-
 import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIcon, UsersIcon, CreditCardIcon, BarChart3Icon, ShieldIcon, HelpCircleIcon } from "lucide-react";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
@@ -129,13 +128,13 @@ export const navItems = [
     icon: <SettingsIcon className="h-4 w-4" />,
     page: <ProtectedRoute><PortalRedirect /></ProtectedRoute>,
   },
-  // Admin routes (these stay as-is since they don't use slugs)
+  // Admin routes (protected with admin role requirement)
   {
     title: "Admin Dashboard",
     to: "/admin/dashboard",
     icon: <BarChart3Icon className="h-4 w-4" />,
     page: (
-      <ProtectedRoute>
+      <ProtectedRoute roleRequired="admin">
         <DashboardLayout />
       </ProtectedRoute>
     ),
@@ -145,7 +144,7 @@ export const navItems = [
     to: "/admin/user-management",
     icon: <UsersIcon className="h-4 w-4" />,
     page: (
-      <ProtectedRoute>
+      <ProtectedRoute roleRequired="admin">
         <DashboardLayout />
       </ProtectedRoute>
     ),
@@ -155,7 +154,7 @@ export const navItems = [
     to: "/admin/transactions",
     icon: <CreditCardIcon className="h-4 w-4" />,
     page: (
-      <ProtectedRoute>
+      <ProtectedRoute roleRequired="admin">
         <DashboardLayout />
       </ProtectedRoute>
     ),
@@ -165,7 +164,7 @@ export const navItems = [
     to: "/admin/settings/global",
     icon: <SettingsIcon className="h-4 w-4" />,
     page: (
-      <ProtectedRoute>
+      <ProtectedRoute roleRequired="admin">
         <DashboardLayout />
       </ProtectedRoute>
     ),
@@ -175,7 +174,7 @@ export const navItems = [
     to: "/admin/settings",
     icon: <ShieldIcon className="h-4 w-4" />,
     page: (
-      <ProtectedRoute>
+      <ProtectedRoute roleRequired="admin">
         <DashboardLayout />
       </ProtectedRoute>
     ),

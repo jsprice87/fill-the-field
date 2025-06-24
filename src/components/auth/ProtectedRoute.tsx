@@ -3,13 +3,16 @@ import { ReactNode, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { clearFranchiseeProfileCache } from "@/hooks/useFranchiseeProfile";
+import { useUserRole, UserRole } from "@/hooks/useUserRole";
 
 interface ProtectedRouteProps {
   children: ReactNode;
+  roleRequired?: UserRole;
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, roleRequired = 'franchisee' }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { role, loading: roleLoading } = useUserRole();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,8 +46,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     };
   }, []);
 
-  if (isAuthenticated === null) {
-    // Still checking authentication
+  if (isAuthenticated === null || roleLoading) {
+    // Still checking authentication or role
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -55,7 +58,18 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  // Not authenticated - redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Check role requirements
+  if (roleRequired === 'admin' && role !== 'admin') {
+    // User is authenticated but doesn't have admin role - redirect to portal
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
