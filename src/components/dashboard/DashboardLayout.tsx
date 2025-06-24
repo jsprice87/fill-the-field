@@ -23,7 +23,8 @@ const DashboardLayout = () => {
   const isPortalSection = location.pathname.startsWith('/portal');
   const sectionType = isAdminSection ? 'admin' : (isPortalSection ? 'portal' : '');
 
-  if (isFranchiseeLoading) {
+  // Only show loading for portal sections that need franchisee data
+  if (isFranchiseeLoading && isPortalSection) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
