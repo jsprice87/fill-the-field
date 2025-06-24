@@ -19,7 +19,7 @@ const mainMenuItems = [
 ];
 
 const adminMenuItems = [
-  { title: 'Dashboard', url: '/admin/dashboard', icon: IconHome },
+  { title: 'Dashboard', url: '/admin/dashboard', icon: IconChartBar },
   { title: 'User Management', url: '/admin/user-management', icon: IconUsers },
   { title: 'Transactions', url: '/admin/transactions', icon: IconCreditCard },
   { title: 'Global Settings', url: '/admin/settings/global', icon: IconSettings },
