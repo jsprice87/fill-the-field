@@ -55,7 +55,7 @@ const generateICSFile = (event: CalendarEvent) => {
     `TZID:${timezone}`,
     'END:VTIMEZONE',
     'BEGIN:VEVENT',
-    `UID:${now}@soccerstars.com`,
+    `UID:${now}@fillthefield.com`,
     `DTSTAMP:${now}`,
     `DTSTART;TZID=${timezone}:${startTime}`,
     `DTEND;TZID=${timezone}:${endTime}`,

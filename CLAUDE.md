@@ -114,3 +114,14 @@ The application includes a comprehensive webhook system for external integration
 - TypeScript is configured with relaxed settings (no strict null checks)
 - Component tagger enabled in development mode for debugging
 - Supabase client auto-generated, credentials in `src/integrations/supabase/client.ts`
+
+#### Component Library Guidelines
+- **Portal components**: Use Mantine v8 components exclusively (NOT shadcn/ui)
+- **Public/booking components**: shadcn/ui components are acceptable for customer-facing areas
+- **Dropdown components**: Always use `withinPortal` prop for dropdowns in tables/scrollable containers
+- **Z-index hierarchy**: Sticky headers (10), dropdowns (100), modals (1000+)
+
+#### Cache Management
+- Aggressive cache clearing implemented on auth state changes to prevent data contamination
+- Session storage cleared on user sign out/sign in to prevent cross-user data leaks
+- Use `queryClient.clear()` when user changes detected

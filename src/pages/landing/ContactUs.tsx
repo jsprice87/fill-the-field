@@ -146,7 +146,7 @@ const ContactUs: React.FC = () => {
                   
                   <div>
                     <h3 className="font-medium text-gray-700">Email</h3>
-                    <p className="text-gray-600">{franchiseeData?.email || 'info@soccerstars.com'}</p>
+                    <p className="text-gray-600">{franchiseeData?.email || 'contact@fillthefield.com'}</p>
                   </div>
 
                   {franchiseeSettings.website_url && (

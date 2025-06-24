@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 24 Jun 2025  
-> **Active Issues:** 1 | **Resolved:** 1
+> **Active Issues:** 0 | **Resolved:** 2
 
 ---
 
@@ -9,7 +9,7 @@
 
 | ID | Title | Severity | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------------|---------|
-| #1 | Landing page shows hardcoded contact info | 🟠 High | unassigned | Landing page components | 2025-06-24 |
+| *No open issues* | | | | | |
 
 ---
 
@@ -17,7 +17,8 @@
 
 | ID | Title | Resolution | Commit | Resolved |
 |----|-------|------------|---------|----------|
-| #2 | Dropdown menus transparent/unreadable | Migrated to Mantine v8 + z-index fixes | `pending` | 2025-06-24 |
+| #1 | Landing page shows hardcoded contact info | Replaced with dynamic franchisee data | `pending` | 2025-06-24 |
+| #2 | Dropdown menus transparent/unreadable | Migrated to Mantine v8 + z-index fixes | `6e9d494` | 2025-06-24 |
 
 ---
 
@@ -45,7 +46,19 @@
 - Implement dynamic data fetching from franchisee settings
 - Ensure proper data filtering for public vs. portal views
 
-### Status: `OPEN`
+### Status: `RESOLVED` ✅
+
+**Resolution Implemented:**
+1. **BookingLanding.tsx footer** - Added `useFranchiseeData()` hook and replaced hardcoded South Denver contact info with dynamic `franchiseeData.phone` and `franchiseeData.email`
+2. **ContactUs.tsx fallback** - Changed fallback email from `info@soccerstars.com` to `contact@fillthefield.com` 
+3. **Calendar UID** - Updated `calendarUtils.ts` to use `@fillthefield.com` instead of `@soccerstars.com` for calendar event UIDs
+
+**Files Modified:**
+- `src/pages/booking/BookingLanding.tsx` (lines 251-262)
+- `src/pages/landing/ContactUs.tsx` (line 149)  
+- `src/utils/calendarUtils.ts` (line 58)
+
+**Result:** All public-facing contact information now displays franchisee-specific data instead of hardcoded South Denver values.
 </details>
 
 <details>
