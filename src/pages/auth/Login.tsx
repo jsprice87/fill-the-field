@@ -1,13 +1,17 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, TextInput, PasswordInput, Stack, Text, Group } from '@mantine/core';
+import { Button, TextInput, PasswordInput, Stack, Text, Group, Box, Anchor } from '@mantine/core';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getSlugFromFranchiseeId } from "@/utils/slugUtils";
 
-const Login = () => {
+interface LoginProps {
+  redirectAfter?: 'admin' | 'portal';
+}
+
+const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -56,11 +60,17 @@ const Login = () => {
       } else if (data.user) {
         toast.success("Login successful");
         
+        // Determine redirect path based on redirectAfter prop
+        const targetPath = redirectAfter === 'admin' ? '/admin/dashboard' : '/dashboard';
+        
         // Check if the user is an admin (you'll need to implement a proper role check here)
         const isAdmin = data.user.email?.includes('admin'); // Simple check for demonstration
         
-        if (isAdmin) {
-          // Redirect admin users to admin dashboard
+        if (redirectAfter === 'admin') {
+          // Admin login requested
+          navigate("/admin/dashboard");
+        } else if (isAdmin) {
+          // Regular login but user is admin
           navigate("/admin/dashboard");
         } else {
           // For regular users, the ProtectedRoute will handle profile creation
@@ -143,6 +153,14 @@ const Login = () => {
           Sign up
         </Text>
       </Text>
+
+      {redirectAfter !== 'admin' && (
+        <Box mt="sm" ta="center">
+          <Anchor component={Link} to="/admin/login">
+            Login to Admin Portal
+          </Anchor>
+        </Box>
+      )}
     </AuthLayout>
   );
 };

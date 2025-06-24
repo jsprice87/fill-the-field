@@ -354,4 +354,10 @@ export const navItems = [
     icon: <HomeIcon className="h-4 w-4" />,
     page: <NotFound />,
   },
+  {
+    title: "Admin Login",
+    to: "/admin/login",
+    icon: <UserIcon className="h-4 w-4" />,
+    page: <Login redirectAfter="admin" />,
+  },
 ];
