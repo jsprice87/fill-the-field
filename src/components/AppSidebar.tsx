@@ -3,7 +3,7 @@ import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMantineColorScheme } from '@mantine/core';
 import { ScrollArea, Stack, Group, Text, NavLink } from '@mantine/core';
-import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconWorld, IconMoon, IconSun, IconLogout, IconBarChart3, IconCreditCard, IconShield } from '@tabler/icons-react';
+import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconWorld, IconMoon, IconSun, IconLogout, IconChartBar, IconCreditCard, IconShield } from '@tabler/icons-react';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { useUserRole } from '@/hooks/useUserRole';
 import { CopyButton } from '@/components/ui/CopyButton';
