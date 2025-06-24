@@ -1,0 +1,165 @@
+Fill The Field – Comprehensive Project Transfer Document
+
+(last updated 24 June 2025)
+
+⸻
+
+1  Executive Summary
+
+Fill The Field (FTF) is a B2B SaaS web platform for youth‑sports franchises (initial customer: Soccer Stars of South Denver).
+Two main user segments:
+
+Segment	What they can do
+Franchisee Portal Users (owners / managers)	• Create & manage Programs → multiple Classes in one operation.• Track leads, bookings, locations, participants.• Export leads to CSV.• Day‑to‑day ops dashboard.
+Platform Admins (internal staff)	• Global dashboards, franchisee onboarding, user management, transaction log, global settings.
+
+The application is live in a test tenant at preview--fill-the-field.lovable.app and a production domain fill-the-field.fun.
+
+⸻
+
+2  Tech Stack
+
+Layer	Choice	Notes
+Front‑end	React 18 + Vite + TypeScript strict	
+Component lib	Mantine v8 (with @mantine/dates, @mantine/hooks)	custom wrapper folder src/components/mantine to centralise theme & overrides.
+Utility lib	shadcn/ui table for generic tables; TanStack React‑Query v5; Zod for schema validation; Day.js for date maths.	
+Icons	@tabler/icons-react v3.34.0	note breaking change: IconBarChart3 removed – use IconChartBar.
+Auth & DB	Supabase (Postgres + Row‑Level Security)	<supabaseUrl>/rest/v1 used directly; edge functions for complex ops.
+Runtime Edge Functions	create-lead-and-booking, etc.	Languages: TypeScript, deployed via Supabase CLI.
+Testing	Jest 29 + Testing‑Library (unit), Playwright 1.43 (E2E).	
+CI	GitHub Actions (build → tsc → playwright).	
+Hosting	Vercel preview deployments; Supabase project ojowhfojaswbbuefxaae.	
+
+
+⸻
+
+3  Data Model (supabase) – core tables
+
+Table	Purpose	Key columns
+classes	High‑level class definition	id, name, description, location_id, min_age (months), max_age (months)
+class_schedules	Session info	id, class_id, date_start, date_end, day_of_week, start_time, end_time, is_active
+schedule_exceptions	Holiday / blackout dates	id, class_schedule_id, exception_date, is_cancelled
+leads	Marketing leads	id, contact info, franchisee_id, status
+bookings / appointments	Paid registrations / free‑trial bookings	id, participant_id, schedule_id, status
+profiles (new)	Auth user profile + role	id (auth.uid), email, role text default 'franchisee'
+
+The profiles table + trigger/seed script were approved but migration not yet run; TypeScript types need regeneration.
+
+⸻
+
+4  Major UX Flows & Status
+
+Feature	Status	Outstanding
+Multi‑Class Program Builder (Franchisee)	✅ Live. Sticky header, age (years+months), override dates, batch save.	Polishing: duplicate class names “(copy)” rule; performance improvements.
+Leads list	✅ Sticky header, CSV export (Export CSV button).	CSV columns OK; filter by location working.
+Booking Flow (public)	✅ Free‑trial booking, age validation, waiver link inline.	Auto‑select single schedule date works; parent section pre‑populated ; Confirm Booking calls edge function.
+Location filter on /classes	Fixed.	
+Login / Logout	✅ Single canonical page; “Login to Admin Portal” link present; logout works.	
+RBAC groundwork	In progress – see Section 6.	
+Admin Portal UI	Sidebar still not rendering due to TypeScript build break (see Section 5).	
+
+
+⸻
+
+5  Current Build Breaks (must‑fix)
+
+5.1 TypeScript
+
+src/hooks/useUserRole.ts(36,15) TS2769: .from('profiles') not in generated types
+src/hooks/useUserRole.ts(46,24) TS2339: data.role does not exist (error path)
+src/integrations/supabase/client.ts: reference path wrong
+src/integrations/supabase/types.ts TS2300 duplicate 'Database'
+
+Root causes & remedies:
+	1.	profiles augmentation duplicate – ensure augment file imports original Database and augments, not re‑declares.
+	2.	Wrong reference path – adjust to /// <reference path="../../types/supabase-augment.d.ts" />.
+	3.	Regenerate Supabase types after running migration OR keep augment file path consistent.
+	4.	useUserRole query – after types fixed, .maybeSingle() returns { role: string } | null.
+
+5.2 Icon import
+
+IconBarChart3 removed in Tabler v3 – replaced by IconChartBar.
+
+5.3 Admin Sidebar
+
+Layout exists (DashboardLayout), but sidebar items array is empty or component fails to import icons (#5.2). After TS build fixed, sidebar should show.
+
+⸻
+
+6  RBAC Plan (agreed)
+
+Step	Detail	Status
+1. profiles table with role column, trigger on signup	SQL drafted & approved	Pending migration
+2. Seed admin user admin@example.com → role admin	Pending	
+3. Type augmentation / regenerate	Partially done but duplicated Database	Needs clean‑up
+4. useUserRole hook using profiles table	Implemented, TS errors due to #3	Fix types
+5. ProtectedRoute roleRequired	Implemented	Works once hook fixed
+6. Wrap /admin routes	Done in nav-items.tsx	Verify after build
+7. Admin login route /admin/login	Implemented, redirect to /admin/dashboard	Works
+8. Remove test‑login page	Done	
+9. Playwright tests allow/deny	Not yet written	
+
+
+⸻
+
+7  Outstanding Back‑End Work
+
+Item	Needed
+Migration – run SQL in Supabase console (profiles table, trigger, RLS, admin seed).	High
+Regenerate TS types via Supabase CLI → commit types.ts.	High
+Edge functions – confirm create-lead-and-booking handles class_schedule_id after recent schema tweaks.	Medium
+
+
+⸻
+
+8  Open Frontend Tasks
+	1.	Fix build errors (#5).
+	2.	Render Admin sidebar (imports + adminNavItems).
+	3.	Add Playwright tests for RBAC.
+	4.	Polish Program Builder – class name duplication rule, UX micro‑copy.
+	5.	Global Open Graph metadata – replace Lovable defaults with FTF branding (logo PNG in /public/og-cover.png, title, description).
+	6.	Remove any remaining obsolete routes /classes/list, test‑login component.
+	7.	Convert all Mantine DateInputs to Date | null (legacy pages still string‑based).
+	8.	Accessibility pass – ensure buttons have aria‑labels.
+
+⸻
+
+9  Important Design Decisions & Conventions
+	•	Canonical Dates – UI & domain state store Date objects; ISO strings only at API boundary.
+	•	Sticky table headers implemented via wrapper div .table-scroll { overflow-y:auto; } and thead { position: sticky; top:0; }.
+	•	Age input – years + months NumberInputs, validation minAge ≤ maxAge. Stored internally as total months.
+	•	Program ≠ DB table – Program builder duplicates shared fields into multiple classes + class_schedules rows; no separate programs table.
+	•	Route structure
+	•	Franchisee Portal root: /:franchiseeSlug/portal/*
+	•	Public booking flow: /free-trial/*
+	•	Admin: /admin/* (protected).
+	•	Nav generation – arrays portalNavItems, adminNavItems feed <Sidebar>; unify icon style (size={16}).
+
+⸻
+
+10  Next‑Steps Checklist for New Development Environment
+	1.	Run DB migration (Section 3 profiles table).
+	2.	Regenerate Supabase types and commit.
+	3.	Remove duplicate Database type & correct augment import.
+	4.	pnpm install && pnpm exec tsc --noEmit – ensure clean.
+	5.	Verify admin login → sidebar visible.
+	6.	Add Playwright tests for RBAC.
+	7.	Implement remaining frontend polish items.
+
+⸻
+
+11  Questions the New Tool / Team Should Ask
+	1.	Admin seed email – confirm actual email to promote (admin@example.com vs real staff).
+	2.	Branding assets – final OG image, favicon, brand colours?
+	3.	Edge Function secrets – any env vars required?
+	4.	Future roles – timeline for staff role?
+	5.	Fee processing / payments – any upcoming Stripe integration?
+	6.	Deployment pipeline – will we keep Vercel preview + GitHub Actions combo?
+	7.	User analytics / telemetry – any library to add (PostHog, Sentry)?
+	8.	Accessibility / WCAG target – AA or AAA?
+
+⸻
+
+End of Transfer Document
+
+Prepared for hand‑off; the new IDE / assistant can begin by resolving the TypeScript build errors described in Section 5, then continue with the RBAC and admin UI completion.

@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
   roleRequired?: UserRole;
 }
 
-const ProtectedRoute = ({ children, roleRequired = 'franchisee' }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, roleRequired = 'user' }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { role, loading: roleLoading } = useUserRole();
 

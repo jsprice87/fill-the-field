@@ -40,8 +40,6 @@ file_size_limit = "50MiB"
 enabled = true
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
-refresh_token_rotation_enabled = true
-refresh_token_reuse_interval = 10
 enable_signup = true
 
 [auth.email]
@@ -51,10 +49,6 @@ enable_confirmations = false
 
 [edge_runtime]
 enabled = true
-ip_version = "IPv4"
-
-[[edge_runtime.policy]]
-allowed_origins = ["*"]
 
 [functions.get-global-setting]
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'admin' | 'franchisee' | 'unknown';
+export type UserRole = 'admin' | 'user' | 'unknown';
 
 export const useUserRole = () => {
   const [session, setSession] = React.useState<any>(null);
@@ -43,7 +43,7 @@ export const useUserRole = () => {
         return 'unknown' as UserRole;
       }
       
-      return (profile?.role || 'franchisee') as UserRole;
+      return (profile?.role || 'user') as UserRole;
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
