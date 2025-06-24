@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ScrollArea, Text, Table, Menu, ActionIcon } from '@mantine/core';
 import { TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/mantine';
 import { Button } from '@/components/mantine';
@@ -23,6 +23,7 @@ interface LeadsTableProps {
 
 const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchived = false }) => {
   const navigate = useNavigate();
+  const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
   const archiveLead = useArchiveLead();
   const unarchiveLead = useUnarchiveLead();
   const deleteLead = useDeleteLead();
@@ -109,7 +110,12 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
   };
 
   const handleViewDetails = (leadId: string) => {
-    navigate(`leads/${leadId}`);
+    if (franchiseeSlug) {
+      navigate(`/${franchiseeSlug}/portal/leads/${leadId}`);
+    } else {
+      console.error('Missing franchiseeSlug for navigation');
+      toast.error('Unable to navigate to lead details');
+    }
   };
 
   return (
