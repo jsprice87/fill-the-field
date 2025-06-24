@@ -1,7 +1,5 @@
 import React from 'react';
-import { Card } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, Select, Text } from '@mantine/core';
 import { Clock } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 
@@ -38,26 +36,18 @@ const TimezoneSettingsCard: React.FC = () => {
       </Card.Section>
       <Card.Section className="space-y-4 p-4">
         <div className="space-y-2">
-          <Label htmlFor="timezone">Business Timezone</Label>
+          <Text size="sm" fw={500}>Business Timezone</Text>
           <Select
             value={currentTimezone}
-            onValueChange={handleTimezoneChange}
+            onChange={handleTimezoneChange}
             disabled={updateSetting.isPending}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select timezone" />
-            </SelectTrigger>
-            <SelectContent>
-              {TIMEZONE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-muted-foreground">
+            placeholder="Select timezone"
+            data={TIMEZONE_OPTIONS}
+            withinPortal
+          />
+          <Text size="xs" c="dimmed">
             This timezone will be used for all class scheduling and booking operations.
-          </p>
+          </Text>
         </div>
 
         <div className="bg-blue-50 p-4 rounded-lg">

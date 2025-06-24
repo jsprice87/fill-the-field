@@ -1,12 +1,11 @@
 
 import React, { useState } from 'react';
-import { Button, Box } from '@mantine/core';
+import { Button, Box, Select } from '@mantine/core';
 import { Plus, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Title, Stack, Group, SimpleGrid } from '@mantine/core';
 import { StickyHeader, MetricCard } from '@/components/mantine';
 import { PortalShell } from '@/layout/PortalShell';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import ClassesTable from '@/components/classes/ClassesTable';
 import SearchInput from '@/components/shared/SearchInput';
@@ -114,18 +113,14 @@ const ClassesList: React.FC = () => {
                 {/* Location Filter */}
                 <Group gap="xs">
                   <Filter className="h-4 w-4 text-muted-foreground" />
-                  <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Filter by location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locationOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Select
+                    value={selectedLocationId}
+                    onChange={setSelectedLocationId}
+                    placeholder="Filter by location"
+                    w={200}
+                    data={locationOptions}
+                    withinPortal
+                  />
                 </Group>
 
                 {/* Search Input */}

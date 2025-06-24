@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
-import { Title, Text, SimpleGrid, ScrollArea, rem, Stack, Group, Box } from '@mantine/core';
+import { Title, Text, SimpleGrid, ScrollArea, rem, Stack, Group, Box, Select } from '@mantine/core';
 import { MetricCard, StickyHeader, Button } from '@/components/mantine';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, User, Users, Filter, Download } from 'lucide-react';
 import { useLeads } from '@/hooks/useLeads';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
@@ -114,19 +113,20 @@ const PortalLeads: React.FC = () => {
                 {/* Location Filter */}
                 <Group gap="xs">
                   <Filter className="h-4 w-4 text-muted-foreground" />
-                  <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Filter by location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Locations</SelectItem>
-                      {locations.map((location) => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Select
+                    value={selectedLocationId}
+                    onChange={setSelectedLocationId}
+                    placeholder="Filter by location"
+                    w={200}
+                    data={[
+                      { value: 'all', label: 'All Locations' },
+                      ...locations.map((location) => ({
+                        value: location.id,
+                        label: location.name
+                      }))
+                    ]}
+                    withinPortal
+                  />
                 </Group>
 
                 {/* Search Input */}

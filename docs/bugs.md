@@ -1,87 +1,97 @@
-# 🐞 Bug Report – 24 Jun 2025
+# 🐞 Bug Tracker
+
+> **Last Updated:** 24 Jun 2025  
+> **Active Issues:** 1 | **Resolved:** 1
 
 ---
 
-## 1 Summary
-Landing Page shows wrong franchisee contact info + address (privacy leak)
+## 🔴 Open Issues
 
-## 2 Environment
-- **App build:** `preview-2025-06-24`
-- **Deployment URL:** `https://preview--fill-the-field.lovable.app`
-- **Browser / OS:** `Chrome 125 macOS`
-- **Logged-in role:** *public / unauthenticated*
-
-## 3 Steps to Reproduce
-1. Open a franchisee landing page – e.g.  
-   `https://fill-the-field.fun/free-trial/soccer-stars-of-south-denver`.
-2. Scroll to the footer (or reach final *Confirm Booking* step).
-3. Observe the contact block.
-
-## 4 Expected Result
-Footer **pulls data from** `/portal/settings → Contact Information`.  
-*Public versions* should show **phone + email only** (no street address).
-
-## 5 Actual Result
-- Phone/e-mail are hard-coded to a generic “Lovable Test” contact.  
-- Street address is displayed, exposing private info.
-
-## 6 Impact & Severity
-| Users Affected | Frequency | Severity |
-|----------------|-----------|----------|
-| Prospective parents | 100 % | 🟠 **High** (brand & privacy) |
-
-## 7 Logs & Diagnostics
-*(N/A – purely UI data binding issue).*
-
-## 8 Root-Cause Notes <!-- editable by dev/AI -->
-<!-- leave blank -->
-
-## 9 Proposed Fix <!-- editable -->
-<!-- leave blank -->
-
-## 10 Status
-- **Current:** `[OPEN]`
-- **Assignee:** `unassigned`
-- **Target release:** `v0.9.2`
+| ID | Title | Severity | Assignee | Files Affected | Created |
+|----|-------|----------|----------|----------------|---------|
+| #1 | Landing page shows hardcoded contact info | 🟠 High | unassigned | Landing page components | 2025-06-24 |
 
 ---
 
-## 1 Summary
-Portal pop-up menus are transparent; text overlaps and becomes unreadable
+## ✅ Resolved Issues
 
-## 2 Environment
-- **App build:** `preview-2025-06-24`
-- **Route:** `/:slug/portal/leads` (also bookings, classes, locations)
-- **Browser / OS:** `Chrome 125 macOS`
+| ID | Title | Resolution | Commit | Resolved |
+|----|-------|------------|---------|----------|
+| #2 | Dropdown menus transparent/unreadable | Migrated to Mantine v8 + z-index fixes | `pending` | 2025-06-24 |
 
-## 3 Steps to Reproduce
-1. Log in as franchisee → navigate to **Leads** page.
-2. Click the three-dot *Actions* button in any table row.
-3. The pop-up menu appears but background is transparent – underlying text shows through.
+---
 
-## 4 Expected Result
-Menu has an opaque background (Mantine default `--mantine-color-filled`).  
-Items clearly readable regardless of page content.
+## 📋 Bug Details
 
-## 5 Actual Result
-CSS override sets `background: transparent` → white text on white table.
+<details>
+<summary><strong>Bug #1:</strong> Landing page shows hardcoded contact info</summary>
 
-## 6 Impact & Severity
-| Users Affected | Frequency | Severity |
-|----------------|-----------|----------|
-| All portal users | 100 % | 🟡 **Medium** (usability) |
+### Issue
+- **Problem:** Landing pages display hardcoded "Lovable Test" contact info instead of franchisee-specific data
+- **Impact:** Brand inconsistency, potential privacy concerns with wrong contact info
+- **Affects:** All public landing pages (e.g., `/free-trial/soccer-stars-of-south-denver`)
 
-## 7 Logs & Diagnostics
-Possible culprit: src/components/mantine/Menu.tsx overrides .mantine-Menu-dropdown { background: transparent; }
+### Expected Behavior
+- Footer should pull contact data from `/portal/settings → Contact Information`
+- Public pages should show **phone + email only** (no street address)
 
-## 8 Root-Cause Notes <!-- editable by dev/AI -->
-<!-- leave blank -->
+### Reproduction
+1. Visit any franchisee landing page
+2. Scroll to footer or reach booking confirmation
+3. Observe hardcoded contact info instead of dynamic data
 
-## 9 Proposed Fix <!-- editable -->
-<!-- leave blank -->
+### Technical Notes
+- Need to identify landing page components using hardcoded contact
+- Implement dynamic data fetching from franchisee settings
+- Ensure proper data filtering for public vs. portal views
 
-## 10 Status
-- **Current:** `[OPEN]`
-- **Assignee:** `unassigned`
-- **Target release:** `v0.9.2`
+### Status: `OPEN`
+</details>
 
+<details>
+<summary><strong>Bug #2:</strong> Dropdown menus transparent/unreadable ✅ RESOLVED</summary>
+
+### Issue
+- **Problem:** Portal dropdown menus (status filters, location filters) had transparent backgrounds
+- **Impact:** Text became unreadable when overlapping with table content
+- **Affects:** All portal pages with dropdowns (Leads, Bookings, Classes)
+
+### Root Cause
+1. **Component mismatch:** Portal was using shadcn/ui Select instead of Mantine components
+2. **Z-index conflict:** Sticky table headers (z-index: 2) vs dropdown content (default z-index)
+3. **Missing portal configuration:** Dropdowns not using `withinPortal` prop
+
+### Resolution
+1. **Migrated all portal dropdowns to Mantine Select:**
+   - `src/pages/portal/Leads.tsx` (location filter)
+   - `src/pages/portal/Bookings.tsx` (location filter) 
+   - `src/pages/portal/Classes.tsx` (location filter)
+   - `src/components/leads/StatusSelect.tsx` (status selector)
+   - `src/components/portal/TimezoneSettingsCard.tsx` (timezone setting)
+
+2. **Fixed z-index hierarchy:**
+   - Sticky headers: `z-index: 10` 
+   - Dropdown menus: `z-index: 100` (via CSS override)
+
+3. **Added `withinPortal` prop** to all Mantine Select components
+
+### Status: `RESOLVED` 2025-06-24
+</details>
+
+---
+
+## 🔧 Quick Actions
+
+- **Add New Bug:** Copy template below
+- **Test Fixes:** Run `npm run dev` and test affected areas
+- **Deploy:** Push to main branch for testing
+
+### Bug Template
+```markdown
+## Bug #X: [Title]
+- **Severity:** 🔴 Critical | 🟠 High | 🟡 Medium | 🟢 Low  
+- **Affects:** [Component/Page names]
+- **Reproduction:** [Steps]
+- **Expected:** [What should happen]
+- **Actual:** [What happens instead]
+```

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select } from '@mantine/core';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -104,23 +104,21 @@ const StatusSelect: React.FC<StatusSelectProps> = ({ leadId, currentStatus, disa
   return (
     <Select
       value={actualStatus}
-      onValueChange={handleStatusChange}
+      onChange={handleStatusChange}
       disabled={disabled || updateStatusMutation.isPending}
-    >
-      <SelectTrigger className="w-full min-w-[140px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="new">New</SelectItem>
-        <SelectItem value="booked_upcoming">Booked Upcoming</SelectItem>
-        <SelectItem value="booked_complete">Booked Complete</SelectItem>
-        <SelectItem value="no_show">No Show</SelectItem>
-        <SelectItem value="follow_up">Follow-up</SelectItem>
-        <SelectItem value="canceled">Canceled</SelectItem>
-        <SelectItem value="closed_lost">Closed Lost</SelectItem>
-        <SelectItem value="closed_won">Closed Won</SelectItem>
-      </SelectContent>
-    </Select>
+      data={[
+        { value: 'new', label: 'New' },
+        { value: 'booked_upcoming', label: 'Booked Upcoming' },
+        { value: 'booked_complete', label: 'Booked Complete' },
+        { value: 'no_show', label: 'No Show' },
+        { value: 'follow_up', label: 'Follow-up' },
+        { value: 'canceled', label: 'Canceled' },
+        { value: 'closed_lost', label: 'Closed Lost' },
+        { value: 'closed_won', label: 'Closed Won' }
+      ]}
+      w={140}
+      withinPortal
+    />
   );
 };
 

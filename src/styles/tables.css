@@ -10,7 +10,7 @@
 .sticky-header {
   position: sticky !important;
   top: 0 !important;
-  z-index: 2 !important;
+  z-index: 10 !important;
   background: var(--mantine-color-body) !important;
 }
 
