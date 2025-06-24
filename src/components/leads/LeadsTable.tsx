@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ScrollArea, Text, Table, Menu, ActionIcon } from '@mantine/core';
 import { TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/mantine';
 import { Button } from '@/components/mantine';
@@ -21,6 +22,7 @@ interface LeadsTableProps {
 }
 
 const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchived = false }) => {
+  const navigate = useNavigate();
   const archiveLead = useArchiveLead();
   const unarchiveLead = useUnarchiveLead();
   const deleteLead = useDeleteLead();
@@ -104,6 +106,10 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
 
   const handleEmailLead = (email: string) => {
     window.location.href = `mailto:${email}`;
+  };
+
+  const handleViewDetails = (leadId: string) => {
+    navigate(`leads/${leadId}`);
   };
 
   return (
@@ -231,10 +237,16 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                     </ActionIcon>
                   </Menu.Target>
                   <Menu.Dropdown>
-                    <Menu.Item leftSection={<IconEye size={14} />}>
+                    <Menu.Item 
+                      leftSection={<IconEye size={14} />}
+                      onClick={() => handleViewDetails(lead.id)}
+                    >
                       View Details
                     </Menu.Item>
-                    <Menu.Item leftSection={<IconPencil size={14} />}>
+                    <Menu.Item 
+                      leftSection={<IconPencil size={14} />}
+                      onClick={() => handleViewDetails(lead.id)}
+                    >
                       Edit Lead
                     </Menu.Item>
                     <Menu.Item 

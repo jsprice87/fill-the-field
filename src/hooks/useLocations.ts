@@ -14,6 +14,7 @@ export interface Location {
   is_active: boolean;
   latitude?: number;
   longitude?: number;
+  class_count?: number;
 }
 
 export const useLocations = (franchiseeId?: string, hideInactive: boolean = false) => {
@@ -22,7 +23,8 @@ export const useLocations = (franchiseeId?: string, hideInactive: boolean = fals
     queryFn: async () => {
       if (!franchiseeId) return [];
       
-      let query = supabase
+      // First get all locations for this franchisee
+      let locationsQuery = supabase
         .from('locations')
         .select('*')
         .eq('franchisee_id', franchiseeId)
@@ -30,18 +32,49 @@ export const useLocations = (franchiseeId?: string, hideInactive: boolean = fals
 
       // Filter by active status if hideInactive is true
       if (hideInactive) {
-        query = query.neq('is_active', false); // Hide inactive locations (only show active ones)
-      }
-      // If hideInactive is false, show all locations (no filtering)
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching locations:', error);
-        throw error;
+        locationsQuery = locationsQuery.neq('is_active', false);
       }
 
-      return data || [];
+      const { data: locations, error: locationsError } = await locationsQuery;
+
+      if (locationsError) {
+        console.error('Error fetching locations:', locationsError);
+        throw locationsError;
+      }
+
+      if (!locations || locations.length === 0) {
+        return [];
+      }
+
+      // Get class counts for each location
+      const locationIds = locations.map(loc => loc.id);
+      const { data: classCounts, error: classCountError } = await supabase
+        .from('classes')
+        .select('location_id')
+        .in('location_id', locationIds)
+        .eq('is_active', true);
+
+      if (classCountError) {
+        console.error('Error fetching class counts:', classCountError);
+        // Don't throw error, just proceed without counts
+      }
+
+      // Count classes per location
+      const countMap = new Map<string, number>();
+      if (classCounts) {
+        classCounts.forEach(cls => {
+          const currentCount = countMap.get(cls.location_id) || 0;
+          countMap.set(cls.location_id, currentCount + 1);
+        });
+      }
+
+      // Add class counts to location data
+      const locationsWithCounts = locations.map(location => ({
+        ...location,
+        class_count: countMap.get(location.id) || 0
+      }));
+
+      return locationsWithCounts;
     },
     enabled: !!franchiseeId,
   });

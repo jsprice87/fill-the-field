@@ -115,7 +115,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                   
                   <TableCell>
                     <Text size="sm" c="dimmed">
-                      0 classes
+                      {location.class_count || 0} {location.class_count === 1 ? 'class' : 'classes'}
                     </Text>
                   </TableCell>
                   

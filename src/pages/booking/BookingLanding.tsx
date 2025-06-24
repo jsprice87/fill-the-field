@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QuickCaptureForm } from '@/components/booking/QuickCaptureForm';
 import { MetaPixelProvider, useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { useFranchiseeOptional } from '@/contexts/FranchiseeContext';
-import { useFranchiseeData } from '@/hooks/useFranchiseeData';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,38 @@ const BookingLandingContent: React.FC = () => {
   // Get franchisee data from context
   const franchiseeContext = useFranchiseeOptional();
   const franchiseeId = franchiseeContext?.franchiseeId;
-  const { data: franchiseeData } = useFranchiseeData();
+  
+  // State for public franchisee data (loaded by slug)
+  const [franchiseeData, setFranchiseeData] = useState<{
+    email: string;
+    phone?: string;
+    company_name: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (franchiseeSlug) {
+      loadFranchiseeData();
+    }
+  }, [franchiseeSlug]);
+
+  const loadFranchiseeData = async () => {
+    try {
+      const { data: franchisee, error: franchiseeError } = await supabase
+        .from('franchisees')
+        .select('email, phone, company_name')
+        .eq('slug', franchiseeSlug)
+        .single();
+
+      if (franchiseeError || !franchisee) {
+        console.error('Franchisee error:', franchiseeError);
+        return;
+      }
+
+      setFranchiseeData(franchisee);
+    } catch (error) {
+      console.error('Error loading franchisee data:', error);
+    }
+  };
   const handleLeadCreated = () => {
     // Track Meta Pixel Lead event
     trackEvent('Lead');
@@ -248,18 +279,18 @@ const BookingLandingContent: React.FC = () => {
             <div>
               <h4 className="font-agrandir text-lg mb-4 text-white">Contact Us</h4>
               <div className="space-y-2">
-                {franchiseeData?.phone && (
-                  <div className="flex items-center text-gray-300">
-                    <Phone className="w-4 h-4 mr-2" />
-                    <span className="font-poppins">{franchiseeData.phone}</span>
-                  </div>
-                )}
-                {franchiseeData?.email && (
-                  <div className="flex items-center text-gray-300">
-                    <Mail className="w-4 h-4 mr-2" />
-                    <span className="font-poppins">{franchiseeData.email}</span>
-                  </div>
-                )}
+                <div className="flex items-center text-gray-300">
+                  <Phone className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">
+                    {franchiseeData?.phone || 'Contact for details'}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-300">
+                  <Mail className="w-4 h-4 mr-2" />
+                  <span className="font-poppins">
+                    {franchiseeData?.email || 'contact@fillthefield.com'}
+                  </span>
+                </div>
                 <div className="flex items-center text-gray-300">
                   <MapPin className="w-4 h-4 mr-2" />
                   <span className="font-poppins">Find Local Programs</span>

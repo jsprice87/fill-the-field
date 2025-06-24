@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 24 Jun 2025  
-> **Active Issues:** 0 | **Resolved:** 2
+> **Active Issues:** 0 | **Resolved:** 5
 
 ---
 
@@ -17,8 +17,11 @@
 
 | ID | Title | Resolution | Commit | Resolved |
 |----|-------|------------|---------|----------|
-| #1 | Landing page shows hardcoded contact info | Replaced with dynamic franchisee data | `pending` | 2025-06-24 |
+| #1 | Landing page shows hardcoded contact info | Replaced with dynamic franchisee data | `b96eed9` | 2025-06-24 |
 | #2 | Dropdown menus transparent/unreadable | Migrated to Mantine v8 + z-index fixes | `6e9d494` | 2025-06-24 |
+| #3 | Contact info missing from landing page footer | Fixed public page data fetching by slug | `pending` | 2025-06-24 |
+| #4 | Leads table "View Details" and "Edit Lead" redundant | Both actions now navigate to Lead Details page | `pending` | 2025-06-24 |
+| #5 | Classes column shows "0" instead of actual count | Updated useLocations hook with class counts | `pending` | 2025-06-24 |
 
 ---
 
@@ -91,11 +94,89 @@
 ### Status: `RESOLVED` 2025-06-24
 </details>
 
+<details>
+<summary><strong>Bug #3:</strong> Contact info missing from landing page footer ✅ RESOLVED</summary>
+
+### Issue
+- **Problem:** Landing page footer showed no contact information after Bug #1 "fix"
+- **Root Cause:** Used authenticated `useFranchiseeData()` hook on public page with conditional rendering
+- **Impact:** All landing pages missing contact info in footer
+
+### Expected Behavior
+Landing page footer should show franchisee-specific phone and email with fallbacks for public visitors
+
+### Resolution Implemented
+1. **Replaced authentication-based hook** with direct Supabase query by slug (like ContactUs.tsx)
+2. **Added useEffect** to fetch franchisee data when franchiseeSlug changes
+3. **Added fallback values** instead of conditional rendering that hides sections
+4. **Used pattern:** `{franchiseeData?.phone || 'Contact for details'}`
+
+### Files Modified
+- `src/pages/booking/BookingLanding.tsx` (lines 28-59, 282-298)
+
+### Status: `RESOLVED` ✅ 2025-06-24
+</details>
+
+<details>
+<summary><strong>Bug #4:</strong> Leads table "View Details" and "Edit Lead" redundant ✅ RESOLVED</summary>
+
+### Issue
+- **Problem:** LeadsTable actions menu had redundant "View Details" and "Edit Lead" items
+- **Impact:** Confusing UX - both should go to same Lead Details page for editing
+- **Affects:** All portal users managing leads
+
+### Expected Behavior
+Both "View Details" and "Edit Lead" should navigate to the comprehensive Lead Details page where all editing can be done
+
+### Resolution Implemented
+1. **Added useNavigate hook** to LeadsTable component
+2. **Created handleViewDetails** function that navigates to `leads/${leadId}`
+3. **Updated both menu items** to use same navigation handler
+4. **Verified route exists** - Lead Details page already configured at `/portal/leads/:leadId`
+
+### Files Modified
+- `src/components/leads/LeadsTable.tsx` (lines 2, 25, 111-113, 240-251)
+
+### Status: `RESOLVED` ✅ 2025-06-24
+</details>
+
+<details>
+<summary><strong>Bug #5:</strong> Classes column shows "0" instead of actual count ✅ RESOLVED</summary>
+
+### Issue
+- **Problem:** Locations table always displayed "0 classes" for every location
+- **Root Cause:** Hardcoded value instead of actual class count calculation
+- **Impact:** Inaccurate information about location usage
+
+### Expected Behavior
+Classes column should show the actual number of active classes for each location
+
+### Resolution Implemented
+1. **Enhanced useLocations hook** to include class counts via additional query
+2. **Added class_count property** to Location interface and LocationProps
+3. **Updated LocationsTable** to display actual count with proper pluralization
+4. **Used efficient approach:** Query classes grouped by location_id after getting locations
+
+### Technical Details
+- Query active classes (`is_active: true`) for all location IDs
+- Count classes per location using Map data structure
+- Merge counts back into location data as `class_count` property
+- Display with proper singular/plural text formatting
+
+### Files Modified
+- `src/hooks/useLocations.ts` (lines 17, 23-81)
+- `src/components/locations/LocationsTable.tsx` (line 118)
+- `src/components/locations/LocationCard.tsx` (line 24)
+
+### Status: `RESOLVED` ✅ 2025-06-24
+</details>
+
 ---
 
 ## 🔧 Quick Actions
 
 - **Add New Bug:** Copy template below
+- **Add Feature Request:** Use [features.md](./features.md) instead
 - **Test Fixes:** Run `npm run dev` and test affected areas
 - **Deploy:** Push to main branch for testing
 

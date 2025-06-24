@@ -21,6 +21,7 @@ export interface LocationProps {
   latitude?: number | null;
   longitude?: number | null;
   website?: string | null;
+  class_count?: number;
   isActive?: boolean; // For backward compatibility with the form
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
