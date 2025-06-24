@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { clearFranchiseeProfileCache } from "@/hooks/useFranchiseeProfile";
 import { useUserRole, UserRole } from "@/hooks/useUserRole";
 import { Loader } from "@/components/ui/Loader";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, roleRequired = 'user' }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { role, loading: roleLoading } = useUserRole();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -33,7 +35,16 @@ const ProtectedRoute = ({ children, roleRequired = 'user' }: ProtectedRouteProps
         setIsAuthenticated(isAuth);
         
         if (event === "SIGNED_OUT") {
-          console.log("User signed out, clearing franchisee profile cache");
+          console.log("User signed out, clearing all caches");
+          clearFranchiseeProfileCache();
+          queryClient.clear(); // Clear all React Query cache
+          sessionStorage.clear(); // Clear session storage
+          localStorage.removeItem('franchisee_profile_ensured');
+        }
+        
+        if (event === "SIGNED_IN") {
+          console.log("User signed in, clearing caches to prevent data contamination");
+          queryClient.clear(); // Clear all React Query cache on sign in too
           clearFranchiseeProfileCache();
         }
       }

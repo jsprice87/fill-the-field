@@ -35,13 +35,33 @@ const clearSessionSafetyNet = (): void => {
 export const useFranchiseeProfile = () => {
   const ensureFranchiseeProfile = useEnsureFranchiseeProfile();
   const queryClient = useQueryClient();
+  
+  // Check if user has changed by comparing stored user ID
+  const checkUserChange = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const storedUserId = sessionStorage.getItem('current_user_id');
+    
+    if (user?.id && storedUserId && storedUserId !== user.id) {
+      console.log('User changed detected, clearing all caches');
+      queryClient.clear();
+      clearSessionSafetyNet();
+    }
+    
+    if (user?.id) {
+      sessionStorage.setItem('current_user_id', user.id);
+    }
+  };
 
   return useQuery({
     queryKey: ['franchisee-profile'],
     queryFn: async () => {
       console.log('useFranchiseeProfile: Starting query');
+      await checkUserChange(); // Check for user change before proceeding
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+      
+      console.log('useFranchiseeProfile: Current user ID:', user.id);
 
       // Try to get existing franchisee record first
       const { data, error } = await supabase
@@ -131,4 +151,10 @@ export const useUpdateFranchiseeProfile = () => {
 // Clear safety net cache on sign out
 export const clearFranchiseeProfileCache = () => {
   clearSessionSafetyNet();
+  try {
+    sessionStorage.removeItem('current_user_id');
+    localStorage.removeItem('franchisee_profile_ensured');
+  } catch {
+    // Ignore storage errors
+  }
 };
