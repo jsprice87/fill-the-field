@@ -13,6 +13,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` - Run ESLint
 - `npm run typecheck` - Run TypeScript compiler checks (no emit)
 
+### Git Workflow
+- **CRITICAL**: Always commit AND push changes before user testing
+- User cannot see changes until they are pushed to remote main branch
+- Commit with descriptive messages including the "why" behind changes
+- Push immediately after committing when user needs to test functionality
+
 ### VS Code Development
 - Use VS Code's integrated terminal to run `npm run dev`
 - Access via network URL shown in terminal (e.g., http://192.168.68.84:3000/)
