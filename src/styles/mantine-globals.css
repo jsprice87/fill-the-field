@@ -31,6 +31,12 @@ thead th {
   z-index: 100 !important;
 }
 
+/* Higher z-index for dropdowns within modals */
+.modal-dropdown .mantine-Select-dropdown,
+.modal-dropdown .mantine-Menu-dropdown {
+  z-index: 300 !important;
+}
+
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   * {

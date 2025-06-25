@@ -190,9 +190,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               required
               searchable={false}
               clearable={false}
+              className="modal-dropdown"
               comboboxProps={{
-                withinPortal: false,
-                zIndex: 300
+                withinPortal: false
               }}
             />
 
@@ -206,9 +206,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               required
               searchable={false}
               clearable={false}
+              className="modal-dropdown"
               comboboxProps={{
-                withinPortal: false,
-                zIndex: 300
+                withinPortal: false
               }}
             />
 
@@ -221,9 +221,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               required
               searchable={false}
               clearable={false}
+              className="modal-dropdown"
               comboboxProps={{
-                withinPortal: false,
-                zIndex: 300
+                withinPortal: false
               }}
             />
 
