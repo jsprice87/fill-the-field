@@ -139,7 +139,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       onClose={onClose}
       title="Edit Booking"
       size="md"
-      withinPortal={true}
+      zIndex={500}
     >
       {isLoading ? (
         <Stack align="center" p="lg">
@@ -163,11 +163,10 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               {...form.getInputProps('location_id')}
               onChange={handleLocationChange}
               required
-              searchable
+              searchable={false}
               clearable={false}
               comboboxProps={{ 
-                withinPortal: true,
-                zIndex: 10000 
+                withinPortal: true
               }}
             />
 
@@ -179,11 +178,10 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               onChange={handleClassChange}
               disabled={!form.values.location_id}
               required
-              searchable
+              searchable={false}
               clearable={false}
               comboboxProps={{ 
-                withinPortal: true,
-                zIndex: 10000 
+                withinPortal: true
               }}
             />
 
@@ -194,10 +192,10 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               {...form.getInputProps('class_schedule_id')}
               disabled={!form.values.class_id}
               required
+              searchable={true}
               clearable={false}
               comboboxProps={{ 
-                withinPortal: true,
-                zIndex: 10000 
+                withinPortal: true
               }}
             />
 
