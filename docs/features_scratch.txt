@@ -1,0 +1,6 @@
+/portal/settings > Booking Restrictions > Maximum Days Ahead of Booking
+ - Modify this logic slightly to be a radio button decision between "Next Available Only" or "Maximum Number of Days Away"
+ - Next available only will allow Leads to book the next available class only, even it is a couple of weeks away due to holidays or other override dates.
+ - Maximum Number of Days Away will only show the Lead classes that fall within that window for the given location they are looking at.
+
+ 

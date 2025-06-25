@@ -7,4 +7,10 @@ Booking flow > booking page > Parent Guardian Information panel
  - Long load time
  - Bookings associated with this user account are not populating.  Bookings are confirmed to be found in the database.  Bookings page shows zero.
 
- 
+ Booking Flow > Liability waiver link opens a new page rather than a pop up window and is 404. (use same popup logic as the preview button in /portal/settings)
+
+ Location selector menu on program creation page is transparent.
+
+ Lead Details > Multiple bookings were combined into a single booking. Ada + Charlie. 
+
+ Bulk table actions should be all available Actions Menu actions, not just Archive.
