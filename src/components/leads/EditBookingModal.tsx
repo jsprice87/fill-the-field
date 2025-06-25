@@ -32,7 +32,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     initialValues: {
       location_id: '',
       class_id: '',
-      class_schedule_id: '',
+      booking_date: '',
     },
   });
 
@@ -42,7 +42,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       form.setValues({
         location_id: booking.class_schedules.classes.locations.id,
         class_id: booking.class_schedules.classes.id,
-        class_schedule_id: booking.class_schedules.id,
+        booking_date: booking.class_schedules.id, // Will be updated to use actual booking date
       });
     }
   }, [opened, booking]);
@@ -57,6 +57,54 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     (schedule) => schedule.class_id === form.values.class_id && schedule.is_active
   ) || [];
 
+  // Generate available booking dates for the selected class
+  const generateBookingDates = (schedule: any) => {
+    const dates = [];
+    const startDate = schedule.date_start ? new Date(schedule.date_start) : new Date();
+    const endDate = schedule.date_end ? new Date(schedule.date_end) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
+    const dayOfWeek = schedule.day_of_week;
+
+    // Find the first occurrence of the target day
+    let currentDate = new Date(startDate);
+    while (currentDate.getDay() !== dayOfWeek) {
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Generate all dates for this day of week until end date
+    while (currentDate <= endDate && dates.length < 52) { // Limit to 52 weeks
+      if (currentDate >= new Date()) { // Only future dates
+        dates.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 7); // Next week
+    }
+
+    return dates;
+  };
+
+  // Generate date options for all filtered schedules
+  const dateOptions = filteredSchedules.flatMap((schedule) => {
+    const dates = generateBookingDates(schedule);
+    return dates.map((date) => {
+      const startTime = new Date(`2000-01-01T${schedule.start_time}`).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const formattedDate = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      return {
+        value: `${schedule.id}_${date.toISOString().split('T')[0]}`, // schedule_id + date
+        label: `${formattedDate} at ${startTime}`,
+        scheduleId: schedule.id,
+        date: date.toISOString().split('T')[0]
+      };
+    });
+  });
+
   // Prepare dropdown options
   const locationOptions = locations?.map((location) => ({
     value: location.id,
@@ -68,40 +116,14 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     label: cls.class_name,
   }));
 
-  const scheduleOptions = filteredSchedules.map((schedule) => {
-    const startTime = new Date(`2000-01-01T${schedule.start_time}`).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    const endTime = new Date(`2000-01-01T${schedule.end_time}`).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    let label = `${startTime} - ${endTime}`;
-    if (schedule.day_of_week !== null) {
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      label += ` (${days[schedule.day_of_week]}s)`;
-    }
-    if (schedule.date_start) {
-      const startDate = new Date(schedule.date_start).toLocaleDateString();
-      label += ` - Starts ${startDate}`;
-    }
-
-    return {
-      value: schedule.id,
-      label,
-    };
-  });
-
   // Handle location change
   const handleLocationChange = (locationId: string | null) => {
     if (locationId) {
       form.setFieldValue('location_id', locationId);
       
-      // Reset class and schedule when location changes
+      // Reset class and booking date when location changes
       form.setFieldValue('class_id', '');
-      form.setFieldValue('class_schedule_id', '');
+      form.setFieldValue('booking_date', '');
     }
   };
 
@@ -110,20 +132,23 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     if (classId) {
       form.setFieldValue('class_id', classId);
       
-      // Reset schedule when class changes
-      form.setFieldValue('class_schedule_id', '');
+      // Reset booking date when class changes
+      form.setFieldValue('booking_date', '');
     }
   };
 
   const handleSubmit = async (values: typeof form.values) => {
-    if (!values.class_schedule_id) {
+    if (!values.booking_date) {
       return;
     }
 
     try {
+      // Extract schedule ID from the booking_date value (format: "schedule_id_date")
+      const [scheduleId] = values.booking_date.split('_');
+      
       await updateBooking.mutateAsync({
         bookingId: booking.id,
-        class_schedule_id: values.class_schedule_id,
+        class_schedule_id: scheduleId,
       });
       onClose();
     } catch (error) {
@@ -139,7 +164,11 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       onClose={onClose}
       title="Edit Booking"
       size="md"
-      zIndex={500}
+      withinPortal={false}
+      styles={{
+        content: { zIndex: 1000 },
+        overlay: { zIndex: 999 }
+      }}
     >
       {isLoading ? (
         <Stack align="center" p="lg">
@@ -166,7 +195,11 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               searchable={false}
               clearable={false}
               comboboxProps={{ 
-                withinPortal: true
+                withinPortal: false,
+                zIndex: 2000
+              }}
+              styles={{
+                dropdown: { zIndex: 2000 }
               }}
             />
 
@@ -181,21 +214,29 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               searchable={false}
               clearable={false}
               comboboxProps={{ 
-                withinPortal: true
+                withinPortal: false,
+                zIndex: 2000
+              }}
+              styles={{
+                dropdown: { zIndex: 2000 }
               }}
             />
 
             <Select
-              label="Schedule"
-              placeholder="Select a schedule"
-              data={scheduleOptions}
-              {...form.getInputProps('class_schedule_id')}
+              label="Booking Date"
+              placeholder="Select a booking date"
+              data={dateOptions}
+              {...form.getInputProps('booking_date')}
               disabled={!form.values.class_id}
               required
-              searchable={true}
+              searchable={false}
               clearable={false}
               comboboxProps={{ 
-                withinPortal: true
+                withinPortal: false,
+                zIndex: 2000
+              }}
+              styles={{
+                dropdown: { zIndex: 2000 }
               }}
             />
 
@@ -206,7 +247,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               <Button 
                 type="submit" 
                 loading={updateBooking.isPending}
-                disabled={!form.values.class_schedule_id}
+                disabled={!form.values.booking_date}
               >
                 Update Booking
               </Button>
