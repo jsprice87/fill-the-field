@@ -8,6 +8,7 @@ import LeadDetailsHeader from '@/components/leads/LeadDetailsHeader';
 import LeadBookingsSection from '@/components/leads/LeadBookingsSection';
 import LeadNotesSection from '@/components/leads/LeadNotesSection';
 import { useUpdateLeadStatus } from '@/hooks/useLeadStatus';
+import { useLeadBookings } from '@/hooks/useLeadBookings';
 
 interface Lead {
   id: string;
@@ -43,6 +44,9 @@ const LeadDetail: React.FC = () => {
   const [location, setLocation] = useState<Location | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const updateLeadStatus = useUpdateLeadStatus();
+  
+  // Get lead bookings to determine location from booking if no direct location selected
+  const { data: bookings } = useLeadBookings(leadId || '');
 
   useEffect(() => {
     const fetchLead = async () => {
@@ -115,6 +119,21 @@ const LeadDetail: React.FC = () => {
       fetchLead();
     }
   }, [leadId, franchiseeSlug, navigate]);
+
+  // Update location from booking if no direct location selected
+  useEffect(() => {
+    if (lead && bookings && bookings.length > 0 && !location) {
+      // Use location from the most recent booking
+      const mostRecentBooking = bookings[0]; // bookings are ordered by created_at desc
+      const bookingLocation = mostRecentBooking.class_schedules.classes.locations;
+      setLocation({
+        id: bookingLocation.id,
+        name: bookingLocation.name,
+        city: bookingLocation.city,
+        state: bookingLocation.state
+      });
+    }
+  }, [lead, bookings, location]);
 
   const handleStatusChange = async (leadId: string, newStatus: string) => {
     await updateLeadStatus.mutateAsync({ leadId, status: newStatus });

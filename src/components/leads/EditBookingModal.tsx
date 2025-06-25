@@ -131,6 +131,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       onClose={onClose}
       title="Edit Booking"
       size="md"
+      withinPortal={false}
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
@@ -149,7 +150,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
             onChange={handleLocationChange}
             required
             searchable
-            comboboxProps={{ withinPortal: true }}
+            comboboxProps={{ withinPortal: false }}
           />
 
           <Select
@@ -161,7 +162,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
             disabled={!selectedLocationId}
             required
             searchable
-            comboboxProps={{ withinPortal: true }}
+            comboboxProps={{ withinPortal: false }}
           />
 
           <Select
@@ -171,7 +172,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
             {...form.getInputProps('class_schedule_id')}
             disabled={!selectedClassId}
             required
-            comboboxProps={{ withinPortal: true }}
+            comboboxProps={{ withinPortal: false }}
           />
 
           <Group justify="flex-end" mt="md">
