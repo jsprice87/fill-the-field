@@ -191,6 +191,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               searchable={false}
               clearable={false}
               withinPortal
+              comboboxProps={{
+                zIndex: 300
+              }}
             />
 
             <Select
@@ -204,6 +207,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               searchable={false}
               clearable={false}
               withinPortal
+              comboboxProps={{
+                zIndex: 300
+              }}
             />
 
             <Select
@@ -216,6 +222,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               searchable={false}
               clearable={false}
               withinPortal
+              comboboxProps={{
+                zIndex: 300
+              }}
             />
 
             <Group justify="flex-end" mt="md">
