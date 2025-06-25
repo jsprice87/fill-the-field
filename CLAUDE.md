@@ -120,6 +120,14 @@ The application includes a comprehensive webhook system for external integration
 - **Public/booking components**: shadcn/ui components are acceptable for customer-facing areas
 - **Dropdown components**: Always use `withinPortal` prop for dropdowns in tables/scrollable containers
 - **Z-index hierarchy**: Sticky headers (10), dropdowns (100), modals (1000+)
+- **Modal patterns**: Use custom Modal component from `@/components/mantine/Modal` for consistent behavior
+
+#### Debugging Guidelines
+- **Research existing patterns first**: Check similar components in codebase before implementing
+- **Use minimal test cases**: Start with simplest working example, add complexity gradually
+- **Follow established conventions**: Don't fight framework patterns, work with them
+- **Modal + Dropdown issues**: Use codebase's custom Modal component and `withinPortal` prop pattern
+- **Z-index problems**: Let Mantine handle layering automatically, avoid custom z-index overrides
 
 #### Cache Management
 - Aggressive cache clearing implemented on auth state changes to prevent data contamination
