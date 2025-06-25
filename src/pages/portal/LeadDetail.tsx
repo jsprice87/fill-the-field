@@ -48,6 +48,28 @@ const LeadDetail: React.FC = () => {
     const fetchLead = async () => {
       setIsLoading(true);
       try {
+        // First get the current user to find their franchisee
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast.error("You must be logged in to view lead details");
+          navigate(`/${franchiseeSlug}/portal/leads`);
+          return;
+        }
+
+        // Get the user's franchisee ID
+        const { data: franchisee, error: franchiseeError } = await supabase
+          .from('franchisees')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (franchiseeError || !franchisee) {
+          console.error("Error fetching franchisee:", franchiseeError);
+          toast.error("Unable to verify account access");
+          return;
+        }
+
+        // Now fetch the lead with franchisee filtering
         const { data, error } = await supabase
           .from('leads')
           .select(`
@@ -69,25 +91,34 @@ const LeadDetail: React.FC = () => {
             )
           `)
           .eq('id', leadId)
+          .eq('franchisee_id', franchisee.id)
           .single();
 
         if (error) {
           console.error("Error fetching lead:", error);
-          toast.error("Failed to load lead details");
+          if (error.code === 'PGRST116') {
+            toast.error("Lead not found or you don't have permission to view it");
+          } else {
+            toast.error("Failed to load lead details");
+          }
+          setLead(null);
         } else {
-          const { classes, ...rest } = data;
-          setLead(rest as unknown as Lead);
+          console.log("Lead data fetched successfully:", data);
+          setLead(data as Lead);
         }
       } catch (error) {
         console.error("Error fetching lead:", error);
         toast.error("Failed to load lead details");
+        setLead(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchLead();
-  }, [leadId]);
+    if (leadId && franchiseeSlug) {
+      fetchLead();
+    }
+  }, [leadId, franchiseeSlug, navigate]);
 
   const handleArchive = async () => {
     if (!leadId) {
