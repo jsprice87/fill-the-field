@@ -20,21 +20,12 @@ interface Lead {
   status: string;
   notes: string | null;
   archived_at: string | null;
-  classes: Array<{
-    id: string;
-    name: string;
-    class_name: string;
-    locations: {
-      name: string;
-      address: string;
-      city: string;
-      state: string;
-      zip: string;
-    };
-    start_time: string;
-    end_time: string;
-    day_of_week: number;
-  }> | null;
+  franchisee_id: string;
+  selected_location_id: string | null;
+  booking_session_data: any;
+  child_speaks_english: boolean | null;
+  status_manually_set: boolean | null;
+  updated_at: string;
 }
 
 const LeadDetail: React.FC = () => {
@@ -72,24 +63,7 @@ const LeadDetail: React.FC = () => {
         // Now fetch the lead with franchisee filtering
         const { data, error } = await supabase
           .from('leads')
-          .select(`
-            *,
-            classes (
-              id,
-              name,
-              class_name,
-              locations (
-                name,
-                address,
-                city,
-                state,
-                zip
-              ),
-              start_time,
-              end_time,
-              day_of_week
-            )
-          `)
+          .select('*')
           .eq('id', leadId)
           .eq('franchisee_id', franchisee.id)
           .single();
