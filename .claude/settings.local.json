@@ -3,7 +3,12 @@
     "allow": [
       "Bash(lsof:*)",
       "Bash(npm run dev:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(rg:*)",
+      "Bash('leads' and 'classes' in the schema cache\"\n\nThe page will now load basic lead information. Related classes data can \nbe added later via the proper relationship path: \nleads → bookings → class_schedules → classes\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": []
   }

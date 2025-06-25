@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@mantine/core';
-import { Card } from '@mantine/core';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Phone, Mail, MapPin, Calendar, User, Clock, MessageSquare, Archive, ArchiveRestore } from 'lucide-react';
+import { Button, Stack, Group } from '@mantine/core';
+import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import LeadDetailsHeader from '@/components/leads/LeadDetailsHeader';
+import LeadBookingsSection from '@/components/leads/LeadBookingsSection';
+import LeadNotesSection from '@/components/leads/LeadNotesSection';
+import { useUpdateLeadStatus } from '@/hooks/useLeadStatus';
 
 interface Lead {
   id: string;
@@ -28,12 +29,20 @@ interface Lead {
   updated_at: string;
 }
 
+interface Location {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+}
+
 const LeadDetail: React.FC = () => {
   const { leadId, franchiseeSlug } = useParams<{ leadId: string; franchiseeSlug: string }>();
   const navigate = useNavigate();
   const [lead, setLead] = useState<Lead | null>(null);
+  const [location, setLocation] = useState<Location | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isArchiving, setIsArchiving] = useState(false);
+  const updateLeadStatus = useUpdateLeadStatus();
 
   useEffect(() => {
     const fetchLead = async () => {
@@ -79,6 +88,19 @@ const LeadDetail: React.FC = () => {
         } else {
           console.log("Lead data fetched successfully:", data);
           setLead(data as Lead);
+
+          // Fetch location data if selected_location_id exists
+          if (data.selected_location_id) {
+            const { data: locationData, error: locationError } = await supabase
+              .from('locations')
+              .select('id, name, city, state')
+              .eq('id', data.selected_location_id)
+              .single();
+
+            if (!locationError && locationData) {
+              setLocation(locationData as Location);
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching lead:", error);
@@ -94,37 +116,21 @@ const LeadDetail: React.FC = () => {
     }
   }, [leadId, franchiseeSlug, navigate]);
 
-  const handleArchive = async () => {
-    if (!leadId) {
-      toast.error("Lead ID is missing");
-      return;
-    }
-
-    setIsArchiving(true);
-    try {
-      const newArchivedAt = lead?.archived_at ? null : new Date().toISOString();
-      
-      const { error } = await supabase
-        .from('leads')
-        .update({ archived_at: newArchivedAt })
-        .eq('id', leadId);
-
-      if (error) {
-        console.error("Error archiving lead:", error);
-        toast.error("Failed to archive lead");
-      } else {
-        toast.success(`Lead ${lead?.archived_at ? 'restored' : 'archived'} successfully`);
-        navigate(`/${franchiseeSlug}/portal/leads`);
-      }
-    } catch (error) {
-      console.error("Error archiving lead:", error);
-      toast.error("Failed to archive lead");
-    } finally {
-      setIsArchiving(false);
+  const handleStatusChange = async (leadId: string, newStatus: string) => {
+    await updateLeadStatus.mutateAsync({ leadId, status: newStatus });
+    // Refresh lead data to show updated status
+    if (lead) {
+      setLead({ ...lead, status: newStatus, status_manually_set: true });
     }
   };
 
-  const leadAge = lead ? formatDistanceToNow(new Date(lead.created_at), { addSuffix: true }) : 'Loading...';
+  const handleCallLead = (phone: string) => {
+    window.location.href = `tel:${phone}`;
+  };
+
+  const handleEmailLead = (email: string) => {
+    window.location.href = `mailto:${email}`;
+  };
 
   if (isLoading) {
     return <div className="text-center">Loading lead details...</div>;
@@ -135,111 +141,34 @@ const LeadDetail: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/${franchiseeSlug}/portal/leads`)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Leads
-          </Button>
-          <h1 className="text-2xl font-bold tracking-tight">Lead Details</h1>
-        </div>
-        <Button
-          variant="outline"
-          onClick={handleArchive}
-          disabled={isArchiving}
+    <Stack gap="lg">
+      {/* Header with Back Button */}
+      <Group>
+        <Button 
+          variant="outline" 
+          leftSection={<ArrowLeft size={16} />}
+          onClick={() => navigate(`/${franchiseeSlug}/portal/leads`)}
         >
-          {isArchiving ? (
-            <span className="animate-pulse">Updating...</span>
-          ) : lead.archived_at ? (
-            <>
-              <ArchiveRestore className="h-4 w-4 mr-2" />
-              Restore Lead
-            </>
-          ) : (
-            <>
-              <Archive className="h-4 w-4 mr-2" />
-              Archive Lead
-            </>
-          )}
+          Back to Leads
         </Button>
-      </div>
+      </Group>
 
-      <Card>
-        <Card.Section>
-          <Card.Section className="flex items-center gap-2 p-4 border-b">
-            <User className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Personal Information</h3>
-          </Card.Section>
-        </Card.Section>
-        <Card.Section className="space-y-4 p-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm font-medium text-gray-700">First Name</div>
-              <div className="text-gray-900">{lead.first_name}</div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-700">Last Name</div>
-              <div className="text-gray-900">{lead.last_name}</div>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm font-medium text-gray-700">Email</div>
-              <div className="text-gray-900">
-                <a href={`mailto:${lead.email}`} className="text-blue-500 hover:underline">
-                  {lead.email}
-                </a>
-              </div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-700">Phone</div>
-              <div className="text-gray-900">
-                <a href={`tel:${lead.phone}`} className="text-blue-500 hover:underline">
-                  {lead.phone}
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm font-medium text-gray-700">Zip Code</div>
-              <div className="text-gray-900">{lead.zip}</div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-700">Source</div>
-              <div className="text-gray-900">{lead.source}</div>
-            </div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-gray-700">Lead Age</div>
-            <div className="text-gray-900">{leadAge}</div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-gray-700">Status</div>
-            <div className="text-gray-900">
-              <Badge variant="secondary">{lead.status}</Badge>
-            </div>
-          </div>
-        </Card.Section>
-      </Card>
+      {/* Lead Details Header Section */}
+      <LeadDetailsHeader
+        lead={lead}
+        location={location}
+        onStatusChange={handleStatusChange}
+        onCallLead={handleCallLead}
+        onEmailLead={handleEmailLead}
+        isUpdatingStatus={updateLeadStatus.isPending}
+      />
 
-      <Card>
-        <Card.Section>
-          <Card.Section className="flex items-center gap-2 p-4 border-b">
-            <MessageSquare className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Notes</h3>
-          </Card.Section>
-        </Card.Section>
-        <Card.Section className="p-4">
-          {lead.notes ? (
-            <div className="text-gray-900">{lead.notes}</div>
-          ) : (
-            <div className="text-gray-500">No notes available.</div>
-          )}
-        </Card.Section>
-      </Card>
-    </div>
+      {/* Bookings Management Section */}
+      <LeadBookingsSection leadId={lead.id} />
+
+      {/* Notes Management Section */}
+      <LeadNotesSection leadId={lead.id} />
+    </Stack>
   );
 };
 

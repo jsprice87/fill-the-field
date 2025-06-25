@@ -19,9 +19,9 @@
 |----|-------|------------|---------|----------|
 | #1 | Landing page shows hardcoded contact info | Replaced with dynamic franchisee data | `b96eed9` | 2025-06-24 |
 | #2 | Dropdown menus transparent/unreadable | Migrated to Mantine v8 + z-index fixes | `6e9d494` | 2025-06-24 |
-| #3 | Contact info missing from landing page footer | Fixed public page data fetching by slug | `pending` | 2025-06-24 |
-| #4 | Leads table "View Details" and "Edit Lead" redundant | Both actions now navigate to Lead Details page | `pending` | 2025-06-24 |
-| #5 | Classes column shows "0" instead of actual count | Updated useLocations hook with class counts | `pending` | 2025-06-24 |
+| #3 | Contact info missing from landing page footer | Fixed public page data fetching by slug | `ff6dac4` | 2025-06-24 |
+| #4 | Leads table "View Details" and "Edit Lead" redundant | Both actions now navigate to Lead Details page | `ff6dac4` | 2025-06-24 |
+| #5 | Classes column shows "0" instead of actual count | Updated useLocations hook with class counts | `ff6dac4` | 2025-06-24 |
 
 ---
 
