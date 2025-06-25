@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Stack, Group, Select, Text, Loader } from '@mantine/core';
+import { Button, Stack, Group, Select, Text, Loader } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { Modal } from '@/components/mantine/Modal';
 import { useParams } from 'react-router-dom';
 import { useLocations } from '@/hooks/useLocations';
 import { useClasses } from '@/hooks/useClasses';
@@ -164,11 +165,6 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       onClose={onClose}
       title="Edit Booking"
       size="md"
-      withinPortal={false}
-      styles={{
-        content: { zIndex: 1000 },
-        overlay: { zIndex: 999 }
-      }}
     >
       {isLoading ? (
         <Stack align="center" p="lg">
@@ -194,13 +190,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               required
               searchable={false}
               clearable={false}
-              comboboxProps={{ 
-                withinPortal: false,
-                zIndex: 2000
-              }}
-              styles={{
-                dropdown: { zIndex: 2000 }
-              }}
+              withinPortal
             />
 
             <Select
@@ -213,13 +203,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               required
               searchable={false}
               clearable={false}
-              comboboxProps={{ 
-                withinPortal: false,
-                zIndex: 2000
-              }}
-              styles={{
-                dropdown: { zIndex: 2000 }
-              }}
+              withinPortal
             />
 
             <Select
@@ -231,13 +215,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               required
               searchable={false}
               clearable={false}
-              comboboxProps={{ 
-                withinPortal: false,
-                zIndex: 2000
-              }}
-              styles={{
-                dropdown: { zIndex: 2000 }
-              }}
+              withinPortal
             />
 
             <Group justify="flex-end" mt="md">
