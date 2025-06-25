@@ -247,13 +247,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                       leftSection={<IconEye size={14} />}
                       onClick={() => handleViewDetails(lead.id)}
                     >
-                      View Details
-                    </Menu.Item>
-                    <Menu.Item 
-                      leftSection={<IconPencil size={14} />}
-                      onClick={() => handleViewDetails(lead.id)}
-                    >
-                      Edit Lead
+                      View/Edit Lead
                     </Menu.Item>
                     <Menu.Item 
                       leftSection={lead.archived_at ? <IconRestore size={14} /> : <IconArchive size={14} />}
