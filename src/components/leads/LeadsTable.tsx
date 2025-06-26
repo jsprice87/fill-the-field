@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ScrollArea, Text, Table, Menu, ActionIcon } from '@mantine/core';
+import { ScrollArea, Text, Table, Menu, ActionIcon, Select } from '@mantine/core';
 import { TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/mantine';
 import { Button } from '@/components/mantine';
 import { IconDotsVertical, IconPencil, IconTrash, IconArchive, IconRestore, IconEye, IconPhone, IconMail } from '@tabler/icons-react';
-import { Archive, ArchiveRestore } from 'lucide-react';
+import { Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import { useArchiveLead, useUnarchiveLead } from '@/hooks/useArchiveActions';
 import { useDeleteLead } from '@/hooks/useDeleteActions';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import LeadContactCell from './LeadContactCell';
 import LeadInfoCell from './LeadInfoCell';
@@ -24,11 +26,13 @@ interface LeadsTableProps {
 const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchived = false }) => {
   const navigate = useNavigate();
   const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
+  const queryClient = useQueryClient();
   const archiveLead = useArchiveLead();
   const unarchiveLead = useUnarchiveLead();
   const deleteLead = useDeleteLead();
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const [bulkStatusValue, setBulkStatusValue] = useState<string>('');
 
   if (!leads || leads.length === 0) {
     return <LeadsTableEmpty searchQuery={searchQuery} showArchived={showArchived} />;
@@ -66,6 +70,64 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
     } catch (error) {
       console.error('Error in bulk archive operation:', error);
       toast.error(`Failed to ${showArchived ? 'unarchive' : 'archive'} leads`);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedLeads.size === 0) return;
+    
+    const confirmMessage = `Are you sure you want to permanently delete ${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''}? This action cannot be undone.`;
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
+    try {
+      const promises = Array.from(selectedLeads).map(id => deleteLead.mutateAsync(id));
+      await Promise.all(promises);
+      
+      toast.success(`${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''} deleted successfully`);
+      setSelectedLeads(new Set());
+    } catch (error) {
+      console.error('Error in bulk delete operation:', error);
+      toast.error('Failed to delete leads');
+    }
+  };
+
+  const handleBulkStatusUpdate = async (newStatus: string) => {
+    if (selectedLeads.size === 0 || !newStatus) return;
+    
+    try {
+      const promises = Array.from(selectedLeads).map(async (leadId) => {
+        const { error } = await supabase
+          .from('leads')
+          .update({ status: newStatus as any })
+          .eq('id', leadId);
+        
+        if (error) throw error;
+      });
+      
+      await Promise.all(promises);
+      
+      // Invalidate and refetch leads data
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      
+      const statusLabel = {
+        'new': 'New',
+        'booked_upcoming': 'Booked Upcoming',
+        'booked_complete': 'Booked Complete',
+        'no_show': 'No Show',
+        'follow_up': 'Follow-up',
+        'canceled': 'Canceled',
+        'closed_lost': 'Closed Lost',
+        'closed_won': 'Closed Won'
+      }[newStatus] || newStatus;
+      
+      toast.success(`${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''} updated to ${statusLabel} successfully`);
+      setSelectedLeads(new Set());
+      setBulkStatusValue('');
+    } catch (error) {
+      console.error('Error in bulk status update:', error);
+      toast.error('Failed to update lead status');
     }
   };
 
@@ -125,14 +187,49 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
           <Text size="sm" fw={500}>
             {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''} selected
           </Text>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBulkArchive}
-          >
-            {showArchived ? <ArchiveRestore className="h-4 w-4 mr-2" /> : <Archive className="h-4 w-4 mr-2" />}
-            {showArchived ? 'Unarchive' : 'Archive'} Selected
-          </Button>
+          <div className="flex gap-2 items-center">
+            <Select
+              placeholder="Update status..."
+              value={bulkStatusValue}
+              onChange={(value) => {
+                setBulkStatusValue(value || '');
+                if (value) {
+                  handleBulkStatusUpdate(value);
+                }
+              }}
+              data={[
+                { value: 'new', label: 'New' },
+                { value: 'booked_upcoming', label: 'Booked Upcoming' },
+                { value: 'booked_complete', label: 'Booked Complete' },
+                { value: 'no_show', label: 'No Show' },
+                { value: 'follow_up', label: 'Follow-up' },
+                { value: 'canceled', label: 'Canceled' },
+                { value: 'closed_lost', label: 'Closed Lost' },
+                { value: 'closed_won', label: 'Closed Won' }
+              ]}
+              size="sm"
+              w={200}
+              withinPortal
+              clearable
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkArchive}
+            >
+              {showArchived ? <ArchiveRestore className="h-4 w-4 mr-2" /> : <Archive className="h-4 w-4 mr-2" />}
+              {showArchived ? 'Unarchive' : 'Archive'} Selected
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              color="red"
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Selected
+            </Button>
+          </div>
         </div>
       )}
 

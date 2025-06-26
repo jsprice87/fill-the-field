@@ -35,6 +35,10 @@
 <details>
 <summary><strong>Bug #1:</strong> Landing page shows hardcoded contact info</summary>
 
+### Title: Landing page shows hardcoded contact info
+### Status: `RESOLVED` ✅ 2025-06-24
+### Priority: Medium - brand inconsistency
+
 ### Issue
 - **Problem:** Landing pages display hardcoded "Lovable Test" contact info instead of franchisee-specific data
 - **Impact:** Brand inconsistency, potential privacy concerns with wrong contact info
@@ -54,9 +58,7 @@
 - Implement dynamic data fetching from franchisee settings
 - Ensure proper data filtering for public vs. portal views
 
-### Status: `RESOLVED` ✅
-
-**Resolution Implemented:**
+### Resolution Implemented
 1. **BookingLanding.tsx footer** - Added `useFranchiseeData()` hook and replaced hardcoded South Denver contact info with dynamic `franchiseeData.phone` and `franchiseeData.email`
 2. **ContactUs.tsx fallback** - Changed fallback email from `info@soccerstars.com` to `contact@fillthefield.com` 
 3. **Calendar UID** - Updated `calendarUtils.ts` to use `@fillthefield.com` instead of `@soccerstars.com` for calendar event UIDs
@@ -70,7 +72,11 @@
 </details>
 
 <details>
-<summary><strong>Bug #2:</strong> Dropdown menus transparent/unreadable ✅ RESOLVED</summary>
+<summary><strong>Bug #2:</strong> Dropdown menus transparent/unreadable</summary>
+
+### Title: Dropdown menus transparent/unreadable
+### Status: `RESOLVED` ✅ 2025-06-24
+### Priority: High - affects portal functionality
 
 ### Issue
 - **Problem:** Portal dropdown menus (status filters, location filters) had transparent backgrounds
@@ -82,7 +88,7 @@
 2. **Z-index conflict:** Sticky table headers (z-index: 2) vs dropdown content (default z-index)
 3. **Missing portal configuration:** Dropdowns not using `withinPortal` prop
 
-### Resolution
+### Resolution Implemented
 1. **Migrated all portal dropdowns to Mantine Select:**
    - `src/pages/portal/Leads.tsx` (location filter)
    - `src/pages/portal/Bookings.tsx` (location filter) 
@@ -95,12 +101,14 @@
    - Dropdown menus: `z-index: 100` (via CSS override)
 
 3. **Added `withinPortal` prop** to all Mantine Select components
-
-### Status: `RESOLVED` 2025-06-24
 </details>
 
 <details>
-<summary><strong>Bug #3:</strong> Contact info missing from landing page footer ✅ RESOLVED</summary>
+<summary><strong>Bug #3:</strong> Contact info missing from landing page footer</summary>
+
+### Title: Contact info missing from landing page footer
+### Status: `RESOLVED` ✅ 2025-06-24
+### Priority: High - missing essential information
 
 ### Issue
 - **Problem:** Landing page footer showed no contact information after Bug #1 "fix"
@@ -116,14 +124,16 @@ Landing page footer should show franchisee-specific phone and email with fallbac
 3. **Added fallback values** instead of conditional rendering that hides sections
 4. **Used pattern:** `{franchiseeData?.phone || 'Contact for details'}`
 
-### Files Modified
+**Files Modified:**
 - `src/pages/booking/BookingLanding.tsx` (lines 28-59, 282-298)
-
-### Status: `RESOLVED` ✅ 2025-06-24
 </details>
 
 <details>
-<summary><strong>Bug #4:</strong> Leads table "View Details" and "Edit Lead" redundant ✅ RESOLVED</summary>
+<summary><strong>Bug #4:</strong> Leads table "View Details" and "Edit Lead" redundant</summary>
+
+### Title: Leads table "View Details" and "Edit Lead" redundant
+### Status: `RESOLVED` ✅ 2025-06-24
+### Priority: Medium - workflow improvement
 
 ### Issue
 - **Problem:** LeadsTable actions menu had redundant "View Details" and "Edit Lead" items
@@ -139,14 +149,16 @@ Both "View Details" and "Edit Lead" should navigate to the comprehensive Lead De
 3. **Updated both menu items** to use same navigation handler
 4. **Verified route exists** - Lead Details page already configured at `/portal/leads/:leadId`
 
-### Files Modified
+**Files Modified:**
 - `src/components/leads/LeadsTable.tsx` (lines 2, 25, 111-113, 240-251)
-
-### Status: `RESOLVED` ✅ 2025-06-24
 </details>
 
 <details>
-<summary><strong>Bug #5:</strong> Classes column shows "0" instead of actual count ✅ RESOLVED</summary>
+<summary><strong>Bug #5:</strong> Classes column shows "0" instead of actual count</summary>
+
+### Title: Classes column shows "0" instead of actual count
+### Status: `RESOLVED` ✅ 2025-06-24
+### Priority: Medium - data accuracy issue
 
 ### Issue
 - **Problem:** Locations table always displayed "0 classes" for every location
@@ -168,16 +180,18 @@ Classes column should show the actual number of active classes for each location
 - Merge counts back into location data as `class_count` property
 - Display with proper singular/plural text formatting
 
-### Files Modified
+**Files Modified:**
 - `src/hooks/useLocations.ts` (lines 17, 23-81)
 - `src/components/locations/LocationsTable.tsx` (line 118)
 - `src/components/locations/LocationCard.tsx` (line 24)
-
-### Status: `RESOLVED` ✅ 2025-06-24
 </details>
 
 <details>
 <summary><strong>Bug #6:</strong> Booking flow Parent Guardian Information panel issues</summary>
+
+### Title: Booking flow Parent Guardian Information panel issues
+### Status: `RESOLVED` ✅ 2025-06-26
+### Priority: High - affects core booking functionality
 
 ### Issue
 - **Problem:** Multiple issues with Parent Guardian Information panel in booking flow
@@ -199,11 +213,7 @@ Classes column should show the actual number of active classes for each location
 2. Proceed to booking flow
 3. Observe Parent Guardian Information panel issues
 
-### Priority: High - affects core booking functionality
-
-### Status: `RESOLVED` ✅ 2025-06-26
-
-**Resolution Implemented:**
+### Resolution Implemented
 1. **Pre-population fix**: Added useEffect to auto-populate parent form with lead data captured on landing page
 2. **Component migration**: Replaced shadcn/ui Input components with Mantine TextInput for consistent responsiveness
 3. **Dropdown visibility**: Replaced shadcn/ui Select with Mantine Select + withinPortal prop to fix transparency
@@ -216,6 +226,10 @@ Classes column should show the actual number of active classes for each location
 
 <details>
 <summary><strong>Bug #7:</strong> Portal bookings page long load time and missing data</summary>
+
+### Title: Portal bookings page long load time and missing data
+### Status: `OPEN` 🔴
+### Priority: High - core business functionality broken
 
 ### Issue
 - **Problem:** `/portal/bookings` page has extremely long load times and shows zero bookings
@@ -236,14 +250,14 @@ Classes column should show the actual number of active classes for each location
 - Bookings confirmed to exist in database via direct query
 - Likely issue with data fetching query or RLS policies
 - May be related to relationship joins or filtering logic
-
-### Priority: High - core business functionality broken
-
-### Status: `RESOLVED` 🔴
 </details>
 
 <details>
 <summary><strong>Bug #8:</strong> Liability waiver 404 error and opens new page</summary>
+
+### Title: Liability waiver 404 error and opens new page
+### Status: `RESOLVED` ✅ 2025-06-26
+### Priority: Medium - blocks booking completion
 
 ### Issue
 - **Problem:** Liability waiver link in booking flow returns 404 and opens in new page instead of popup
@@ -260,11 +274,7 @@ Classes column should show the actual number of active classes for each location
 - Need to verify waiver content URL/endpoint exists
 - Popup modal preferred over new page for better UX
 
-### Priority: Medium - blocks booking completion
-
-### Status: `RESOLVED` ✅ 2025-06-26
-
-**Resolution Implemented:**
+### Resolution Implemented
 1. **Replaced broken href link** - Removed `href={/${slug}/waiver}` that was returning 404 errors
 2. **Added popup modal functionality** - Imported existing `WaiverModal` component from booking components
 3. **Button click handler** - Replaced `<a>` tag with `<button>` that opens modal instead of new page
@@ -278,6 +288,10 @@ Classes column should show the actual number of active classes for each location
 
 <details>
 <summary><strong>Bug #9:</strong> Location selector transparent on program creation page</summary>
+
+### Title: Location selector transparent on program creation page
+### Status: `OPEN` 🔴
+### Priority: Medium - affects portal functionality
 
 ### Issue
 - **Problem:** Location selector dropdown menu is transparent on program/class creation page
@@ -293,14 +307,14 @@ Classes column should show the actual number of active classes for each location
 - Similar to Bug #2 (resolved) but affecting different components
 - Likely needs Mantine component migration or z-index fix
 - Should use established dropdown styling patterns
-
-### Priority: Medium - affects portal functionality
-
-### Status: `OPEN` 🔴
 </details>
 
 <details>
 <summary><strong>Bug #10:</strong> Lead Details booking data combination issue</summary>
+
+### Title: Lead Details booking data combination issue
+### Status: `OPEN` 🔴
+### Priority: Medium - data accuracy issue
 
 ### Issue
 - **Problem:** Multiple bookings (Ada + Charlie) are being combined into single booking display
@@ -316,14 +330,14 @@ Classes column should show the actual number of active classes for each location
 - Likely issue in booking data aggregation logic
 - May be related to participant grouping or booking relationship queries
 - Check LeadBookingsSection component logic
-
-### Priority: Medium - data accuracy issue
-
-### Status: `OPEN` 🔴
 </details>
 
 <details>
 <summary><strong>Bug #11:</strong> Bulk table actions limited to Archive only</summary>
+
+### Title: Bulk table actions limited to Archive only
+### Status: `OPEN` 🔴
+### Priority: Low - workflow improvement
 
 ### Issue
 - **Problem:** Bulk table actions only show "Archive" option instead of all available Actions Menu actions
@@ -338,10 +352,6 @@ Classes column should show the actual number of active classes for each location
 - Check BulkActionBar or similar component
 - Compare with TableRowMenu actions to ensure parity
 - May need to add additional bulk operation handlers
-
-### Priority: Low - workflow improvement
-
-### Status: `OPEN` 🔴
 </details>
 
 ---
