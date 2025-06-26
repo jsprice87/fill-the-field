@@ -5,10 +5,11 @@ import { Button } from '@mantine/core';
 import { Sparkles, ArrowRight, Target, Users, BarChart3, Globe, Calendar } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { Text } from "@mantine/core";
+
 const Index = () => {
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+  return <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-slate-50 shadow-sm">
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" src="/lovable-uploads/a15870a7-8e97-44b0-8092-c94bf95e2423.png" />
@@ -26,7 +27,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-24">
+      <section className="container mx-auto px-4 py-24 bg-slate-50">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
             <img alt="Fill The Field Shield" className="h-44 w-auto mx-auto mb-6" src="/lovable-uploads/f91d8524-d966-4fa4-9aca-8521b2603b51.png" />
@@ -58,7 +59,7 @@ const Index = () => {
       
 
       {/* Pricing CTA Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-16 bg-slate-50">
         <div className="rounded-2xl p-8 md:p-12 text-center text-white relative overflow-hidden bg-slate-400">
           <div className="absolute top-4 right-4 opacity-20">
             
@@ -74,7 +75,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t">
+      <footer className="bg-slate-50 border-t">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center mb-8">
             <img alt="Fill The Field - Fast Funnels for Free Trials" src="/lovable-uploads/db07ebae-bd0f-4203-9da2-dba6240585b9.png" className="h-auto w-auto mx-auto mb-4 max-w-[600px]" />
@@ -120,4 +121,5 @@ const Index = () => {
       </footer>
     </div>;
 };
+
 export default Index;
