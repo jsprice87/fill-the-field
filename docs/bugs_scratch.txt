@@ -1,0 +1,11 @@
+✅ PROCESSED - All items moved to bugs.md with proper formatting and tracking IDs
+
+Items processed:
+- Bug #6: Booking flow Parent Guardian Information panel issues
+- Bug #7: Portal bookings page long load time and missing data  
+- Bug #8: Liability waiver 404 error and opens new page
+- Bug #9: Location selector transparent on program creation page
+- Bug #10: Lead Details booking data combination issue
+- Bug #11: Bulk table actions limited to Archive only
+
+Ready for new scratch notes.

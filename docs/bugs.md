@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
-> **Last Updated:** 24 Jun 2025  
-> **Active Issues:** 0 | **Resolved:** 5
+> **Last Updated:** 26 Jun 2025  
+> **Active Issues:** 6 | **Resolved:** 5
 
 ---
 
@@ -9,7 +9,12 @@
 
 | ID | Title | Severity | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------------|---------|
-| *No open issues* | | | | | |
+| #6 | Booking flow Parent Guardian Information panel issues | 🟠 High | unassigned | BookingLanding.tsx | 2025-06-26 |
+| #7 | Portal bookings page long load time and missing data | 🟠 High | unassigned | portal/Bookings.tsx | 2025-06-26 |
+| #8 | Liability waiver 404 error and opens new page | 🟡 Medium | unassigned | BookingFlow components | 2025-06-26 |
+| #9 | Location selector transparent on program creation page | 🟡 Medium | unassigned | portal/Classes.tsx | 2025-06-26 |
+| #10 | Lead Details booking data combination issue | 🟡 Medium | unassigned | LeadDetailsBookings | 2025-06-26 |
+| #11 | Bulk table actions limited to Archive only | 🟢 Low | unassigned | LeadsTable.tsx | 2025-06-26 |
 
 ---
 
@@ -169,6 +174,153 @@ Classes column should show the actual number of active classes for each location
 - `src/components/locations/LocationCard.tsx` (line 24)
 
 ### Status: `RESOLVED` ✅ 2025-06-24
+</details>
+
+<details>
+<summary><strong>Bug #6:</strong> Booking flow Parent Guardian Information panel issues</summary>
+
+### Issue
+- **Problem:** Multiple issues with Parent Guardian Information panel in booking flow
+- **Impact:** Poor user experience during booking process, potential data loss
+- **Affects:** All public booking pages
+
+### Specific Problems
+1. **Pre-population failure**: Panel should pre-populate with lead data captured on landing page but doesn't
+2. **Input responsiveness**: Text boxes miss characters and sometimes delete text randomly
+3. **Transparent dropdown**: "Relationship to Child" dropdown is transparent making text unreadable due to overlapping
+
+### Expected Behavior
+- Form should auto-populate with captured lead information
+- Text inputs should respond reliably to user typing
+- Dropdown should have proper background/contrast for readability
+
+### Reproduction
+1. Fill out lead capture form on landing page
+2. Proceed to booking flow
+3. Observe Parent Guardian Information panel issues
+
+### Priority: High - affects core booking functionality
+
+### Status: `OPEN` 🔴
+</details>
+
+<details>
+<summary><strong>Bug #7:</strong> Portal bookings page long load time and missing data</summary>
+
+### Issue
+- **Problem:** `/portal/bookings` page has extremely long load times and shows zero bookings
+- **Impact:** Users cannot see their confirmed bookings, affecting business operations
+- **Affects:** All portal users trying to view bookings
+
+### Specific Problems
+1. **Long load time**: Page takes excessive time to load
+2. **Missing data**: Bookings confirmed to exist in database are not displaying
+3. **Zero count**: Page shows "zero bookings" despite database having booking records
+
+### Expected Behavior
+- Bookings page should load quickly (under 3 seconds)
+- All bookings associated with user account should display
+- Correct booking count should be shown
+
+### Technical Notes
+- Bookings confirmed to exist in database via direct query
+- Likely issue with data fetching query or RLS policies
+- May be related to relationship joins or filtering logic
+
+### Priority: High - core business functionality broken
+
+### Status: `OPEN` 🔴
+</details>
+
+<details>
+<summary><strong>Bug #8:</strong> Liability waiver 404 error and opens new page</summary>
+
+### Issue
+- **Problem:** Liability waiver link in booking flow returns 404 and opens in new page instead of popup
+- **Impact:** Users cannot complete booking process, broken user flow
+- **Affects:** All users attempting to complete bookings
+
+### Expected Behavior
+- Liability waiver should open in popup modal (like preview button in `/portal/settings`)
+- Link should resolve to valid waiver content
+- User should be able to close popup and continue booking
+
+### Technical Notes
+- Should use same popup logic as settings preview button
+- Need to verify waiver content URL/endpoint exists
+- Popup modal preferred over new page for better UX
+
+### Priority: Medium - blocks booking completion
+
+### Status: `OPEN` 🔴
+</details>
+
+<details>
+<summary><strong>Bug #9:</strong> Location selector transparent on program creation page</summary>
+
+### Issue
+- **Problem:** Location selector dropdown menu is transparent on program/class creation page
+- **Impact:** Dropdown text unreadable due to background content showing through
+- **Affects:** Portal users creating new programs/classes
+
+### Expected Behavior
+- Location selector should have proper background opacity
+- Dropdown text should be clearly readable
+- Consistent with other portal dropdown styling
+
+### Technical Notes
+- Similar to Bug #2 (resolved) but affecting different components
+- Likely needs Mantine component migration or z-index fix
+- Should use established dropdown styling patterns
+
+### Priority: Medium - affects portal functionality
+
+### Status: `OPEN` 🔴
+</details>
+
+<details>
+<summary><strong>Bug #10:</strong> Lead Details booking data combination issue</summary>
+
+### Issue
+- **Problem:** Multiple bookings (Ada + Charlie) are being combined into single booking display
+- **Impact:** Incorrect booking information shown, potential data confusion
+- **Affects:** Lead Details page booking section
+
+### Expected Behavior
+- Each booking should be displayed separately
+- Individual participant information should be distinct
+- Booking cards should not merge multiple bookings
+
+### Technical Notes
+- Likely issue in booking data aggregation logic
+- May be related to participant grouping or booking relationship queries
+- Check LeadBookingsSection component logic
+
+### Priority: Medium - data accuracy issue
+
+### Status: `OPEN` 🔴
+</details>
+
+<details>
+<summary><strong>Bug #11:</strong> Bulk table actions limited to Archive only</summary>
+
+### Issue
+- **Problem:** Bulk table actions only show "Archive" option instead of all available Actions Menu actions
+- **Impact:** Limited bulk operation capabilities, inefficient workflow
+- **Affects:** All portal tables with bulk actions (Leads, Bookings, etc.)
+
+### Expected Behavior
+- Bulk actions should include all options available in individual row Actions Menu
+- Users should be able to perform any bulk operation they can do individually
+
+### Technical Notes
+- Check BulkActionBar or similar component
+- Compare with TableRowMenu actions to ensure parity
+- May need to add additional bulk operation handlers
+
+### Priority: Low - workflow improvement
+
+### Status: `OPEN` 🔴
 </details>
 
 ---
