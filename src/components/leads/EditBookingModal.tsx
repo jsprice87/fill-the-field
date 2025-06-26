@@ -139,21 +139,29 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   };
 
   const handleSubmit = async (values: typeof form.values) => {
+    console.log('🔥 handleSubmit called with values:', values);
+    
     if (!values.booking_date) {
+      console.log('❌ No booking_date selected, returning early');
       return;
     }
 
     try {
       // Extract schedule ID from the booking_date value (format: "schedule_id_date")
       const [scheduleId] = values.booking_date.split('_');
+      console.log('📅 Extracted schedule ID:', scheduleId, 'from booking_date:', values.booking_date);
       
-      await updateBooking.mutateAsync({
+      const params = {
         bookingId: booking.id,
         class_schedule_id: scheduleId,
-      });
+      };
+      console.log('🚀 Calling updateBooking with params:', params);
+      
+      await updateBooking.mutateAsync(params);
+      console.log('✅ Booking updated successfully, closing modal');
       onClose();
     } catch (error) {
-      console.error('Failed to update booking:', error);
+      console.error('❌ Failed to update booking:', error);
     }
   };
 
@@ -172,7 +180,10 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
           <Text size="sm" c="dimmed">Loading booking data...</Text>
         </Stack>
       ) : (
-        <form onSubmit={form.onSubmit(handleSubmit)}>
+        <form onSubmit={form.onSubmit((values) => {
+          console.log('📝 Form submitted, calling handleSubmit...');
+          return handleSubmit(values);
+        })}>
           <Stack gap="md">
             <div>
               <Text size="sm" fw={500} mb="xs">Current Booking:</Text>
@@ -235,6 +246,11 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                 type="submit" 
                 loading={updateBooking.isPending}
                 disabled={!form.values.booking_date}
+                onClick={() => {
+                  console.log('🔘 Update Booking button clicked');
+                  console.log('Current form values:', form.values);
+                  console.log('Button disabled?', !form.values.booking_date);
+                }}
               >
                 Update Booking
               </Button>
