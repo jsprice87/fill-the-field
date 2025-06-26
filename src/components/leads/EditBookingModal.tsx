@@ -140,6 +140,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
 
   const handleSubmit = async (values: typeof form.values) => {
     console.log('🔥 handleSubmit called with values:', values);
+    console.log('📋 Current booking object:', booking);
+    console.log('🆔 Booking ID to update:', booking.id);
+    console.log('🆔 Booking ID type:', typeof booking.id);
     
     if (!values.booking_date) {
       console.log('❌ No booking_date selected, returning early');
@@ -150,18 +153,21 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       // Extract schedule ID from the booking_date value (format: "schedule_id_date")
       const [scheduleId] = values.booking_date.split('_');
       console.log('📅 Extracted schedule ID:', scheduleId, 'from booking_date:', values.booking_date);
+      console.log('📅 Schedule ID type:', typeof scheduleId);
       
       const params = {
         bookingId: booking.id,
         class_schedule_id: scheduleId,
       };
       console.log('🚀 Calling updateBooking with params:', params);
+      console.log('🚀 Params JSON:', JSON.stringify(params, null, 2));
       
       await updateBooking.mutateAsync(params);
       console.log('✅ Booking updated successfully, closing modal');
       onClose();
     } catch (error) {
       console.error('❌ Failed to update booking:', error);
+      console.error('❌ Error details:', JSON.stringify(error, null, 2));
     }
   };
 
