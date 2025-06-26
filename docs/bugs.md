@@ -336,7 +336,7 @@ Classes column should show the actual number of active classes for each location
 <summary><strong>Bug #11:</strong> Bulk table actions limited to Archive only</summary>
 
 ### Title: Bulk table actions limited to Archive only
-### Status: `OPEN` 🔴
+### Status: `READY FOR TEST` 🟡
 ### Priority: Low - workflow improvement
 
 ### Issue
@@ -352,6 +352,17 @@ Classes column should show the actual number of active classes for each location
 - Check BulkActionBar or similar component
 - Compare with TableRowMenu actions to ensure parity
 - May need to add additional bulk operation handlers
+
+### Implementation Summary
+Enhanced LeadsTable bulk operations with:
+1. **Bulk Status Updates** - Dropdown with all 8 lead statuses (New, Booked Upcoming, etc.)
+2. **Bulk Delete** - Delete button with confirmation dialog
+3. **Bulk Archive/Unarchive** - Existing functionality maintained
+
+**Files Modified:**
+- `src/components/leads/LeadsTable.tsx` - Added comprehensive bulk actions
+
+**Ready for Testing:** Bulk actions bar now provides full parity with individual row actions.
 </details>
 
 ---
