@@ -59,45 +59,66 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
   const handleBulkArchive = async () => {
     if (selectedLeads.size === 0) return;
     
+    const selectedCount = selectedLeads.size;
+    const selectedIds = new Set(selectedLeads);
+    
+    // Immediately clear selection for instant feedback
+    setSelectedLeads(new Set());
+    
     try {
-      const promises = Array.from(selectedLeads).map(id => 
+      const promises = Array.from(selectedIds).map(id => 
         showArchived ? unarchiveLead.mutateAsync(id) : archiveLead.mutateAsync(id)
       );
       await Promise.all(promises);
       
-      toast.success(`${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''} ${showArchived ? 'unarchived' : 'archived'} successfully`);
-      setSelectedLeads(new Set());
+      toast.success(`${selectedCount} lead${selectedCount > 1 ? 's' : ''} ${showArchived ? 'unarchived' : 'archived'} successfully`);
     } catch (error) {
       console.error('Error in bulk archive operation:', error);
       toast.error(`Failed to ${showArchived ? 'unarchive' : 'archive'} leads`);
+      // Re-select leads on error
+      setSelectedLeads(selectedIds);
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedLeads.size === 0) return;
     
-    const confirmMessage = `Are you sure you want to permanently delete ${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''}? This action cannot be undone.`;
+    const selectedCount = selectedLeads.size;
+    const selectedIds = new Set(selectedLeads);
+    
+    const confirmMessage = `Are you sure you want to permanently delete ${selectedCount} lead${selectedCount > 1 ? 's' : ''}? This action cannot be undone.`;
     if (!confirm(confirmMessage)) {
       return;
     }
     
+    // Immediately clear selection for instant feedback
+    setSelectedLeads(new Set());
+    
     try {
-      const promises = Array.from(selectedLeads).map(id => deleteLead.mutateAsync(id));
+      const promises = Array.from(selectedIds).map(id => deleteLead.mutateAsync(id));
       await Promise.all(promises);
       
-      toast.success(`${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''} deleted successfully`);
-      setSelectedLeads(new Set());
+      toast.success(`${selectedCount} lead${selectedCount > 1 ? 's' : ''} deleted successfully`);
     } catch (error) {
       console.error('Error in bulk delete operation:', error);
       toast.error('Failed to delete leads');
+      // Re-select leads on error
+      setSelectedLeads(selectedIds);
     }
   };
 
   const handleBulkStatusUpdate = async (newStatus: string) => {
     if (selectedLeads.size === 0 || !newStatus) return;
     
+    const selectedCount = selectedLeads.size;
+    const selectedIds = new Set(selectedLeads);
+    
+    // Immediately clear selection and reset dropdown for instant feedback
+    setSelectedLeads(new Set());
+    setBulkStatusValue('');
+    
     try {
-      const promises = Array.from(selectedLeads).map(async (leadId) => {
+      const promises = Array.from(selectedIds).map(async (leadId) => {
         const { error } = await supabase
           .from('leads')
           .update({ status: newStatus as any })
@@ -108,8 +129,8 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
       
       await Promise.all(promises);
       
-      // Invalidate and refetch leads data
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      // Force immediate data refresh
+      await queryClient.invalidateQueries({ queryKey: ['leads'] });
       
       const statusLabel = {
         'new': 'New',
@@ -122,12 +143,12 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
         'closed_won': 'Closed Won'
       }[newStatus] || newStatus;
       
-      toast.success(`${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''} updated to ${statusLabel} successfully`);
-      setSelectedLeads(new Set());
-      setBulkStatusValue('');
+      toast.success(`${selectedCount} lead${selectedCount > 1 ? 's' : ''} updated to ${statusLabel} successfully`);
     } catch (error) {
       console.error('Error in bulk status update:', error);
       toast.error('Failed to update lead status');
+      // Re-select leads on error
+      setSelectedLeads(selectedIds);
     }
   };
 
