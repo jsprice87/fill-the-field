@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 26 Jun 2025  
-> **Active Issues:** 5 | **Resolved:** 6
+> **Active Issues:** 4 | **Resolved:** 7
 
 ---
 
@@ -10,7 +10,6 @@
 | ID | Title | Severity | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------------|---------|
 | #7 | Portal bookings page long load time and missing data | 🟠 High | unassigned | portal/Bookings.tsx | 2025-06-26 |
-| #8 | Liability waiver 404 error and opens new page | 🟡 Medium | unassigned | BookingFlow components | 2025-06-26 |
 | #9 | Location selector transparent on program creation page | 🟡 Medium | unassigned | portal/Classes.tsx | 2025-06-26 |
 | #10 | Lead Details booking data combination issue | 🟡 Medium | unassigned | LeadDetailsBookings | 2025-06-26 |
 | #11 | Bulk table actions limited to Archive only | 🟢 Low | unassigned | LeadsTable.tsx | 2025-06-26 |
@@ -27,6 +26,7 @@
 | #4 | Leads table "View Details" and "Edit Lead" redundant | Both actions now navigate to Lead Details page | `ff6dac4` | 2025-06-24 |
 | #5 | Classes column shows "0" instead of actual count | Updated useLocations hook with class counts | `ff6dac4` | 2025-06-24 |
 | #6 | Booking flow Parent Guardian Information panel issues | Migrated to Mantine components + pre-population fix | `08ede3f` | 2025-06-26 |
+| #8 | Liability waiver 404 error and opens new page | Replaced href link with WaiverModal popup | `56efdf9` | 2025-06-26 |
 
 ---
 
@@ -262,7 +262,18 @@ Classes column should show the actual number of active classes for each location
 
 ### Priority: Medium - blocks booking completion
 
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-26
+
+**Resolution Implemented:**
+1. **Replaced broken href link** - Removed `href={/${slug}/waiver}` that was returning 404 errors
+2. **Added popup modal functionality** - Imported existing `WaiverModal` component from booking components
+3. **Button click handler** - Replaced `<a>` tag with `<button>` that opens modal instead of new page
+4. **Proper data integration** - Uses `franchiseeData` and `waiverText` from `useFranchiseeWaiver` hook
+
+**Files Modified:**
+- `src/components/booking/ParentGuardianForm.tsx` - Replaced href link with WaiverModal popup
+
+**Result:** Waiver now opens in popup modal with proper content, allowing users to complete booking flow without broken links or new page interruptions.
 </details>
 
 <details>
