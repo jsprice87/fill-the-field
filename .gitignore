@@ -28,3 +28,18 @@ dist-ssr
 *.sln
 *.sw?
 supabase/.temp/
+
+# Media and binary files
+media/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.svg
+*.ico
+*.pdf
+*.zip
+*.tar.gz
