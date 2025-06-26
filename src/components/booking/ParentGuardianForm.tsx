@@ -1,13 +1,12 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { User, Phone, Mail, MapPin, Users, FileText, MessageSquare, Heart } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { TextInput, Select } from '@mantine/core';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useFranchiseeWaiver } from '@/hooks/useFranchiseeWaiver';
 import type { BookingFlowData } from '@/hooks/useBookingFlow';
@@ -20,6 +19,23 @@ interface ParentGuardianFormProps {
 const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updateFlow }) => {
   const { waiverText } = useFranchiseeWaiver(flowData);
   const parentInfo = flowData.parentGuardianInfo || {};
+
+  // Pre-populate parent info with lead data if parent info is empty but lead data exists
+  useEffect(() => {
+    if (flowData.leadData && 
+        (!flowData.parentGuardianInfo || Object.keys(flowData.parentGuardianInfo).length === 0)) {
+      const leadData = flowData.leadData;
+      updateFlow({
+        parentGuardianInfo: {
+          firstName: leadData.firstName || '',
+          lastName: leadData.lastName || '',
+          email: leadData.email || '',
+          phone: leadData.phone || '',
+          zip: leadData.zip || ''
+        }
+      });
+    }
+  }, [flowData.leadData, flowData.parentGuardianInfo, updateFlow]);
 
   const handleFieldChange = async (field: string, value: any) => {
     await updateFlow({
@@ -51,7 +67,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 <User className="h-4 w-4 inline mr-1" />
                 First Name *
               </Label>
-              <Input
+              <TextInput
                 id="firstName"
                 value={parentInfo.firstName || ''}
                 onChange={(e) => handleFieldChange('firstName', e.target.value)}
@@ -66,7 +82,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 <User className="h-4 w-4 inline mr-1" />
                 Last Name *
               </Label>
-              <Input
+              <TextInput
                 id="lastName"
                 value={parentInfo.lastName || ''}
                 onChange={(e) => handleFieldChange('lastName', e.target.value)}
@@ -82,7 +98,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               <Mail className="h-4 w-4 inline mr-1" />
               Email Address *
             </Label>
-            <Input
+            <TextInput
               id="email"
               type="email"
               value={parentInfo.email || ''}
@@ -99,7 +115,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 <Phone className="h-4 w-4 inline mr-1" />
                 Phone Number *
               </Label>
-              <Input
+              <TextInput
                 id="phone"
                 type="tel"
                 value={parentInfo.phone || ''}
@@ -115,7 +131,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 <MapPin className="h-4 w-4 inline mr-1" />
                 ZIP Code *
               </Label>
-              <Input
+              <TextInput
                 id="zip"
                 value={parentInfo.zip || ''}
                 onChange={(e) => handleFieldChange('zip', e.target.value)}
@@ -131,18 +147,21 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               <Users className="h-4 w-4 inline mr-1" />
               Relationship to Child *
             </Label>
-            <Select value={parentInfo.relationship || ''} onValueChange={(value) => handleFieldChange('relationship', value)}>
-              <SelectTrigger className="font-poppins">
-                <SelectValue placeholder="Select relationship" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Parent">Parent</SelectItem>
-                <SelectItem value="Guardian">Legal Guardian</SelectItem>
-                <SelectItem value="Grandparent">Grandparent</SelectItem>
-                <SelectItem value="Aunt/Uncle">Aunt/Uncle</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            <Select
+              value={parentInfo.relationship || ''}
+              onChange={(value) => handleFieldChange('relationship', value)}
+              placeholder="Select relationship"
+              data={[
+                { value: 'Parent', label: 'Parent' },
+                { value: 'Guardian', label: 'Legal Guardian' },
+                { value: 'Grandparent', label: 'Grandparent' },
+                { value: 'Aunt/Uncle', label: 'Aunt/Uncle' },
+                { value: 'Other', label: 'Other' }
+              ]}
+              className="font-poppins"
+              withinPortal
+              required
+            />
           </div>
         </CardContent>
       </Card>
