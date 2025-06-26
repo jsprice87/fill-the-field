@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -9,6 +9,7 @@ import { TextInput, Select } from '@mantine/core';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useFranchiseeWaiver } from '@/hooks/useFranchiseeWaiver';
+import { WaiverModal } from './WaiverModal';
 import type { BookingFlowData } from '@/hooks/useBookingFlow';
 
 interface ParentGuardianFormProps {
@@ -17,8 +18,9 @@ interface ParentGuardianFormProps {
 }
 
 const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updateFlow }) => {
-  const { waiverText } = useFranchiseeWaiver(flowData);
+  const { waiverText, franchiseeData } = useFranchiseeWaiver(flowData);
   const parentInfo = flowData.parentGuardianInfo || {};
+  const [waiverModalOpened, setWaiverModalOpened] = useState(false);
 
   // Pre-populate parent info with lead data if parent info is empty but lead data exists
   useEffect(() => {
@@ -188,14 +190,13 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 className="font-poppins text-sm cursor-pointer"
               >
                 I agree to the{' '}
-                <a 
-                  href={`/${window.location.pathname.split('/')[1]}/waiver`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-blue hover:text-brand-blue/80 underline"
+                <button 
+                  type="button"
+                  onClick={() => setWaiverModalOpened(true)}
+                  className="text-brand-blue hover:text-brand-blue/80 underline cursor-pointer bg-transparent border-none p-0 font-inherit"
                 >
                   liability waiver and agreement
-                </a>
+                </button>
                 . *
               </Label>
             </div>
@@ -266,6 +267,14 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
           </div>
         </CardContent>
       </Card>
+
+      {/* Waiver Modal */}
+      <WaiverModal
+        opened={waiverModalOpened}
+        onClose={() => setWaiverModalOpened(false)}
+        waiverText={waiverText}
+        franchiseeData={franchiseeData}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 26 Jun 2025  
-> **Active Issues:** 6 | **Resolved:** 5
+> **Active Issues:** 5 | **Resolved:** 6
 
 ---
 
@@ -9,7 +9,6 @@
 
 | ID | Title | Severity | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------------|---------|
-| #6 | Booking flow Parent Guardian Information panel issues | 🟠 High | unassigned | BookingLanding.tsx | 2025-06-26 |
 | #7 | Portal bookings page long load time and missing data | 🟠 High | unassigned | portal/Bookings.tsx | 2025-06-26 |
 | #8 | Liability waiver 404 error and opens new page | 🟡 Medium | unassigned | BookingFlow components | 2025-06-26 |
 | #9 | Location selector transparent on program creation page | 🟡 Medium | unassigned | portal/Classes.tsx | 2025-06-26 |
@@ -27,6 +26,7 @@
 | #3 | Contact info missing from landing page footer | Fixed public page data fetching by slug | `ff6dac4` | 2025-06-24 |
 | #4 | Leads table "View Details" and "Edit Lead" redundant | Both actions now navigate to Lead Details page | `ff6dac4` | 2025-06-24 |
 | #5 | Classes column shows "0" instead of actual count | Updated useLocations hook with class counts | `ff6dac4` | 2025-06-24 |
+| #6 | Booking flow Parent Guardian Information panel issues | Migrated to Mantine components + pre-population fix | `08ede3f` | 2025-06-26 |
 
 ---
 
@@ -201,7 +201,17 @@ Classes column should show the actual number of active classes for each location
 
 ### Priority: High - affects core booking functionality
 
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-26
+
+**Resolution Implemented:**
+1. **Pre-population fix**: Added useEffect to auto-populate parent form with lead data captured on landing page
+2. **Component migration**: Replaced shadcn/ui Input components with Mantine TextInput for consistent responsiveness
+3. **Dropdown visibility**: Replaced shadcn/ui Select with Mantine Select + withinPortal prop to fix transparency
+
+**Files Modified:**
+- `src/components/booking/ParentGuardianForm.tsx` - Complete migration to Mantine components with data pre-population
+
+**Result:** All three issues resolved - form now pre-populates, inputs are responsive, and dropdown is visible with proper styling.
 </details>
 
 <details>
@@ -229,7 +239,7 @@ Classes column should show the actual number of active classes for each location
 
 ### Priority: High - core business functionality broken
 
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` 🔴
 </details>
 
 <details>
