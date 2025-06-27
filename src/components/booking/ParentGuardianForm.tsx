@@ -9,6 +9,7 @@ import { TextInput, Select } from '@mantine/core';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useFranchiseeWaiver } from '@/hooks/useFranchiseeWaiver';
+import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
 import { WaiverModal } from './WaiverModal';
 import type { BookingFlowData } from '@/hooks/useBookingFlow';
 
@@ -19,8 +20,12 @@ interface ParentGuardianFormProps {
 
 const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updateFlow }) => {
   const { waiverText, franchiseeData } = useFranchiseeWaiver(flowData);
+  const { data: settings } = useFranchiseeSettings();
   const parentInfo = flowData.parentGuardianInfo || {};
   const [waiverModalOpened, setWaiverModalOpened] = useState(false);
+  
+  // Check if language information is required (default to true if setting doesn't exist)
+  const requireLanguageInfo = settings?.require_language_info !== 'false';
 
   // Pre-populate parent info with lead data if parent info is empty but lead data exists
   useEffect(() => {
@@ -239,34 +244,36 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
         </CardContent>
       </Card>
 
-      {/* Child Language */}
-      <Card className="border-l-4 border-l-blue-400">
-        <CardHeader>
-          <CardTitle className="font-agrandir text-xl text-brand-navy">
-            Language Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <Label className="font-poppins text-sm font-medium text-gray-700 mb-3 block">
-              Does your child speak English fluently?
-            </Label>
-            <RadioGroup
-              value={flowData.childSpeaksEnglish === true ? 'yes' : flowData.childSpeaksEnglish === false ? 'no' : ''}
-              onValueChange={(value) => handleAgreementChange('childSpeaksEnglish', value === 'yes')}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="yes" id="english-yes" />
-                <Label htmlFor="english-yes" className="font-poppins">Yes</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="no" id="english-no" />
-                <Label htmlFor="english-no" className="font-poppins">No</Label>
-              </div>
-            </RadioGroup>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Child Language - Conditional based on settings */}
+      {requireLanguageInfo && (
+        <Card className="border-l-4 border-l-blue-400">
+          <CardHeader>
+            <CardTitle className="font-agrandir text-xl text-brand-navy">
+              Language Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <Label className="font-poppins text-sm font-medium text-gray-700 mb-3 block">
+                Does your child speak English fluently?
+              </Label>
+              <RadioGroup
+                value={flowData.childSpeaksEnglish === true ? 'yes' : flowData.childSpeaksEnglish === false ? 'no' : ''}
+                onValueChange={(value) => handleAgreementChange('childSpeaksEnglish', value === 'yes')}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="english-yes" />
+                  <Label htmlFor="english-yes" className="font-poppins">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="english-no" />
+                  <Label htmlFor="english-no" className="font-poppins">No</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Waiver Modal */}
       <WaiverModal

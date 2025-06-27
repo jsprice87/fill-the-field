@@ -14,20 +14,22 @@ import ArchiveToggle from '@/components/shared/ArchiveToggle';
 import { PortalShell } from '@/layout/PortalShell';
 
 const PortalBookings: React.FC = () => {
-  const { data: franchiseeData } = useFranchiseeData();
+  const { data: franchiseeData, isLoading: franchiseeLoading } = useFranchiseeData();
   const [searchParams] = useSearchParams();
   const includeArchived = searchParams.get('archived') === 'true';
   
-  const { data: bookings = [], isLoading } = useBookings(franchiseeData?.id, includeArchived);
-  const { data: locations = [] } = useLocations(franchiseeData?.id);
+  const { data: bookings = [], isLoading: bookingsLoading, error: bookingsError } = useBookings(franchiseeData?.id, includeArchived);
+  const { data: locations = [], isLoading: locationsLoading } = useLocations(franchiseeData?.id);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
   const { searchTerm, searchQuery, filteredBookings, handleSearchChange } = useBookingsSearch(bookings, includeArchived);
+  
+  const isLoading = franchiseeLoading || bookingsLoading || locationsLoading;
 
-  // Combine location filter with search results
+  // Optimized location filtering using location ID instead of name lookup
   const finalBookings = selectedLocationId === 'all' 
     ? filteredBookings 
     : filteredBookings.filter(booking => 
-        booking.class_schedules?.classes?.locations?.name === locations.find(l => l.id === selectedLocationId)?.name
+        booking.class_schedules?.classes?.location_id === selectedLocationId
       );
 
   if (isLoading) {
@@ -35,6 +37,18 @@ const PortalBookings: React.FC = () => {
       <PortalShell>
         <Stack h="100vh" justify="center" align="center">
           <div className="loading-spinner h-8 w-8"></div>
+          <Text size="sm" c="dimmed">Loading bookings data...</Text>
+        </Stack>
+      </PortalShell>
+    );
+  }
+  
+  if (bookingsError) {
+    return (
+      <PortalShell>
+        <Stack h="100vh" justify="center" align="center">
+          <Text c="red">Error loading bookings data</Text>
+          <Text size="sm" c="dimmed">Please try refreshing the page</Text>
         </Stack>
       </PortalShell>
     );
@@ -104,7 +118,7 @@ const PortalBookings: React.FC = () => {
                       { value: 'all', label: 'All Locations' },
                       ...locations.map((location) => ({
                         value: location.id,
-                        label: location.name
+                        label: `${location.name} (${location.city}, ${location.state})`
                       }))
                     ]}
                     withinPortal

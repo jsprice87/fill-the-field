@@ -4,3 +4,20 @@ Item processed:
 - Feature #3: Enhanced Booking Restrictions with radio button logic
 
 Ready for new feature ideas.
+
+
+ - Make child language query request optional for Users.
+ -- must implement language feature first
+ -- add checkbox to /portal/settings 
+
+ - Add more notification types
+ -- Need to add notifications section of /portal/settings
+ -- Add logic to be able to send time-based notifications (webhook commands)
+ --- Day-Of reminders
+
+
+ - Add "CC Emails" field in /portal/settings
+
+ - Summary email from the day
+
+ - Multi user to login to specific business accounts

@@ -21,34 +21,34 @@ export const useBookingsSearch = (bookings: Booking[], includeArchived: boolean 
     debouncedSetQuery(value);
   };
 
-  // Filter bookings based on search query and archive status
+  // Filter bookings based on search query only (archive filtering now done in useBookings)
   const filteredBookings = useMemo(() => {
-    // First filter by archive status
-    let filteredByArchive = bookings;
-    if (!includeArchived) {
-      filteredByArchive = bookings.filter(booking => !booking.archived_at);
-    }
+    // Early return if no search query
+    if (!query.trim()) return bookings;
 
-    // Then apply search filter
-    if (!query.trim()) return filteredByArchive;
-
-    const searchQuery = query.trim();
+    const searchQuery = query.trim().toLowerCase();
     
-    return filteredByArchive.filter(booking => {
-      // Search in all text fields
+    return bookings.filter(booking => {
+      // Optimized search with early returns and lower case comparison
+      const parentName = `${booking.parent_first_name || ''} ${booking.parent_last_name || ''}`.toLowerCase();
+      const participantName = booking.participants?.[0]?.first_name?.toLowerCase() || '';
+      const locationName = booking.class_schedules?.classes?.locations?.name?.toLowerCase() || '';
+      const className = booking.class_schedules?.classes?.class_name?.toLowerCase() || '';
+      const status = booking.status?.toLowerCase() || '';
+      const age = booking.participants?.[0]?.age?.toString() || '';
+      
       return (
-        searchInText(booking.parent_first_name, searchQuery) ||
-        searchInText(booking.parent_last_name, searchQuery) ||
-        searchInText(booking.participants?.[0]?.first_name, searchQuery) ||
-        searchInText(booking.class_schedules?.classes?.locations?.name, searchQuery) ||
-        searchInText(booking.class_schedules?.classes?.class_name, searchQuery) ||
-        searchInText(booking.status, searchQuery) ||
-        searchInText(booking.participants?.[0]?.age?.toString(), searchQuery) ||
+        parentName.includes(searchQuery) ||
+        participantName.includes(searchQuery) ||
+        locationName.includes(searchQuery) ||
+        className.includes(searchQuery) ||
+        status.includes(searchQuery) ||
+        age.includes(searchQuery) ||
         searchInDate(booking.selected_date, searchQuery) ||
         searchInDate(booking.created_at, searchQuery)
       );
     });
-  }, [bookings, query, includeArchived]);
+  }, [bookings, query]);
 
   return {
     searchTerm,

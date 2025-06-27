@@ -9,6 +9,8 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
     queryFn: async (): Promise<Booking[]> => {
       if (!franchiseeId) return [];
       
+      // Use left joins instead of inner joins to avoid missing data
+      // Simplified query with better performance
       let query = supabase
         .from('appointments')
         .select(`
@@ -22,7 +24,7 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
           participant_birth_date,
           created_at,
           archived_at,
-          bookings!inner(
+          bookings(
             id,
             lead_id,
             archived_at,
@@ -34,7 +36,7 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
             communication_permission,
             marketing_permission,
             waiver_accepted,
-            leads!inner(
+            leads(
               first_name,
               last_name,
               franchisee_id,
@@ -42,26 +44,33 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
               archived_at
             )
           ),
-          class_schedules!inner(
+          class_schedules(
+            id,
             start_time,
             end_time,
-            classes!inner(
+            classes(
+              id,
               location_id,
               class_name,
-              locations!inner(
-                name
+              locations(
+                id,
+                name,
+                city,
+                state
               )
             )
           )
         `)
+        .not('bookings', 'is', null)
         .eq('bookings.leads.franchisee_id', franchiseeId)
-        .order('selected_date', { ascending: true });
+        .order('selected_date', { ascending: false }); // Show newest first
 
-      // Filter by archive status
+      // Apply archive filtering at database level for better performance
       if (!includeArchived) {
-        query = query.is('archived_at', null)
-                    .is('bookings.archived_at', null)
-                    .is('bookings.leads.archived_at', null);
+        query = query
+          .is('archived_at', null)
+          .is('bookings.archived_at', null)
+          .is('bookings.leads.archived_at', null);
       }
 
       const { data, error } = await query;
@@ -71,54 +80,75 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
         throw error;
       }
 
-      // Transform the data to match the canonical Booking type
-      const transformedData: Booking[] = (data || []).map(appointment => ({
-        id: appointment.id,
-        created_at: appointment.created_at,
-        updated_at: appointment.created_at,
-        lead_id: appointment.bookings.lead_id,
-        class_schedule_id: appointment.booking_id,
-        waiver_accepted: appointment.bookings.waiver_accepted,
-        waiver_accepted_at: null,
-        confirmation_email_sent: null,
-        communication_permission: appointment.bookings.communication_permission,
-        marketing_permission: appointment.bookings.marketing_permission,
-        child_speaks_english: null,
-        archived_at: appointment.archived_at,
-        parent_zip: null,
-        parent_relationship: null,
-        cancellation_reason: null,
-        booking_reference: appointment.bookings.booking_reference,
-        parent_first_name: appointment.bookings.parent_first_name,
-        parent_last_name: appointment.bookings.parent_last_name,
-        parent_email: appointment.bookings.parent_email,
-        parent_phone: appointment.bookings.parent_phone,
-        selected_date: appointment.selected_date,
-        participants: [{
-          id: appointment.id,
-          first_name: appointment.participant_name,
-          age: appointment.participant_age,
-          computed_age: null
-        }],
-        class_schedules: appointment.class_schedules ? {
-          start_time: appointment.class_schedules.start_time,
-          end_time: appointment.class_schedules.end_time,
-          classes: {
-            name: appointment.class_schedules.classes.class_name,
-            class_name: appointment.class_schedules.classes.class_name,
-            locations: {
-              name: appointment.class_schedules.classes.locations.name
-            }
-          }
-        } : null,
-        status: appointment.bookings?.leads?.status === 'booked_upcoming' ? 'booked_upcoming' :
-                appointment.bookings?.leads?.status === 'booked_complete' ? 'attended' :
-                appointment.bookings?.leads?.status === 'canceled' ? 'cancelled' : 'no_show'
-      }));
+      if (!data) return [];
 
-      console.log('Fetched bookings data:', transformedData);
+      // Optimized transformation with null checks
+      const transformedData: Booking[] = data
+        .filter(appointment => appointment.bookings) // Ensure we have booking data
+        .map(appointment => {
+          const booking = appointment.bookings!;
+          const lead = booking.leads;
+          const schedule = appointment.class_schedules;
+          const classData = schedule?.classes;
+          const location = classData?.locations;
+          
+          return {
+            id: appointment.id,
+            created_at: appointment.created_at,
+            updated_at: appointment.created_at,
+            lead_id: booking.lead_id,
+            class_schedule_id: appointment.booking_id,
+            waiver_accepted: booking.waiver_accepted,
+            waiver_accepted_at: null,
+            confirmation_email_sent: null,
+            communication_permission: booking.communication_permission,
+            marketing_permission: booking.marketing_permission,
+            child_speaks_english: null,
+            archived_at: appointment.archived_at,
+            parent_zip: null,
+            parent_relationship: null,
+            cancellation_reason: null,
+            booking_reference: booking.booking_reference,
+            parent_first_name: booking.parent_first_name,
+            parent_last_name: booking.parent_last_name,
+            parent_email: booking.parent_email,
+            parent_phone: booking.parent_phone,
+            selected_date: appointment.selected_date,
+            participants: [{
+              id: appointment.id,
+              first_name: appointment.participant_name || '',
+              age: appointment.participant_age,
+              computed_age: null
+            }],
+            class_schedules: schedule ? {
+              id: schedule.id,
+              start_time: schedule.start_time,
+              end_time: schedule.end_time,
+              classes: {
+                id: classData?.id || '',
+                name: classData?.class_name || appointment.class_name || 'Unknown Class',
+                class_name: classData?.class_name || appointment.class_name || 'Unknown Class',
+                location_id: classData?.location_id || '',
+                locations: {
+                  id: location?.id || '',
+                  name: location?.name || 'Unknown Location',
+                  city: location?.city || '',
+                  state: location?.state || ''
+                }
+              }
+            } : null,
+            // Improved status mapping with fallbacks
+            status: lead?.status === 'booked_upcoming' ? 'booked_upcoming' :
+                    lead?.status === 'booked_complete' ? 'attended' :
+                    lead?.status === 'canceled' ? 'cancelled' : 
+                    lead?.status === 'no_show' ? 'no_show' : 'booked_upcoming' // Default fallback
+          };
+        });
+
       return transformedData;
     },
     enabled: !!franchiseeId,
+    staleTime: 30000, // Cache for 30 seconds to reduce re-fetches
+    gcTime: 300000, // Keep in cache for 5 minutes
   });
 };

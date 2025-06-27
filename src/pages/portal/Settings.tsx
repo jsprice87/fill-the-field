@@ -4,7 +4,8 @@ import { Card } from '@mantine/core';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Globe, Share2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Globe, Share2, Mail } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 import BookingRestrictionsCard from '@/components/portal/BookingRestrictionsCard';
 import TimezoneSettingsCard from '@/components/portal/TimezoneSettingsCard';
@@ -22,6 +23,8 @@ const Settings: React.FC = () => {
   const [facebookUrl, setFacebookUrl] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
   const [shareMessageTemplate, setShareMessageTemplate] = useState('');
+  const [ccEmails, setCcEmails] = useState('');
+  const [requireLanguageInfo, setRequireLanguageInfo] = useState(true);
 
   // Initialize local state when settings load
   useEffect(() => {
@@ -30,6 +33,8 @@ const Settings: React.FC = () => {
       setFacebookUrl(settings.facebook_url || '');
       setInstagramUrl(settings.instagram_url || '');
       setShareMessageTemplate(settings.share_message_template || '');
+      setCcEmails(settings.cc_emails || '');
+      setRequireLanguageInfo(settings.require_language_info === 'true' || settings.require_language_info === undefined);
     }
   }, [settings]);
 
@@ -67,6 +72,53 @@ const Settings: React.FC = () => {
 
         {/* Timezone Settings */}
         <TimezoneSettingsCard />
+
+        {/* CC Emails Settings */}
+        <Card>
+          <Card.Section className="p-4">
+            <div className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              CC Email Notifications
+            </div>
+          </Card.Section>
+          <Card.Section className="p-4">
+            <div>
+              <Label htmlFor="cc_emails">CC Email Addresses</Label>
+              <Input
+                id="cc_emails"
+                placeholder="email1@domain.com, email2@domain.com"
+                value={ccEmails}
+                onChange={(e) => setCcEmails(e.target.value)}
+                onBlur={(e) => handleSettingBlur('cc_emails', e.target.value)}
+                disabled={updateSetting.isPending}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Enter email addresses separated by commas. These emails will receive copies of booking confirmations and notifications.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="require_language_info"
+                  checked={requireLanguageInfo}
+                  onCheckedChange={(checked) => {
+                    const newValue = checked === true;
+                    setRequireLanguageInfo(newValue);
+                    handleSettingBlur('require_language_info', newValue.toString());
+                  }}
+                  disabled={updateSetting.isPending}
+                />
+                <Label htmlFor="require_language_info" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Require language information from parents
+                </Label>
+              </div>
+              <p className="text-sm text-gray-500">
+                When enabled, parents will be asked "Does your child speak English fluently?" during booking.
+              </p>
+            </div>
+          </Card.Section>
+        </Card>
 
         {/* Website & Social Media Settings */}
         <Card>
