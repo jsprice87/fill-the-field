@@ -153,3 +153,5 @@ Copy `.env.example` to `.env` and configure the following variables:
 ## Deployment
 
 The application is deployed automatically when changes are pushed to the main branch.
+
+<!-- Trigger commit refresh -->
