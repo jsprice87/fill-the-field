@@ -1,15 +1,20 @@
 # 🐞 Bug Tracker
 
-> **Last Updated:** 26 Jun 2025  
-> **Active Issues:** 1 | **Resolved:** 10
+> **Last Updated:** 28 Jun 2025  
+> **Active Issues:** 5 | **Resolved:** 10
 
 ---
 
 ## 🔴 Open Issues
 
-| ID | Title | Severity | Assignee | Files Affected | Created |
-|----|-------|----------|----------|----------------|---------|
-| #11 | Bulk table actions limited to Archive only | 🟢 Low | unassigned | LeadsTable.tsx | 2025-06-26 |
+| ID | Title | Severity | Priority | Assignee | Files Affected | Created |
+|----|-------|----------|----------|----------|----------------|---------|
+| #12 | URGENT: Booking flow broken due to CardHeader undefined error | 🔴 Critical | P0 | unassigned | Find-classes booking components | 2025-06-28 |
+| #13 | Find-classes page using portal styling instead of Soccer Stars branding | 🟡 Medium | P1 | unassigned | /free-trial/find-classes | 2025-06-28 |
+| #15 | Duplicate asterisks on lead capture form fields | 🟢 Low | P1 | unassigned | Lead capture form components | 2025-06-28 |
+| #14 | Waiver editor not editable on first profile creation | 🟢 Low | P2 | unassigned | /portal/settings waiver section | 2025-06-28 |
+| #11 | Bulk table actions limited to Archive only | 🟢 Low | P3 | unassigned | LeadsTable.tsx | 2025-06-26 |
+| #16 | Map debug console logs on find-classes page | 🟢 Low | P4 | unassigned | /free-trial/find-classes | 2025-06-28 |
 
 ---
 
@@ -392,6 +397,179 @@ Enhanced bulk operations with permanent header dropdown:
 - `src/components/leads/LeadsTable.tsx` - Updated to share selection state with parent
 
 **Ready for Testing:** Permanent bulk actions dropdown positioned in header provides all functionality with better UX than popup bar. Selection state persists during scroll and provides immediate feedback.
+</details>
+
+<details>
+<summary><strong>Bug #12:</strong> URGENT: Booking flow broken due to CardHeader undefined error</summary>
+
+### Title: URGENT: Booking flow broken due to CardHeader undefined error
+### Status: `OPEN` 🔴
+### Priority: P0 Critical - Revenue blocking
+### Severity: 🔴 Critical
+
+### Issue
+- **Problem:** JavaScript error "CardHeader is not defined" prevents users from clicking locations to proceed with booking
+- **Impact:** COMPLETE BOOKING FLOW BROKEN - Users cannot book classes, resulting in revenue loss
+- **Affects:** All public-facing booking pages, specifically find-classes location selection
+
+### Error Details
+```
+ReferenceError: CardHeader is not defined
+    at index-BxKVA-Fw.js:3504:15285
+    at Array.map (<anonymous>)
+    at Yxe (index-BxKVA-Fw.js:3504:14771)
+```
+
+### Root Cause Analysis Needed
+- Likely caused by recent Mantine migration where CardHeader component was not properly imported/converted
+- Error occurs during location card rendering in find-classes flow
+- Missing import or incorrect component name after shadcn/ui → Mantine migration
+
+### Expected Behavior
+- Users should be able to click on location cards to proceed to booking
+- No JavaScript errors should occur
+- Booking flow should complete successfully
+
+### Priority Justification
+- **P0 Critical**: This is a public-facing revenue-blocking bug
+- **Immediate Risk**: Loss of all new bookings until fixed
+- **Customer Impact**: Users cannot complete the core business function
+
+### Action Required
+- Fix CardHeader import/reference immediately
+- Test complete booking flow end-to-end
+- Deploy fix to production ASAP
+</details>
+
+<details>
+<summary><strong>Bug #13:</strong> Find-classes page using portal styling instead of Soccer Stars branding</summary>
+
+### Title: Find-classes page using portal styling instead of Soccer Stars branding
+### Status: `OPEN` 🟡
+### Priority: P1 High - Public branding consistency
+### Severity: 🟡 Medium
+
+### Issue
+- **Problem:** `/free-trial/find-classes` page displays portal styling instead of Soccer Stars customer-facing branding
+- **Impact:** Inconsistent brand experience for customers, unprofessional appearance
+- **Affects:** Public-facing booking pages, customer first impressions
+
+### Expected Behavior
+- Find-classes page should use Soccer Stars branding colors and styles
+- Should match branding seen on https://soccerstars.com
+- Consistent with other public-facing pages
+
+### Specific Requirements
+- Use Soccer Stars color palette (refer to soccerstars.com)
+- Apply appropriate fonts and styling for customer-facing pages
+- Remove portal-specific styling elements
+- Maintain professional, branded appearance
+
+### Technical Notes
+- Review current styling on `/free-trial/find-classes`
+- Compare with soccerstars.com brand guidelines
+- Ensure consistent brand experience across all public pages
+
+### Priority Justification
+- **P1 High**: Public-facing branding affects customer trust and experience
+- **Brand Impact**: Inconsistent branding can confuse customers
+- **Professional Image**: Important for business credibility
+</details>
+
+<details>
+<summary><strong>Bug #14:</strong> Waiver editor not editable on first profile creation</summary>
+
+### Title: Waiver editor not editable on first profile creation
+### Status: `OPEN` 🟢
+### Priority: P2 Medium - UX improvement
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** User cannot edit waiver text in `/portal/settings` when first creating their profile
+- **Impact:** Poor UX requiring extra steps to edit waiver content
+- **Affects:** New users setting up their portal for the first time
+
+### Specific Steps to Reproduce
+1. Create new user account
+2. Navigate to `/portal/settings`
+3. Attempt to edit waiver text box
+4. Text box is not editable
+
+### Workaround
+1. Click "Save Waiver" button first
+2. Then text box becomes editable
+
+### Expected Behavior
+- Waiver text box should be immediately editable on first visit
+- No need to click "Save Waiver" before editing
+- Consistent editing experience for all users
+
+### Priority Justification
+- **P2 Medium**: Affects UX but has known workaround
+- **Corner Case**: Only affects first-time setup
+- **Low Severity**: Does not block functionality, just inconvenient
+</details>
+
+<details>
+<summary><strong>Bug #15:</strong> Duplicate asterisks on lead capture form fields</summary>
+
+### Title: Duplicate asterisks on lead capture form fields
+### Status: `OPEN` 🟢
+### Priority: P1 High - Form validation UX (per user feedback)
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** Lead capture form displays duplicate asterisks (*) on required fields
+- **Impact:** Confusing form validation UI, unprofessional appearance
+- **Affects:** Lead capture forms across public booking pages
+
+### Visual Evidence
+- See screenshot: `/media/screenshots/Screenshot 2025-06-28 at 3.03.23 PM.png`
+- Multiple asterisks visible on form fields
+
+### Expected Behavior
+- Required fields should show single asterisk (*) indicator
+- Clean, professional form appearance
+- Consistent validation UI across all forms
+
+### Technical Analysis
+- Likely caused by both HTML required attribute and CSS/component-level asterisk rendering
+- May be related to recent Mantine migration form patterns
+
+### Priority Justification
+- **P1 High**: User specifically requested high priority for this issue
+- **Public-facing**: Affects customer-facing forms
+- **Professional Image**: Form quality reflects on business credibility
+- **Low Severity**: Visual issue only, doesn't affect functionality
+</details>
+
+<details>
+<summary><strong>Bug #16:</strong> Map debug console logs on find-classes page</summary>
+
+### Title: Map debug console logs on find-classes page
+### Status: `OPEN` 🟢
+### Priority: P4 Cleanup
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** "Map Debug" messages appearing in browser console on `/free-trial/find-classes` page
+- **Impact:** Console noise, potential performance impact, unprofessional in production
+- **Affects:** `/free-trial/find-classes` page console output
+
+### Expected Behavior
+- No debug messages in production console
+- Clean console output for better debugging
+- Debug logs only in development environment
+
+### Technical Notes
+- Remove console.log, console.debug, or similar debug statements
+- Consider using proper logging library with environment-based levels
+- May be related to map components or location functionality
+
+### Priority Justification
+- **P4 Cleanup**: Does not affect user experience
+- **Low Priority**: Internal developer issue only
+- **Easy Fix**: Simple code cleanup task
 </details>
 
 ---

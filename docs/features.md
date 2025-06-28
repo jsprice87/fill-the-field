@@ -1,7 +1,7 @@
 # 🚀 Feature Requests & Enhancements
 
-> **Last Updated:** 26 Jun 2025  
-> **Active Features:** 2 | **Completed:** 1
+> **Last Updated:** 28 Jun 2025  
+> **Active Features:** 6 | **Completed:** 3 | **Backlog:** 1
 
 ---
 
@@ -9,8 +9,20 @@
 
 | ID | Title | Priority | Complexity | Assignee | Target Version |
 |----|-------|----------|------------|----------|----------------|
+| #9 | Profile password management | 🔴 High | 🟡 Medium | unassigned | v0.9.6 |
+| #6 | Enhanced notification types & end-of-day summaries | 🟡 Medium | 🔴 High | unassigned | v1.0.0 |
 | #2 | "Add Classes" button in Locations table actions | 🟢 Low | 🟢 Low | unassigned | v0.9.3 |
-| #3 | Enhanced Booking Restrictions with radio button logic | 🟡 Medium | 🟡 Medium | unassigned | v0.9.4 |
+| #3 | Enhanced Booking Restrictions with radio button logic | 🟢 Low | 🟡 Medium | unassigned | v0.9.4 |
+| #7 | Collapsible portal/admin sidebars | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
+| #10 | Remove redundant business info from profile page | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
+
+---
+
+## 📋 Backlog Features
+
+| ID | Title | Priority | Complexity | Notes |
+|----|-------|----------|------------|-------|
+| #8 | Multi-user business account access | 📋 Backlog | 🔴 High | Future roadmap feature |
 
 ---
 
@@ -19,6 +31,8 @@
 | ID | Title | Completion Date | Version | Commit |
 |----|-------|-----------------|---------|--------|
 | #1 | Enhanced Lead Details page with editing capabilities | 2025-06-26 | v0.9.3 | Multiple commits |
+| #4 | CC Emails field in notifications section | 2025-06-27 | v0.9.3 | 32d4d2e |
+| #5 | Optional language requirement setting | 2025-06-27 | v0.9.3 | 32d4d2e |
 
 ---
 
@@ -175,6 +189,261 @@ Replace current input with radio button selection:
 - **Business Value**: Medium - improves booking flow control and lead experience
 - **Development Effort**: Medium - requires booking logic changes and settings UI update
 - **Dependencies**: None
+
+</details>
+
+<details>
+<summary><strong>Feature #4:</strong> CC Emails field in notifications section</summary>
+
+### Description
+Add a CC Emails field to the notifications section of `/portal/settings` to allow sending notifications to multiple email addresses.
+
+### Status: ✅ COMPLETED (2025-06-27)
+
+### Implementation Summary
+Successfully added CC Emails functionality to portal settings:
+1. **Settings UI** - Added CC Emails text input field in notifications section
+2. **Database Integration** - Field saves to franchisee settings table
+3. **Validation** - Email format validation for multiple comma-separated addresses
+4. **Persistence** - Settings load and save correctly with other notification preferences
+
+### Technical Details
+- Added `ccEmails` state management to Settings.tsx
+- Integrated with existing settings save/load functions
+- Email validation supports multiple addresses separated by commas
+- Consistent with other notification settings patterns
+
+### Files Modified
+- `src/pages/portal/Settings.tsx` - Added CC emails input field and state management
+
+### Business Value
+- **Medium**: Allows franchisees to include multiple stakeholders in notifications
+- **Workflow Improvement**: Reduces manual forwarding of important business notifications
+- **Flexibility**: Supports teams and partners who need visibility into lead/booking activity
+
+</details>
+
+<details>
+<summary><strong>Feature #5:</strong> Optional language requirement setting</summary>
+
+### Description
+Make the child language information request optional for users by adding a checkbox setting in `/portal/settings`.
+
+### Status: ✅ COMPLETED (2025-06-27)
+
+### Implementation Summary
+Successfully implemented optional language requirement:
+1. **Settings Checkbox** - Added "Require Language Information" toggle in portal settings
+2. **Conditional Rendering** - Language question only appears when setting is enabled
+3. **Default Behavior** - Maintains existing behavior (required) for backward compatibility
+4. **State Management** - Setting persists and loads correctly with other franchisee preferences
+
+### Technical Details
+- Added `requireLanguageInfo` checkbox to Settings.tsx
+- Modified `ParentGuardianForm.tsx` to conditionally render language section
+- Uses `settings?.require_language_info !== 'false'` for default-true behavior
+- Integrated with existing settings save/load infrastructure
+
+### Files Modified
+- `src/pages/portal/Settings.tsx` - Added language requirement checkbox
+- `src/components/booking/ParentGuardianForm.tsx` - Made language section conditional
+
+### Business Value
+- **Medium**: Reduces form friction for franchisees who don't need language information
+- **Flexibility**: Allows customization based on business needs and target demographics
+- **UX Improvement**: Shorter forms can improve booking completion rates
+
+</details>
+
+<details>
+<summary><strong>Feature #6:</strong> Enhanced notification types & end-of-day summaries</summary>
+
+### Description
+Add advanced notification capabilities including time-based notifications, end-of-day summaries, and day-of trial class reminders.
+
+### Current State
+- Basic webhook notifications for new leads and bookings exist
+- Limited to immediate notifications only
+- No time-based or summary notification options
+
+### Proposed Enhancement
+Expand notification system with:
+
+**1. End-of-Day Summary Emails**
+- Daily digest including all bookings and new leads from the day
+- Option to receive individual notifications OR just daily summary
+- Configurable send time (e.g., 6 PM daily)
+
+**2. Day-Of Trial Class Reminders**
+- Automatic reminders sent on the day of trial classes
+- Includes class details, location, and contact information
+- Reduces no-shows and improves customer experience
+
+**3. Notification Preferences**
+- Choose between individual notifications vs. summary only
+- Configure timing for various notification types
+- Granular control over which events trigger notifications
+
+### Technical Requirements
+- Extend webhook system to support scheduled/delayed notifications
+- Add notification scheduling infrastructure
+- Expand settings UI for notification preferences
+- Implement email template system for different notification types
+- Add background job processing for scheduled notifications
+
+### Implementation Complexity: 🔴 High
+- Requires significant backend infrastructure changes
+- Needs scheduling system (cron jobs or similar)
+- Email template management system
+- Extensive testing for reliability
+
+### Priority: 🟡 Medium
+- **Business Value**: High - improves customer experience and business operations
+- **Development Effort**: High - complex system with multiple moving parts
+- **Target Version**: v1.0.0
+
+</details>
+
+<details>
+<summary><strong>Feature #7:</strong> Collapsible portal/admin sidebars</summary>
+
+### Description
+Make the `/portal/` and `/admin/` sidebars collapsible with slide animation to maximize content area and improve mobile experience.
+
+### Current State
+- Sidebars are always expanded taking fixed width
+- No option to collapse for more content space
+- Mobile experience could be improved with collapsible navigation
+
+### Proposed Enhancement
+Add collapsible functionality:
+1. **Collapse Button** - Toggle button in sidebar header
+2. **Slide Animation** - Smooth CSS transition for expand/collapse
+3. **Icon Mode** - When collapsed, show icons only with tooltips
+4. **State Persistence** - Remember collapsed/expanded state in localStorage
+5. **Mobile Responsive** - Auto-collapse on smaller screens
+
+### Technical Requirements
+- Modify sidebar components for both portal and admin
+- Add state management for collapsed/expanded state
+- Implement CSS transitions for smooth animation
+- Add localStorage for state persistence
+- Ensure responsive behavior on mobile
+
+### Priority: 🟢 Low
+- **Business Value**: Low-Medium - UX improvement
+- **Development Effort**: Medium - animation and state management
+- **Target Version**: v0.9.5
+
+</details>
+
+<details>
+<summary><strong>Feature #8:</strong> Multi-user business account access</summary>
+
+### Description
+Allow multiple users to login and access specific business accounts, enabling team collaboration for franchisees.
+
+### Status: 📋 BACKLOG - Future roadmap feature
+
+### Proposed Enhancement
+Implement user role management system:
+1. **Account Ownership** - Original account creator becomes admin
+2. **User Invitations** - Admins can invite team members via email
+3. **Role-Based Permissions** - Different access levels (Admin, Manager, Viewer)
+4. **Account Switching** - Users can switch between multiple business accounts
+5. **Audit Trail** - Track which user performed which actions
+
+### Technical Requirements
+- Major authentication system overhaul
+- User roles and permissions database schema
+- Invitation system with email verification
+- Multi-tenancy support in all queries
+- Comprehensive security review
+
+### Complexity: 🔴 High
+- **Scope**: Epic-level feature requiring multiple sprints
+- **Security Implications**: Requires thorough security review
+- **Database Changes**: Significant schema modifications needed
+
+### Priority: 📋 Backlog
+- **Business Value**: High - enables team collaboration
+- **Development Effort**: Epic - multiple weeks of development
+- **Dependencies**: Security audit, UX design, database migration strategy
+
+</details>
+
+<details>
+<summary><strong>Feature #9:</strong> Profile password management</summary>
+
+### Description
+Add password management functionality to the profile page, allowing users to change their account passwords securely.
+
+### Current State
+- No password management available in portal
+- Users must rely on external auth provider password reset
+- Profile page lacks essential account security features
+
+### Proposed Enhancement
+Add comprehensive password management:
+1. **Change Password Form** - Current password + new password + confirmation
+2. **Security Validation** - Strong password requirements
+3. **Confirmation Process** - Email confirmation for password changes
+4. **Session Management** - Force re-login after password change
+5. **Audit Logging** - Log password change events for security
+
+### Technical Requirements
+- Integrate with Supabase Auth password change API
+- Add password strength validation
+- Implement secure form handling
+- Add email confirmation workflow
+- Update user session management
+
+### Priority: 🔴 High
+- **Business Value**: High - essential security feature
+- **User Request**: High priority per user feedback
+- **Security**: Important for account security
+- **Target Version**: v0.9.6
+
+### Implementation Details
+- Add password change form to profile page
+- Use Supabase `updateUser()` API for password changes
+- Implement proper validation and error handling
+- Add success confirmation and security notifications
+
+</details>
+
+<details>
+<summary><strong>Feature #10:</strong> Remove redundant business info from profile page</summary>
+
+### Description
+Remove the "Business Information" section from `/portal/profile/` page since it duplicates functionality already available in `/portal/settings/`.
+
+### Current State
+- Business information appears in both profile and settings pages
+- Creates confusion about which location to edit business details
+- Potential for data inconsistency between the two locations
+
+### Proposed Enhancement
+1. **Remove Duplication** - Remove business info section from profile page
+2. **Migration Check** - Ensure all profile business info functionality exists in settings
+3. **Redirect Logic** - Add link/button to direct users to settings for business info
+4. **Data Consistency** - Verify all components pull from same data source
+
+### Prerequisites
+- Audit both pages to ensure no functionality loss
+- Verify all business info fields exist in settings
+- Check if any components specifically rely on profile business info
+
+### Priority: 🟢 Low
+- **Business Value**: Low - cleanup and consistency improvement
+- **Development Effort**: Medium - requires careful migration and testing
+- **Target Version**: v0.9.5
+
+### Technical Requirements
+- Remove business info section from profile page
+- Update any components that reference profile business info
+- Add navigation guidance to settings page
+- Ensure data consistency across the application
 
 </details>
 

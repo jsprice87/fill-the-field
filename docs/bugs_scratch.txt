@@ -14,3 +14,47 @@ Ready for new scratch notes.
  - User cannot update waiver in /portal/settings the very first time they create their profile.  They have to first hit "Save Waiver" and then the text box becomes editable.
     -- Low priority, corner case
 
+ - Language requirement option in /settings/ needs it's own section with a blue "how it works" section.
+
+ - Booking restritction still need to be updated to include "next available only" as an option.
+
+ - The new lead capture form has duplicate asterisks on each field.  See '/media/screenshots/Screenshot 2025-06-28 at 3.03.23 PM.png'
+
+ - /free-trial/find-classes needs to have Soccer Stars branding and color pallate.  It is using /portal/ styling rather than Soccer Stars styling.  See https://soccerstars.com for example colors and styles.
+
+ - URGENT! Booking flow broken.  Unable to click on a location to move to the booking page:
+ index-BxKVA-Fw.js:40 ReferenceError: CardHeader is not defined
+    at index-BxKVA-Fw.js:3504:15285
+    at Array.map (<anonymous>)
+    at Yxe (index-BxKVA-Fw.js:3504:14771)
+    at FB (index-BxKVA-Fw.js:38:17436)
+    at j3 (index-BxKVA-Fw.js:40:3139)
+    at gO (index-BxKVA-Fw.js:40:44860)
+    at hO (index-BxKVA-Fw.js:40:39807)
+    at FZ (index-BxKVA-Fw.js:40:39735)
+    at WC (index-BxKVA-Fw.js:40:39587)
+    at Z3 (index-BxKVA-Fw.js:40:35943)
+R3 @ index-BxKVA-Fw.js:40
+Y5.p.componentDidCatch.n.callback @ index-BxKVA-Fw.js:40
+XR @ index-BxKVA-Fw.js:38
+p4 @ index-BxKVA-Fw.js:40
+cO @ index-BxKVA-Fw.js:40
+RZ @ index-BxKVA-Fw.js:40
+UZ @ index-BxKVA-Fw.js:40
+rg @ index-BxKVA-Fw.js:40
+dO @ index-BxKVA-Fw.js:40
+fe @ index-BxKVA-Fw.js:25
+st @ index-BxKVA-Fw.js:25
+index-BxKVA-Fw.js:772 Caught error:  ReferenceError: CardHeader is not defined
+    at index-BxKVA-Fw.js:3504:15285
+    at Array.map (<anonymous>)
+    at Yxe (index-BxKVA-Fw.js:3504:14771)
+    at FB (index-BxKVA-Fw.js:38:17436)
+    at j3 (index-BxKVA-Fw.js:40:3139)
+    at gO (index-BxKVA-Fw.js:40:44860)
+    at hO (index-BxKVA-Fw.js:40:39807)
+    at FZ (index-BxKVA-Fw.js:40:39735)
+    at WC (index-BxKVA-Fw.js:40:39587)
+    at Z3 (index-BxKVA-Fw.js:40:35943) {componentStack: '\n    at Yxe (https://id-preview--f6683478-1489-4dd…e1.lovable.app/assets/index-BxKVA-Fw.js:40:94269)'}
+
+ - Remove "Map Debug" prints from console logs on the /free-trial/find-classes page.

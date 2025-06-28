@@ -403,16 +403,15 @@ const ClassBooking: React.FC = () => {
             {classes.length > 0 ? classes.map(classSchedule => {
             const availableSpots = getAvailableSpots(classSchedule);
             const sessionParticipants = getParticipantCountForClass(classSchedule.id);
-            return <Card key={classSchedule.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <CardTitle className="font-agrandir text-xl text-brand-navy mb-2">
-                            {classSchedule.classes.name}
-                            {sessionParticipants > 0 && <span className="ml-2 bg-brand-blue text-white text-sm px-2 py-1 rounded font-poppins">
-                                {sessionParticipants} added
-                              </span>}
-                          </CardTitle>
+            return <Card key={classSchedule.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue" padding="lg">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <Title order={3} className="font-agrandir text-xl text-brand-navy mb-2">
+                          {classSchedule.classes.name}
+                          {sessionParticipants > 0 && <span className="ml-2 bg-brand-blue text-white text-sm px-2 py-1 rounded font-poppins">
+                              {sessionParticipants} added
+                            </span>}
+                        </Title>
                           
                           {classSchedule.classes.description && <p className="font-poppins text-gray-600 mb-4">
                               {classSchedule.classes.description}
@@ -460,8 +459,7 @@ const ClassBooking: React.FC = () => {
                           </Button>
                         </div>
                       </div>
-                    </CardHeader>
-                  </Card>;
+                    </Card>;
           }) : <Card className="p-8 text-center border-l-4 border-l-brand-red">
                 <div className="mb-6">
                   <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -482,14 +480,12 @@ const ClassBooking: React.FC = () => {
           {/* Right Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Participants Summary */}
-            {(flowData.participants?.length || 0) > 0 && <Card className="border-l-4 border-l-brand-blue">
-                <CardHeader>
-                  <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Participants Added ({flowData.participants?.length || 0})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+            {(flowData.participants?.length || 0) > 0 && <Card className="border-l-4 border-l-brand-blue" padding="lg">
+                <Title order={3} className="font-agrandir text-xl text-brand-navy flex items-center gap-2 mb-4">
+                  <Users className="h-5 w-5" />
+                  Participants Added ({flowData.participants?.length || 0})
+                </Title>
+                <Stack spacing="sm">
                   {flowData.participants?.map((participant, index) => {
                 console.log('participant-pill', participant);
 
@@ -510,15 +506,14 @@ const ClassBooking: React.FC = () => {
                         </Button>
                       </div>;
               })}
-                </CardContent>
+                </Stack>
               </Card>}
 
             {/* Parent Guardian Form */}
             <ParentGuardianForm flowData={flowData} updateFlow={updateFlow} />
 
             {/* Confirmation Button */}
-            <Card className="border-l-4 border-l-green-500">
-              <CardContent className="pt-6">
+            <Card className="border-l-4 border-l-green-500" padding="lg">
                 <Button onClick={handleContinueToConfirmation} disabled={!canConfirmBooking()} className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins py-3 disabled:bg-gray-300 disabled:cursor-not-allowed" size="lg">
                   {canConfirmBooking() ? 'Confirm Booking' : 'Complete Required Information'}
                 </Button>
@@ -528,7 +523,6 @@ const ClassBooking: React.FC = () => {
                       Please add at least one participant and complete all required information above.
                     </p>
                   </div>}
-              </CardContent>
             </Card>
           </div>
         </div>

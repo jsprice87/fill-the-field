@@ -21,3 +21,11 @@ Ready for new feature ideas.
  -- Users should still be able to opt-in to getting notifications with every new lead and new booking, or just get a single summary at the end of the day
 
  - Multi user to login to specific business accounts.  (future roadmap feature)
+
+ - Profile page should include password management.
+
+  - Remove "Business information" section from portal/profile/ page because it is redundant with the section in portal/settings/.
+  --  Before doing this, make sure anything that is using the values from /portal/profile are migrated to pull from /portal/settings.
+
+  - make /portal/ and /admin/ sidebars collapsable.  Use slide animation to collapse and expand.
+
