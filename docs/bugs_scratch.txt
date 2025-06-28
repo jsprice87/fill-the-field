@@ -9,8 +9,3 @@ Items processed:
 - Bug #11: Bulk table actions limited to Archive only
 
 Ready for new scratch notes.
-
-
- - User cannot update waiver in /portal/settings the very first time they create their profile.  They have to first hit "Save Waiver" and then the text box becomes editable.
-    -- Low priority, corner case
-

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Select, Text } from '@mantine/core';
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -58,39 +59,47 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     }
   };
 
-  const locationOptions = locations.map((location) => ({
-    value: location.id,
-    label: `${location.name} - ${location.city}, ${location.state}`
-  }));
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <Text size="sm" fw={500}>
-        Location <span style={{ color: 'red' }}>*</span>
-      </Text>
+    <div className="space-y-2">
+      <Label htmlFor="location-select" className="text-base font-medium">
+        Location <span className="text-red-500">*</span>
+      </Label>
       <Select
         value={selectedLocationId}
-        onChange={onLocationChange}
-        placeholder={
-          isLoading 
-            ? "Loading locations..." 
-            : locations.length === 0 
-              ? "No active locations found" 
-              : "Select a location"
-        }
-        data={locationOptions}
+        onValueChange={onLocationChange}
         disabled={isLoading || locations.length === 0}
-        searchable={false}
-        clearable={false}
-        withinPortal
-      />
+      >
+        <SelectTrigger id="location-select" className="w-full">
+          <SelectValue 
+            placeholder={
+              isLoading 
+                ? "Loading locations..." 
+                : locations.length === 0 
+                  ? "No active locations found" 
+                  : "Select a location"
+            } 
+          />
+        </SelectTrigger>
+        <SelectContent>
+          {locations.map((location) => (
+            <SelectItem key={location.id} value={location.id}>
+              <div className="flex flex-col">
+                <span className="font-medium">{location.name}</span>
+                <span className="text-sm text-muted-foreground">
+                  {location.address}, {location.city}, {location.state}
+                </span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       {locations.length === 0 && !isLoading && (
-        <Text size="sm" c="orange">
+        <p className="text-sm text-amber-600">
           No active locations found. Please add a location first.
-        </Text>
+        </p>
       )}
     </div>
-  );}
+  );
 };
 
 export default LocationSelector;

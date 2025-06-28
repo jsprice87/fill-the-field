@@ -59,14 +59,14 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   ) || [];
 
   // Generate available booking dates for the selected class
-  const generateBookingDates = (schedule: { id: string; date_start?: string; date_end?: string; day_of_week: number; start_time: string }) => {
+  const generateBookingDates = (schedule: any) => {
     const dates = [];
     const startDate = schedule.date_start ? new Date(schedule.date_start) : new Date();
     const endDate = schedule.date_end ? new Date(schedule.date_end) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
     const dayOfWeek = schedule.day_of_week;
 
     // Find the first occurrence of the target day
-    const currentDate = new Date(startDate);
+    let currentDate = new Date(startDate);
     while (currentDate.getDay() !== dayOfWeek) {
       currentDate.setDate(currentDate.getDate() + 1);
     }
