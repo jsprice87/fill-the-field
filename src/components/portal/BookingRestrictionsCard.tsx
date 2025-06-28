@@ -1,9 +1,8 @@
 import React from 'react';
-import { Card } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Card, Stack, Group, Flex, Title, Text, NumberInput } from '@mantine/core';
 import { Calendar, Clock } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
+import { TextInput } from '@/components/mantine/TextInput';
 
 const BookingRestrictionsCard: React.FC = () => {
   const { data: settings } = useFranchiseeSettings();
@@ -23,44 +22,46 @@ const BookingRestrictionsCard: React.FC = () => {
 
   return (
     <Card>
-      <Card.Section>
-        <Card.Section className="flex items-center gap-2 p-3 border-b">
-          <Calendar className="h-5 w-5" />
-          Booking Restrictions
-        </Card.Section>
+      <Card.Section withBorder>
+        <Flex align="center" gap="sm" p="sm">
+          <Calendar size={20} />
+          <Title order={3}>Booking Restrictions</Title>
+        </Flex>
       </Card.Section>
-      <Card.Section className="space-y-6 p-3">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="max-days-ahead" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Maximum Days Ahead for Booking
-            </Label>
-            <Input
-              id="max-days-ahead"
+      <Card.Section p="sm">
+        <Stack gap="lg">
+          <div>
+            <TextInput
+              label={
+                <Flex align="center" gap={8}>
+                  <Clock size={16} />
+                  <span>Maximum Days Ahead for Booking</span>
+                </Flex>
+              }
               type="number"
-              min="1"
-              max="365"
-              value={maxBookingDaysAhead}
-              onChange={handleDaysChange}
+              min={1}
+              max={365}
+              value={maxBookingDaysAhead.toString()}
+              onChange={(e) => handleDaysChange(e as any)}
               disabled={updateSetting.isPending}
-              className="w-32"
+              style={{ width: '128px' }}
+              description="Maximum number of days from today that customers can book classes (1-365 days)"
             />
-            <p className="text-sm text-muted-foreground">
-              Maximum number of days from today that customers can book classes (1-365 days)
-            </p>
           </div>
-        </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">How it works:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Customers can book classes up to {maxBookingDaysAhead} days from today</li>
-            <li>• Only dates within this range and matching class schedules will be available</li>
-            <li>• Class start/end dates and exception dates are always respected</li>
-            <li>• Only dates matching the class day of the week are bookable</li>
-          </ul>
-        </div>
+          <Card bg="blue.0" p="md">
+            <Title order={4} c="blue.9" mb="xs">How it works:</Title>
+            <Text size="sm" c="blue.8">
+              • Customers can book classes up to {maxBookingDaysAhead} days from today
+              <br />
+              • Only dates within this range and matching class schedules will be available
+              <br />
+              • Class start/end dates and exception dates are always respected
+              <br />
+              • Only dates matching the class day of the week are bookable
+            </Text>
+          </Card>
+        </Stack>
       </Card.Section>
     </Card>
   );

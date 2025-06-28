@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
-import { Card } from '@mantine/core';
-import { Button } from '@mantine/core';
-import { EnhancedInput } from '@/components/ui/enhanced-input';
-import { EnhancedTextarea } from '@/components/ui/enhanced-textarea';
-import { EnhancedSelect, EnhancedSelectItem } from '@/components/ui/enhanced-select';
-import { EnhancedCheckbox } from '@/components/ui/enhanced-checkbox';
-import { FormSection } from '@/components/ui/form-section';
-import { FieldGroup } from '@/components/ui/field-group';
+import { 
+  Card, 
+  Button, 
+  TextInput, 
+  Textarea, 
+  Select, 
+  Checkbox, 
+  Stack, 
+  Group, 
+  Text,
+  Grid,
+  PasswordInput
+} from '@mantine/core';
 import { Mail, Phone, User, MapPin } from 'lucide-react';
 
+// This component is deprecated - use Mantine components directly
+
 const ExampleEnhancedForm: React.FC = () => {
+  console.warn('ExampleEnhancedForm is deprecated. Use Mantine components directly.');
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

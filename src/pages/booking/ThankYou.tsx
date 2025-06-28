@@ -2,8 +2,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Calendar, MapPin, Clock, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button, Card, Stack, Group, Text, Title } from '@mantine/core';
 import { MetaPixelProvider, useMetaPixelTracking } from '@/components/booking/MetaPixelProvider';
 
 interface ThankYouContentProps {
@@ -28,76 +27,80 @@ const ThankYouContent: React.FC<ThankYouContentProps> = ({ franchiseeId }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full">
-        <CardContent className="p-8 text-center">
-          <div className="mb-6">
+      <Card className="max-w-2xl w-full" padding="xl" radius="md" withBorder>
+        <Stack align="center" spacing="lg">
+          <div className="text-center">
             <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <Title order={1} className="text-3xl font-bold text-gray-900 mb-2">
               Booking Confirmed!
-            </h1>
-            <p className="text-lg text-gray-600">
+            </Title>
+            <Text className="text-lg text-gray-600">
               Your free trial class has been successfully booked.
-            </p>
+            </Text>
           </div>
 
           {bookingReference && (
-            <div className="bg-gray-100 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-600 mb-1">Booking Reference</p>
-              <p className="text-xl font-mono font-semibold text-gray-900">
-                {bookingReference}
-              </p>
-            </div>
+            <Card className="bg-gray-100 w-full" padding="md" radius="md">
+              <Stack align="center" spacing="xs">
+                <Text className="text-sm text-gray-600">Booking Reference</Text>
+                <Text className="text-xl font-mono font-semibold text-gray-900">
+                  {bookingReference}
+                </Text>
+              </Stack>
+            </Card>
           )}
 
-          <div className="space-y-4 mb-8">
+          <Stack spacing="md" align="center">
             {childName && (
-              <div className="flex items-center justify-center gap-3">
+              <Group spacing="sm">
                 <User className="w-5 h-5 text-blue-600" />
-                <span className="text-gray-700">
+                <Text className="text-gray-700">
                   <strong>Child:</strong> {childName}
-                </span>
-              </div>
+                </Text>
+              </Group>
             )}
             
             {className && (
-              <div className="flex items-center justify-center gap-3">
+              <Group spacing="sm">
                 <Calendar className="w-5 h-5 text-blue-600" />
-                <span className="text-gray-700">
+                <Text className="text-gray-700">
                   <strong>Class:</strong> {className}
-                </span>
-              </div>
+                </Text>
+              </Group>
             )}
             
             {date && time && (
-              <div className="flex items-center justify-center gap-3">
+              <Group spacing="sm">
                 <Clock className="w-5 h-5 text-blue-600" />
-                <span className="text-gray-700">
+                <Text className="text-gray-700">
                   <strong>Date & Time:</strong> {date} at {time}
-                </span>
-              </div>
+                </Text>
+              </Group>
             )}
             
             {location && (
-              <div className="flex items-center justify-center gap-3">
+              <Group spacing="sm">
                 <MapPin className="w-5 h-5 text-blue-600" />
-                <span className="text-gray-700">
+                <Text className="text-gray-700">
                   <strong>Location:</strong> {location}
-                </span>
-              </div>
+                </Text>
+              </Group>
             )}
-          </div>
+          </Stack>
 
-          <div className="bg-blue-50 rounded-lg p-6 mb-6">
-            <h3 className="font-semibold text-blue-900 mb-2">What's Next?</h3>
-            <ul className="text-sm text-blue-800 space-y-1 text-left">
-              <li>• You'll receive a confirmation email shortly</li>
-              <li>• Arrive 15 minutes early for check-in</li>
-              <li>• Bring water and wear comfortable clothes</li>
-              <li>• No special equipment needed - we provide everything!</li>
-            </ul>
-          </div>
+          <Card className="bg-blue-50 w-full" padding="lg" radius="md">
+            <Stack spacing="sm">
+              <Title order={3} className="font-semibold text-blue-900">What's Next?</Title>
+              <Stack spacing="xs" align="flex-start">
+                <Text className="text-sm text-blue-800">• You'll receive a confirmation email shortly</Text>
+                <Text className="text-sm text-blue-800">• Arrive 15 minutes early for check-in</Text>
+                <Text className="text-sm text-blue-800">• Bring water and wear comfortable clothes</Text>
+                <Text className="text-sm text-blue-800">• No special equipment needed - we provide everything!</Text>
+              </Stack>
+            </Stack>
+          </Card>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Group spacing="sm">
             <Button 
               variant="outline"
               onClick={() => window.print()}
@@ -113,8 +116,8 @@ const ThankYouContent: React.FC<ThankYouContentProps> = ({ franchiseeId }) => {
             >
               Share the Good News
             </Button>
-          </div>
-        </CardContent>
+          </Group>
+        </Stack>
       </Card>
     </div>
   );

@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { AspectRatio } from '@mantine/core';
 
 interface Location {
   id: string;

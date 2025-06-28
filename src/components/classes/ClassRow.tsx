@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Button, Group } from '@mantine/core';
+import { Button, Group, TextInput, NumberInput } from '@mantine/core';
 import { TableCell, TableRow } from '@/components/mantine';
-import { Input } from '@/components/ui/input';
 import { Trash } from 'lucide-react';
 import { ClassFormData } from '@/types/domain';
 import AgeYearsMonthsInput from './AgeYearsMonthsInput';
@@ -38,53 +37,61 @@ const ClassRow: React.FC<ClassRowProps> = ({
   return (
     <TableRow>
       <TableCell>
-        <Input
-          type="text"
+        <TextInput
           placeholder="Enter class name *"
           value={classData.className}
           onChange={(e) => handleFieldChange('className', e.target.value)}
           disabled={disabled}
-          className={`min-w-48 ${!isClassNameValid && classData.className !== '' ? 'border-red-500' : ''}`}
+          error={!isClassNameValid && classData.className !== ''}
           required
+          style={{ minWidth: '12rem' }}
         />
       </TableCell>
 
       <TableCell>
-        <Input
+        <TextInput
           type="time"
           value={classData.startTime}
           onChange={(e) => handleFieldChange('startTime', e.target.value)}
           disabled={disabled}
-          className="w-32"
+          w={128}
         />
       </TableCell>
 
       <TableCell>
-        <Input
-          type="number"
-          min="15"
-          max="120"
-          step="15"
+        <NumberInput
+          min={15}
+          max={120}
+          step={15}
           value={classData.duration}
-          onChange={(e) => handleFieldChange('duration', parseInt(e.target.value) || 60)}
+          onChange={(value) => handleFieldChange('duration', value || 60)}
           disabled={disabled}
-          className={`w-24 ${!isDurationValid ? 'border-red-500' : ''}`}
+          error={!isDurationValid}
           title="Duration must be between 15-120 minutes"
+          w={96}
         />
       </TableCell>
 
       <TableCell>
-        <Input
+        <TextInput
           type="time"
           value={classData.endTime}
-          className="w-32 bg-gray-50"
           readOnly
           title="Auto-calculated based on start time + duration"
+          w={128}
+          styles={{ input: { backgroundColor: 'var(--mantine-color-gray-0)' } }}
         />
       </TableCell>
 
       <TableCell>
-        <Group gap="xs" className={!isAgeRangeValid ? 'border border-red-500 rounded p-2' : ''}>
+        <Group 
+          gap="xs" 
+          style={!isAgeRangeValid ? { 
+            border: '1px solid var(--mantine-color-red-filled)', 
+            borderRadius: 'var(--mantine-radius-sm)', 
+            padding: 'var(--mantine-spacing-xs)' 
+          } : {}}
+        >
           <div>
             <div className="text-xs text-gray-500 mb-1">Min</div>
             <AgeYearsMonthsInput
@@ -111,14 +118,14 @@ const ClassRow: React.FC<ClassRowProps> = ({
       </TableCell>
 
       <TableCell>
-        <Input
-          type="number"
-          min="1"
-          max="50"
+        <NumberInput
+          min={1}
+          max={50}
           value={classData.capacity}
-          onChange={(e) => handleFieldChange('capacity', parseInt(e.target.value) || 12)}
+          onChange={(value) => handleFieldChange('capacity', value || 12)}
           disabled={disabled}
-          className={`w-20 ${!isCapacityValid ? 'border-red-500' : ''}`}
+          error={!isCapacityValid}
+          w={80}
         />
       </TableCell>
 

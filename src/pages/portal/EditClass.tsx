@@ -10,7 +10,7 @@ import { useClass, useUpdateClass } from '@/hooks/useClass';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 import { ClassFormData } from '@/types/domain';
 import ClassRow from '@/components/classes/ClassRow';
-import { Loader } from '@/components/ui/Loader';
+import { Loader } from '@mantine/core';
 import dayjs from 'dayjs';
 
 const EditClass: React.FC = () => {
@@ -245,7 +245,7 @@ const EditClass: React.FC = () => {
       <div className="space-y-6">
         <Title order={1} size="30px" lh="36px" fw={600}>Edit Class</Title>
         <div className="flex justify-center p-8">
-          <Loader className="animate-spin h-8 w-8" />
+          <Loader size="lg" />
         </div>
       </div>
     );
@@ -269,7 +269,7 @@ const EditClass: React.FC = () => {
       <div className="space-y-6">
         <Title order={1} size="30px" lh="36px" fw={600}>Edit Class</Title>
         <div className="flex justify-center p-8">
-          <Loader className="animate-spin h-8 w-8" />
+          <Loader size="lg" />
         </div>
       </div>
     );

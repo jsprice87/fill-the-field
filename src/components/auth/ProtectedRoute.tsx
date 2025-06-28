@@ -4,8 +4,8 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { clearFranchiseeProfileCache } from "@/hooks/useFranchiseeProfile";
 import { useUserRole, UserRole } from "@/hooks/useUserRole";
-import { Loader } from "@/components/ui/Loader";
 import { useQueryClient } from "@tanstack/react-query";
+import { Loader } from "@mantine/core";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -63,8 +63,8 @@ const ProtectedRoute = ({ children, roleRequired = 'user' }: ProtectedRouteProps
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
+          <Loader size="lg" />
+          <p className="text-gray-600 mt-4">Checking authentication...</p>
         </div>
       </div>
     );

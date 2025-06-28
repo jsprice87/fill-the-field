@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@mantine/core';
-import { Input } from '@/components/ui/input';
-import { Card } from '@mantine/core';
+import { Button, TextInput, Card } from '@mantine/core';
 import { ExternalLink, Key } from 'lucide-react';
 
 interface MapboxTokenInputProps {
@@ -42,13 +40,14 @@ const MapboxTokenInput: React.FC<MapboxTokenInputProps> = ({ onTokenSubmit, clas
         <Card.Section>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Input
+              <TextInput
                 type="text"
                 placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwia..."
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 className="font-mono text-sm"
                 disabled={isSubmitting}
+                size="md"
               />
               <p className="text-xs text-gray-500 mt-1">
                 Your public token starts with "pk."

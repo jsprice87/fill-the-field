@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button, Card, Group, Stack, Text, Title, Loader } from '@mantine/core';
 import { MapPin, Clock, Users, Map, List } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
@@ -21,14 +20,16 @@ interface BookingLocation {
   longitude?: number;
 }
 function BookingError() {
-  return <div className="h-[400px] flex items-center justify-center bg-gray-100 rounded-lg">
+  return (
+    <div className="h-[400px] flex items-center justify-center bg-gray-100 rounded-lg">
       <div className="text-center">
-        <p className="font-poppins text-gray-600 mb-4">Map component failed to load</p>
+        <Text className="font-poppins text-gray-600 mb-4">Map component failed to load</Text>
         <Button onClick={() => window.location.reload()} variant="outline" size="sm">
           Try Again
         </Button>
       </div>
-    </div>;
+    </div>
+  );
 }
 const FindClasses: React.FC = () => {
   const {
@@ -152,58 +153,75 @@ const FindClasses: React.FC = () => {
 
   // Show loading state while data is being loaded
   if (isLoading || flowLoading) {
-    return <div className="min-h-screen bg-white flex items-center justify-center">
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-          <p className="font-poppins text-gray-600">Loading locations...</p>
+          <Loader color="var(--brand-navy)" size="lg" className="mx-auto mb-4" />
+          <Text className="font-poppins text-gray-600">Loading locations...</Text>
         </div>
-      </div>;
+      </div>
+    );
   }
 
   // Show error state
   if (error) {
-    return <div className="min-h-screen bg-white flex items-center justify-center">
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
-          <h2 className="font-agrandir text-2xl text-brand-navy mb-4">Unable to Load Locations</h2>
-          <p className="font-poppins text-gray-600 mb-6">{error}</p>
+          <Title order={2} className="font-agrandir text-2xl text-brand-navy mb-4">Unable to Load Locations</Title>
+          <Text className="font-poppins text-gray-600 mb-6">{error}</Text>
           <Button onClick={() => navigate(`/${franchiseeSlug}/free-trial`)} className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins">
             Start Over
           </Button>
         </div>
-      </div>;
+      </div>
+    );
   }
   const currentLeadData = flowData?.leadData;
-  return <div className="min-h-screen bg-white">
+  return (
+    <div className="min-h-screen bg-white">
       <div className="bg-brand-navy text-white py-6">
         <div className="container mx-auto px-4">
-          <h1 className="font-anton text-3xl mb-2 font-medium">SOCCER STARS</h1>
-          <h2 className="font-agrandir text-xl">Find Classes Near You</h2>
-          {currentLeadData && <p className="font-poppins text-sm opacity-90 mt-2 text-slate-400">
+          <Title order={1} className="font-anton text-3xl mb-2 font-medium">SOCCER STARS</Title>
+          <Title order={2} className="font-agrandir text-xl">Find Classes Near You</Title>
+          {currentLeadData && (
+            <Text className="font-poppins text-sm opacity-90 mt-2 text-slate-400">
               Hello {currentLeadData.firstName}, let's find classes near {currentLeadData.zip}
-            </p>}
+            </Text>
+          )}
         </div>
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+        <Group position="apart" align="flex-start" mb="xl">
           <div>
-            <h3 className="font-agrandir text-2xl text-brand-navy mb-2">Available Locations</h3>
-            {franchiseeData && <p className="font-poppins text-gray-600">
+            <Title order={3} className="font-agrandir text-2xl text-brand-navy mb-2">Available Locations</Title>
+            {franchiseeData && (
+              <Text className="font-poppins text-gray-600">
                 {franchiseeData.company_name} - {locations.length} location{locations.length !== 1 ? 's' : ''} found
-              </p>}
+              </Text>
+            )}
           </div>
           
-          <div className="flex gap-2">
-            <Button variant={viewMode === 'list' ? 'default' : 'outline'} onClick={() => setViewMode('list')} className="font-poppins">
-              <List className="h-4 w-4 mr-2" />
+          <Group spacing="xs">
+            <Button 
+              variant={viewMode === 'list' ? 'filled' : 'outline'} 
+              onClick={() => setViewMode('list')} 
+              className="font-poppins"
+              leftSection={<List className="h-4 w-4" />}
+            >
               List
             </Button>
-            <Button variant={viewMode === 'map' ? 'default' : 'outline'} onClick={() => setViewMode('map')} className="font-poppins">
-              <Map className="h-4 w-4 mr-2" />
+            <Button 
+              variant={viewMode === 'map' ? 'filled' : 'outline'} 
+              onClick={() => setViewMode('map')} 
+              className="font-poppins"
+              leftSection={<Map className="h-4 w-4" />}
+            >
               Map
             </Button>
-          </div>
-        </div>
+          </Group>
+        </Group>
 
         {/* Responsive layout: Desktop side-by-side, Mobile stacked */}
         <div className={`${viewMode === 'map' ? 'lg:grid lg:grid-cols-5 lg:gap-8' : ''}`}>
@@ -218,66 +236,87 @@ const FindClasses: React.FC = () => {
             </div>}
           
           {/* Locations List - Now takes remaining space */}
-          <div className={`space-y-4 ${viewMode === 'map' ? 'lg:col-span-2' : ''}`}>
-            {locations.length > 0 ? locations.map(location => <Card key={location.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <CardTitle className="font-agrandir text-xl text-brand-navy mb-3">
-                          {location.name}
-                        </CardTitle>
-                        <div className="space-y-2">
-                          <div className="flex items-start text-gray-600">
-                            <MapPin className="h-4 w-4 mr-2 mt-1 flex-shrink-0" />
-                            <span className="font-poppins">
-                              {location.address}<br />
-                              {location.city}, {location.state} {location.zip}
-                            </span>
-                          </div>
-                          {location.phone && <div className="flex items-center text-gray-600">
-                              <span className="font-poppins text-sm">
-                                📞 {location.phone}
-                              </span>
-                            </div>}
-                          {location.email && <div className="flex items-center text-gray-600">
-                              <span className="font-poppins text-sm">
-                                ✉️ {location.email}
-                              </span>
-                            </div>}
-                        </div>
-                      </div>
-                      <div className="ml-6">
-                        <Button onClick={() => handleLocationSelect(location)} className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3" size="lg">
-                          Select Location
-                        </Button>
-                      </div>
+          <div className={viewMode === 'map' ? 'lg:col-span-2' : ''}>
+            <Stack spacing="md">
+              {locations.length > 0 ? locations.map(location => (
+                <Card 
+                  key={location.id} 
+                  className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue"
+                  padding="lg"
+                  radius="md"
+                  withBorder
+                >
+                  <Group position="apart" align="flex-start">
+                    <div className="flex-1">
+                      <Title order={4} className="font-agrandir text-xl text-brand-navy mb-3">
+                        {location.name}
+                      </Title>
+                      <Stack spacing="xs">
+                        <Group align="flex-start" spacing="xs">
+                          <MapPin className="h-4 w-4 text-gray-600 mt-1 flex-shrink-0" />
+                          <Text className="font-poppins text-gray-600">
+                            {location.address}<br />
+                            {location.city}, {location.state} {location.zip}
+                          </Text>
+                        </Group>
+                        {location.phone && (
+                          <Text className="font-poppins text-sm text-gray-600">
+                            📞 {location.phone}
+                          </Text>
+                        )}
+                        {location.email && (
+                          <Text className="font-poppins text-sm text-gray-600">
+                            ✉️ {location.email}
+                          </Text>
+                        )}
+                      </Stack>
                     </div>
-                  </CardHeader>
-                </Card>) : <Card className="p-8 text-center border-l-4 border-l-brand-red">
-                <div className="mb-6">
-                  <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="font-agrandir text-xl text-brand-navy mb-2">
-                    No Locations Found Near You
-                  </h3>
-                  <p className="font-poppins text-gray-600 mb-6 max-w-md mx-auto">
-                    We don't currently have any locations within 50km of your area ({currentLeadData?.zip}).
-                    Would you like us to notify you when programs become available in your area?
-                  </p>
-                  <Button onClick={handleRequestLocation} className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins" size="lg">
-                    Request Programs in My Area
-                  </Button>
-                </div>
-              </Card>}
+                    <div className="ml-6">
+                      <Button 
+                        onClick={() => handleLocationSelect(location)} 
+                        className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins" 
+                        size="lg"
+                      >
+                        Select Location
+                      </Button>
+                    </div>
+                  </Group>
+                </Card>
+              )) : (
+                <Card className="text-center border-l-4 border-l-brand-red" padding="xl" radius="md" withBorder>
+                  <Stack spacing="md" align="center">
+                    <MapPin className="h-16 w-16 text-gray-400" />
+                    <Title order={3} className="font-agrandir text-xl text-brand-navy">
+                      No Locations Found Near You
+                    </Title>
+                    <Text className="font-poppins text-gray-600 max-w-md" ta="center">
+                      We don't currently have any locations within 50km of your area ({currentLeadData?.zip}).
+                      Would you like us to notify you when programs become available in your area?
+                    </Text>
+                    <Button 
+                      onClick={handleRequestLocation} 
+                      className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins" 
+                      size="lg"
+                    >
+                      Request Programs in My Area
+                    </Button>
+                  </Stack>
+                </Card>
+              )}
+            </Stack>
           </div>
         </div>
 
         {/* Navigation hint */}
-        {locations.length > 0 && <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="font-poppins text-blue-800 text-center">
+        {locations.length > 0 && (
+          <Card className="mt-8 bg-blue-50 border border-blue-200" padding="md" radius="md">
+            <Text className="font-poppins text-blue-800 text-center">
               💡 Select a location above to view available classes and book your free trial
-            </p>
-          </div>}
+            </Text>
+          </Card>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
 export default FindClasses;

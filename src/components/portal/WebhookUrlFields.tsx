@@ -1,6 +1,5 @@
-
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Stack, Text } from "@mantine/core";
+import { TextInput } from "@/components/mantine/TextInput";
 
 interface WebhookUrlFieldsProps {
   testWebhookUrl: string;
@@ -36,57 +35,42 @@ export default function WebhookUrlFields({
   onAuthHeaderBlur,
 }: WebhookUrlFieldsProps) {
   return (
-    <div className="space-y-4">
+    <Stack gap="md">
       <div>
-        <Label htmlFor="test-webhook-url">Test Webhook URL</Label>
-        <Input
-          id="test-webhook-url"
+        <TextInput
+          label="Test Webhook URL"
           value={testWebhookUrl || currentTestWebhookUrl}
           onChange={(e) => setTestWebhookUrl(e.target.value)}
           onBlur={(e) => onTestUrlBlur(e.target.value)}
           placeholder="https://your-test-webhook-endpoint.com/webhook-test/..."
-          error={!!testUrlError}
+          error={testUrlError}
+          description="Used only by the test buttons below. n8n must be in 'Execute Workflow' mode."
         />
-        {testUrlError && (
-          <p className="text-sm text-red-600 mt-1">{testUrlError}</p>
-        )}
-        <p className="text-sm text-gray-500 mt-1">
-          Used only by the test buttons below. n8n must be in 'Execute Workflow' mode.
-        </p>
       </div>
 
       <div>
-        <Label htmlFor="prod-webhook-url">Production Webhook URL</Label>
-        <Input
-          id="prod-webhook-url"
+        <TextInput
+          label="Production Webhook URL"
           value={prodWebhookUrl || currentProdWebhookUrl}
           onChange={(e) => setProdWebhookUrl(e.target.value)}
           onBlur={(e) => onProdUrlBlur(e.target.value)}
           placeholder="https://your-production-webhook-endpoint.com/webhook/..."
-          error={!!prodUrlError}
+          error={prodUrlError}
+          description="Processes live bookings and leads automatically."
         />
-        {prodUrlError && (
-          <p className="text-sm text-red-600 mt-1">{prodUrlError}</p>
-        )}
-        <p className="text-sm text-gray-500 mt-1">
-          Processes live bookings and leads automatically.
-        </p>
       </div>
       
       <div>
-        <Label htmlFor="auth-header">Authorization Header (Optional)</Label>
-        <Input
-          id="auth-header"
+        <TextInput
+          label="Authorization Header (Optional)"
           value={authHeader || currentAuthHeader}
           onChange={(e) => setAuthHeader(e.target.value)}
           onBlur={(e) => onAuthHeaderBlur(e.target.value)}
           placeholder="Bearer your-token-here"
           type="password"
+          description="Only applied to production webhook calls."
         />
-        <p className="text-sm text-gray-500 mt-1">
-          Only applied to production webhook calls.
-        </p>
       </div>
-    </div>
+    </Stack>
   );
 }

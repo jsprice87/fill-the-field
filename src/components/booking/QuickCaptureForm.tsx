@@ -1,10 +1,7 @@
 
 import React, { useState } from 'react';
 import { z } from 'zod';
-import { Button } from '@/components/mantine/Button';
-import { TextInput } from '@/components/mantine/TextInput';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button, TextInput, Card, Stack, Grid, Text, Title } from '@mantine/core';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/utils/notify';
@@ -115,102 +112,137 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
   };
 
   return (
-    <Card className="w-full border-0 shadow-none">
+    <Card className="w-full border-0 shadow-none" padding={0} radius="md">
       {showTitle && (
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="font-agrandir text-2xl text-brand-navy">
+        <div className="text-center pb-4">
+          <Title order={2} className="font-agrandir text-2xl text-brand-navy" mb="xs">
             Get Started with Your Free Trial
-          </CardTitle>
-          <p className="font-poppins text-brand-grey text-sm">
+          </Title>
+          <Text className="font-poppins text-brand-grey" size="sm">
             Just a few details to find classes near you
-          </p>
-        </CardHeader>
+          </Text>
+        </div>
       )}
-      <CardContent className="p-0">
-        <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
-                First Name *
-              </Label>
+      
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack spacing="md">
+          <Grid>
+            <Grid.Col span={6}>
               <TextInput
                 id="firstName"
+                label="First Name *"
                 type="text"
                 {...form.getInputProps('firstName')}
                 required
                 placeholder="Enter first name"
-                soccer
-                className="h-12"
+                size="lg"
+                className="font-poppins"
+                styles={{
+                  label: {
+                    fontFamily: 'Poppins',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: '#021D49',
+                    marginBottom: '4px'
+                  }
+                }}
               />
-            </div>
-            <div>
-              <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
-                Last Name *
-              </Label>
+            </Grid.Col>
+            <Grid.Col span={6}>
               <TextInput
                 id="lastName"
+                label="Last Name *"
                 type="text"
                 {...form.getInputProps('lastName')}
                 required
                 placeholder="Enter last name"
-                soccer
-                className="h-12"
+                size="lg"
+                className="font-poppins"
+                styles={{
+                  label: {
+                    fontFamily: 'Poppins',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: '#021D49',
+                    marginBottom: '4px'
+                  }
+                }}
               />
-            </div>
-          </div>
+            </Grid.Col>
+          </Grid>
 
-          <div>
-            <Label htmlFor="email" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
-              Email Address *
-            </Label>
-            <TextInput
-              id="email"
-              type="email"
-              {...form.getInputProps('email')}
-              required
-              placeholder="your.email@example.com"
-              soccer
-              className="h-12"
-            />
-          </div>
+          <TextInput
+            id="email"
+            label="Email Address *"
+            type="email"
+            {...form.getInputProps('email')}
+            required
+            placeholder="your.email@example.com"
+            size="lg"
+            className="font-poppins"
+            styles={{
+              label: {
+                fontFamily: 'Poppins',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: '#021D49',
+                marginBottom: '4px'
+              }
+            }}
+          />
 
-          <div>
-            <Label htmlFor="phone" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
-              Phone Number *
-            </Label>
-            <TextInput
-              id="phone"
-              type="tel"
-              {...form.getInputProps('phone')}
-              required
-              placeholder="(555) 123-4567"
-              soccer
-              className="h-12"
-            />
-          </div>
+          <TextInput
+            id="phone"
+            label="Phone Number *"
+            type="tel"
+            {...form.getInputProps('phone')}
+            required
+            placeholder="(555) 123-4567"
+            size="lg"
+            className="font-poppins"
+            styles={{
+              label: {
+                fontFamily: 'Poppins',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: '#021D49',
+                marginBottom: '4px'
+              }
+            }}
+          />
 
-          <div>
-            <Label htmlFor="zip" className="font-poppins text-sm font-medium text-brand-navy mb-1 block">
-              ZIP Code *
-            </Label>
-            <TextInput
-              id="zip"
-              type="text"
-              {...form.getInputProps('zip')}
-              required
-              placeholder="12345"
-              maxLength={5}
-              soccer
-              className="h-12"
-            />
-          </div>
+          <TextInput
+            id="zip"
+            label="ZIP Code *"
+            type="text"
+            {...form.getInputProps('zip')}
+            required
+            placeholder="12345"
+            maxLength={5}
+            size="lg"
+            className="font-poppins"
+            styles={{
+              label: {
+                fontFamily: 'Poppins',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: '#021D49',
+                marginBottom: '4px'
+              }
+            }}
+          />
 
           <Button
             type="submit"
             disabled={isSubmitting}
-            variant="soccer_primary"
-            size="soccer"
-            className="w-full text-lg"
+            className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins"
+            size="lg"
+            fullWidth
+            styles={{
+              root: {
+                fontSize: '18px'
+              }
+            }}
           >
             {isSubmitting ? (
               <>
@@ -222,12 +254,12 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             )}
           </Button>
 
-          <p className="text-xs text-brand-grey text-center font-poppins leading-relaxed">
+          <Text className="text-xs text-brand-grey text-center font-poppins leading-relaxed">
             By submitting, you agree to receive information about Soccer Stars programs. 
             We respect your privacy and won't spam you.
-          </p>
-        </form>
-      </CardContent>
+          </Text>
+        </Stack>
+      </form>
     </Card>
   );
 };

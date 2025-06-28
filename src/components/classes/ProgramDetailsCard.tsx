@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
-import { Card, Stack, Group, Checkbox, Grid, Button } from '@mantine/core';
+import { Card, Stack, Group, Checkbox, Grid, Button, Text } from '@mantine/core';
 import { Calendar, MapPin, X, Plus } from 'lucide-react';
-import { Label } from '@/components/ui/label';
 import { DateInput } from '@/components/mantine/DateInput';
 import LocationSelector from './LocationSelector';
 import { ProgramFormData } from '@/types/domain';
@@ -85,9 +84,9 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
           />
 
           <div className="space-y-2">
-            <Label className="text-base font-medium">
-              Days of Week <span className="text-red-500">*</span>
-            </Label>
+            <Text size="sm" fw={500}>
+              Days of Week <Text component="span" c="red">*</Text>
+            </Text>
             <Group gap="md">
               {DAYS_OF_WEEK.map((day) => (
                 <Checkbox
@@ -103,7 +102,7 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
           <Grid>
             <Grid.Col span={6}>
               <div className="space-y-2">
-                <Label className="text-base font-medium">Program Start Date</Label>
+                <Text size="sm" fw={500}>Program Start Date</Text>
                 <DateInput
                   value={programData.startDate}
                   onChange={handleStartDateChange}
@@ -114,7 +113,7 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
             </Grid.Col>
             <Grid.Col span={6}>
               <div className="space-y-2">
-                <Label className="text-base font-medium">Program End Date</Label>
+                <Text size="sm" fw={500}>Program End Date</Text>
                 <DateInput
                   value={programData.endDate}
                   onChange={handleEndDateChange}
@@ -127,7 +126,7 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
           </Grid>
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">Override Dates</Label>
+            <Text size="sm" fw={500}>Override Dates</Text>
             <p className="text-sm text-gray-600">
               Dates when classes will be cancelled (holidays, breaks, etc.)
             </p>

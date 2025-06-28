@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@mantine/core';
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
+import { Button, TextInput, Popover, Badge, Group, Stack, Text } from '@mantine/core';
 import { Calendar, X, Plus } from "lucide-react";
 
 interface MultiDatePickerProps {
@@ -37,64 +34,72 @@ const MultiDatePicker: React.FC<MultiDatePickerProps> = ({
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
+    <Popover opened={isOpen} onChange={setIsOpen} position="bottom-start" withArrow>
+      <Popover.Target>
         <Button
           variant="outline"
-          className="w-full justify-start text-left font-normal"
+          justify="start"
+          fullWidth
+          leftSection={<Calendar size={16} />}
         >
-          <Calendar className="h-4 w-4 mr-2" />
           {selectedDates.length === 0 ? (
-            <span className="text-muted-foreground">Override dates</span>
+            <Text c="dimmed">Override dates</Text>
           ) : (
-            <span>{selectedDates.length} date{selectedDates.length !== 1 ? 's' : ''}</span>
+            <Text>{selectedDates.length} date{selectedDates.length !== 1 ? 's' : ''}</Text>
           )}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-3" align="start">
-        <div className="space-y-3">
-          <div className="flex space-x-2">
-            <Input
+      </Popover.Target>
+      <Popover.Dropdown p="md" w={320}>
+        <Stack gap="md">
+          <Group gap="sm">
+            <TextInput
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              className="flex-1"
+              flex={1}
             />
             <Button
               size="sm"
               onClick={addDate}
               disabled={!newDate || selectedDates.includes(newDate)}
+              leftSection={<Plus size={16} />}
             >
-              <Plus className="h-4 w-4" />
+              Add
             </Button>
-          </div>
+          </Group>
 
           {selectedDates.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Selected override dates:</p>
-              <div className="flex flex-wrap gap-1">
+            <Stack gap="sm">
+              <Text size="sm" fw={500}>Selected override dates:</Text>
+              <Group gap="xs">
                 {selectedDates.map((date) => (
-                  <Badge key={date} variant="secondary" className="flex items-center gap-1">
+                  <Badge
+                    key={date}
+                    variant="light"
+                    rightSection={
+                      <Button
+                        size="compact-xs"
+                        variant="transparent"
+                        p={0}
+                        onClick={() => removeDate(date)}
+                        c="red"
+                      >
+                        <X size={12} />
+                      </Button>
+                    }
+                  >
                     {formatDate(date)}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-4 w-4 p-0 hover:bg-red-100"
-                      onClick={() => removeDate(date)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
                   </Badge>
                 ))}
-              </div>
-            </div>
+              </Group>
+            </Stack>
           )}
 
-          <p className="text-xs text-muted-foreground">
+          <Text size="xs" c="dimmed">
             Override dates are when this class will be cancelled
-          </p>
-        </div>
-      </PopoverContent>
+          </Text>
+        </Stack>
+      </Popover.Dropdown>
     </Popover>
   );
 };

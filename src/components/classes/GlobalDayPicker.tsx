@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Text, Select, Stack } from '@mantine/core';
 
 interface GlobalDayPickerProps {
   selectedDay: number;
@@ -23,29 +22,24 @@ const GlobalDayPicker: React.FC<GlobalDayPickerProps> = ({
   onDayChange,
 }) => {
   return (
-    <div className="space-y-2">
-      <Label htmlFor="global-day-picker" className="text-base font-medium">
+    <Stack gap="xs">
+      <Text size="sm" fw={500}>
         Default Day of Week
-      </Label>
+      </Text>
       <Select
         value={selectedDay.toString()}
-        onValueChange={(value) => onDayChange(parseInt(value))}
-      >
-        <SelectTrigger id="global-day-picker" className="w-64">
-          <SelectValue placeholder="Select day of week" />
-        </SelectTrigger>
-        <SelectContent>
-          {DAYS_OF_WEEK.map((day) => (
-            <SelectItem key={day.value} value={day.value.toString()}>
-              {day.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <p className="text-sm text-muted-foreground">
+        onChange={(value) => value && onDayChange(parseInt(value))}
+        placeholder="Select day of week"
+        data={DAYS_OF_WEEK.map((day) => ({
+          value: day.value.toString(),
+          label: day.label
+        }))}
+        w={256}
+      />
+      <Text size="xs" c="dimmed">
         This day will be pre-filled for new rows (can be changed per row)
-      </p>
-    </div>
+      </Text>
+    </Stack>
   );
 };
 

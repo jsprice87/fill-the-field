@@ -4,8 +4,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { useSidebar } from "./SidebarContext"
 import { cn } from "@/lib/utils"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Tooltip } from "@mantine/core"
+import { Skeleton, Tooltip } from "@mantine/core"
 
 const SidebarGroupLabel = React.forwardRef<
   HTMLDivElement,

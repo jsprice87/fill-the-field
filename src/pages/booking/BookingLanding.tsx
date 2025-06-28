@@ -7,7 +7,7 @@ import { useFranchiseeOptional } from '@/contexts/FranchiseeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@mantine/core';
 
 const BookingLandingContent: React.FC = () => {
   const {
@@ -251,11 +251,20 @@ const BookingLandingContent: React.FC = () => {
           <p className="font-poppins text-xl mb-8 text-white max-w-2xl mx-auto">
             Join thousands of families who have discovered the joy of Soccer Stars. Your free trial is just a click away!
           </p>
-          <Button variant="soccer_primary" size="soccer" onClick={() => {
-          document.querySelector('form')?.scrollIntoView({
-            behavior: 'smooth'
-          });
-        }} className="text-xl">
+          <Button 
+            className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins"
+            size="lg"
+            onClick={() => {
+              document.querySelector('form')?.scrollIntoView({
+                behavior: 'smooth'
+              });
+            }} 
+            styles={{
+              root: {
+                fontSize: '18px'
+              }
+            }}
+          >
             Find Your Free Trial
           </Button>
         </div>

@@ -3,10 +3,7 @@ import * as React from "react"
 import { PanelLeft } from "lucide-react"
 import { useSidebar, SIDEBAR_WIDTH_MOBILE } from "./SidebarContext"
 import { cn } from "@/lib/utils"
-import { Button } from "@mantine/core"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Button, TextInput, Divider, Drawer } from "@mantine/core"
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -46,20 +43,28 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
+        <Drawer
+          opened={openMobile}
+          onClose={() => setOpenMobile(false)}
+          size={SIDEBAR_WIDTH_MOBILE}
+          position="left"
+          withCloseButton={false}
+          styles={{
+            content: {
+              background: 'var(--sidebar-background)',
+              color: 'var(--sidebar-foreground)',
+            }
+          }}
+          {...props}
+        >
+          <div 
+            className="flex h-full w-full flex-col"
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
           >
-            <div className="flex h-full w-full flex-col">{children}</div>
-          </SheetContent>
-        </Sheet>
+            {children}
+          </div>
+        </Drawer>
       )
     }
 
@@ -188,11 +193,11 @@ const SidebarInset = React.forwardRef<
 SidebarInset.displayName = "SidebarInset"
 
 const SidebarInput = React.forwardRef<
-  React.ElementRef<typeof Input>,
-  React.ComponentProps<typeof Input>
+  React.ElementRef<typeof TextInput>,
+  React.ComponentProps<typeof TextInput>
 >(({ className, ...props }, ref) => {
   return (
-    <Input
+    <TextInput
       ref={ref}
       data-sidebar="input"
       className={cn(
@@ -236,11 +241,11 @@ const SidebarFooter = React.forwardRef<
 SidebarFooter.displayName = "SidebarFooter"
 
 const SidebarSeparator = React.forwardRef<
-  React.ElementRef<typeof Separator>,
-  React.ComponentProps<typeof Separator>
+  React.ElementRef<typeof Divider>,
+  React.ComponentProps<typeof Divider>
 >(({ className, ...props }, ref) => {
   return (
-    <Separator
+    <Divider
       ref={ref}
       data-sidebar="separator"
       className={cn("mx-2 w-auto bg-sidebar-border", className)}

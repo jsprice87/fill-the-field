@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Switch } from '@/components/ui/switch';
+import { Switch, Group, Text } from '@mantine/core';
 
 interface StatusToggleProps {
   checked: boolean;
@@ -11,17 +11,17 @@ interface StatusToggleProps {
 
 export function StatusToggle({ checked, disabled = false, onChange, id }: StatusToggleProps) {
   return (
-    <div className="flex items-center space-x-3">
+    <Group gap="sm">
       <Switch
         id={id}
         checked={checked}
         disabled={disabled}
-        onCheckedChange={onChange}
+        onChange={(event) => onChange(event.currentTarget.checked)}
         aria-label="Location status toggle"
       />
-      <span className="text-sm font-medium text-gray-900">
+      <Text size="sm" fw={500} c="gray.9">
         {checked ? "Location is active" : "Location is inactive"}
-      </span>
-    </div>
+      </Text>
+    </Group>
   );
 }

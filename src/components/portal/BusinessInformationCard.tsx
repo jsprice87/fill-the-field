@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@mantine/core';
+import { Card, Button, Stack, Group, Flex, Title, Text } from '@mantine/core';
+import { TextInput } from '@/components/mantine/TextInput';
 import { Building, Phone, MapPin } from 'lucide-react';
 import { useFranchiseeProfile, useUpdateFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
 
@@ -47,14 +45,14 @@ const BusinessInformationCard: React.FC = () => {
   if (isLoading) {
     return (
       <Card>
-        <Card.Section className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-            <div className="space-y-2">
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-            </div>
-          </div>
+        <Card.Section p="xl">
+          <Stack gap="md">
+            <div style={{ height: 16, backgroundColor: '#e9ecef', borderRadius: 4, width: '33%' }}></div>
+            <Stack gap="xs">
+              <div style={{ height: 40, backgroundColor: '#e9ecef', borderRadius: 4 }}></div>
+              <div style={{ height: 40, backgroundColor: '#e9ecef', borderRadius: 4 }}></div>
+            </Stack>
+          </Stack>
         </Card.Section>
       </Card>
     );
@@ -62,112 +60,96 @@ const BusinessInformationCard: React.FC = () => {
 
   return (
     <Card>
-      <Card.Section>
-        <Card.Section className="flex items-center gap-2 p-4 border-b">
-          <Building className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">Business Information</h3>
-        </Card.Section>
+      <Card.Section withBorder>
+        <Flex align="center" gap="sm" p="md">
+          <Building size={20} />
+          <Title order={3}>Business Information</Title>
+        </Flex>
       </Card.Section>
-      <Card.Section className="space-y-4 p-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="company-name">Company Name</Label>
-            <Input
-              id="company-name"
+      <Card.Section p="md">
+        <Stack gap="md">
+          <Group grow>
+            <TextInput
+              label="Company Name"
               value={formData.company_name}
               onChange={(e) => handleChange('company_name', e.target.value)}
             />
-          </div>
-          <div>
-            <Label htmlFor="contact-name">Contact Name</Label>
-            <Input
-              id="contact-name"
+            <TextInput
+              label="Contact Name"
               value={formData.contact_name}
               onChange={(e) => handleChange('contact_name', e.target.value)}
             />
-          </div>
-        </div>
+          </Group>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="business-email">Business Email</Label>
-            <Input
-              id="business-email"
+          <Group grow>
+            <TextInput
+              label="Business Email"
               type="email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
             />
-          </div>
-          <div>
-            <Label htmlFor="business-phone" className="flex items-center gap-1">
-              <Phone className="h-4 w-4" />
-              Business Phone
-            </Label>
-            <Input
-              id="business-phone"
+            <TextInput
+              label={
+                <Flex align="center" gap={4}>
+                  <Phone size={16} />
+                  <span>Business Phone</span>
+                </Flex>
+              }
               type="tel"
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
             />
-          </div>
-        </div>
+          </Group>
 
-        <div>
-          <Label htmlFor="business-address" className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            Business Address
-          </Label>
-          <Input
-            id="business-address"
+          <TextInput
+            label={
+              <Flex align="center" gap={4}>
+                <MapPin size={16} />
+                <span>Business Address</span>
+              </Flex>
+            }
             value={formData.address}
             onChange={(e) => handleChange('address', e.target.value)}
           />
-        </div>
 
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="business-city">City</Label>
-            <Input
-              id="business-city"
+          <Group grow>
+            <TextInput
+              label="City"
               value={formData.city}
               onChange={(e) => handleChange('city', e.target.value)}
             />
-          </div>
-          <div>
-            <Label htmlFor="business-state">State</Label>
-            <Input
-              id="business-state"
+            <TextInput
+              label="State"
               value={formData.state}
               onChange={(e) => handleChange('state', e.target.value)}
             />
-          </div>
-          <div>
-            <Label htmlFor="business-zip">ZIP Code</Label>
-            <Input
-              id="business-zip"
+            <TextInput
+              label="ZIP Code"
               value={formData.zip}
               onChange={(e) => handleChange('zip', e.target.value)}
             />
-          </div>
-        </div>
+          </Group>
 
-        <div className="flex justify-end">
-          <Button 
-            onClick={handleSave}
-            disabled={updateProfile.isPending}
-          >
-            {updateProfile.isPending ? 'Saving...' : 'Save Business Information'}
-          </Button>
-        </div>
+          <Flex justify="flex-end">
+            <Button 
+              onClick={handleSave}
+              loading={updateProfile.isPending}
+            >
+              Save Business Information
+            </Button>
+          </Flex>
 
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">Usage:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Business phone and address appear on landing pages and booking confirmations</li>
-            <li>• Contact information is displayed in "Contact Us" sections</li>
-            <li>• Company name appears throughout the booking experience</li>
-          </ul>
-        </div>
+          <Card bg="blue.0" p="md">
+            <Title order={4} c="blue.9" mb="xs">Usage:</Title>
+            <Text size="sm" c="blue.8">
+              • Business phone and address appear on landing pages and booking confirmations
+              <br />
+              • Contact information is displayed in "Contact Us" sections
+              <br />
+              • Company name appears throughout the booking experience
+            </Text>
+          </Card>
+        </Stack>
       </Card.Section>
     </Card>
   );

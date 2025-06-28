@@ -1,5 +1,4 @@
-
-import { Badge } from "@/components/ui/badge";
+import { Badge, Stack, Group, Flex, Text, Card } from "@mantine/core";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface WebhookActivityProps {
@@ -15,11 +14,11 @@ export default function WebhookActivity({
 }: WebhookActivityProps) {
   const getStatusBadge = (log: any) => {
     if (log.delivered_at) {
-      return <Badge variant="default" className="bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Success</Badge>;
+      return <Badge color="green" leftSection={<CheckCircle size={12} />}>Success</Badge>;
     } else if (log.error_message) {
-      return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>;
+      return <Badge color="red" leftSection={<XCircle size={12} />}>Failed</Badge>;
     } else {
-      return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      return <Badge color="gray" leftSection={<Clock size={12} />}>Pending</Badge>;
     }
   };
 
@@ -30,27 +29,31 @@ export default function WebhookActivity({
   }
 
   return (
-    <div className="pt-4 border-t">
-      <h4 className="font-medium text-sm mb-3">Recent Webhook Activity</h4>
+    <div style={{ paddingTop: 16, borderTop: "1px solid #e9ecef" }}>
+      <Text size="sm" fw={500} mb="xs">Recent Webhook Activity</Text>
       {recentLogs.length > 0 ? (
-        <div className="space-y-2">
+        <Stack gap="xs">
           {recentLogs.map((log) => (
-            <div key={log.id} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
-              <div className="flex items-center gap-2">
-                {getStatusBadge(log)}
-                <span className="font-mono text-xs">{log.event_type}</span>
-              </div>
-              <div className="text-xs text-gray-500">
-                {new Date(log.created_at).toLocaleString()}
-                {log.attempt_count > 1 && (
-                  <span className="ml-2">({log.attempt_count} attempts)</span>
-                )}
-              </div>
-            </div>
+            <Card key={log.id} bg="gray.0" p="sm">
+              <Flex justify="space-between" align="center">
+                <Group gap="sm">
+                  {getStatusBadge(log)}
+                  <Text size="xs" ff="monospace">{log.event_type}</Text>
+                </Group>
+                <Group gap="sm">
+                  <Text size="xs" c="dimmed">
+                    {new Date(log.created_at).toLocaleString()}
+                  </Text>
+                  {log.attempt_count > 1 && (
+                    <Text size="xs" c="dimmed">({log.attempt_count} attempts)</Text>
+                  )}
+                </Group>
+              </Flex>
+            </Card>
           ))}
-        </div>
+        </Stack>
       ) : (
-        <p className="text-sm text-gray-500">No webhook activity yet</p>
+        <Text size="sm" c="dimmed">No webhook activity yet</Text>
       )}
     </div>
   );

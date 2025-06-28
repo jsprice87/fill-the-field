@@ -2,8 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Share2, Calendar, MapPin, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button, Card, Group, Stack, Text, Title, Notification } from '@mantine/core';
 import { notify } from '@/utils/notify';
 
 interface BookingSuccessProps {
@@ -77,57 +76,62 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card className="border-l-4 border-l-green-500">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <CheckCircle className="h-8 w-8 text-green-500" />
-            <div>
-              <CardTitle className="font-agrandir text-xl text-brand-navy">
-                Booking Confirmed!
-              </CardTitle>
-              <p className="font-poppins text-gray-600 mt-1">
-                Reference: {bookingData.booking_reference}
-              </p>
-            </div>
+      <Card 
+        className="border-l-4 border-l-green-500"
+        padding="lg"
+        radius="md"
+        withBorder
+      >
+        <Group align="flex-start" mb="lg">
+          <CheckCircle className="h-8 w-8 text-green-500" />
+          <div>
+            <Title order={3} className="font-agrandir text-xl text-brand-navy">
+              Booking Confirmed!
+            </Title>
+            <Text className="font-poppins text-gray-600 mt-1" size="sm">
+              Reference: {bookingData.booking_reference}
+            </Text>
           </div>
-        </CardHeader>
-        <CardContent>
-          <p className="font-poppins text-gray-700 mb-6">
+        </Group>
+
+        <Stack spacing="lg">
+          <Text className="font-poppins text-gray-700">
             Thank you {bookingData.parent_first_name}! Your free trial has been successfully booked. 
             We're excited to see {appointment?.participant_name} on the field!
-          </p>
+          </Text>
 
           {/* Quick booking details */}
-          <div className="space-y-3 mb-6 p-4 bg-gray-50 rounded-lg">
+          <Card className="bg-gray-50" padding="md" radius="md">
             {appointment && (
-              <>
-                <div className="flex items-center gap-2">
+              <Stack spacing="xs">
+                <Group spacing="xs">
                   <User className="h-4 w-4 text-brand-blue" />
-                  <span className="font-poppins text-sm">
+                  <Text className="font-poppins" size="sm">
                     <strong>{appointment.participant_name}</strong> - {appointment.class_name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
+                  </Text>
+                </Group>
+                <Group spacing="xs">
                   <Calendar className="h-4 w-4 text-brand-blue" />
-                  <span className="font-poppins text-sm">
+                  <Text className="font-poppins" size="sm">
                     {new Date(appointment.selected_date).toLocaleDateString()} at {appointment.class_time}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
+                  </Text>
+                </Group>
+                <Group spacing="xs">
                   <MapPin className="h-4 w-4 text-brand-blue" />
-                  <span className="font-poppins text-sm">
+                  <Text className="font-poppins" size="sm">
                     {location.name}, {location.city}, {location.state}
-                  </span>
-                </div>
-              </>
+                  </Text>
+                </Group>
+              </Stack>
             )}
-          </div>
+          </Card>
 
-          <div className="space-y-3">
+          <Stack spacing="sm">
             <Button
               onClick={handleViewConfirmation}
-              className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+              className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
               size="lg"
+              fullWidth
             >
               View Full Confirmation
             </Button>
@@ -135,20 +139,27 @@ const BookingSuccess: React.FC<BookingSuccessProps> = ({
             <Button
               onClick={handleShare}
               variant="outline"
-              className="w-full font-poppins"
+              className="font-poppins"
               size="lg"
+              fullWidth
+              leftSection={<Share2 className="h-4 w-4" />}
             >
-              <Share2 className="h-4 w-4 mr-2" />
               Share the Good News
             </Button>
-          </div>
+          </Stack>
 
-          <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="font-poppins text-blue-800 text-center text-sm">
+          <Notification 
+            className="bg-blue-50 border border-blue-200"
+            color="blue"
+            title=""
+            withCloseButton={false}
+            radius="md"
+          >
+            <Text className="font-poppins text-blue-800 text-center" size="sm">
               📧 A confirmation email has been sent to {bookingData.parent_email}
-            </p>
-          </div>
-        </CardContent>
+            </Text>
+          </Notification>
+        </Stack>
       </Card>
     </div>
   );

@@ -1,8 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, Button, Stack, Group, Text, Title, Loader, Anchor } from '@mantine/core';
 import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -186,8 +185,8 @@ const BookingConfirmation: React.FC = () => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-          <p className="font-poppins text-gray-600">Loading booking details...</p>
+          <Loader color="var(--brand-navy)" size="lg" className="mx-auto mb-4" />
+          <Text className="font-poppins text-gray-600">Loading booking details...</Text>
         </div>
       </div>
     );
@@ -197,8 +196,8 @@ const BookingConfirmation: React.FC = () => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Booking Not Found</h1>
-          <p className="text-gray-600 mb-6">We couldn't find the booking you're looking for.</p>
+          <Title order={1} className="text-2xl font-bold text-gray-900 mb-4">Booking Not Found</Title>
+          <Text className="text-gray-600 mb-6">We couldn't find the booking you're looking for.</Text>
           <Button onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}>
             Back to Booking
           </Button>
@@ -214,184 +213,182 @@ const BookingConfirmation: React.FC = () => {
     <div className="min-h-screen bg-white">
       <div className="bg-brand-navy text-white py-6">
         <div className="container mx-auto px-4">
-          <h1 className="font-anton text-3xl mb-2">SOCCER STARS</h1>
-          <h2 className="font-agrandir text-xl">Booking Confirmed!</h2>
+          <Title order={1} className="font-anton text-3xl mb-2">SOCCER STARS</Title>
+          <Title order={2} className="font-agrandir text-xl">Booking Confirmed!</Title>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        {/* Success Message */}
-        <Card className="mb-8 border-l-4 border-l-green-500">
-          <CardHeader>
-            <div className="flex items-center gap-3">
+        <Stack spacing="lg">
+          {/* Success Message */}
+          <Card className="border-l-4 border-l-green-500" padding="lg" radius="md" withBorder>
+            <Group spacing="sm" mb="md">
               <CheckCircle className="h-8 w-8 text-green-500" />
               <div>
-                <CardTitle className="font-agrandir text-xl text-brand-navy">
+                <Title order={3} className="font-agrandir text-xl text-brand-navy">
                   Booking Confirmed!
-                </CardTitle>
-                <p className="font-poppins text-gray-600 mt-1">
+                </Title>
+                <Text className="font-poppins text-gray-600 mt-1">
                   Reference: {booking.booking_reference}
-                </p>
+                </Text>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="font-poppins text-gray-700 mb-4">
+            </Group>
+            
+            <Text className="font-poppins text-gray-700">
               Thank you {booking.parent_first_name}! Your free trial has been successfully booked. 
               We're excited to see {appointment.participant_name} on the field!
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Booking Details */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="font-agrandir text-lg text-brand-navy">Booking Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-brand-blue mt-1" />
-              <div>
-                <p className="font-poppins font-medium">Date & Time</p>
-                <p className="font-poppins text-gray-600">
-                  {format(new Date(appointment.selected_date), 'EEEE, MMMM d, yyyy')} at {appointment.class_time}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <User className="h-5 w-5 text-brand-blue mt-1" />
-              <div>
-                <p className="font-poppins font-medium">Class</p>
-                <p className="font-poppins text-gray-600">{appointment.class_name}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-brand-blue mt-1" />
-              <div>
-                <p className="font-poppins font-medium">Location</p>
-                <p className="font-poppins text-gray-600">
-                  {location.name}<br />
-                  {location.address}, {location.city}, {location.state}
-                </p>
-                {location.phone && (
-                  <p className="font-poppins text-gray-600 flex items-center gap-1 mt-1">
-                    <Phone className="h-4 w-4" />
-                    {location.phone}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Information */}
-        {(franchiseeData.phone || franchiseeData.address || franchiseeSettings.website_url) && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="font-agrandir text-lg text-brand-navy">Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {franchiseeData.phone && (
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-brand-blue" />
-                  <span className="font-poppins text-gray-700">{franchiseeData.phone}</span>
-                </div>
-              )}
-              
-              {franchiseeData.address && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-brand-blue mt-1" />
-                  <span className="font-poppins text-gray-700">
-                    {franchiseeData.address}
-                    {franchiseeData.city && franchiseeData.state && (
-                      <><br />{franchiseeData.city}, {franchiseeData.state}</>
-                    )}
-                  </span>
-                </div>
-              )}
-
-              {franchiseeSettings.website_url && (
-                <div className="flex items-center gap-3">
-                  <Globe className="h-5 w-5 text-brand-blue" />
-                  <a 
-                    href={franchiseeSettings.website_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="font-poppins text-brand-blue hover:underline"
-                  >
-                    Visit our website
-                  </a>
-                </div>
-              )}
-            </CardContent>
+            </Text>
           </Card>
-        )}
 
-        {/* Actions */}
-        <div className="space-y-4">
-          <Button
-            onClick={handleShare}
-            className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
-            size="lg"
-          >
-            <Share2 className="h-5 w-5 mr-2" />
-            Share with Friends
-          </Button>
+          {/* Booking Details */}
+          <Card padding="lg" radius="md" withBorder>
+            <Title order={4} className="font-agrandir text-lg text-brand-navy" mb="md">Booking Details</Title>
+            <Stack spacing="md">
+              <Group align="flex-start" spacing="sm">
+                <Calendar className="h-5 w-5 text-brand-blue mt-1" />
+                <div>
+                  <Text className="font-poppins font-medium">Date & Time</Text>
+                  <Text className="font-poppins text-gray-600">
+                    {format(new Date(appointment.selected_date), 'EEEE, MMMM d, yyyy')} at {appointment.class_time}
+                  </Text>
+                </div>
+              </Group>
 
-          <div className="flex gap-4">
+              <Group align="flex-start" spacing="sm">
+                <User className="h-5 w-5 text-brand-blue mt-1" />
+                <div>
+                  <Text className="font-poppins font-medium">Class</Text>
+                  <Text className="font-poppins text-gray-600">{appointment.class_name}</Text>
+                </div>
+              </Group>
+
+              <Group align="flex-start" spacing="sm">
+                <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+                <div>
+                  <Text className="font-poppins font-medium">Location</Text>
+                  <Text className="font-poppins text-gray-600">
+                    {location.name}<br />
+                    {location.address}, {location.city}, {location.state}
+                  </Text>
+                  {location.phone && (
+                    <Group spacing="xs" mt="xs">
+                      <Phone className="h-4 w-4" />
+                      <Text className="font-poppins text-gray-600">
+                        {location.phone}
+                      </Text>
+                    </Group>
+                  )}
+                </div>
+              </Group>
+            </Stack>
+          </Card>
+
+          {/* Contact Information */}
+          {(franchiseeData.phone || franchiseeData.address || franchiseeSettings.website_url) && (
+            <Card padding="lg" radius="md" withBorder>
+              <Title order={4} className="font-agrandir text-lg text-brand-navy" mb="md">Contact Information</Title>
+              <Stack spacing="sm">
+                {franchiseeData.phone && (
+                  <Group spacing="sm">
+                    <Phone className="h-5 w-5 text-brand-blue" />
+                    <Text className="font-poppins text-gray-700">{franchiseeData.phone}</Text>
+                  </Group>
+                )}
+                
+                {franchiseeData.address && (
+                  <Group align="flex-start" spacing="sm">
+                    <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+                    <Text className="font-poppins text-gray-700">
+                      {franchiseeData.address}
+                      {franchiseeData.city && franchiseeData.state && (
+                        <><br />{franchiseeData.city}, {franchiseeData.state}</>
+                      )}
+                    </Text>
+                  </Group>
+                )}
+
+                {franchiseeSettings.website_url && (
+                  <Group spacing="sm">
+                    <Globe className="h-5 w-5 text-brand-blue" />
+                    <Anchor 
+                      href={franchiseeSettings.website_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="font-poppins text-brand-blue hover:underline"
+                    >
+                      Visit our website
+                    </Anchor>
+                  </Group>
+                )}
+              </Stack>
+            </Card>
+          )}
+
+          {/* Actions */}
+          <Stack spacing="md">
             <Button
-              variant="outline"
-              onClick={() => navigate(`/${franchiseeSlug}`)}
-              className="flex-1 font-poppins"
+              onClick={handleShare}
+              className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+              size="lg"
+              fullWidth
+              leftSection={<Share2 className="h-5 w-5" />}
             >
-              Back to Home
+              Share with Friends
             </Button>
-            {franchiseeSettings.website_url && (
+
+            <Group grow>
               <Button
                 variant="outline"
-                onClick={() => window.open(franchiseeSettings.website_url, '_blank')}
-                className="flex-1 font-poppins"
+                onClick={() => navigate(`/${franchiseeSlug}`)}
+                className="font-poppins"
               >
-                Visit Website
+                Back to Home
               </Button>
+              {franchiseeSettings.website_url && (
+                <Button
+                  variant="outline"
+                  onClick={() => window.open(franchiseeSettings.website_url, '_blank')}
+                  className="font-poppins"
+                >
+                  Visit Website
+                </Button>
+              )}
+            </Group>
+
+            {/* Social Links */}
+            {(franchiseeSettings.facebook_url || franchiseeSettings.instagram_url) && (
+              <Group position="center" spacing="lg" pt="md">
+                {franchiseeSettings.facebook_url && (
+                  <Anchor
+                    href={franchiseeSettings.facebook_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-blue hover:text-brand-blue/80"
+                  >
+                    Follow us on Facebook
+                  </Anchor>
+                )}
+                {franchiseeSettings.instagram_url && (
+                  <Anchor
+                    href={franchiseeSettings.instagram_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-blue hover:text-brand-blue/80"
+                  >
+                    Follow us on Instagram
+                  </Anchor>
+                )}
+              </Group>
             )}
-          </div>
+          </Stack>
 
-          {/* Social Links */}
-          {(franchiseeSettings.facebook_url || franchiseeSettings.instagram_url) && (
-            <div className="flex justify-center gap-4 pt-4">
-              {franchiseeSettings.facebook_url && (
-                <a
-                  href={franchiseeSettings.facebook_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-blue hover:text-brand-blue/80"
-                >
-                  Follow us on Facebook
-                </a>
-              )}
-              {franchiseeSettings.instagram_url && (
-                <a
-                  href={franchiseeSettings.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-blue hover:text-brand-blue/80"
-                >
-                  Follow us on Instagram
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Confirmation Email Notice */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="font-poppins text-blue-800 text-center text-sm">
-            📧 A confirmation email has been sent to {booking.parent_email}
-          </p>
-        </div>
+          {/* Confirmation Email Notice */}
+          <Card className="bg-blue-50 border border-blue-200" padding="md" radius="md">
+            <Text className="font-poppins text-blue-800 text-center" size="sm">
+              📧 A confirmation email has been sent to {booking.parent_email}
+            </Text>
+          </Card>
+        </Stack>
       </div>
     </div>
   );

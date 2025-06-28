@@ -1,13 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import { Card, Stack, Group, Text, Title, Button, Grid, TextInput, Select, Radio, Checkbox } from '@mantine/core';
 import { User, Phone, Mail, MapPin, Users, FileText, MessageSquare, Heart } from 'lucide-react';
-import { TextInput, Select } from '@mantine/core';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useFranchiseeWaiver } from '@/hooks/useFranchiseeWaiver';
 import { useFranchiseeSettings } from '@/hooks/useFranchiseeSettings';
 import { WaiverModal } from './WaiverModal';
@@ -58,220 +52,240 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
   };
 
   return (
-    <div className="space-y-6">
+    <Stack spacing="lg">
       {/* Parent/Guardian Information */}
-      <Card className="border-l-4 border-l-brand-blue">
-        <CardHeader>
-          <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
-            <User className="h-5 w-5" />
+      <Card 
+        className="border-l-4 border-l-brand-blue"
+        padding="lg"
+        radius="md"
+        withBorder
+      >
+        <Group spacing="xs" mb="lg">
+          <User className="h-5 w-5" />
+          <Title order={3} className="font-agrandir text-xl text-brand-navy">
             Parent/Guardian Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="firstName" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
-                <User className="h-4 w-4 inline mr-1" />
-                First Name *
-              </Label>
+          </Title>
+        </Group>
+
+        <Stack spacing="md">
+          <Grid>
+            <Grid.Col span={{ base: 12, md: 6 }}>
               <TextInput
                 id="firstName"
+                label={
+                  <Group spacing="xs">
+                    <User className="h-4 w-4" />
+                    <Text className="font-poppins text-sm font-medium text-gray-700">First Name *</Text>
+                  </Group>
+                }
                 value={parentInfo.firstName || ''}
                 onChange={(e) => handleFieldChange('firstName', e.target.value)}
                 placeholder="Enter first name"
                 className="font-poppins"
                 required
+                size="md"
               />
-            </div>
+            </Grid.Col>
             
-            <div>
-              <Label htmlFor="lastName" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
-                <User className="h-4 w-4 inline mr-1" />
-                Last Name *
-              </Label>
+            <Grid.Col span={{ base: 12, md: 6 }}>
               <TextInput
                 id="lastName"
+                label={
+                  <Group spacing="xs">
+                    <User className="h-4 w-4" />
+                    <Text className="font-poppins text-sm font-medium text-gray-700">Last Name *</Text>
+                  </Group>
+                }
                 value={parentInfo.lastName || ''}
                 onChange={(e) => handleFieldChange('lastName', e.target.value)}
                 placeholder="Enter last name"
                 className="font-poppins"
                 required
+                size="md"
               />
-            </div>
-          </div>
+            </Grid.Col>
+          </Grid>
 
-          <div>
-            <Label htmlFor="email" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
-              <Mail className="h-4 w-4 inline mr-1" />
-              Email Address *
-            </Label>
-            <TextInput
-              id="email"
-              type="email"
-              value={parentInfo.email || ''}
-              onChange={(e) => handleFieldChange('email', e.target.value)}
-              placeholder="Enter email address"
-              className="font-poppins"
-              required
-            />
-          </div>
+          <TextInput
+            id="email"
+            type="email"
+            label={
+              <Group spacing="xs">
+                <Mail className="h-4 w-4" />
+                <Text className="font-poppins text-sm font-medium text-gray-700">Email Address *</Text>
+              </Group>
+            }
+            value={parentInfo.email || ''}
+            onChange={(e) => handleFieldChange('email', e.target.value)}
+            placeholder="Enter email address"
+            className="font-poppins"
+            required
+            size="md"
+          />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="phone" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
-                <Phone className="h-4 w-4 inline mr-1" />
-                Phone Number *
-              </Label>
+          <Grid>
+            <Grid.Col span={{ base: 12, md: 6 }}>
               <TextInput
                 id="phone"
                 type="tel"
+                label={
+                  <Group spacing="xs">
+                    <Phone className="h-4 w-4" />
+                    <Text className="font-poppins text-sm font-medium text-gray-700">Phone Number *</Text>
+                  </Group>
+                }
                 value={parentInfo.phone || ''}
                 onChange={(e) => handleFieldChange('phone', e.target.value)}
                 placeholder="(000) 000-0000"
                 className="font-poppins"
                 required
+                size="md"
               />
-            </div>
+            </Grid.Col>
             
-            <div>
-              <Label htmlFor="zip" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
-                <MapPin className="h-4 w-4 inline mr-1" />
-                ZIP Code *
-              </Label>
+            <Grid.Col span={{ base: 12, md: 6 }}>
               <TextInput
                 id="zip"
+                label={
+                  <Group spacing="xs">
+                    <MapPin className="h-4 w-4" />
+                    <Text className="font-poppins text-sm font-medium text-gray-700">ZIP Code *</Text>
+                  </Group>
+                }
                 value={parentInfo.zip || ''}
                 onChange={(e) => handleFieldChange('zip', e.target.value)}
                 placeholder="12345"
                 className="font-poppins"
                 required
+                size="md"
               />
-            </div>
-          </div>
+            </Grid.Col>
+          </Grid>
 
-          <div>
-            <Label htmlFor="relationship" className="font-poppins text-sm font-medium text-gray-700 mb-2 block">
-              <Users className="h-4 w-4 inline mr-1" />
-              Relationship to Child *
-            </Label>
-            <Select
-              value={parentInfo.relationship || ''}
-              onChange={(value) => handleFieldChange('relationship', value)}
-              placeholder="Select relationship"
-              data={[
-                { value: 'Parent', label: 'Parent' },
-                { value: 'Guardian', label: 'Legal Guardian' },
-                { value: 'Grandparent', label: 'Grandparent' },
-                { value: 'Aunt/Uncle', label: 'Aunt/Uncle' },
-                { value: 'Other', label: 'Other' }
-              ]}
-              className="font-poppins"
-              withinPortal
-              required
-            />
-          </div>
-        </CardContent>
+          <Select
+            label={
+              <Group spacing="xs">
+                <Users className="h-4 w-4" />
+                <Text className="font-poppins text-sm font-medium text-gray-700">Relationship to Child *</Text>
+              </Group>
+            }
+            value={parentInfo.relationship || ''}
+            onChange={(value) => handleFieldChange('relationship', value)}
+            placeholder="Select relationship"
+            data={[
+              { value: 'Parent', label: 'Parent' },
+              { value: 'Guardian', label: 'Legal Guardian' },
+              { value: 'Grandparent', label: 'Grandparent' },
+              { value: 'Aunt/Uncle', label: 'Aunt/Uncle' },
+              { value: 'Other', label: 'Other' }
+            ]}
+            className="font-poppins"
+            withinPortal
+            required
+            size="md"
+          />
+        </Stack>
       </Card>
 
       {/* Required Agreements */}
-      <Card className="border-l-4 border-l-green-500">
-        <CardHeader>
-          <CardTitle className="font-agrandir text-xl text-brand-navy flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+      <Card 
+        className="border-l-4 border-l-green-500"
+        padding="lg"
+        radius="md"
+        withBorder
+      >
+        <Group spacing="xs" mb="lg">
+          <FileText className="h-5 w-5" />
+          <Title order={3} className="font-agrandir text-xl text-brand-navy">
             Required Agreements
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-start space-x-3">
+          </Title>
+        </Group>
+
+        <Stack spacing="md">
+          <Group align="flex-start" spacing="sm">
             <Checkbox
               id="waiver"
               checked={flowData.waiverAccepted || false}
-              onCheckedChange={(checked) => handleAgreementChange('waiverAccepted', !!checked)}
-              className="mt-1"
+              onChange={(event) => handleAgreementChange('waiverAccepted', event.currentTarget.checked)}
+              style={{ marginTop: '2px' }}
             />
-            <div className="flex-1">
-              <Label 
-                htmlFor="waiver" 
-                className="font-poppins text-sm cursor-pointer"
-              >
+            <div>
+              <Text className="font-poppins text-sm cursor-pointer">
                 I agree to the{' '}
-                <button 
-                  type="button"
-                  onClick={() => setWaiverModalOpened(true)}
+                <Text 
+                  component="button"
                   className="text-brand-blue hover:text-brand-blue/80 underline cursor-pointer bg-transparent border-none p-0 font-inherit"
+                  onClick={() => setWaiverModalOpened(true)}
                 >
                   liability waiver and agreement
-                </button>
+                </Text>
                 . *
-              </Label>
+              </Text>
             </div>
-          </div>
+          </Group>
 
-          <div className="flex items-start space-x-3">
+          <Group align="flex-start" spacing="sm">
             <Checkbox
               id="communication"
               checked={flowData.communicationPermission || false}
-              onCheckedChange={(checked) => handleAgreementChange('communicationPermission', !!checked)}
-              className="mt-1"
+              onChange={(event) => handleAgreementChange('communicationPermission', event.currentTarget.checked)}
+              style={{ marginTop: '2px' }}
             />
-            <div className="flex-1">
-              <Label 
-                htmlFor="communication" 
-                className="font-poppins text-sm cursor-pointer"
-              >
-                <MessageSquare className="h-4 w-4 inline mr-1" />
-                I agree to receive communication about my child's soccer classes and important updates. *
-              </Label>
+            <div>
+              <Group spacing="xs">
+                <MessageSquare className="h-4 w-4" />
+                <Text className="font-poppins text-sm">
+                  I agree to receive communication about my child's soccer classes and important updates. *
+                </Text>
+              </Group>
             </div>
-          </div>
+          </Group>
 
-          <div className="flex items-start space-x-3">
+          <Group align="flex-start" spacing="sm">
             <Checkbox
               id="marketing"
               checked={flowData.marketingPermission || false}
-              onCheckedChange={(checked) => handleAgreementChange('marketingPermission', !!checked)}
+              onChange={(event) => handleAgreementChange('marketingPermission', event.currentTarget.checked)}
+              style={{ marginTop: '2px' }}
             />
-            <div className="flex-1">
-              <Label 
-                htmlFor="marketing" 
-                className="font-poppins text-sm cursor-pointer"
-              >
-                <Heart className="h-4 w-4 inline mr-1" />
-                I would like to receive promotional offers and news about Soccer Stars programs (optional).
-              </Label>
+            <div>
+              <Group spacing="xs">
+                <Heart className="h-4 w-4" />
+                <Text className="font-poppins text-sm">
+                  I would like to receive promotional offers and news about Soccer Stars programs (optional).
+                </Text>
+              </Group>
             </div>
-          </div>
-        </CardContent>
+          </Group>
+        </Stack>
       </Card>
 
       {/* Child Language - Conditional based on settings */}
       {requireLanguageInfo && (
-        <Card className="border-l-4 border-l-blue-400">
-          <CardHeader>
-            <CardTitle className="font-agrandir text-xl text-brand-navy">
-              Language Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div>
-              <Label className="font-poppins text-sm font-medium text-gray-700 mb-3 block">
-                Does your child speak English fluently?
-              </Label>
-              <RadioGroup
-                value={flowData.childSpeaksEnglish === true ? 'yes' : flowData.childSpeaksEnglish === false ? 'no' : ''}
-                onValueChange={(value) => handleAgreementChange('childSpeaksEnglish', value === 'yes')}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="yes" id="english-yes" />
-                  <Label htmlFor="english-yes" className="font-poppins">Yes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="no" id="english-no" />
-                  <Label htmlFor="english-no" className="font-poppins">No</Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </CardContent>
+        <Card 
+          className="border-l-4 border-l-blue-400"
+          padding="lg"
+          radius="md"
+          withBorder
+        >
+          <Title order={3} className="font-agrandir text-xl text-brand-navy" mb="lg">
+            Language Information
+          </Title>
+          
+          <Stack spacing="md">
+            <Text className="font-poppins text-sm font-medium text-gray-700">
+              Does your child speak English fluently?
+            </Text>
+            <Radio.Group
+              value={flowData.childSpeaksEnglish === true ? 'yes' : flowData.childSpeaksEnglish === false ? 'no' : ''}
+              onChange={(value) => handleAgreementChange('childSpeaksEnglish', value === 'yes')}
+            >
+              <Stack spacing="xs">
+                <Radio value="yes" label="Yes" className="font-poppins" />
+                <Radio value="no" label="No" className="font-poppins" />
+              </Stack>
+            </Radio.Group>
+          </Stack>
         </Card>
       )}
 
@@ -282,7 +296,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
         waiverText={waiverText}
         franchiseeData={franchiseeData}
       />
-    </div>
+    </Stack>
   );
 };
 

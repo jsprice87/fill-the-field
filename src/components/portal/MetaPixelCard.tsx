@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@mantine/core';
+import { Card, Button, Text } from '@mantine/core';
+import { TextInput } from '@/components/mantine/TextInput';
 import { Facebook } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 
@@ -93,21 +91,17 @@ const MetaPixelCard: React.FC = () => {
       </Card.Section>
       <Card.Section className="space-y-4 p-4">
         <div>
-          <Label htmlFor="meta_pixel_id">Meta Pixel ID</Label>
-          <Input
-            id="meta_pixel_id"
+          <TextInput
+            label="Meta Pixel ID"
             placeholder="123456789012345 (12-17 digits)"
             value={metaPixelId}
             onChange={(e) => handleInputChange(e.target.value)}
             disabled={updateSetting.isPending}
-            className={validationError ? 'border-red-500' : ''}
+            error={validationError}
           />
-          {validationError && (
-            <p className="text-sm text-red-600 mt-1">{validationError}</p>
-          )}
-          <p className="text-sm text-gray-500 mt-1">
+          <Text size="sm" c="dimmed" mt="xs">
             Enter your Meta Pixel ID to track page views, leads, and conversions on your booking pages. Leave blank to disable Meta tracking.
-          </p>
+          </Text>
         </div>
         
         {hasUnsavedChanges && (

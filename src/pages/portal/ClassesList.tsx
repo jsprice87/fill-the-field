@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@mantine/core';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Stack, Group, Flex, Title, Text } from '@mantine/core';
 import { Card } from '@mantine/core';
 import { Plus, Calendar, MapPin, Users, Clock, Edit, Trash, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -130,71 +130,74 @@ const ClassesList: React.FC = () => {
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">All Classes</h1>
-        <Button onClick={() => navigate('/portal/classes/add')}>
-          <Plus className="h-4 w-4 mr-2" />
+    <Stack gap="xl">
+      <Flex justify="space-between" align="center">
+        <Title order={1}>All Classes</Title>
+        <Button onClick={() => navigate('/portal/classes/add')} leftSection={<Plus size={16} />}>
           Add Class
         </Button>
-      </div>
+      </Flex>
 
       {isLoading ? (
-        <div className="text-center">Loading classes...</div>
+        <Text ta="center">Loading classes...</Text>
       ) : (
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
           {classes.map((classSchedule) => (
             <Card key={classSchedule.id}>
-              <Card.Section>
-                <div className="flex items-center justify-between p-4">
-                  <div className="font-medium">{classSchedule.classes.name}</div>
-                  <Badge variant="secondary">
+              <Card.Section withBorder>
+                <Flex justify="space-between" align="center" p="md">
+                  <Text fw={500}>{classSchedule.classes.name}</Text>
+                  <Badge color="gray">
                     {daysOfWeek[classSchedule.day_of_week]}
                   </Badge>
-                </div>
+                </Flex>
               </Card.Section>
-              <Card.Section className="space-y-2 p-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.date_start ? new Date(classSchedule.date_start).toLocaleDateString() : 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.start_time} - {classSchedule.end_time}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.classes.locations.name}, {classSchedule.classes.locations.city}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>{classSchedule.classes.max_capacity}</span>
-                </div>
+              <Card.Section p="md">
+                <Stack gap="xs">
+                  <Group gap="sm">
+                    <Calendar size={16} color="gray" />
+                    <Text size="sm">{classSchedule.date_start ? new Date(classSchedule.date_start).toLocaleDateString() : 'N/A'}</Text>
+                  </Group>
+                  <Group gap="sm">
+                    <Clock size={16} color="gray" />
+                    <Text size="sm">{classSchedule.start_time} - {classSchedule.end_time}</Text>
+                  </Group>
+                  <Group gap="sm">
+                    <MapPin size={16} color="gray" />
+                    <Text size="sm">{classSchedule.classes.locations.name}, {classSchedule.classes.locations.city}</Text>
+                  </Group>
+                  <Group gap="sm">
+                    <Users size={16} color="gray" />
+                    <Text size="sm">{classSchedule.classes.max_capacity}</Text>
+                  </Group>
+                </Stack>
               </Card.Section>
-              <div className="flex justify-end space-x-2 p-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(`/portal/classes/edit/${classSchedule.id}`)}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:bg-red-50"
-                  onClick={() => handleDeleteClass(classSchedule.id)}
-                >
-                  <Trash className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </div>
+              <Card.Section withBorder>
+                <Flex justify="flex-end" gap="sm" p="md">
+                  <Button
+                    variant="subtle"
+                    size="sm"
+                    leftSection={<Edit size={16} />}
+                    onClick={() => navigate(`/portal/classes/edit/${classSchedule.id}`)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    size="sm"
+                    color="red"
+                    leftSection={<Trash size={16} />}
+                    onClick={() => handleDeleteClass(classSchedule.id)}
+                  >
+                    Delete
+                  </Button>
+                </Flex>
+              </Card.Section>
             </Card>
           ))}
         </div>
       )}
-    </div>
+    </Stack>
   );
 };
 

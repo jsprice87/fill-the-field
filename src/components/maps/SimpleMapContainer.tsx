@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { AspectRatio } from '@mantine/core';
 
 interface SimpleMapContainerProps {
   height?: string;
