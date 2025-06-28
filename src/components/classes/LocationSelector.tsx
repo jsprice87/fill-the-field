@@ -90,7 +90,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         </Text>
       )}
     </div>
-  );}
+  );
 };
 
 export default LocationSelector;

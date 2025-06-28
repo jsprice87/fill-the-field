@@ -3,7 +3,7 @@ import React, { createContext, useContext } from 'react';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 
 interface MetaPixelContextType {
-  trackEvent: (eventName: string, parameters?: any) => void;
+  trackEvent: (eventName: string, parameters?: Record<string, unknown>) => void;
 }
 
 const MetaPixelContext = createContext<MetaPixelContextType | null>(null);

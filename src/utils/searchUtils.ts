@@ -21,7 +21,7 @@ export const useSearchQuery = (paramName: string = 'q') => {
 };
 
 // Debounce utility
-export const useDebounce = <T extends (...args: any[]) => void>(
+export const useDebounce = <T extends (...args: unknown[]) => void>(
   callback: T,
   delay: number
 ): T => {

@@ -44,7 +44,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
     }
   }, [flowData.leadData, flowData.parentGuardianInfo, updateFlow]);
 
-  const handleFieldChange = async (field: string, value: any) => {
+  const handleFieldChange = async (field: string, value: string) => {
     await updateFlow({
       parentGuardianInfo: {
         ...parentInfo,

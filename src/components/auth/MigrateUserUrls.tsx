@@ -18,7 +18,7 @@ const MigrateUserUrls = () => {
         // Check if we're on a franchisee page (not admin)
         if (!location.pathname.startsWith('/admin/')) {
           // Extract potential franchisee ID from the URL
-          const match = location.pathname.match(/^\/([^\/]+)/);
+          const match = location.pathname.match(/^\/([^/]+)/);
           
           if (match && match[1]) {
             const potentialId = match[1];

@@ -22,7 +22,7 @@ const generateSlugFromEmail = (email: string): string => {
 };
 
 const generateUniqueSlug = async (supabase: any, baseSlug: string): Promise<string> => {
-  let slug = baseSlug;
+  const slug = baseSlug;
   let counter = 0;
   
   while (true) {

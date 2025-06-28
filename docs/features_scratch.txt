@@ -13,11 +13,11 @@ Ready for new feature ideas.
  - Add more notification types
  -- Need to add notifications section of /portal/settings
  -- Add logic to be able to send time-based notifications (webhook commands)
- --- Day-Of reminders
+ --- Day-Of Trial Class reminders
+ 
+ - Add "CC Emails" field Notifications section of /portal/settings to send notifications to multiple locations
 
+ - In Notifications section add a webhook that sends End-Of-Day Summary email including all bookings and new leads from the day. 
+ -- Users should still be able to opt-in to getting notifications with every new lead and new booking, or just get a single summary at the end of the day
 
- - Add "CC Emails" field in /portal/settings
-
- - Summary email from the day
-
- - Multi user to login to specific business accounts
+ - Multi user to login to specific business accounts.  (future roadmap feature)
