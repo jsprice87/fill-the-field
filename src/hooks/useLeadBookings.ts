@@ -64,7 +64,8 @@ export const useLeadBookings = (leadId: string) => {
   return useQuery({
     queryKey: ['leadBookings', leadId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First, get the bookings
+      const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
         .select(`
           *,
@@ -93,28 +94,53 @@ export const useLeadBookings = (leadId: string) => {
                 zip
               )
             )
-          ),
-          appointments (
-            id,
-            participant_name,
-            participant_age,
-            participant_birth_date,
-            health_conditions,
-            class_name,
-            class_time,
-            selected_date
           )
         `)
         .eq('lead_id', leadId)
         .is('archived_at', null)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching lead bookings:', error);
-        throw error;
+      if (bookingsError) {
+        console.error('Error fetching lead bookings:', bookingsError);
+        throw bookingsError;
       }
 
-      return data as LeadBooking[];
+      if (!bookingsData || bookingsData.length === 0) {
+        return [];
+      }
+
+      // Then, get appointments for each booking separately to avoid data duplication
+      const bookingsWithAppointments: LeadBooking[] = await Promise.all(
+        bookingsData.map(async (booking) => {
+          const { data: appointmentsData, error: appointmentsError } = await supabase
+            .from('appointments')
+            .select(`
+              id,
+              participant_name,
+              participant_age,
+              participant_birth_date,
+              health_conditions,
+              class_name,
+              class_time,
+              selected_date
+            `)
+            .eq('booking_id', booking.id)
+            .is('archived_at', null)
+            .order('participant_name');
+
+          if (appointmentsError) {
+            console.error('Error fetching appointments for booking:', booking.id, appointmentsError);
+            // Don't throw here, just return empty appointments
+          }
+
+          return {
+            ...booking,
+            appointments: appointmentsData || []
+          } as LeadBooking;
+        })
+      );
+
+      return bookingsWithAppointments;
     },
     enabled: !!leadId,
   });

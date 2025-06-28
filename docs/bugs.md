@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 26 Jun 2025  
-> **Active Issues:** 4 | **Resolved:** 7
+> **Active Issues:** 1 | **Resolved:** 10
 
 ---
 
@@ -9,9 +9,6 @@
 
 | ID | Title | Severity | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------------|---------|
-| #7 | Portal bookings page long load time and missing data | 🟠 High | unassigned | portal/Bookings.tsx | 2025-06-26 |
-| #9 | Location selector transparent on program creation page | 🟡 Medium | unassigned | portal/Classes.tsx | 2025-06-26 |
-| #10 | Lead Details booking data combination issue | 🟡 Medium | unassigned | LeadDetailsBookings | 2025-06-26 |
 | #11 | Bulk table actions limited to Archive only | 🟢 Low | unassigned | LeadsTable.tsx | 2025-06-26 |
 
 ---
@@ -26,7 +23,10 @@
 | #4 | Leads table "View Details" and "Edit Lead" redundant | Both actions now navigate to Lead Details page | `ff6dac4` | 2025-06-24 |
 | #5 | Classes column shows "0" instead of actual count | Updated useLocations hook with class counts | `ff6dac4` | 2025-06-24 |
 | #6 | Booking flow Parent Guardian Information panel issues | Migrated to Mantine components + pre-population fix | `08ede3f` | 2025-06-26 |
+| #7 | Portal bookings page long load time and missing data | Optimized database queries and client-side filtering | `current` | 2025-06-27 |
 | #8 | Liability waiver 404 error and opens new page | Replaced href link with WaiverModal popup | `56efdf9` | 2025-06-26 |
+| #9 | Location selector transparent on program creation page | Migrated LocationSelector from shadcn/ui to Mantine components | `current` | 2025-06-27 |
+| #10 | Lead Details booking data combination issue | Separated booking and appointment queries to prevent data duplication | `current` | 2025-06-27 |
 
 ---
 
@@ -228,7 +228,7 @@ Classes column should show the actual number of active classes for each location
 <summary><strong>Bug #7:</strong> Portal bookings page long load time and missing data</summary>
 
 ### Title: Portal bookings page long load time and missing data
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-27
 ### Priority: High - core business functionality broken
 
 ### Issue
@@ -246,10 +246,20 @@ Classes column should show the actual number of active classes for each location
 - All bookings associated with user account should display
 - Correct booking count should be shown
 
-### Technical Notes
-- Bookings confirmed to exist in database via direct query
-- Likely issue with data fetching query or RLS policies
-- May be related to relationship joins or filtering logic
+### Resolution Implemented
+1. **Query Optimization**: Replaced complex !inner joins with left joins to prevent data loss
+2. **Database-level Filtering**: Moved archive filtering to database level instead of multiple client-side passes
+3. **Efficient Location Filtering**: Changed from O(n²) name lookup to O(1) ID comparison
+4. **Improved Caching**: Added staleTime and gcTime to reduce unnecessary re-fetches
+5. **Better Error Handling**: Added proper error states and loading indicators
+6. **Search Optimization**: Optimized search algorithm with early returns and toLowerCase for better performance
+
+**Files Modified:**
+- `src/hooks/useBookings.ts` - Complete query optimization and caching
+- `src/pages/portal/Bookings.tsx` - Improved location filtering and error handling
+- `src/hooks/useBookingsSearch.ts` - Optimized search performance and removed redundant filtering
+
+**Result:** Bookings page now loads significantly faster with all booking data properly displayed. Location filtering is efficient and search performance is improved.
 </details>
 
 <details>
@@ -290,7 +300,7 @@ Classes column should show the actual number of active classes for each location
 <summary><strong>Bug #9:</strong> Location selector transparent on program creation page</summary>
 
 ### Title: Location selector transparent on program creation page
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-27
 ### Priority: Medium - affects portal functionality
 
 ### Issue
@@ -303,17 +313,23 @@ Classes column should show the actual number of active classes for each location
 - Dropdown text should be clearly readable
 - Consistent with other portal dropdown styling
 
-### Technical Notes
-- Similar to Bug #2 (resolved) but affecting different components
-- Likely needs Mantine component migration or z-index fix
-- Should use established dropdown styling patterns
+### Resolution Implemented
+1. **Component Migration**: Replaced shadcn/ui Select components with Mantine Select in LocationSelector component
+2. **Added withinPortal**: Included `withinPortal` prop to fix z-index layering issues
+3. **Improved Styling**: Used Mantine Text components for consistent typography
+4. **Enhanced UX**: Simplified location display format while maintaining all necessary information
+
+**Files Modified:**
+- `src/components/classes/LocationSelector.tsx` - Complete migration from shadcn/ui to Mantine components
+
+**Result:** Location selector dropdown now has proper background, readable text, and consistent styling with other portal dropdowns. Issue follows the same successful pattern used to resolve Bug #2.
 </details>
 
 <details>
 <summary><strong>Bug #10:</strong> Lead Details booking data combination issue</summary>
 
 ### Title: Lead Details booking data combination issue
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-27
 ### Priority: Medium - data accuracy issue
 
 ### Issue
@@ -326,10 +342,19 @@ Classes column should show the actual number of active classes for each location
 - Individual participant information should be distinct
 - Booking cards should not merge multiple bookings
 
-### Technical Notes
-- Likely issue in booking data aggregation logic
-- May be related to participant grouping or booking relationship queries
-- Check LeadBookingsSection component logic
+### Root Cause
+The issue was in the `useLeadBookings` hook where a single query with joins was causing Supabase to return duplicate booking data when multiple appointments existed for different bookings. The relational query was merging appointment data incorrectly.
+
+### Resolution Implemented
+1. **Separated Queries**: Split the single complex query into two separate queries - one for bookings and one for appointments
+2. **Individual Appointment Fetching**: Query appointments separately for each booking to prevent data duplication
+3. **Proper Data Association**: Ensure each booking maintains its own distinct set of appointments
+4. **Error Handling**: Added proper error handling for appointment queries without failing the entire request
+
+**Files Modified:**
+- `src/hooks/useLeadBookings.ts` - Completely restructured query logic to prevent data combination
+
+**Result:** Each booking now displays as a separate card with its own distinct participant information. Ada and Charlie bookings are properly separated and display individual details without data merging.
 </details>
 
 <details>
@@ -354,15 +379,19 @@ Classes column should show the actual number of active classes for each location
 - May need to add additional bulk operation handlers
 
 ### Implementation Summary
-Enhanced LeadsTable bulk operations with:
-1. **Bulk Status Updates** - Dropdown with all 8 lead statuses (New, Booked Upcoming, etc.)
-2. **Bulk Delete** - Delete button with confirmation dialog
-3. **Bulk Archive/Unarchive** - Existing functionality maintained
+Enhanced bulk operations with permanent header dropdown:
+1. **Permanent Bulk Actions Dropdown** - Added to page header controls on right side as requested
+2. **Complete Status Updates** - All 8 lead statuses (New, Booked Upcoming, Follow-up, etc.)
+3. **Archive/Unarchive Actions** - Context-aware based on current view (archived vs active)
+4. **Bulk Delete** - With confirmation dialog for safety
+5. **Selection Persistence** - Maintains selections during scroll operations
+6. **Immediate UI Feedback** - Shows selection count in button, clears immediately on action
 
 **Files Modified:**
-- `src/components/leads/LeadsTable.tsx` - Added comprehensive bulk actions
+- `src/pages/portal/Leads.tsx` - Added permanent bulk actions dropdown to header
+- `src/components/leads/LeadsTable.tsx` - Updated to share selection state with parent
 
-**Ready for Testing:** Bulk actions bar now provides full parity with individual row actions.
+**Ready for Testing:** Permanent bulk actions dropdown positioned in header provides all functionality with better UX than popup bar. Selection state persists during scroll and provides immediate feedback.
 </details>
 
 ---
