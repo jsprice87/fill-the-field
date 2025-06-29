@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '@mantine/core';
-import { Button } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { User, Mail, Building, Phone, MapPin } from 'lucide-react';
+import { Card, Button, TextInput, Title, Group, Stack, PasswordInput } from '@mantine/core';
+import { User, Mail, Building, Phone, MapPin, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -31,6 +28,12 @@ const Profile: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Password management state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -100,6 +103,46 @@ const Profile: React.FC = () => {
     setProfile(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePasswordChange = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error('Please fill in all password fields');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error('Error changing password:', error);
+        toast.error(error.message || 'Failed to change password');
+        return;
+      }
+
+      toast.success('Password changed successfully');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error('Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -115,113 +158,124 @@ const Profile: React.FC = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Profile</h1>
 
-      <Card padding="lg" withBorder>
-        <div className="flex items-center gap-2 mb-4 pb-4 border-b">
-          <User className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">Business Information</h3>
-        </div>
-        <div className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="company-name">Company Name</Label>
-              <Input
-                id="company-name"
+      <Stack spacing="lg">
+        {/* Business Information Card */}
+        <Card padding="lg" withBorder>
+          <Group mb="md">
+            <User className="h-5 w-5" />
+            <Title order={3}>Business Information</Title>
+          </Group>
+          
+          <Stack spacing="md">
+            <div className="grid md:grid-cols-2 gap-4">
+              <TextInput
+                label="Company Name"
                 name="company_name"
-                type="text"
                 value={profile.company_name || ''}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e)}
               />
-            </div>
-            <div>
-              <Label htmlFor="contact-name">Contact Name</Label>
-              <Input
-                id="contact-name"
+              <TextInput
+                label="Contact Name"
                 name="contact_name"
-                type="text"
                 value={profile.contact_name || ''}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e)}
               />
             </div>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
+            <div className="grid md:grid-cols-2 gap-4">
+              <TextInput
+                label="Email"
                 name="email"
                 type="email"
                 value={profile.email || ''}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e)}
               />
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
+              <TextInput
+                label="Phone"
                 name="phone"
                 type="tel"
                 value={profile.phone || ''}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e)}
               />
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
+            <TextInput
+              label="Address"
               name="address"
-              type="text"
               value={profile.address || ''}
-              onChange={handleChange}
+              onChange={(e) => handleChange(e)}
             />
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
+            <div className="grid md:grid-cols-3 gap-4">
+              <TextInput
+                label="City"
                 name="city"
-                type="text"
                 value={profile.city || ''}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e)}
               />
-            </div>
-            <div>
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
+              <TextInput
+                label="State"
                 name="state"
-                type="text"
                 value={profile.state || ''}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e)}
               />
-            </div>
-            <div>
-              <Label htmlFor="zip">ZIP Code</Label>
-              <Input
-                id="zip"
+              <TextInput
+                label="ZIP Code"
                 name="zip"
-                type="text"
                 value={profile.zip || ''}
-                onChange={handleChange}
+                onChange={(e) => handleChange(e)}
               />
             </div>
-          </div>
 
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
-              <span className="animate-pulse">Saving...</span>
-            ) : (
-              <>
-                Save Changes
-              </>
-            )}
-          </Button>
-        </div>
-      </Card>
+            <Button onClick={handleSave} disabled={isSaving} loading={isSaving}>
+              Save Changes
+            </Button>
+          </Stack>
+        </Card>
+
+        {/* Password Management Card */}
+        <Card padding="lg" withBorder>
+          <Group mb="md">
+            <Lock className="h-5 w-5" />
+            <Title order={3}>Password Management</Title>
+          </Group>
+          
+          <Stack spacing="md">
+            <PasswordInput
+              label="Current Password"
+              placeholder="Enter your current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
+            
+            <PasswordInput
+              label="New Password"
+              placeholder="Enter new password (minimum 6 characters)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+            
+            <PasswordInput
+              label="Confirm New Password"
+              placeholder="Confirm your new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+
+            <Button 
+              onClick={handlePasswordChange} 
+              disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
+              loading={isChangingPassword}
+              variant="outline"
+            >
+              Change Password
+            </Button>
+          </Stack>
+        </Card>
+      </Stack>
     </div>
   );
 };
