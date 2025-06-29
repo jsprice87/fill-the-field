@@ -179,11 +179,11 @@ const FindClasses: React.FC = () => {
   }
   const currentLeadData = flowData?.leadData;
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-brand-navy text-white py-6">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div style={{ backgroundColor: '#031E4D' }} className="text-white py-8">
         <div className="container mx-auto px-4">
-          <Title order={1} className="font-anton text-3xl mb-2 font-medium">SOCCER STARS</Title>
-          <Title order={2} className="font-agrandir text-xl">Find Classes Near You</Title>
+          <Title order={1} className="font-bold text-4xl mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.02em' }}>SOCCER STARS</Title>
+          <Title order={2} className="text-xl font-medium" style={{ fontFamily: 'Poppins, sans-serif' }}>Find Classes Near You</Title>
           {currentLeadData && (
             <Text className="font-poppins text-sm opacity-90 mt-2 text-slate-400">
               Hello {currentLeadData.firstName}, let's find classes near {currentLeadData.zip}
@@ -195,7 +195,7 @@ const FindClasses: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <Group position="apart" align="flex-start" mb="xl">
           <div>
-            <Title order={3} className="font-agrandir text-2xl text-brand-navy mb-2">Available Locations</Title>
+            <Title order={3} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-2xl font-bold mb-2">Available Locations</Title>
             {franchiseeData && (
               <Text className="font-poppins text-gray-600">
                 {franchiseeData.company_name} - {locations.length} location{locations.length !== 1 ? 's' : ''} found
@@ -241,14 +241,15 @@ const FindClasses: React.FC = () => {
               {locations.length > 0 ? locations.map(location => (
                 <Card 
                   key={location.id} 
-                  className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue"
+                  className="hover:shadow-lg transition-shadow border-l-4"
+                  style={{ borderLeftColor: '#031E4D' }}
                   padding="lg"
                   radius="md"
                   withBorder
                 >
                   <Group position="apart" align="flex-start">
                     <div className="flex-1">
-                      <Title order={4} className="font-agrandir text-xl text-brand-navy mb-3">
+                      <Title order={4} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold mb-3">
                         {location.name}
                       </Title>
                       <Stack spacing="xs">
@@ -273,8 +274,9 @@ const FindClasses: React.FC = () => {
                     </div>
                     <div className="ml-6">
                       <Button 
-                        onClick={() => handleLocationSelect(location)} 
-                        className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins" 
+                        onClick={() => handleLocationSelect(location)}
+                        style={{ backgroundColor: '#CE0E2D', fontFamily: 'Poppins, sans-serif' }}
+                        className="text-white hover:opacity-90 font-medium rounded-lg transition-all"
                         size="lg"
                       >
                         Select Location
@@ -283,10 +285,10 @@ const FindClasses: React.FC = () => {
                   </Group>
                 </Card>
               )) : (
-                <Card className="text-center border-l-4 border-l-brand-red" padding="xl" radius="md" withBorder>
+                <Card className="text-center border-l-4" style={{ borderLeftColor: '#CE0E2D' }} padding="xl" radius="md" withBorder>
                   <Stack spacing="md" align="center">
                     <MapPin className="h-16 w-16 text-gray-400" />
-                    <Title order={3} className="font-agrandir text-xl text-brand-navy">
+                    <Title order={3} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold">
                       No Locations Found Near You
                     </Title>
                     <Text className="font-poppins text-gray-600 max-w-md" ta="center">
@@ -294,8 +296,9 @@ const FindClasses: React.FC = () => {
                       Would you like us to notify you when programs become available in your area?
                     </Text>
                     <Button 
-                      onClick={handleRequestLocation} 
-                      className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins" 
+                      onClick={handleRequestLocation}
+                      style={{ backgroundColor: '#CE0E2D', fontFamily: 'Poppins, sans-serif' }}
+                      className="text-white hover:opacity-90 font-medium rounded-lg transition-all"
                       size="lg"
                     >
                       Request Programs in My Area

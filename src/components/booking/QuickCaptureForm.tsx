@@ -130,7 +130,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             <Grid.Col span={6}>
               <TextInput
                 id="firstName"
-                label="First Name *"
+                label="First Name"
                 type="text"
                 {...form.getInputProps('firstName')}
                 required
@@ -151,7 +151,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
             <Grid.Col span={6}>
               <TextInput
                 id="lastName"
-                label="Last Name *"
+                label="Last Name"
                 type="text"
                 {...form.getInputProps('lastName')}
                 required
@@ -173,7 +173,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
           <TextInput
             id="email"
-            label="Email Address *"
+            label="Email Address"
             type="email"
             {...form.getInputProps('email')}
             required
@@ -193,7 +193,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
           <TextInput
             id="phone"
-            label="Phone Number *"
+            label="Phone Number"
             type="tel"
             {...form.getInputProps('phone')}
             required
@@ -213,7 +213,7 @@ export const QuickCaptureForm: React.FC<QuickCaptureFormProps> = ({
 
           <TextInput
             id="zip"
-            label="ZIP Code *"
+            label="ZIP Code"
             type="text"
             {...form.getInputProps('zip')}
             required
