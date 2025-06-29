@@ -75,7 +75,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <User className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">First Name *</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">First Name</Text>
                   </Group>
                 }
                 value={parentInfo.firstName || ''}
@@ -93,7 +93,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <User className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">Last Name *</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">Last Name</Text>
                   </Group>
                 }
                 value={parentInfo.lastName || ''}
@@ -112,7 +112,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             label={
               <Group spacing="xs">
                 <Mail className="h-4 w-4" />
-                <Text className="font-poppins text-sm font-medium text-gray-700">Email Address *</Text>
+                <Text className="font-poppins text-sm font-medium text-gray-700">Email Address</Text>
               </Group>
             }
             value={parentInfo.email || ''}
@@ -131,7 +131,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <Phone className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">Phone Number *</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">Phone Number</Text>
                   </Group>
                 }
                 value={parentInfo.phone || ''}
@@ -149,7 +149,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <MapPin className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">ZIP Code *</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">ZIP Code</Text>
                   </Group>
                 }
                 value={parentInfo.zip || ''}
@@ -166,7 +166,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             label={
               <Group spacing="xs">
                 <Users className="h-4 w-4" />
-                <Text className="font-poppins text-sm font-medium text-gray-700">Relationship to Child *</Text>
+                <Text className="font-poppins text-sm font-medium text-gray-700">Relationship to Child</Text>
               </Group>
             }
             value={parentInfo.relationship || ''}
