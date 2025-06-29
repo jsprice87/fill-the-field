@@ -183,10 +183,10 @@ const BookingConfirmation: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="text-center">
-          <Loader color="var(--brand-navy)" size="lg" className="mx-auto mb-4" />
-          <Text className="font-poppins text-gray-600">Loading booking details...</Text>
+          <Loader style={{ color: '#031E4D' }} size="lg" className="mx-auto mb-4" />
+          <Text style={{ fontFamily: 'Poppins, sans-serif' }} className="text-gray-600">Loading booking details...</Text>
         </div>
       </div>
     );
@@ -194,11 +194,15 @@ const BookingConfirmation: React.FC = () => {
 
   if (!booking || !franchiseeData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="text-center">
-          <Title order={1} className="text-2xl font-bold text-gray-900 mb-4">Booking Not Found</Title>
-          <Text className="text-gray-600 mb-6">We couldn't find the booking you're looking for.</Text>
-          <Button onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}>
+          <Title order={1} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-2xl font-bold mb-4">Booking Not Found</Title>
+          <Text style={{ fontFamily: 'Poppins, sans-serif' }} className="text-gray-600 mb-6">We couldn't find the booking you're looking for.</Text>
+          <Button 
+            onClick={() => navigate(`/${franchiseeSlug}/free-trial`)}
+            style={{ backgroundColor: '#CE0E2D', fontFamily: 'Poppins, sans-serif' }}
+            className="text-white hover:opacity-90 font-medium rounded-lg transition-all"
+          >
             Back to Booking
           </Button>
         </div>
@@ -210,22 +214,22 @@ const BookingConfirmation: React.FC = () => {
   const location = booking.class_schedules.classes.locations;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-brand-navy text-white py-6">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div style={{ backgroundColor: '#031E4D' }} className="text-white py-8">
         <div className="container mx-auto px-4">
-          <Title order={1} className="font-anton text-3xl mb-2">SOCCER STARS</Title>
-          <Title order={2} className="font-agrandir text-xl">Booking Confirmed!</Title>
+          <Title order={1} className="font-bold text-4xl mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.02em' }}>SOCCER STARS</Title>
+          <Title order={2} className="text-xl font-medium" style={{ fontFamily: 'Poppins, sans-serif' }}>Booking Confirmed!</Title>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <Stack spacing="lg">
           {/* Success Message */}
-          <Card className="border-l-4 border-l-green-500" padding="lg" radius="md" withBorder>
+          <Card className="border-l-4" style={{ borderLeftColor: '#CE0E2D' }} padding="lg" radius="md" withBorder>
             <Group spacing="sm" mb="md">
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8" style={{ color: '#CE0E2D' }} />
               <div>
-                <Title order={3} className="font-agrandir text-xl text-brand-navy">
+                <Title order={3} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold">
                   Booking Confirmed!
                 </Title>
                 <Text className="font-poppins text-gray-600 mt-1">
@@ -242,10 +246,10 @@ const BookingConfirmation: React.FC = () => {
 
           {/* Booking Details */}
           <Card padding="lg" radius="md" withBorder>
-            <Title order={4} className="font-agrandir text-lg text-brand-navy" mb="md">Booking Details</Title>
+            <Title order={4} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-lg font-bold" mb="md">Booking Details</Title>
             <Stack spacing="md">
               <Group align="flex-start" spacing="sm">
-                <Calendar className="h-5 w-5 text-brand-blue mt-1" />
+                <Calendar className="h-5 w-5 mt-1" style={{ color: '#031E4D' }} />
                 <div>
                   <Text className="font-poppins font-medium">Date & Time</Text>
                   <Text className="font-poppins text-gray-600">
@@ -255,7 +259,7 @@ const BookingConfirmation: React.FC = () => {
               </Group>
 
               <Group align="flex-start" spacing="sm">
-                <User className="h-5 w-5 text-brand-blue mt-1" />
+                <User className="h-5 w-5 mt-1" style={{ color: '#031E4D' }} />
                 <div>
                   <Text className="font-poppins font-medium">Class</Text>
                   <Text className="font-poppins text-gray-600">{appointment.class_name}</Text>
@@ -263,7 +267,7 @@ const BookingConfirmation: React.FC = () => {
               </Group>
 
               <Group align="flex-start" spacing="sm">
-                <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+                <MapPin className="h-5 w-5 mt-1" style={{ color: '#031E4D' }} />
                 <div>
                   <Text className="font-poppins font-medium">Location</Text>
                   <Text className="font-poppins text-gray-600">
@@ -286,18 +290,18 @@ const BookingConfirmation: React.FC = () => {
           {/* Contact Information */}
           {(franchiseeData.phone || franchiseeData.address || franchiseeSettings.website_url) && (
             <Card padding="lg" radius="md" withBorder>
-              <Title order={4} className="font-agrandir text-lg text-brand-navy" mb="md">Contact Information</Title>
+              <Title order={4} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-lg font-bold" mb="md">Contact Information</Title>
               <Stack spacing="sm">
                 {franchiseeData.phone && (
                   <Group spacing="sm">
-                    <Phone className="h-5 w-5 text-brand-blue" />
+                    <Phone className="h-5 w-5" style={{ color: '#031E4D' }} />
                     <Text className="font-poppins text-gray-700">{franchiseeData.phone}</Text>
                   </Group>
                 )}
                 
                 {franchiseeData.address && (
                   <Group align="flex-start" spacing="sm">
-                    <MapPin className="h-5 w-5 text-brand-blue mt-1" />
+                    <MapPin className="h-5 w-5 mt-1" style={{ color: '#031E4D' }} />
                     <Text className="font-poppins text-gray-700">
                       {franchiseeData.address}
                       {franchiseeData.city && franchiseeData.state && (
@@ -309,7 +313,7 @@ const BookingConfirmation: React.FC = () => {
 
                 {franchiseeSettings.website_url && (
                   <Group spacing="sm">
-                    <Globe className="h-5 w-5 text-brand-blue" />
+                    <Globe className="h-5 w-5" style={{ color: '#031E4D' }} />
                     <Anchor 
                       href={franchiseeSettings.website_url} 
                       target="_blank" 
@@ -328,7 +332,8 @@ const BookingConfirmation: React.FC = () => {
           <Stack spacing="md">
             <Button
               onClick={handleShare}
-              className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins"
+              style={{ backgroundColor: '#CE0E2D', fontFamily: 'Poppins, sans-serif' }}
+              className="text-white hover:opacity-90 font-medium rounded-lg transition-all"
               size="lg"
               fullWidth
               leftSection={<Share2 className="h-5 w-5" />}
@@ -340,7 +345,8 @@ const BookingConfirmation: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate(`/${franchiseeSlug}`)}
-                className="font-poppins"
+                style={{ borderColor: '#031E4D', color: '#031E4D', fontFamily: 'Poppins, sans-serif' }}
+                className="hover:bg-gray-50 font-medium rounded-lg transition-all"
               >
                 Back to Home
               </Button>
@@ -348,7 +354,8 @@ const BookingConfirmation: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={() => window.open(franchiseeSettings.website_url, '_blank')}
-                  className="font-poppins"
+                  style={{ borderColor: '#031E4D', color: '#031E4D', fontFamily: 'Poppins, sans-serif' }}
+                  className="hover:bg-gray-50 font-medium rounded-lg transition-all"
                 >
                   Visit Website
                 </Button>
