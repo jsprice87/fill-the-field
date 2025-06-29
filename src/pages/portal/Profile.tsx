@@ -115,14 +115,12 @@ const Profile: React.FC = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Profile</h1>
 
-      <Card>
-        <Card.Section>
-          <Card.Section className="flex items-center gap-2 p-4 border-b">
-            <User className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Business Information</h3>
-          </Card.Section>
-        </Card.Section>
-        <Card.Section className="space-y-4 p-4">
+      <Card padding="lg" withBorder>
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b">
+          <User className="h-5 w-5" />
+          <h3 className="text-lg font-semibold">Business Information</h3>
+        </div>
+        <div className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="company-name">Company Name</Label>
@@ -222,7 +220,7 @@ const Profile: React.FC = () => {
               </>
             )}
           </Button>
-        </Card.Section>
+        </div>
       </Card>
     </div>
   );

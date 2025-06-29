@@ -102,24 +102,22 @@ const EnhancedMapLoader: React.FC<EnhancedMapLoaderProps> = ({
     return (
       <div className={`flex flex-col items-center justify-center ${className}`} 
            style={{ height: aspectRatio ? undefined : height }}>
-        <Card className="max-w-md w-full">
-          <Card.Section className="p-6">
-            <div className="text-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Mapbox Configuration Required</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                No Mapbox token found in system settings. Please contact your administrator to configure the Mapbox token in the admin settings, or enter one below.
-              </p>
-            </div>
-            <MapboxTokenInput onTokenSubmit={handleTokenSubmit} />
-            <div className="mt-4 text-center">
-              <button
-                onClick={handleUseLeaflet}
-                className="text-sm text-gray-600 hover:text-gray-800 underline"
-              >
-                Skip Mapbox and use basic map instead
-              </button>
-            </div>
-          </Card.Section>
+        <Card className="max-w-md w-full" padding="lg">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Mapbox Configuration Required</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              No Mapbox token found in system settings. Please contact your administrator to configure the Mapbox token in the admin settings, or enter one below.
+            </p>
+          </div>
+          <MapboxTokenInput onTokenSubmit={handleTokenSubmit} />
+          <div className="mt-4 text-center">
+            <button
+              onClick={handleUseLeaflet}
+              className="text-sm text-gray-600 hover:text-gray-800 underline"
+            >
+              Skip Mapbox and use basic map instead
+            </button>
+          </div>
         </Card>
       </div>
     );
@@ -130,12 +128,10 @@ const EnhancedMapLoader: React.FC<EnhancedMapLoaderProps> = ({
     return (
       <div className="relative">
         {mapboxError && (
-          <Card className="mb-4 border-yellow-200 bg-yellow-50">
-            <Card.Section className="p-4">
-              <p className="text-yellow-800 text-sm">
-                Mapbox unavailable ({mapboxError}). Using basic map instead.
-              </p>
-            </Card.Section>
+          <Card className="mb-4 border-yellow-200 bg-yellow-50" padding="md">
+            <p className="text-yellow-800 text-sm">
+              Mapbox unavailable ({mapboxError}). Using basic map instead.
+            </p>
           </Card>
         )}
         <ProgressiveMapLoader
