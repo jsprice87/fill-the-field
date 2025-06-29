@@ -363,16 +363,24 @@ const ClassBooking: React.FC = () => {
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-white">
-      <div className="bg-brand-navy text-white py-6">
+  return <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div style={{ backgroundColor: '#031E4D' }} className="text-white py-8">
         <div className="container mx-auto px-4">
-          <div className="flex items-center gap-4 mb-2">
-            <Button variant="ghost" onClick={handleBackToLocations} className="text-white hover:bg-white/10 p-2">
+          <div className="flex items-center gap-4 mb-3">
+            <Button 
+              variant="ghost" 
+              onClick={handleBackToLocations} 
+              className="text-white hover:bg-white/10 p-2 rounded-lg"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="font-anton text-3xl font-medium">SOCCER STARS</h1>
-              <h2 className="font-agrandir text-xl">Select Classes & Add Participants</h2>
+              <h1 className="font-bold text-4xl" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.02em' }}>
+                SOCCER STARS
+              </h1>
+              <h2 className="text-xl font-medium" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                Select Classes & Add Participants
+              </h2>
             </div>
           </div>
           {flowData.selectedLocation && <div className="flex items-center mt-2 ml-12">
@@ -392,7 +400,7 @@ const ClassBooking: React.FC = () => {
           {/* Classes List */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-agrandir text-2xl text-brand-navy">Available Classes</h3>
+              <h3 style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-2xl font-bold">Available Classes</h3>
               {getTotalParticipants() >= 5 && <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg">
                   <span className="font-poppins text-sm">
                     Maximum 5 participants per booking reached
@@ -403,12 +411,12 @@ const ClassBooking: React.FC = () => {
             {classes.length > 0 ? classes.map(classSchedule => {
             const availableSpots = getAvailableSpots(classSchedule);
             const sessionParticipants = getParticipantCountForClass(classSchedule.id);
-            return <Card key={classSchedule.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-brand-blue" padding="lg">
+            return <Card key={classSchedule.id} className="hover:shadow-lg transition-shadow border-l-4" style={{ borderLeftColor: '#031E4D' }} padding="lg">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <Title order={3} className="font-agrandir text-xl text-brand-navy mb-2">
+                        <Title order={3} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold mb-2">
                           {classSchedule.classes.name}
-                          {sessionParticipants > 0 && <span className="ml-2 bg-brand-blue text-white text-sm px-2 py-1 rounded font-poppins">
+                          {sessionParticipants > 0 && <span className="ml-2 text-white text-sm px-2 py-1 rounded font-medium" style={{ backgroundColor: '#CE0E2D', fontFamily: 'Poppins, sans-serif' }}>
                               {sessionParticipants} added
                             </span>}
                         </Title>
@@ -454,23 +462,40 @@ const ClassBooking: React.FC = () => {
                         </div>
                         
                         <div className="ml-6">
-                          <Button onClick={() => handleAddParticipant(classSchedule)} disabled={availableSpots <= 0 || !canAddMoreParticipants()} className="bg-brand-red hover:bg-brand-red/90 text-white font-poppins px-6 py-3" size="lg">
+                          <Button 
+                            onClick={() => handleAddParticipant(classSchedule)} 
+                            disabled={availableSpots <= 0 || !canAddMoreParticipants()} 
+                            style={{ 
+                              backgroundColor: availableSpots <= 0 || !canAddMoreParticipants() ? '#E5E7EB' : '#CE0E2D',
+                              fontFamily: 'Poppins, sans-serif'
+                            }}
+                            className="text-white hover:opacity-90 px-6 py-3 rounded-lg font-medium transition-all"
+                            size="lg"
+                          >
                             {availableSpots <= 0 ? 'Class Full' : !canAddMoreParticipants() ? 'Max Participants' : 'Add Participant'}
                           </Button>
                         </div>
                       </div>
                     </Card>;
-          }) : <Card className="p-8 text-center border-l-4 border-l-brand-red">
+          }) : <Card className="p-8 text-center border-l-4" style={{ borderLeftColor: '#CE0E2D' }}>
                 <div className="mb-6">
                   <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="font-agrandir text-xl text-brand-navy mb-2">
+                  <h3 style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold mb-2">
                     No Classes Available
                   </h3>
                   <p className="font-poppins text-gray-600 mb-6">
                     There are currently no classes scheduled at this location.
                     Please check back later or contact the location directly for more information.
                   </p>
-                  <Button onClick={handleBackToLocations} className="bg-brand-blue hover:bg-brand-blue/90 text-white font-poppins" size="lg">
+                  <Button 
+                    onClick={handleBackToLocations}
+                    style={{ 
+                      backgroundColor: '#CE0E2D',
+                      fontFamily: 'Poppins, sans-serif'
+                    }}
+                    className="text-white hover:opacity-90 font-medium rounded-lg transition-all"
+                    size="lg"
+                  >
                     Choose Different Location
                   </Button>
                 </div>
@@ -480,8 +505,8 @@ const ClassBooking: React.FC = () => {
           {/* Right Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Participants Summary */}
-            {(flowData.participants?.length || 0) > 0 && <Card className="border-l-4 border-l-brand-blue" padding="lg">
-                <Title order={3} className="font-agrandir text-xl text-brand-navy flex items-center gap-2 mb-4">
+            {(flowData.participants?.length || 0) > 0 && <Card className="border-l-4" style={{ borderLeftColor: '#031E4D' }} padding="lg">
+                <Title order={3} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold flex items-center gap-2 mb-4">
                   <Users className="h-5 w-5" />
                   Participants Added ({flowData.participants?.length || 0})
                 </Title>
@@ -513,8 +538,17 @@ const ClassBooking: React.FC = () => {
             <ParentGuardianForm flowData={flowData} updateFlow={updateFlow} />
 
             {/* Confirmation Button */}
-            <Card className="border-l-4 border-l-green-500" padding="lg">
-                <Button onClick={handleContinueToConfirmation} disabled={!canConfirmBooking()} className="w-full bg-brand-red hover:bg-brand-red/90 text-white font-poppins py-3 disabled:bg-gray-300 disabled:cursor-not-allowed" size="lg">
+            <Card className="border-l-4" style={{ borderLeftColor: '#CE0E2D' }} padding="lg">
+                <Button 
+                  onClick={handleContinueToConfirmation} 
+                  disabled={!canConfirmBooking()} 
+                  style={{ 
+                    backgroundColor: canConfirmBooking() ? '#CE0E2D' : '#E5E7EB',
+                    fontFamily: 'Poppins, sans-serif'
+                  }}
+                  className="w-full text-white hover:opacity-90 py-3 font-medium rounded-lg transition-all disabled:cursor-not-allowed" 
+                  size="lg"
+                >
                   {canConfirmBooking() ? 'Confirm Booking' : 'Complete Required Information'}
                 </Button>
                 
@@ -529,7 +563,7 @@ const ClassBooking: React.FC = () => {
 
         {/* Help section */}
         {classes.length > 0 && <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
-            <h4 className="font-agrandir text-lg text-brand-navy mb-2">Need Help Choosing?</h4>
+            <h4 style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-lg font-bold mb-2">Need Help Choosing?</h4>
             <p className="font-poppins text-gray-600 text-sm">
               All classes are designed to be fun and age-appropriate. You can add multiple children to the same class
               or different classes. If you're unsure which class is best for your child, 
