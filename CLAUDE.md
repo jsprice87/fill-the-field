@@ -18,6 +18,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - User cannot see changes until they are pushed to remote main branch
 - Commit with descriptive messages including the "why" behind changes
 - Push immediately after committing when user needs to test functionality
+- **CRITICAL**: Test big changes before proceeding to next tasks in backlog
+- Stop after major fixes/features, commit & push, then wait for user testing confirmation
 
 ### VS Code Development
 - Use VS Code's integrated terminal to run `npm run dev`
