@@ -127,17 +127,28 @@ const Profile: React.FC = () => {
 
       if (error) {
         console.error('Error changing password:', error);
-        toast.error(error.message || 'Failed to change password');
+        // Provide more meaningful error messages
+        let errorMessage = 'Failed to change password';
+        if (error.message?.includes('Invalid login credentials')) {
+          errorMessage = 'Current password is incorrect';
+        } else if (error.message?.includes('Password should be at least')) {
+          errorMessage = 'Password must be at least 6 characters long';
+        } else if (error.message?.includes('too short')) {
+          errorMessage = 'Password is too short - minimum 6 characters required';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage);
         return;
       }
 
-      toast.success('Password changed successfully');
+      toast.success('Password updated successfully!');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
       console.error('Error changing password:', error);
-      toast.error('Failed to change password');
+      toast.error('Password update failed - please try again');
     } finally {
       setIsChangingPassword(false);
     }
