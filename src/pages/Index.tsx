@@ -29,7 +29,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-24 bg-slate-50">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
-            <img alt="Fill The Field Shield" className="h-44 w-auto mx-auto mb-6" src="/media/Sheild@3x.png" />
+            <img alt="Fill The Field Shield" className="h-44 w-auto mx-auto mb-6" src="/media/Shield@3x.png" />
           </div>
           <h1 className="text-5xl font-bold mb-6 text-emerald-950">
             Fill Your Trial Classes and Convert More Customers

@@ -104,7 +104,7 @@ const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
   return (
     <AuthLayout 
       title="Log in to your account"
-      subtitle="Welcome back to SuperLeadStar"
+      subtitle="Welcome back to Fill The Field!"
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
