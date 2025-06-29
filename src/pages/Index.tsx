@@ -11,7 +11,7 @@ const Index = () => {
       <header className="bg-slate-50 shadow-sm">
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" src="/lovable-uploads/368dbc9a-49f0-4b8d-b40f-7581664fa0f4.png" />
+            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" src="/media/FILL THE FIELD@3x.png" />
           </div>
           <div className="flex items-center gap-4">
             
@@ -29,7 +29,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-24 bg-slate-50">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
-            <img alt="Fill The Field Shield" className="h-44 w-auto mx-auto mb-6" src="/lovable-uploads/8df4baab-d566-4e42-aa4a-1204ade0112a.png" />
+            <img alt="Fill The Field Shield" className="h-44 w-auto mx-auto mb-6" src="/media/Sheild@3x.png" />
           </div>
           <h1 className="text-5xl font-bold mb-6 text-emerald-950">
             Fill Your Trial Classes and Convert More Customers
@@ -77,7 +77,7 @@ const Index = () => {
       <footer className="bg-slate-50 border-t">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center mb-8">
-            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-auto w-auto mx-auto mb-4 max-w-[600px]" src="/lovable-uploads/36557b73-e388-416f-9acb-5124d4fe7f00.png" />
+            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-auto w-auto mx-auto mb-4 max-w-[600px]" src="/media/FILL THE FIELD@3x.png" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>

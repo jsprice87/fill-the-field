@@ -1,7 +1,7 @@
 # 🚀 Feature Requests & Enhancements
 
-> **Last Updated:** 28 Jun 2025  
-> **Active Features:** 6 | **Completed:** 3 | **Backlog:** 1
+> **Last Updated:** 29 Jun 2025  
+> **Active Features:** 7 | **Completed:** 3 | **Backlog:** 1
 
 ---
 
@@ -10,6 +10,7 @@
 | ID | Title | Priority | Complexity | Assignee | Target Version |
 |----|-------|----------|------------|----------|----------------|
 | #9 | Profile password management | 🔴 High | 🟡 Medium | unassigned | v0.9.6 |
+| #11 | Color-coded lead status badges with dropdown functionality | 🟡 Medium | 🟡 Medium | unassigned | v0.9.7 |
 | #6 | Enhanced notification types & end-of-day summaries | 🟡 Medium | 🔴 High | unassigned | v1.0.0 |
 | #2 | "Add Classes" button in Locations table actions | 🟢 Low | 🟢 Low | unassigned | v0.9.3 |
 | #3 | Enhanced Booking Restrictions with radio button logic | 🟢 Low | 🟡 Medium | unassigned | v0.9.4 |
@@ -444,6 +445,76 @@ Remove the "Business Information" section from `/portal/profile/` page since it 
 - Update any components that reference profile business info
 - Add navigation guidance to settings page
 - Ensure data consistency across the application
+
+</details>
+
+<details>
+<summary><strong>Feature #11:</strong> Color-coded lead status badges with dropdown functionality</summary>
+
+### Description
+Implement color-coded lead status badges that function as interactive dropdown menus, providing visual consistency and streamlined status management across the portal.
+
+### Current State
+- Lead status displays vary across different portal locations
+- Status changes require separate dropdown menus or buttons
+- No consistent color coding for status recognition
+- UI can feel cluttered with separate badges and menus
+
+### Proposed Enhancement
+Create unified status badge system with:
+
+**1. Color-Coded Status Badges**
+- Consistent color scheme for all lead statuses
+- Immediate visual recognition of lead states
+- Used consistently across all portal locations (tables, details, etc.)
+
+**2. Interactive Badge Dropdowns**
+- Badge itself is clickable and opens status change menu
+- No separate dropdown button needed
+- Minimizes UI clutter by combining display and action
+
+**3. Status Color Scheme Suggestions**
+- **New**: 🔵 Blue - Fresh leads
+- **Contacted**: 🟡 Yellow - In progress
+- **Booked Upcoming**: 🟢 Green - Success state
+- **Follow-up**: 🟠 Orange - Needs attention
+- **Not Interested**: 🔴 Red - Closed negative
+- **Archived**: ⚫ Gray - Inactive
+
+### Technical Requirements
+- Create reusable StatusBadge component
+- Implement dropdown functionality within badge
+- Ensure consistent styling across all portal pages
+- Update all existing status displays to use new component
+- Maintain accessibility for dropdown interactions
+
+### Implementation Details
+- Replace existing status displays in LeadsTable, Lead Details, etc.
+- Badge component accepts current status and onChange callback
+- Dropdown shows all available status options with colors
+- Smooth transitions and hover states for professional feel
+- Keyboard navigation support for accessibility
+
+### Acceptance Criteria
+- [ ] All lead statuses use consistent color coding
+- [ ] Status badges are clickable and open dropdown menu
+- [ ] Same badge component used across all portal locations
+- [ ] No separate status dropdown buttons needed
+- [ ] Color scheme is intuitive and professional
+- [ ] Accessibility standards met for dropdown interactions
+- [ ] Status changes work seamlessly from badge clicks
+
+### Priority: 🟡 Medium
+- **Business Value**: Medium - improves workflow efficiency and visual consistency
+- **UX Impact**: High - cleaner interface with better visual recognition
+- **Development Effort**: Medium - component creation and system-wide updates
+- **Target Version**: v0.9.7
+
+### Design Principles
+- **Minimize Clutter**: Badge IS the menu, not badge + menu
+- **Visual Consistency**: Same colors and styling everywhere
+- **Immediate Recognition**: Colors provide instant status understanding
+- **Streamlined Workflow**: One click to view and change status
 
 </details>
 

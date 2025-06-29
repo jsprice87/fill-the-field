@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
-> **Last Updated:** 28 Jun 2025  
-> **Active Issues:** 5 | **Resolved:** 10
+> **Last Updated:** 29 Jun 2025  
+> **Active Issues:** 13 | **Resolved:** 12
 
 ---
 
@@ -9,11 +9,19 @@
 
 | ID | Title | Severity | Priority | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------|----------------|---------|
-| #12 | URGENT: Booking flow broken due to CardHeader undefined error | 🔴 Critical | P0 | unassigned | Find-classes booking components | 2025-06-28 |
-| #13 | Find-classes page using portal styling instead of Soccer Stars branding | 🟡 Medium | P1 | unassigned | /free-trial/find-classes | 2025-06-28 |
-| #15 | Duplicate asterisks on lead capture form fields | 🟢 Low | P1 | unassigned | Lead capture form components | 2025-06-28 |
-| #14 | Waiver editor not editable on first profile creation | 🟢 Low | P2 | unassigned | /portal/settings waiver section | 2025-06-28 |
-| #11 | Bulk table actions limited to Archive only | 🟢 Low | P3 | unassigned | LeadsTable.tsx | 2025-06-26 |
+| #18 | Language requirement section needs blue "how it works" section | 🟡 Medium | P1 | unassigned | /portal/settings | 2025-06-29 |
+| #19 | Duplicate asterisk in Parent/Guardian Information booking page | 🟢 Low | P1 | unassigned | ParentGuardianForm.tsx | 2025-06-29 |
+| #20 | Booking page needs Soccer Stars styling | 🟡 Medium | P1 | unassigned | ClassBooking.tsx | 2025-06-29 |
+| #21 | Booking confirmation page needs Soccer Stars styling | 🟡 Medium | P1 | unassigned | BookingConfirmation.tsx | 2025-06-29 |
+| #22 | Missing liability waiver link in agreements section + rename section | 🟡 Medium | P1 | unassigned | ParentGuardianAgreements.tsx | 2025-06-29 |
+| #23 | Agreement checkboxes/icons misaligned (poor design) | 🟢 Low | P1 | unassigned | ParentGuardianAgreements.tsx | 2025-06-29 |
+| #13 | Find-classes page using portal styling instead of Soccer Stars branding | 🟡 Medium | P2 | unassigned | /free-trial/find-classes | 2025-06-28 |
+| #24 | Select Class Date modal needs visual date selection indicator | 🟢 Low | P2 | unassigned | ParticipantModal.tsx | 2025-06-29 |
+| #25 | Share with Friends message contains extra information | 🟢 Low | P2 | unassigned | BookingConfirmation.tsx | 2025-06-29 |
+| #26 | Confirmation page needs Facebook/Instagram icons instead of text | 🟢 Low | P2 | unassigned | BookingConfirmation.tsx | 2025-06-29 |
+| #15 | Duplicate asterisks on lead capture form fields | 🟢 Low | P3 | unassigned | Lead capture form components | 2025-06-28 |
+| #14 | Waiver editor not editable on first profile creation | 🟢 Low | P3 | unassigned | /portal/settings waiver section | 2025-06-28 |
+| #11 | Bulk table actions limited to Archive only | 🟢 Low | P4 | unassigned | LeadsTable.tsx | 2025-06-26 |
 | #16 | Map debug console logs on find-classes page | 🟢 Low | P4 | unassigned | /free-trial/find-classes | 2025-06-28 |
 
 ---
@@ -32,6 +40,8 @@
 | #8 | Liability waiver 404 error and opens new page | Replaced href link with WaiverModal popup | `56efdf9` | 2025-06-26 |
 | #9 | Location selector transparent on program creation page | Migrated LocationSelector from shadcn/ui to Mantine components | `current` | 2025-06-27 |
 | #10 | Lead Details booking data combination issue | Separated booking and appointment queries to prevent data duplication | `current` | 2025-06-27 |
+| #12 | URGENT: Booking flow broken due to CardHeader undefined error | Fixed shadcn/ui to Mantine migration issues in ClassBooking.tsx | `e7de569` | 2025-06-28 |
+| #17 | Three broken images on fill-the-field.com home page | Updated image paths to correct /media/ locations | `current` | 2025-06-29 |
 
 ---
 
@@ -570,6 +580,345 @@ ReferenceError: CardHeader is not defined
 - **P4 Cleanup**: Does not affect user experience
 - **Low Priority**: Internal developer issue only
 - **Easy Fix**: Simple code cleanup task
+</details>
+
+<details>
+<summary><strong>Bug #17:</strong> Three broken images on fill-the-field.com home page</summary>
+
+### Title: Three broken images on fill-the-field.com home page
+### Status: `RESOLVED` ✅ 2025-06-29
+### Priority: P0 Critical - Public-facing image display
+### Severity: 🟡 Medium
+
+### Issue
+- **Problem:** Three images on fill-the-field.com home page were using incorrect paths
+- **Impact:** Broken images on main company website affecting professional appearance
+- **Affects:** All visitors to fill-the-field.com home page
+
+### Specific Problems
+1. **Header image**: Using `/lovable-uploads/368dbc9a-49f0-4b8d-b40f-7581664fa0f4.png`
+2. **Main center image**: Using `/lovable-uploads/8df4baab-d566-4e42-aa4a-1204ade0112a.png`
+3. **Footer image**: Using `/lovable-uploads/36557b73-e388-416f-9acb-5124d4fe7f00.png`
+
+### Expected Behavior
+- Header and footer images should display Fill The Field logo
+- Main center image should display Fill The Field shield
+- All images should load correctly without broken image placeholders
+
+### Visual Evidence
+- See screenshot: `/media/screenshots/Screenshot 2025-06-28 at 3.25.01 PM.png`
+
+### Resolution Implemented
+Updated image paths in `src/pages/Index.tsx`:
+1. **Header image**: Changed to `/media/FILL THE FIELD@3x.png`
+2. **Main center image**: Changed to `/media/Sheild@3x.png`
+3. **Footer image**: Changed to `/media/FILL THE FIELD@3x.png`
+
+**Files Modified:**
+- `src/pages/Index.tsx` - Updated all three image src attributes
+
+**Result:** All three images now display correctly on the fill-the-field.com home page with proper branding.
+</details>
+
+<details>
+<summary><strong>Bug #18:</strong> Language requirement section needs blue "how it works" section</summary>
+
+### Title: Language requirement section needs blue "how it works" section
+### Status: `OPEN` 🟡
+### Priority: P1 High - Settings UX improvement
+### Severity: 🟡 Medium
+
+### Issue
+- **Problem:** Language requirement option in `/portal/settings` lacks explanatory "how it works" section
+- **Impact:** Users may not understand what the language requirement setting does
+- **Affects:** Portal users configuring their settings
+
+### Expected Behavior
+- Language requirement section should have a blue informational box
+- Should explain how the setting affects the booking flow
+- Similar to other explanatory sections in settings
+
+### Current State
+- Language requirement setting exists as simple checkbox
+- No explanation of functionality or impact
+- Users may not understand when/why to enable/disable it
+
+### Technical Requirements
+- Add blue "how it works" informational section
+- Explain what happens when language requirement is enabled vs disabled
+- Follow existing design patterns in portal settings
+- Clear, concise explanation text
+
+### Priority Justification
+- **P1 High**: Important for user understanding and proper feature adoption
+- **UX Impact**: Helps users make informed configuration decisions
+- **Professional Standards**: Settings should be self-explanatory
+</details>
+
+<details>
+<summary><strong>Bug #19:</strong> Duplicate asterisk in Parent/Guardian Information booking page</summary>
+
+### Title: Duplicate asterisk in Parent/Guardian Information booking page
+### Status: `OPEN` 🟢
+### Priority: P1 High - Booking flow UX
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** Parent/Guardian Information section shows duplicate asterisks on required fields
+- **Impact:** Confusing validation UI, unprofessional appearance during booking
+- **Affects:** All users completing booking flow
+
+### Expected Behavior
+- Required fields should show single asterisk (*) indicator
+- Clean, professional form appearance
+- Consistent with other form validation patterns
+
+### Technical Analysis
+- Likely caused by both HTML required attribute and component-level asterisk rendering
+- May be related to Mantine migration from shadcn/ui components
+- Similar to Bug #15 but specific to booking page forms
+
+### Priority Justification
+- **P1 High**: Affects critical booking flow user experience
+- **Public-facing**: Customer-facing forms must look professional
+- **Easy Fix**: Simple validation UI cleanup
+</details>
+
+<details>
+<summary><strong>Bug #20:</strong> Booking page needs Soccer Stars styling</summary>
+
+### Title: Booking page needs Soccer Stars styling
+### Status: `OPEN` 🟡
+### Priority: P1 High - Public branding consistency
+### Severity: 🟡 Medium
+
+### Issue
+- **Problem:** Booking page (ClassBooking.tsx) uses generic/portal styling instead of Soccer Stars branding
+- **Impact:** Inconsistent brand experience during critical booking process
+- **Affects:** All customers attempting to book classes
+
+### Expected Behavior
+- Booking page should use Soccer Stars color palette and branding
+- Should match soccerstars.com design language
+- Professional, branded appearance throughout booking flow
+
+### Specific Requirements
+- Apply Soccer Stars colors, fonts, and styling
+- Ensure brand consistency with public marketing site
+- Maintain professional appearance during booking process
+- Remove any portal-specific styling elements
+
+### Priority Justification
+- **P1 High**: Critical customer touchpoint must reflect proper branding
+- **Revenue Impact**: Professional booking experience affects conversion
+- **Brand Consistency**: Essential for customer trust and recognition
+</details>
+
+<details>
+<summary><strong>Bug #21:</strong> Booking confirmation page needs Soccer Stars styling</summary>
+
+### Title: Booking confirmation page needs Soccer Stars styling
+### Status: `OPEN` 🟡
+### Priority: P1 High - Post-booking branding
+### Severity: 🟡 Medium
+
+### Issue
+- **Problem:** Booking confirmation page uses generic styling instead of Soccer Stars branding
+- **Impact:** Inconsistent brand experience at booking completion
+- **Affects:** All customers who complete booking process
+
+### Expected Behavior
+- Confirmation page should use Soccer Stars branding throughout
+- Should celebrate the booking completion with branded design
+- Professional, branded thank-you experience
+
+### Specific Requirements
+- Apply Soccer Stars color palette and fonts
+- Ensure brand consistency with booking flow and marketing site
+- Maintain celebratory, positive tone with proper branding
+- Include appropriate Soccer Stars branded elements
+
+### Priority Justification
+- **P1 High**: Last impression during booking process is critical
+- **Customer Experience**: Confirmation page sets tone for ongoing relationship
+- **Brand Consistency**: Essential for professional appearance
+</details>
+
+<details>
+<summary><strong>Bug #22:</strong> Missing liability waiver link in agreements section + rename section</summary>
+
+### Title: Missing liability waiver link in agreements section + rename section
+### Status: `OPEN` 🟡
+### Priority: P1 High - Legal compliance
+### Severity: 🟡 Medium
+
+### Issue
+- **Problem:** Liability waiver link no longer present in "Required Agreements" section of booking page
+- **Impact:** Users cannot access liability waiver, potential legal compliance issue
+- **Affects:** All users completing booking flow
+
+### Specific Problems
+1. **Missing waiver link**: No way for users to review liability waiver
+2. **Aggressive section name**: "Required Agreements" sounds harsh and aggressive
+
+### Expected Behavior
+- Liability waiver should be accessible via link or button
+- Section should have friendlier, less aggressive name
+- Users should be able to review waiver before agreeing
+
+### Suggested Improvements
+- Rename section to something like "Booking Agreements" or "Important Information"
+- Add liability waiver link that opens in modal
+- Maintain legal compliance while improving user experience
+
+### Priority Justification
+- **P1 High**: Legal compliance and user access to important documents
+- **User Experience**: Users have right to review agreements
+- **Professional Standards**: Proper agreement handling is essential
+</details>
+
+<details>
+<summary><strong>Bug #23:</strong> Agreement checkboxes/icons misaligned (poor design)</summary>
+
+### Title: Agreement checkboxes/icons misaligned (poor design)
+### Status: `OPEN` 🟢
+### Priority: P1 High - Booking flow design quality
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** Checkboxes and icons in agreements section are not aligned properly
+- **Impact:** Poor visual design makes booking process look unprofessional
+- **Affects:** All users in booking flow agreements section
+
+### Visual Evidence
+- See screenshot: `/media/screenshots/Screenshot 2025-06-28 at 3.30.17 PM.png`
+- Checkboxes and icons not on same line
+- Misaligned elements create poor visual hierarchy
+
+### Expected Behavior
+- Checkboxes and icons should be properly aligned
+- Clean, professional form layout
+- Consistent spacing and visual hierarchy
+- Professional booking experience
+
+### Technical Requirements
+- Fix CSS/component layout for proper alignment
+- Ensure responsive design works on all screen sizes
+- Follow design system standards for form elements
+- Test alignment across different browsers
+
+### Priority Justification
+- **P1 High**: Booking flow must look professional
+- **Customer Experience**: Poor design affects trust and conversion
+- **Easy Fix**: CSS/layout adjustment
+</details>
+
+<details>
+<summary><strong>Bug #24:</strong> Select Class Date modal needs visual date selection indicator</summary>
+
+### Title: Select Class Date modal needs visual date selection indicator
+### Status: `OPEN` 🟢
+### Priority: P2 Medium - Modal UX improvement
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** "Select Class Date" in Add Participant modal lacks visual indicator for date selection
+- **Impact:** Users may not know if/when they've selected a date
+- **Affects:** Users adding participants to class bookings
+
+### Specific Problems
+1. **No visual feedback**: No checkbox or indicator when date is selected
+2. **Single option confusion**: If only one date available, should be auto-selected with visual confirmation
+
+### Expected Behavior
+- Clear visual indicator (checkbox, highlight, etc.) when date is selected
+- Auto-selection with visual confirmation when only one option available
+- Obvious feedback that selection has been made
+
+### Technical Requirements
+- Add visual selection state to date picker component
+- Implement auto-selection logic for single-option scenarios
+- Ensure visual feedback is clear and accessible
+- Test across different date availability scenarios
+
+### Priority Justification
+- **P2 Medium**: Improves user experience but not blocking
+- **UX Enhancement**: Clear feedback improves booking flow
+- **Easy Implementation**: UI state management update
+</details>
+
+<details>
+<summary><strong>Bug #25:</strong> Share with Friends message contains extra information</summary>
+
+### Title: Share with Friends message contains extra information
+### Status: `OPEN` 🟢
+### Priority: P2 Medium - Sharing feature cleanup
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** "Share with Friends" button generates message with extra unwanted information
+- **Impact:** Shared message is longer than intended, includes extraneous details
+- **Affects:** Users sharing booking confirmations with friends
+
+### Current Behavior
+Message includes:
+```
+Soccer Trial Booking
+<url>
+We just signed up for a free trial soccer class with Soccer Stars of South Denver. You should sign up too! <url>
+```
+
+### Expected Behavior
+- Message should only include content found in `/portal/settings`
+- Clean, concise sharing message
+- No extra URLs or redundant information
+
+### Technical Requirements
+- Review sharing message generation logic
+- Ensure message pulls only from settings configuration
+- Remove extra URL additions or redundant text
+- Test sharing message format
+
+### Priority Justification
+- **P2 Medium**: Affects sharing experience but not core functionality
+- **User Control**: Users should control message content via settings
+- **Professional Standards**: Clean sharing messages reflect better on business
+</details>
+
+<details>
+<summary><strong>Bug #26:</strong> Confirmation page needs Facebook/Instagram icons instead of text</summary>
+
+### Title: Confirmation page needs Facebook/Instagram icons instead of text
+### Status: `OPEN` 🟢
+### Priority: P2 Medium - Social media integration
+### Severity: 🟢 Low
+
+### Issue
+- **Problem:** Confirmation page has text links for Facebook/Instagram instead of proper icons
+- **Impact:** Less engaging social media call-to-action, missed follow opportunities
+- **Affects:** All users viewing booking confirmation page
+
+### Current State
+- Text-only links to social media platforms
+- No visual icons or engaging call-to-action
+- Missed opportunity for social media growth
+
+### Expected Behavior
+- Proper Facebook and Instagram icons as clickable links
+- Clear call-to-action for users to follow social accounts
+- Visual, engaging social media integration
+- Professional social media presence
+
+### Technical Requirements
+- Add Facebook and Instagram icon components
+- Implement proper linking to social media accounts
+- Add engaging "Follow us" call-to-action text
+- Ensure icons are accessible and properly styled
+
+### Priority Justification
+- **P2 Medium**: Enhances social media growth but not core functionality
+- **Marketing Value**: Better social media integration supports business growth
+- **Professional Standards**: Proper social media integration expected
 </details>
 
 ---

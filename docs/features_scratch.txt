@@ -1,31 +1,14 @@
-✅ PROCESSED - Item moved to features.md with proper formatting
+✅ PROCESSED - Items moved to features.md with proper formatting and tracking IDs
 
-Item processed:
+Items processed (2025-06-29):
 - Feature #3: Enhanced Booking Restrictions with radio button logic
+- Feature #4: CC Emails field in notifications section (COMPLETED)
+- Feature #5: Optional language requirement setting (COMPLETED)
+- Feature #6: Enhanced notification types & end-of-day summaries
+- Feature #8: Multi-user business account access (moved to backlog)
+- Feature #9: Profile password management
+- Feature #10: Remove redundant business info from profile page
+- Feature #7: Collapsible portal/admin sidebars
+- Feature #11: Color-coded lead status badges with dropdown functionality
 
 Ready for new feature ideas.
-
-
- - Make child language query request optional for Users.
- -- must implement language feature first
- -- add checkbox to /portal/settings 
-
- - Add more notification types
- -- Need to add notifications section of /portal/settings
- -- Add logic to be able to send time-based notifications (webhook commands)
- --- Day-Of Trial Class reminders
- 
- - Add "CC Emails" field Notifications section of /portal/settings to send notifications to multiple locations
-
- - In Notifications section add a webhook that sends End-Of-Day Summary email including all bookings and new leads from the day. 
- -- Users should still be able to opt-in to getting notifications with every new lead and new booking, or just get a single summary at the end of the day
-
- - Multi user to login to specific business accounts.  (future roadmap feature)
-
- - Profile page should include password management.
-
-  - Remove "Business information" section from portal/profile/ page because it is redundant with the section in portal/settings/.
-  --  Before doing this, make sure anything that is using the values from /portal/profile are migrated to pull from /portal/settings.
-
-  - make /portal/ and /admin/ sidebars collapsable.  Use slide animation to collapse and expand.
-
