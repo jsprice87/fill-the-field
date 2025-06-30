@@ -75,14 +75,15 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group gap="xs">
                     <User className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">First Name</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">
+                      First Name<span className="text-red-500 ml-1">*</span>
+                    </Text>
                   </Group>
                 }
                 value={parentInfo.firstName || ''}
                 onChange={(e) => handleFieldChange('firstName', e.target.value)}
                 placeholder="Enter first name"
                 className="font-poppins"
-                required
                 size="md"
               />
             </Grid.Col>
@@ -93,14 +94,15 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group gap="xs">
                     <User className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">Last Name</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">
+                      Last Name<span className="text-red-500 ml-1">*</span>
+                    </Text>
                   </Group>
                 }
                 value={parentInfo.lastName || ''}
                 onChange={(e) => handleFieldChange('lastName', e.target.value)}
                 placeholder="Enter last name"
                 className="font-poppins"
-                required
                 size="md"
               />
             </Grid.Col>
@@ -112,14 +114,15 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             label={
               <Group gap="xs">
                 <Mail className="h-4 w-4" />
-                <Text className="font-poppins text-sm font-medium text-gray-700">Email Address</Text>
+                <Text className="font-poppins text-sm font-medium text-gray-700">
+                  Email Address<span className="text-red-500 ml-1">*</span>
+                </Text>
               </Group>
             }
             value={parentInfo.email || ''}
             onChange={(e) => handleFieldChange('email', e.target.value)}
             placeholder="Enter email address"
             className="font-poppins"
-            required
             size="md"
           />
 
@@ -131,14 +134,15 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group gap="xs">
                     <Phone className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">Phone Number</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">
+                      Phone Number<span className="text-red-500 ml-1">*</span>
+                    </Text>
                   </Group>
                 }
                 value={parentInfo.phone || ''}
                 onChange={(e) => handleFieldChange('phone', e.target.value)}
                 placeholder="(000) 000-0000"
                 className="font-poppins"
-                required
                 size="md"
               />
             </Grid.Col>
@@ -149,14 +153,15 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group gap="xs">
                     <MapPin className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">ZIP Code</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">
+                      ZIP Code<span className="text-red-500 ml-1">*</span>
+                    </Text>
                   </Group>
                 }
                 value={parentInfo.zip || ''}
                 onChange={(e) => handleFieldChange('zip', e.target.value)}
                 placeholder="12345"
                 className="font-poppins"
-                required
                 size="md"
               />
             </Grid.Col>
@@ -166,7 +171,9 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             label={
               <Group gap="xs">
                 <Users className="h-4 w-4" />
-                <Text className="font-poppins text-sm font-medium text-gray-700">Relationship to Child</Text>
+                <Text className="font-poppins text-sm font-medium text-gray-700">
+                  Relationship to Child<span className="text-red-500 ml-1">*</span>
+                </Text>
               </Group>
             }
             value={parentInfo.relationship || ''}
@@ -180,7 +187,6 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               { value: 'Other', label: 'Other' }
             ]}
             className="font-poppins"
-            required
             size="md"
           />
         </Stack>

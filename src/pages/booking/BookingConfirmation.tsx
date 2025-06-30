@@ -371,7 +371,7 @@ const BookingConfirmation: React.FC = () => {
                 <Text size="sm" style={{ color: '#031E4D', fontFamily: 'Poppins, sans-serif', marginBottom: '12px' }}>
                   Follow us on social media:
                 </Text>
-                <Group position="center" spacing="md">
+                <Group justify="center" gap="md">
                   {franchiseeSettings.facebook_url && (
                     <Anchor
                       href={franchiseeSettings.facebook_url}
