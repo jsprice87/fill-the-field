@@ -52,7 +52,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
   };
 
   return (
-    <Stack spacing="lg">
+    <Stack gap="lg">
       {/* Parent/Guardian Information */}
       <Card 
         className="border-l-4 border-l-brand-blue"
@@ -60,20 +60,20 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
         radius="md"
         withBorder
       >
-        <Group spacing="xs" mb="lg">
+        <Group gap="xs" mb="lg">
           <User className="h-5 w-5" />
           <Title order={3} className="font-agrandir text-xl text-brand-navy">
             Parent/Guardian Information
           </Title>
         </Group>
 
-        <Stack spacing="md">
+        <Stack gap="md">
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}>
               <TextInput
                 id="firstName"
                 label={
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <User className="h-4 w-4" />
                     <Text className="font-poppins text-sm font-medium text-gray-700">First Name</Text>
                   </Group>
@@ -91,7 +91,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               <TextInput
                 id="lastName"
                 label={
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <User className="h-4 w-4" />
                     <Text className="font-poppins text-sm font-medium text-gray-700">Last Name</Text>
                   </Group>
@@ -110,7 +110,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             id="email"
             type="email"
             label={
-              <Group spacing="xs">
+              <Group gap="xs">
                 <Mail className="h-4 w-4" />
                 <Text className="font-poppins text-sm font-medium text-gray-700">Email Address</Text>
               </Group>
@@ -129,7 +129,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 id="phone"
                 type="tel"
                 label={
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <Phone className="h-4 w-4" />
                     <Text className="font-poppins text-sm font-medium text-gray-700">Phone Number</Text>
                   </Group>
@@ -147,7 +147,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               <TextInput
                 id="zip"
                 label={
-                  <Group spacing="xs">
+                  <Group gap="xs">
                     <MapPin className="h-4 w-4" />
                     <Text className="font-poppins text-sm font-medium text-gray-700">ZIP Code</Text>
                   </Group>
@@ -164,7 +164,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
 
           <Select
             label={
-              <Group spacing="xs">
+              <Group gap="xs">
                 <Users className="h-4 w-4" />
                 <Text className="font-poppins text-sm font-medium text-gray-700">Relationship to Child</Text>
               </Group>
@@ -180,7 +180,6 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               { value: 'Other', label: 'Other' }
             ]}
             className="font-poppins"
-            withinPortal
             required
             size="md"
           />
@@ -194,15 +193,15 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
         radius="md"
         withBorder
       >
-        <Group spacing="xs" mb="lg">
+        <Group gap="xs" mb="lg">
           <FileText className="h-5 w-5" />
           <Title order={3} className="font-agrandir text-xl text-brand-navy">
-            Waiver and Communication Agreements
+            Waiver & Communication
           </Title>
         </Group>
 
-        <Stack spacing="md">
-          <Group align="flex-start" spacing="xs">
+        <Stack gap="md">
+          <Group align="flex-start" gap="xs">
             <Checkbox
               id="waiver"
               checked={flowData.waiverAccepted || false}
@@ -223,7 +222,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             </Text>
           </Group>
 
-          <Group align="flex-start" spacing="xs">
+          <Group align="flex-start" gap="xs">
             <Checkbox
               id="communication"
               checked={flowData.communicationPermission || false}
@@ -236,7 +235,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             </Text>
           </Group>
 
-          <Group align="flex-start" spacing="xs">
+          <Group align="flex-start" gap="xs">
             <Checkbox
               id="marketing"
               checked={flowData.marketingPermission || false}
@@ -263,7 +262,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             Language Information
           </Title>
           
-          <Stack spacing="md">
+          <Stack gap="md">
             <Text className="font-poppins text-sm font-medium text-gray-700">
               Does your child speak English fluently?
             </Text>
@@ -271,7 +270,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               value={flowData.childSpeaksEnglish === true ? 'yes' : flowData.childSpeaksEnglish === false ? 'no' : ''}
               onChange={(value) => handleAgreementChange('childSpeaksEnglish', value === 'yes')}
             >
-              <Stack spacing="xs">
+              <Stack gap="xs">
                 <Radio value="yes" label="Yes" className="font-poppins" />
                 <Radio value="no" label="No" className="font-poppins" />
               </Stack>

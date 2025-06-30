@@ -110,7 +110,7 @@ const BookingLandingContent: React.FC = () => {
             {/* Left Side - Brand and Value Props */}
             <div className="text-center lg:text-left order-2 lg:order-1">
               <div className="flex justify-center lg:justify-start mb-8">
-                <img src="/lovable-uploads/73ddb431-9bcb-476d-b5a8-e7cde1c58b51.png" alt="Soccer Stars Logo" className="h-16 md:h-20 w-auto" loading="eager" />
+                <img src="https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Logos_2021-03.svg" alt="Soccer Stars Logo" className="h-16 md:h-20 w-auto" loading="eager" />
               </div>
               
               <h1 className="font-anton text-4xl lg:text-7xl text-white mb-6 font-medium md:text-6xl">
