@@ -156,8 +156,8 @@ const FindClasses: React.FC = () => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <Loader color="var(--brand-navy)" size="lg" className="mx-auto mb-4" />
-          <Text className="font-poppins text-gray-600">Loading locations...</Text>
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-4 rounded-full animate-spin mx-auto mb-4" style={{ borderTopColor: '#031E4D' }}></div>
+          <p className="font-poppins text-gray-600">Loading locations...</p>
         </div>
       </div>
     );
@@ -188,45 +188,53 @@ const FindClasses: React.FC = () => {
             className="h-16 w-auto mb-2"
             style={{ filter: 'brightness(0) invert(1)' }}
           />
-          <Title order={2} className="text-xl font-medium" style={{ fontFamily: 'Poppins, sans-serif' }}>Find Classes Near You</Title>
+          <h2 className="text-xl font-medium font-poppins">Find Classes Near You</h2>
           {currentLeadData && (
-            <Text className="font-poppins text-sm opacity-90 mt-2 text-slate-400">
+            <p className="font-poppins text-sm opacity-90 mt-2 text-slate-400">
               Hello {currentLeadData.firstName}, let's find classes near {currentLeadData.zip}
-            </Text>
+            </p>
           )}
         </div>
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        <Group position="apart" align="flex-start" mb="xl">
+        <div className="flex justify-between items-start mb-8">
           <div>
-            <Title order={3} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-2xl font-bold mb-2">Available Locations</Title>
+            <h3 className="text-2xl font-bold mb-2 font-poppins" style={{ color: '#031E4D' }}>Available Locations</h3>
             {franchiseeData && (
-              <Text className="font-poppins text-gray-600">
+              <p className="font-poppins text-gray-600">
                 {franchiseeData.company_name} - {locations.length} location{locations.length !== 1 ? 's' : ''} found
-              </Text>
+              </p>
             )}
           </div>
           
-          <Group spacing="xs">
-            <Button 
-              variant={viewMode === 'list' ? 'filled' : 'outline'} 
-              onClick={() => setViewMode('list')} 
-              className="font-poppins"
-              leftSection={<List className="h-4 w-4" />}
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-2 px-4 py-2 rounded font-poppins transition-colors ${
+                viewMode === 'list' 
+                  ? 'bg-brand-red text-white' 
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+              style={viewMode === 'list' ? { backgroundColor: '#CE0E2D' } : {}}
             >
+              <List className="h-4 w-4" />
               List
-            </Button>
-            <Button 
-              variant={viewMode === 'map' ? 'filled' : 'outline'} 
-              onClick={() => setViewMode('map')} 
-              className="font-poppins"
-              leftSection={<Map className="h-4 w-4" />}
+            </button>
+            <button 
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-2 px-4 py-2 rounded font-poppins transition-colors ${
+                viewMode === 'map' 
+                  ? 'bg-brand-red text-white' 
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+              style={viewMode === 'map' ? { backgroundColor: '#CE0E2D' } : {}}
             >
+              <Map className="h-4 w-4" />
               Map
-            </Button>
-          </Group>
-        </Group>
+            </button>
+          </div>
+        </div>
 
         {/* Responsive layout: Desktop side-by-side, Mobile stacked */}
         <div className={`${viewMode === 'map' ? 'lg:grid lg:grid-cols-5 lg:gap-8' : ''}`}>
@@ -242,76 +250,71 @@ const FindClasses: React.FC = () => {
           
           {/* Locations List - Now takes remaining space */}
           <div className={viewMode === 'map' ? 'lg:col-span-2' : ''}>
-            <Stack spacing="md">
+            <div className="space-y-4">
               {locations.length > 0 ? locations.map(location => (
-                <Card 
+                <div 
                   key={location.id} 
-                  className="hover:shadow-lg transition-shadow border-l-4"
+                  className="bg-white rounded-lg border border-l-4 hover:shadow-lg transition-all duration-200 p-6"
                   style={{ borderLeftColor: '#031E4D' }}
-                  padding="lg"
-                  radius="md"
-                  withBorder
                 >
-                  <Group position="apart" align="flex-start">
+                  <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <Title order={4} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold mb-3">
+                      <h4 className="text-xl font-bold mb-3 font-poppins" style={{ color: '#031E4D' }}>
                         {location.name}
-                      </Title>
-                      <Stack spacing="xs">
-                        <Group align="flex-start" spacing="xs">
+                      </h4>
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-2">
                           <MapPin className="h-4 w-4 text-gray-600 mt-1 flex-shrink-0" />
-                          <Text className="font-poppins text-gray-600">
+                          <p className="font-poppins text-gray-600">
                             {location.address}<br />
                             {location.city}, {location.state} {location.zip}
-                          </Text>
-                        </Group>
+                          </p>
+                        </div>
                         {location.phone && (
-                          <Text className="font-poppins text-sm text-gray-600">
+                          <p className="font-poppins text-sm text-gray-600">
                             📞 {location.phone}
-                          </Text>
+                          </p>
                         )}
                         {location.email && (
-                          <Text className="font-poppins text-sm text-gray-600">
+                          <p className="font-poppins text-sm text-gray-600">
                             ✉️ {location.email}
-                          </Text>
+                          </p>
                         )}
-                      </Stack>
+                      </div>
                     </div>
                     <div className="ml-6">
-                      <Button 
+                      <button 
                         onClick={() => handleLocationSelect(location)}
-                        style={{ backgroundColor: '#CE0E2D', fontFamily: 'Poppins, sans-serif' }}
-                        className="text-white hover:opacity-90 font-medium rounded-lg transition-all"
-                        size="lg"
+                        className="px-6 py-3 text-white font-medium rounded-lg transition-all duration-200 hover:opacity-90 font-poppins"
+                        style={{ backgroundColor: '#CE0E2D' }}
                       >
                         Select Location
-                      </Button>
+                      </button>
                     </div>
-                  </Group>
-                </Card>
+                  </div>
+                </div>
               )) : (
-                <Card className="text-center border-l-4" style={{ borderLeftColor: '#CE0E2D' }} padding="xl" radius="md" withBorder>
-                  <Stack spacing="md" align="center">
+                <div className="text-center bg-white rounded-lg border border-l-4 p-8" style={{ borderLeftColor: '#CE0E2D' }}>
+                  <div className="flex flex-col items-center space-y-4">
                     <MapPin className="h-16 w-16 text-gray-400" />
-                    <Title order={3} style={{ fontFamily: 'Poppins, sans-serif', color: '#031E4D' }} className="text-xl font-bold">
+                    <h3 className="text-xl font-bold font-poppins" style={{ color: '#031E4D' }}>
                       No Locations Found Near You
-                    </Title>
-                    <Text className="font-poppins text-gray-600 max-w-md" ta="center">
+                    </h3>
+                    <p className="font-poppins text-gray-600 max-w-md text-center">
                       We don't currently have any locations within 50km of your area ({currentLeadData?.zip}).
                       Would you like us to notify you when programs become available in your area?
-                    </Text>
-                    <Button 
+                    </p>
+                    <button 
                       onClick={handleRequestLocation}
-                      style={{ backgroundColor: '#CE0E2D', fontFamily: 'Poppins, sans-serif' }}
-                      className="text-white hover:opacity-90 font-medium rounded-lg transition-all"
-                      size="lg"
+                      className="px-6 py-3 text-white font-medium rounded-lg transition-all duration-200 hover:opacity-90 font-poppins"
+                      style={{ backgroundColor: '#CE0E2D' }}
                     >
                       Request Programs in My Area
-                    </Button>
-                  </Stack>
-                </Card>
+                    </button>
+                  </div>
+                </div>
               )}
-            </Stack>
+            </div>
           </div>
         </div>
 
