@@ -182,7 +182,12 @@ const FindClasses: React.FC = () => {
     <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       <div style={{ backgroundColor: '#031E4D' }} className="text-white py-8">
         <div className="container mx-auto px-4">
-          <Title order={1} className="font-bold text-4xl mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.02em' }}>SOCCER STARS</Title>
+          <img 
+            src="/media/SSS Logos_red-white.svg" 
+            alt="Soccer Stars" 
+            className="h-16 w-auto mb-2"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
           <Title order={2} className="text-xl font-medium" style={{ fontFamily: 'Poppins, sans-serif' }}>Find Classes Near You</Title>
           {currentLeadData && (
             <Text className="font-poppins text-sm opacity-90 mt-2 text-slate-400">

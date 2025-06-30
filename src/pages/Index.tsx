@@ -11,7 +11,7 @@ const Index = () => {
       <header className="bg-slate-50 shadow-sm">
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" src="/media/FILL-THE-FIELD@3x.png" />
+            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-28 w-auto max-w-[900px]" src="/media/fill_the_field.png" />
           </div>
           <div className="flex items-center gap-4">
             
@@ -77,7 +77,7 @@ const Index = () => {
       <footer className="bg-slate-50 border-t">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center mb-8">
-            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-auto w-auto mx-auto mb-4 max-w-[600px]" src="/media/FILL-THE-FIELD@3x.png" />
+            <img alt="Fill The Field - Fast Funnels for Free Trials" className="h-auto w-auto mx-auto mb-4 max-w-[600px]" src="/media/fill_the_field.png" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>

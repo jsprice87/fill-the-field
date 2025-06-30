@@ -75,7 +75,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <User className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">First Name</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">First Name *</Text>
                   </Group>
                 }
                 value={parentInfo.firstName || ''}
@@ -93,7 +93,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <User className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">Last Name</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">Last Name *</Text>
                   </Group>
                 }
                 value={parentInfo.lastName || ''}
@@ -112,7 +112,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             label={
               <Group spacing="xs">
                 <Mail className="h-4 w-4" />
-                <Text className="font-poppins text-sm font-medium text-gray-700">Email Address</Text>
+                <Text className="font-poppins text-sm font-medium text-gray-700">Email Address *</Text>
               </Group>
             }
             value={parentInfo.email || ''}
@@ -131,7 +131,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <Phone className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">Phone Number</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">Phone Number *</Text>
                   </Group>
                 }
                 value={parentInfo.phone || ''}
@@ -149,7 +149,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
                 label={
                   <Group spacing="xs">
                     <MapPin className="h-4 w-4" />
-                    <Text className="font-poppins text-sm font-medium text-gray-700">ZIP Code</Text>
+                    <Text className="font-poppins text-sm font-medium text-gray-700">ZIP Code *</Text>
                   </Group>
                 }
                 value={parentInfo.zip || ''}
@@ -166,7 +166,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             label={
               <Group spacing="xs">
                 <Users className="h-4 w-4" />
-                <Text className="font-poppins text-sm font-medium text-gray-700">Relationship to Child</Text>
+                <Text className="font-poppins text-sm font-medium text-gray-700">Relationship to Child *</Text>
               </Group>
             }
             value={parentInfo.relationship || ''}
@@ -202,60 +202,54 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
         </Group>
 
         <Stack spacing="md">
-          <Group align="flex-start" spacing="sm">
+          <Group align="flex-start" spacing="xs">
             <Checkbox
               id="waiver"
               checked={flowData.waiverAccepted || false}
               onChange={(event) => handleAgreementChange('waiverAccepted', event.currentTarget.checked)}
-              style={{ marginTop: '2px' }}
+              style={{ flexShrink: 0 }}
             />
-            <div>
-              <Text className="font-poppins text-sm cursor-pointer">
-                I agree to the{' '}
-                <Text 
-                  component="button"
-                  className="text-brand-blue hover:text-brand-blue/80 underline cursor-pointer bg-transparent border-none p-0 font-inherit"
-                  onClick={() => setWaiverModalOpened(true)}
-                >
-                  liability waiver and agreement
-                </Text>
-                . *
+            <Text className="font-poppins text-sm cursor-pointer" style={{ flex: 1, marginTop: '1px' }}>
+              I agree to the{' '}
+              <Text 
+                component="button"
+                className="text-brand-blue hover:text-brand-blue/80 underline cursor-pointer bg-transparent border-none p-0 font-inherit"
+                onClick={() => setWaiverModalOpened(true)}
+              >
+                liability waiver and agreement
               </Text>
-            </div>
+              . *
+            </Text>
           </Group>
 
-          <Group align="flex-start" spacing="sm">
+          <Group align="flex-start" spacing="xs">
             <Checkbox
               id="communication"
               checked={flowData.communicationPermission || false}
               onChange={(event) => handleAgreementChange('communicationPermission', event.currentTarget.checked)}
-              style={{ marginTop: '2px' }}
+              style={{ flexShrink: 0 }}
             />
-            <div>
-              <Group spacing="xs">
-                <MessageSquare className="h-4 w-4" />
-                <Text className="font-poppins text-sm">
-                  I agree to receive communication about my child's soccer classes and important updates. *
-                </Text>
-              </Group>
-            </div>
+            <Group spacing="xs" style={{ flex: 1, marginTop: '1px' }}>
+              <MessageSquare className="h-4 w-4" style={{ flexShrink: 0 }} />
+              <Text className="font-poppins text-sm">
+                I agree to receive communication about my child's soccer classes and important updates. *
+              </Text>
+            </Group>
           </Group>
 
-          <Group align="flex-start" spacing="sm">
+          <Group align="flex-start" spacing="xs">
             <Checkbox
               id="marketing"
               checked={flowData.marketingPermission || false}
               onChange={(event) => handleAgreementChange('marketingPermission', event.currentTarget.checked)}
-              style={{ marginTop: '2px' }}
+              style={{ flexShrink: 0 }}
             />
-            <div>
-              <Group spacing="xs">
-                <Heart className="h-4 w-4" />
-                <Text className="font-poppins text-sm">
-                  I would like to receive promotional offers and news about Soccer Stars programs (optional).
-                </Text>
-              </Group>
-            </div>
+            <Group spacing="xs" style={{ flex: 1, marginTop: '1px' }}>
+              <Heart className="h-4 w-4" style={{ flexShrink: 0 }} />
+              <Text className="font-poppins text-sm">
+                I would like to receive promotional offers and news about Soccer Stars programs (optional).
+              </Text>
+            </Group>
           </Group>
         </Stack>
       </Card>

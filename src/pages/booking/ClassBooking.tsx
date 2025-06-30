@@ -375,9 +375,12 @@ const ClassBooking: React.FC = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="font-bold text-4xl" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.02em' }}>
-                SOCCER STARS
-              </h1>
+              <img 
+                src="/media/SSS Logos_red-white.svg" 
+                alt="Soccer Stars" 
+                className="h-16 w-auto"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
               <h2 className="text-xl font-medium" style={{ fontFamily: 'Poppins, sans-serif' }}>
                 Select Classes & Add Participants
               </h2>
