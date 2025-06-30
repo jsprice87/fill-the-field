@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
-> **Last Updated:** 29 Jun 2025  
-> **Active Issues:** 13 | **Resolved:** 12
+> **Last Updated:** 30 Jun 2025  
+> **Active Issues:** 17 | **Resolved:** 12
 
 ---
 
@@ -23,6 +23,10 @@
 | #14 | Waiver editor not editable on first profile creation | 🟢 Low | P3 | unassigned | /portal/settings waiver section | 2025-06-28 |
 | #11 | Bulk table actions limited to Archive only | 🟢 Low | P4 | unassigned | LeadsTable.tsx | 2025-06-26 |
 | #16 | Map debug console logs on find-classes page | 🟢 Low | P4 | unassigned | /free-trial/find-classes | 2025-06-28 |
+| #27 | Settings page "How it works" boxes have inconsistent styling | 🟢 Low | P2 | unassigned | /portal/settings | 2025-06-30 |
+| #28 | Class names duplicated in Name column on classes page | 🟡 Medium | P1 | unassigned | /portal/classes | 2025-06-30 |
+| #29 | Asterisk color inconsistency across required fields | 🟢 Low | P2 | unassigned | Form components | 2025-06-30 |
+| #30 | Parent/Guardian form red asterisk on newline instead of inline | 🟢 Low | P2 | unassigned | ParentGuardianForm.tsx | 2025-06-30 |
 
 ---
 
@@ -919,6 +923,107 @@ We just signed up for a free trial soccer class with Soccer Stars of South Denve
 - **P2 Medium**: Enhances social media growth but not core functionality
 - **Marketing Value**: Better social media integration supports business growth
 - **Professional Standards**: Proper social media integration expected
+</details>
+
+<details>
+<summary><strong>Bug #27:</strong> Settings page "How it works" boxes have inconsistent styling</summary>
+
+### Title: Settings page "How it works" boxes have inconsistent styling
+### Status: `OPEN` 🔴
+### Priority: P2 Normal
+### Severity: 🟢 Low
+
+### Issue
+The "How it works" information boxes across different sections of the `/portal/settings` page have slightly different styling, creating a lack of visual consistency.
+
+### Expected Behavior
+- All "How it works" boxes should use identical styling
+- Consistent padding, margins, colors, typography
+- Unified visual design language across the settings page
+
+### Affected Areas
+- `/portal/settings` page
+- Various "How it works" informational sections
+
+### Priority Justification
+- Visual consistency improves user experience
+- Minor UI enhancement, not blocking functionality
+</details>
+
+<details>
+<summary><strong>Bug #28:</strong> Class names duplicated in Name column on classes page</summary>
+
+### Title: Class names duplicated in Name column on classes page  
+### Status: `OPEN` 🔴
+### Priority: P1 High
+### Severity: 🟡 Medium
+
+### Issue
+The Name column on the `/portal/classes` page shows class names duplicated - one on top of the other in the same cell.
+
+### Expected Behavior
+- Class name should appear once per row in the Name column
+- Clear, readable display without duplication
+
+### Affected Areas
+- `/portal/classes` page
+- Classes table Name column
+
+### Priority Justification
+- Medium impact: Affects readability and looks unprofessional
+- Data display issue that could confuse users
+</details>
+
+<details>
+<summary><strong>Bug #29:</strong> Asterisk color inconsistency across required fields</summary>
+
+### Title: Asterisk color inconsistency across required fields
+### Status: `OPEN` 🔴  
+### Priority: P2 Normal
+### Severity: 🟢 Low
+
+### Issue
+Required field indicators (asterisks) appear in different colors across the application:
+- Some are red (TextInput with `required` attribute)
+- Some are black (manually added text '*')
+- Checkbox required indicators should match TextInput styling
+
+### Expected Behavior  
+- All required field indicators should be red
+- Consistent styling for `required` attribute across all form elements
+- Checkboxes should have a `required` prop similar to TextInput
+
+### Affected Areas
+- Form components across the application
+- Booking forms, settings forms, lead capture forms
+
+### Priority Justification
+- Improves visual consistency and user experience
+- Low priority as it doesn't affect functionality
+</details>
+
+<details>
+<summary><strong>Bug #30:</strong> Parent/Guardian form red asterisk on newline instead of inline</summary>
+
+### Title: Parent/Guardian form red asterisk on newline instead of inline
+### Status: `OPEN` 🔴
+### Priority: P2 Normal  
+### Severity: 🟢 Low
+
+### Issue
+In the Parent/Guardian Information form during booking flow, the red required asterisk appears on a new line below the field label instead of inline with the label text.
+
+### Expected Behavior
+- Required asterisk should appear on the same line as the TextInput title
+- Consistent with other form styling patterns
+
+### Affected Areas
+- `ParentGuardianForm.tsx` 
+- Booking flow forms
+
+### Priority Justification
+- Minor visual improvement
+- Consistency with other form elements
 </details>
 
 ---

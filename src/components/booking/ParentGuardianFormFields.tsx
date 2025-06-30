@@ -26,7 +26,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
         <Grid.Col span={{ base: 12, md: 6 }}>
           <TextInput
             id="parentFirstName"
-            label="First Name *"
+            label="First Name"
             value={formData.firstName}
             onChange={(e) => onInputChange('firstName', e.target.value)}
             placeholder="Parent/Guardian first name"
@@ -38,7 +38,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
         <Grid.Col span={{ base: 12, md: 6 }}>
           <TextInput
             id="parentLastName"
-            label="Last Name *"
+            label="Last Name"
             value={formData.lastName}
             onChange={(e) => onInputChange('lastName', e.target.value)}
             placeholder="Parent/Guardian last name"
@@ -51,7 +51,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
 
       <TextInput
         id="parentEmail"
-        label="Email Address *"
+        label="Email Address"
         type="email"
         value={formData.email}
         onChange={(e) => onInputChange('email', e.target.value)}
@@ -65,7 +65,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
         <Grid.Col span={{ base: 12, md: 6 }}>
           <TextInput
             id="parentPhone"
-            label="Phone Number *"
+            label="Phone Number"
             type="tel"
             value={formData.phone}
             onChange={(e) => onInputChange('phone', e.target.value)}
@@ -78,7 +78,7 @@ export const ParentGuardianFormFields: React.FC<ParentGuardianFormFieldsProps> =
         <Grid.Col span={{ base: 12, md: 6 }}>
           <TextInput
             id="parentZip"
-            label="ZIP Code *"
+            label="ZIP Code"
             value={formData.zip}
             onChange={(e) => onInputChange('zip', e.target.value)}
             placeholder="12345"

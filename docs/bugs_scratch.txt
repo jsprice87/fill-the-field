@@ -25,10 +25,8 @@ Items processed (2025-06-29):
 
 Ready for new scratch notes.
 
-   - all the "How it works" boxes on the /settings page are styled slightly differently from each other.  Need to unify styling.
-   
-   - Class names are duplicated (one on top of each other) in the Name column on the /classes page
-
-   - Asterisk color consistency. Some asterisks indicating required field are red, some are black.  With TextInput elements, there is a 'required' atribute that adds a red asterisk.  For check boxes, make a similar atribute rather than adding a text '*' (black).
-
-   - Booking: Parent/Guardian Information form: red asterisk on newline.  Put 'required' asterisk on same line as TextInput title.
+✅ PROCESSED 2025-06-30 - Items #27-30 moved to bugs.md:
+- Bug #27: Settings page "How it works" boxes have inconsistent styling  
+- Bug #28: Class names duplicated in Name column on classes page
+- Bug #29: Asterisk color inconsistency across required fields
+- Bug #30: Parent/Guardian form red asterisk on newline instead of inline

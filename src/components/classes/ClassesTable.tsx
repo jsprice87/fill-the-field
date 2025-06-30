@@ -186,9 +186,11 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                     <TableCell>
                       <div>
                         <div className="font-medium">{classData.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {classData.class_name}
-                        </div>
+                        {classData.class_name && classData.class_name !== classData.name && (
+                          <div className="text-sm text-muted-foreground">
+                            {classData.class_name}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
