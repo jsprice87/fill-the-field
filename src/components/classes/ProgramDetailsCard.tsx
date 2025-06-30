@@ -85,7 +85,7 @@ const ProgramDetailsCard: React.FC<ProgramDetailsCardProps> = ({
 
           <div className="space-y-2">
             <Text size="sm" fw={500}>
-              Days of Week <Text component="span" c="red">*</Text>
+              Days of Week <span className="text-red-500">*</span>
             </Text>
             <Group gap="md">
               {DAYS_OF_WEEK.map((day) => (

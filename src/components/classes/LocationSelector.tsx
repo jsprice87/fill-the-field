@@ -66,7 +66,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <Text size="sm" fw={500}>
-        Location <span style={{ color: 'red' }}>*</span>
+        Location <span className="text-red-500">*</span>
       </Text>
       <Select
         value={selectedLocationId}

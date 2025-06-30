@@ -38,7 +38,7 @@ const ClassRow: React.FC<ClassRowProps> = ({
     <TableRow>
       <TableCell>
         <TextInput
-          placeholder="Enter class name *"
+          placeholder="Enter class name"
           value={classData.className}
           onChange={(e) => handleFieldChange('className', e.target.value)}
           disabled={disabled}
