@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, Group, Stack, Text, Title, Loader } from '@mantine/core';
-import { MapPin, Clock, Users, Map, List } from 'lucide-react';
+import { Button, Card, Group, Stack, Text, Title, Loader, Badge } from '@mantine/core';
+import { MapPin, Clock, Users, Map, List, Calendar, UserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBookingFlow } from '@/hooks/useBookingFlow';
 import { toast } from 'sonner';
@@ -18,6 +18,14 @@ interface BookingLocation {
   email?: string;
   latitude?: number;
   longitude?: number;
+  classInfo?: LocationClassInfo;
+}
+
+interface LocationClassInfo {
+  totalClasses: number;
+  ageRange: { min: number | null; max: number | null };
+  dateRange: { start: string | null; end: string | null };
+  schedules: string[]; // e.g., ["Mon 10:00-11:00", "Wed 9:00-10:00"]
 }
 function BookingError() {
   return (
@@ -50,6 +58,7 @@ const FindClasses: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [franchiseeData, setFranchiseeData] = useState<any>(null);
   const [flowLoaded, setFlowLoaded] = useState(false);
+  
   useEffect(() => {
     if (!flowId) {
       navigate(`/${franchiseeSlug}/free-trial`);
@@ -57,6 +66,86 @@ const FindClasses: React.FC = () => {
     }
     loadData();
   }, [franchiseeSlug, flowId]);
+
+  const getLocationClassInfo = async (locationId: string): Promise<LocationClassInfo> => {
+    try {
+      const { data: classes, error } = await supabase
+        .from('classes')
+        .select(`
+          id, name, min_age, max_age,
+          class_schedules (
+            id, start_time, end_time, day_of_week, 
+            date_start, date_end, is_active
+          )
+        `)
+        .eq('location_id', locationId)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      if (!classes || classes.length === 0) {
+        return {
+          totalClasses: 0,
+          ageRange: { min: null, max: null },
+          dateRange: { start: null, end: null },
+          schedules: []
+        };
+      }
+
+      // Calculate age range across all classes
+      let minAge = null;
+      let maxAge = null;
+      let earliestStart = null;
+      let latestEnd = null;
+      const schedules: string[] = [];
+
+      classes.forEach(classItem => {
+        // Update age ranges
+        if (classItem.min_age !== null) {
+          minAge = minAge === null ? classItem.min_age : Math.min(minAge, classItem.min_age);
+        }
+        if (classItem.max_age !== null) {
+          maxAge = maxAge === null ? classItem.max_age : Math.max(maxAge, classItem.max_age);
+        }
+
+        // Process schedules
+        classItem.class_schedules?.forEach(schedule => {
+          if (!schedule.is_active) return;
+
+          // Update date ranges
+          if (schedule.date_start) {
+            earliestStart = earliestStart === null ? schedule.date_start : 
+              new Date(schedule.date_start) < new Date(earliestStart) ? schedule.date_start : earliestStart;
+          }
+          if (schedule.date_end) {
+            latestEnd = latestEnd === null ? schedule.date_end :
+              new Date(schedule.date_end) > new Date(latestEnd) ? schedule.date_end : latestEnd;
+          }
+
+          // Format schedule display
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const dayName = dayNames[schedule.day_of_week] || 'Unknown';
+          const timeRange = `${schedule.start_time || ''}-${schedule.end_time || ''}`;
+          schedules.push(`${dayName} ${timeRange}`);
+        });
+      });
+
+      return {
+        totalClasses: classes.length,
+        ageRange: { min: minAge, max: maxAge },
+        dateRange: { start: earliestStart, end: latestEnd },
+        schedules: schedules.slice(0, 3) // Limit to first 3 schedules for display
+      };
+    } catch (error) {
+      console.error('Error fetching class info for location:', locationId, error);
+      return {
+        totalClasses: 0,
+        ageRange: { min: null, max: null },
+        dateRange: { start: null, end: null },
+        schedules: []
+      };
+    }
+  };
   const loadData = async () => {
     if (!franchiseeSlug || !flowId) {
       setError('Missing required parameters');
@@ -90,7 +179,7 @@ const FindClasses: React.FC = () => {
       }
 
       // Convert database locations to BookingLocation format with validation
-      const convertedLocations: BookingLocation[] = (locationsData || []).filter(loc => {
+      const basicLocations: BookingLocation[] = (locationsData || []).filter(loc => {
         return loc && loc.id && loc.name && loc.address && loc.city && loc.state && loc.zip;
       }).map(loc => ({
         id: loc.id,
@@ -106,7 +195,16 @@ const FindClasses: React.FC = () => {
       })).filter(loc => {
         return typeof loc.id === 'string' && typeof loc.name === 'string' && typeof loc.address === 'string';
       });
-      setLocations(convertedLocations);
+
+      // Fetch class information for each location
+      const locationsWithClassInfo = await Promise.all(
+        basicLocations.map(async (location) => {
+          const classInfo = await getLocationClassInfo(location.id);
+          return { ...location, classInfo };
+        })
+      );
+
+      setLocations(locationsWithClassInfo);
     } catch (error) {
       console.error('Error loading data:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
@@ -149,6 +247,51 @@ const FindClasses: React.FC = () => {
   const handleMapError = () => {
     setViewMode('list');
     toast.info('Map is unavailable, showing list view');
+  };
+
+  const formatAgeRange = (ageRange: { min: number | null; max: number | null }) => {
+    if (ageRange.min === null && ageRange.max === null) {
+      return 'All ages';
+    }
+    if (ageRange.min === null) {
+      return `Up to ${ageRange.max} years`;
+    }
+    if (ageRange.max === null) {
+      return `${ageRange.min}+ years`;
+    }
+    if (ageRange.min === ageRange.max) {
+      return `${ageRange.min} years`;
+    }
+    return `${ageRange.min}-${ageRange.max} years`;
+  };
+
+  const formatDateRange = (dateRange: { start: string | null; end: string | null }) => {
+    if (!dateRange.start && !dateRange.end) {
+      return 'Ongoing';
+    }
+    
+    const formatDate = (dateStr: string) => {
+      try {
+        return new Date(dateStr).toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          year: 'numeric'
+        });
+      } catch {
+        return dateStr;
+      }
+    };
+
+    if (dateRange.start && !dateRange.end) {
+      return `From ${formatDate(dateRange.start)}`;
+    }
+    if (!dateRange.start && dateRange.end) {
+      return `Until ${formatDate(dateRange.end)}`;
+    }
+    if (dateRange.start && dateRange.end) {
+      return `${formatDate(dateRange.start)} - ${formatDate(dateRange.end)}`;
+    }
+    return 'Ongoing';
   };
 
   // Show loading state while data is being loaded
@@ -279,6 +422,62 @@ const FindClasses: React.FC = () => {
                           <p className="font-poppins text-sm text-gray-600">
                             ✉️ {location.email}
                           </p>
+                        )}
+
+                        {/* Class Information Section */}
+                        {location.classInfo && (
+                          <div className="mt-4 pt-3 border-t border-gray-200">
+                            <div className="space-y-2">
+                              {/* Classes Count */}
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-blue-600" />
+                                <span className="font-poppins text-sm font-medium text-gray-700">
+                                  {location.classInfo.totalClasses} {location.classInfo.totalClasses === 1 ? 'class' : 'classes'} available
+                                </span>
+                              </div>
+
+                              {/* Age Range */}
+                              <div className="flex items-center gap-2">
+                                <UserCheck className="h-4 w-4 text-green-600" />
+                                <span className="font-poppins text-sm text-gray-600">
+                                  Ages: {formatAgeRange(location.classInfo.ageRange)}
+                                </span>
+                              </div>
+
+                              {/* Date Range */}
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-purple-600" />
+                                <span className="font-poppins text-sm text-gray-600">
+                                  {formatDateRange(location.classInfo.dateRange)}
+                                </span>
+                              </div>
+
+                              {/* Sample Schedules */}
+                              {location.classInfo.schedules.length > 0 && (
+                                <div className="flex items-start gap-2">
+                                  <Clock className="h-4 w-4 text-orange-600 mt-0.5" />
+                                  <div className="flex flex-wrap gap-1">
+                                    {location.classInfo.schedules.map((schedule, index) => (
+                                      <Badge 
+                                        key={index} 
+                                        variant="light" 
+                                        size="xs" 
+                                        className="font-poppins"
+                                        color="blue"
+                                      >
+                                        {schedule}
+                                      </Badge>
+                                    ))}
+                                    {location.classInfo.totalClasses > 3 && (
+                                      <Badge variant="light" size="xs" color="gray">
+                                        +{location.classInfo.totalClasses - 3} more
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>

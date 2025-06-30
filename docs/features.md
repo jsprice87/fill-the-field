@@ -1,7 +1,7 @@
 # 🚀 Feature Requests & Enhancements
 
 > **Last Updated:** 30 Jun 2025  
-> **Active Features:** 4 | **Completed:** 7 | **Backlog:** 1
+> **Active Features:** 4 | **Completed:** 8 | **Backlog:** 1
 
 ---
 
@@ -13,6 +13,7 @@
 | #7 | Collapsible portal/admin sidebars | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
 | #10 | Remove redundant business info from profile page | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
 | #12 | Add bulk actions to locations and classes tables | 🟢 Low | 🟡 Medium | unassigned | v0.9.8 |
+| #13 | Add date range and age range display to find-classes page | 🟡 Medium | 🟡 Medium | completed | v0.9.8 |
 
 ---
 
@@ -35,6 +36,7 @@
 | #3 | Enhanced Booking Restrictions with radio button logic | 2025-06-30 | v0.9.4 | current |
 | #9 | Profile password management | 2025-06-30 | v0.9.6 | current |
 | #11 | Color-coded lead status badges with dropdown functionality | 2025-06-30 | v0.9.7 | current |
+| #13 | Add date range and age range display to find-classes page | 2025-06-30 | v0.9.8 | current |
 
 ---
 
@@ -516,6 +518,72 @@ Create unified status badge system with:
 - **Visual Consistency**: Same colors and styling everywhere
 - **Immediate Recognition**: Colors provide instant status understanding
 - **Streamlined Workflow**: One click to view and change status
+
+</details>
+
+<details>
+<summary><strong>Feature #13:</strong> Add date range and age range display to find-classes page</summary>
+
+### Description
+Enhance the FindClasses page to display comprehensive class information including age ranges, date ranges, class counts, and sample schedules for each location to help parents make informed decisions.
+
+### Status: ✅ COMPLETED (2025-06-30)
+
+### Implementation Summary
+Successfully enhanced the FindClasses page with comprehensive class information:
+1. **Class Data Integration** - Added getLocationClassInfo function to fetch and aggregate class data
+2. **Age Range Display** - Shows min-max age ranges with smart formatting (e.g., "3-7 years", "All ages")
+3. **Date Range Display** - Shows class availability periods with proper date formatting
+4. **Class Count** - Displays total number of available classes per location
+5. **Schedule Previews** - Shows sample class schedules with colored badges (limited to 3 with overflow indicator)
+
+### Technical Implementation
+- **LocationClassInfo Interface** - New interface for structured class data aggregation
+- **Database Queries** - Enhanced queries to fetch classes, schedules, and calculate age/date ranges
+- **Helper Functions** - formatAgeRange() and formatDateRange() for consistent display formatting
+- **Enhanced UI** - Added colored icons and badges for better visual hierarchy
+- **Class Information Section** - New bordered section in location cards with comprehensive class details
+
+### Key Features Added
+1. **Smart Age Range Formatting**:
+   - "All ages" when no restrictions
+   - "Up to X years" for max-only restrictions
+   - "X+ years" for min-only restrictions
+   - "X-Y years" for full ranges
+   - "X years" for single age requirements
+
+2. **Flexible Date Range Display**:
+   - "Ongoing" for open-ended classes
+   - "From [date]" for start-only periods
+   - "Until [date]" for end-only periods
+   - "[start] - [end]" for full date ranges
+
+3. **Enhanced Location Cards**:
+   - Class count with user/group icon
+   - Age range with user-check icon
+   - Date range with calendar icon
+   - Schedule badges with clock icon
+   - "+X more" indicator for overflow schedules
+
+### Files Modified
+- `src/pages/booking/FindClasses.tsx` - Main implementation with new interfaces, functions, and UI enhancements
+- `src/pages/booking/FindClasses.tsx:24-29` - Added LocationClassInfo interface
+- `src/pages/booking/FindClasses.tsx:70-148` - Added getLocationClassInfo function
+- `src/pages/booking/FindClasses.tsx:252-295` - Added formatAgeRange and formatDateRange helper functions
+- `src/pages/booking/FindClasses.tsx:427-481` - Enhanced location cards with class information section
+
+### Business Value
+- **High**: Provides essential information for booking decisions
+- **UX Improvement**: Reduces uncertainty and improves conversion rates
+- **Information Architecture**: Better organization of class data for customer decision-making
+- **Trust Building**: Transparent information display builds confidence in the booking process
+
+### Technical Quality
+- **Type Safety**: Full TypeScript interfaces for data structures
+- **Error Handling**: Graceful handling of missing or invalid class data
+- **Performance**: Efficient data aggregation and caching-friendly queries
+- **Scalability**: Handles varying numbers of classes and schedules per location
+- **Accessibility**: Color-coded icons with semantic meaning
 
 </details>
 
