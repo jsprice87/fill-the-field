@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Badge, Menu } from '@mantine/core';
-import { ChevronDown } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -38,10 +37,8 @@ const getStatusColor = (status: LeadStatus | string): string => {
       return 'red'; // Red - Closed negative
     case 'closed_won':
       return 'green'; // Green - Success state
-    case 'needs_status':
-      return 'orange'; // Orange - Needs attention
     default:
-      return 'gray'; // Gray - Default/Unknown
+      return 'gray'; // Gray - Default/Unknown (handles invalid statuses)
   }
 };
 
@@ -64,10 +61,8 @@ const getStatusLabel = (status: LeadStatus | string): string => {
       return 'Closed Lost';
     case 'closed_won':
       return 'Closed Won';
-    case 'needs_status':
-      return 'Needs Status';
     default:
-      return status;
+      return 'Unknown'; // Handle invalid statuses safely
   }
 };
 
@@ -103,11 +98,9 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
   // Use the database status if available, otherwise fall back to props
   const actualStatus = leadData?.status || currentStatus || fallbackStatus || 'new';
 
-  // Auto-determine status for past dates (existing logic)
-  const today = new Date();
-  const date = bookingDate ? new Date(bookingDate) : null;
-  const isPast = date && date < today;
-  const displayStatus = (actualStatus === 'booked_upcoming' && isPast) ? 'needs_status' : actualStatus;
+  // Use the actual status without any automatic conversion
+  // The database status is the source of truth
+  const displayStatus = actualStatus;
 
   const updateStatusMutation = useMutation({
     mutationFn: async (newStatus: LeadStatus) => {
@@ -209,14 +202,10 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
           size={size}
           style={{ 
             cursor: updateStatusMutation.isPending ? 'not-allowed' : 'pointer',
-            opacity: updateStatusMutation.isPending ? 0.6 : 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
+            opacity: updateStatusMutation.isPending ? 0.6 : 1
           }}
         >
           {statusLabel}
-          <ChevronDown size={12} />
         </Badge>
       </Menu.Target>
 

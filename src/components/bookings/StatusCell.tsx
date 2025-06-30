@@ -1,6 +1,5 @@
 
 import React from 'react';
-import StatusSelect from '../leads/StatusSelect';
 import StatusBadge from '../leads/StatusBadge';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -14,17 +13,12 @@ interface StatusCellProps {
 
 const StatusCell: React.FC<StatusCellProps> = ({ leadId, bookingDate, fallbackStatus }) => {
   return (
-    <div className="space-y-2">
-      <StatusBadge 
-        leadId={leadId}
-        bookingDate={bookingDate}
-        fallbackStatus={fallbackStatus}
-      />
-      <StatusSelect 
-        leadId={leadId}
-        currentStatus={fallbackStatus as LeadStatus}
-      />
-    </div>
+    <StatusBadge 
+      leadId={leadId}
+      currentStatus={fallbackStatus as LeadStatus}
+      interactive={true}
+      size="sm"
+    />
   );
 };
 
