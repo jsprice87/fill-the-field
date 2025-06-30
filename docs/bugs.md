@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 30 Jun 2025  
-> **Active Issues:** 0 | **Resolved:** 22
+> **Active Issues:** 2 | **Resolved:** 22
 
 ---
 
@@ -9,6 +9,8 @@
 
 | ID | Title | Severity | Priority | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------|----------------|---------|
+| #31 | Map location positioning incorrect for Lilley Gulch | 🟡 Medium | P2 | unassigned | Map components, geocoding | 2025-06-30 |
+| #32 | Login screen needs specific error feedback for invalid credentials | 🟢 Low | P2 | unassigned | Login components | 2025-06-30 |
 
 ---
 
