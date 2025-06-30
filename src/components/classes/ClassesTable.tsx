@@ -1,16 +1,22 @@
 
 import React, { useState } from 'react';
-import { ScrollArea, Table } from '@mantine/core';
+import { ScrollArea, Table, Select, Button as MantineButton, Text } from '@mantine/core';
 import { TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@mantine/core';
 import { Pagination } from '@/components/ui/pagination';
-import { Clock, MapPin } from 'lucide-react';
+import { Clock, MapPin, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { showNotification } from '@mantine/notifications';
-import { supabase } from '@/integrations/supabase/client';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
+import { 
+  useDeleteClass, 
+  useArchiveClass, 
+  useUnarchiveClass,
+  useBulkArchiveClasses,
+  useBulkUnarchiveClasses,
+  useBulkDeleteClasses,
+  useBulkToggleClassStatus
+} from '@/hooks/useClassActions';
 
 interface ClassData {
   id: string;
@@ -49,6 +55,7 @@ interface ClassesTableProps {
   franchiseeId?: string;
   locationId?: string;
   search?: string;
+  showArchived?: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -58,11 +65,26 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   onDelete, 
   franchiseeId, 
   locationId, 
-  search 
+  search,
+  showArchived = false
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const queryClient = useQueryClient();
+  
+  // Individual action hooks
+  const deleteClass = useDeleteClass();
+  const archiveClass = useArchiveClass();
+  const unarchiveClass = useUnarchiveClass();
+  
+  // Bulk action hooks
+  const bulkArchiveClasses = useBulkArchiveClasses();
+  const bulkUnarchiveClasses = useBulkUnarchiveClasses();
+  const bulkDeleteClasses = useBulkDeleteClasses();
+  const bulkToggleStatus = useBulkToggleClassStatus();
+  
+  // Selection state
+  const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   // Construct the exact query key as used in useClasses
   const queryKey = ['classes', franchiseeId, locationId ?? 'ALL', search ?? ''] as const;
@@ -72,69 +94,102 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   // Debug: Log table rows
   console.log('Table rows', classes.length);
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await supabase
-        .from('classes')
-        .delete()
-        .eq('id', id)
-        .select();
-
-      console.log('DELETE-resp', { data, error });
-      if (error) throw error;
-      return id;
-    },
-    onMutate: async (deletedId: string) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey });
-      
-      // Snapshot the previous value
-      const previousClasses = queryClient.getQueryData<ClassData[]>(queryKey);
-      
-      // Optimistically update to the new value
-      queryClient.setQueryData<ClassData[]>(queryKey, (old) => {
-        if (!old) return [];
-        return old.filter(cls => cls.id !== deletedId);
-      });
-
-      return { previousClasses };
-    },
-    onError: (error: any, deletedId: string, context: any) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousClasses) {
-        queryClient.setQueryData(queryKey, context.previousClasses);
-      }
-      
-      showNotification({
-        color: 'red',
-        title: 'Delete Failed',
-        message: error.message || 'Failed to delete class'
-      });
-      
-      console.error('Delete class error:', error);
-    },
-    onSuccess: (deletedId: string) => {
-      showNotification({
-        color: 'green',
-        title: 'Success',
-        message: 'Class deleted successfully'
-      });
-      
-      if (onDelete) {
-        onDelete(deletedId);
-      }
-    },
-    onSettled: () => {
-      // Debug: Check cache after delete
-      console.log('Cache after delete', queryClient.getQueryData(queryKey));
-      
-      // Always refetch after error or success to ensure consistency
-      queryClient.invalidateQueries({ queryKey });
+  // Bulk action handlers
+  const handleClassSelection = (classId: string, selected: boolean) => {
+    const newSelection = new Set(selectedClasses);
+    if (selected) {
+      newSelection.add(classId);
+    } else {
+      newSelection.delete(classId);
     }
-  });
+    setSelectedClasses(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedClasses.size === classes.length) {
+      setSelectedClasses(new Set());
+    } else {
+      setSelectedClasses(new Set(classes.map(cls => cls.id)));
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedClasses.size === 0) return;
+    
+    const selectedIds = Array.from(selectedClasses);
+    
+    // Immediately clear selection for instant feedback
+    setSelectedClasses(new Set());
+    
+    try {
+      if (showArchived) {
+        await bulkUnarchiveClasses.mutateAsync(selectedIds);
+      } else {
+        await bulkArchiveClasses.mutateAsync(selectedIds);
+      }
+    } catch (error) {
+      console.error('Error in bulk archive operation:', error);
+      // Re-select classes on error
+      setSelectedClasses(new Set(selectedIds));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedClasses.size === 0) return;
+    
+    const selectedCount = selectedClasses.size;
+    const selectedIds = Array.from(selectedClasses);
+    
+    const confirmMessage = `Are you sure you want to permanently delete ${selectedCount} class${selectedCount > 1 ? 'es' : ''}? This action cannot be undone.`;
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
+    // Immediately clear selection for instant feedback
+    setSelectedClasses(new Set());
+    
+    try {
+      await bulkDeleteClasses.mutateAsync(selectedIds);
+    } catch (error) {
+      console.error('Error in bulk delete operation:', error);
+      // Re-select classes on error
+      setSelectedClasses(new Set(selectedIds));
+    }
+  };
+
+  const handleBulkToggleStatus = async (isActive: boolean) => {
+    if (selectedClasses.size === 0) return;
+    
+    const selectedIds = Array.from(selectedClasses);
+    
+    // Immediately clear selection for instant feedback
+    setSelectedClasses(new Set());
+    
+    try {
+      await bulkToggleStatus.mutateAsync({ classIds: selectedIds, isActive });
+    } catch (error) {
+      console.error('Error in bulk status toggle:', error);
+      // Re-select classes on error
+      setSelectedClasses(new Set(selectedIds));
+    }
+  };
 
   const handleDeleteClass = async (id: string) => {
-    deleteMutation.mutate(id);
+    if (!confirm('Are you sure you want to permanently delete this class? This action cannot be undone.')) {
+      return;
+    }
+    deleteClass.mutate(id);
+  };
+
+  const handleArchiveToggle = async (classId: string) => {
+    const classData = classes.find(c => c.id === classId);
+    if (!classData) return;
+
+    if (classData.is_active) {
+      await archiveClass.mutateAsync(classId);
+    } else {
+      await unarchiveClass.mutateAsync(classId);
+    }
   };
 
   const handleEditClass = (id: string) => {
@@ -156,12 +211,65 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
+      {selectedClasses.size > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+          <Text size="sm" fw={500}>
+            {selectedClasses.size} class{selectedClasses.size > 1 ? 'es' : ''} selected
+          </Text>
+          <div className="flex gap-2 items-center">
+            <Select
+              placeholder="Change status..."
+              data={[
+                { value: 'activate', label: 'Activate' },
+                { value: 'deactivate', label: 'Deactivate' }
+              ]}
+              size="sm"
+              w={150}
+              withinPortal
+              clearable
+              onChange={(value) => {
+                if (value === 'activate') {
+                  handleBulkToggleStatus(true);
+                } else if (value === 'deactivate') {
+                  handleBulkToggleStatus(false);
+                }
+              }}
+            />
+            <MantineButton
+              variant="outline"
+              size="sm"
+              onClick={handleBulkArchive}
+            >
+              {showArchived ? <ArchiveRestore className="h-4 w-4 mr-2" /> : <Archive className="h-4 w-4 mr-2" />}
+              {showArchived ? 'Unarchive' : 'Archive'} Selected
+            </MantineButton>
+            <MantineButton
+              variant="outline"
+              size="sm"
+              color="red"
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Selected
+            </MantineButton>
+          </div>
+        </div>
+      )}
+
       <ScrollArea h="calc(100vh - 240px)">
         <Table.ScrollContainer w="100%" minWidth={900}>
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead style={{ width: '48px' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedClasses.size === classes.length && classes.length > 0}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                  />
+                </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Schedule</TableHead>
                 <TableHead>Location</TableHead>
@@ -182,7 +290,24 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                 const activeSchedule = classData.class_schedules?.find(s => s.is_active) || classData.class_schedules?.[0];
                 
                 return (
-                  <TableRow key={classData.id}>
+                  <TableRow 
+                    key={classData.id}
+                    style={{
+                      backgroundColor: selectedClasses.has(classData.id) ? 'var(--mantine-color-primary-1)' : 
+                                      hoveredRow === classData.id ? 'var(--mantine-color-gray-1)' : 'transparent',
+                      opacity: !classData.is_active ? 0.6 : 1
+                    }}
+                    onMouseEnter={() => setHoveredRow(classData.id)}
+                    onMouseLeave={() => setHoveredRow(null)}
+                  >
+                    <TableCell style={{ padding: '12px 16px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedClasses.has(classData.id)}
+                        onChange={(e) => handleClassSelection(classData.id, e.target.checked)}
+                        className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                      />
+                    </TableCell>
                     <TableCell>
                       <div>
                         <div className="font-medium">{classData.name}</div>
@@ -239,8 +364,10 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                     <TableCell>
                       <TableRowMenu
                         onEdit={() => handleEditClass(classData.id)}
+                        onArchiveToggle={() => handleArchiveToggle(classData.id)}
                         onDelete={() => handleDeleteClass(classData.id)}
-                        isLoading={deleteMutation.isPending}
+                        isArchived={!classData.is_active}
+                        isLoading={deleteClass.isPending || archiveClass.isPending || unarchiveClass.isPending}
                         editLabel="Edit Class"
                         deleteLabel="Delete Class"
                       />

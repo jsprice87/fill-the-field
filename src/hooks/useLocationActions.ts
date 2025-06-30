@@ -207,3 +207,100 @@ export const useCreateLocation = () => {
     }
   });
 };
+
+// Bulk Actions for Locations
+export const useBulkArchiveLocations = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (locationIds: string[]) => {
+      const { error } = await supabase
+        .from('locations')
+        .update({ is_active: false })
+        .in('id', locationIds);
+      
+      if (error) throw error;
+      return locationIds;
+    },
+    onSuccess: (locationIds) => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} archived successfully`);
+    },
+    onError: (error) => {
+      console.error('Error bulk archiving locations:', error);
+      notify('error', 'Failed to archive locations');
+    }
+  });
+};
+
+export const useBulkUnarchiveLocations = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (locationIds: string[]) => {
+      const { error } = await supabase
+        .from('locations')
+        .update({ is_active: true })
+        .in('id', locationIds);
+      
+      if (error) throw error;
+      return locationIds;
+    },
+    onSuccess: (locationIds) => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} unarchived successfully`);
+    },
+    onError: (error) => {
+      console.error('Error bulk unarchiving locations:', error);
+      notify('error', 'Failed to unarchive locations');
+    }
+  });
+};
+
+export const useBulkDeleteLocations = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (locationIds: string[]) => {
+      const { error } = await supabase
+        .from('locations')
+        .delete()
+        .in('id', locationIds);
+      
+      if (error) throw error;
+      return locationIds;
+    },
+    onSuccess: (locationIds) => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} deleted successfully`);
+    },
+    onError: (error) => {
+      console.error('Error bulk deleting locations:', error);
+      notify('error', 'Failed to delete locations');
+    }
+  });
+};
+
+export const useBulkToggleLocationStatus = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ locationIds, isActive }: { locationIds: string[]; isActive: boolean }) => {
+      const { error } = await supabase
+        .from('locations')
+        .update({ is_active: isActive })
+        .in('id', locationIds);
+      
+      if (error) throw error;
+      return { locationIds, isActive };
+    },
+    onSuccess: ({ locationIds, isActive }) => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} ${isActive ? 'activated' : 'deactivated'} successfully`);
+    },
+    onError: (error) => {
+      console.error('Error bulk toggling location status:', error);
+      notify('error', 'Failed to update location status');
+    }
+  });
+};
