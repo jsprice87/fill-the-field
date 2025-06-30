@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Stack, Group, Flex, Title, Text, Textarea, Checkbox } from '@mantine/core';
 import { FileText, Eye } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
@@ -7,8 +7,15 @@ import { Modal } from '@/components/mantine/Modal';
 const CustomWaiverCard: React.FC = () => {
   const { data: settings } = useFranchiseeSettings();
   const updateSetting = useUpdateFranchiseeSetting();
-  const [waiverText, setWaiverText] = useState(settings?.waiver_text || '');
+  const [waiverText, setWaiverText] = useState('');
   const [previewOpened, setPreviewOpened] = useState(false);
+
+  // Update waiver text when settings load
+  useEffect(() => {
+    if (settings?.waiver_text !== undefined) {
+      setWaiverText(settings.waiver_text);
+    }
+  }, [settings?.waiver_text]);
 
   const handleSave = () => {
     updateSetting.mutate({

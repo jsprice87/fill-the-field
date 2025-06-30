@@ -1,31 +1,35 @@
 
 import React, { useState } from 'react';
 import { Menu, ActionIcon } from '@mantine/core';
-import { MoreVertical, Edit, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, Archive, ArchiveRestore, Trash2, Plus } from 'lucide-react';
 import { ConfirmModal } from '@/components/mantine/ConfirmModal';
 
 interface TableRowMenuProps {
   onEdit?: () => void;
   onArchiveToggle?: () => void;
   onDelete?: () => void;
+  onAddClasses?: () => void;
   isArchived?: boolean;
   isLoading?: boolean;
   editLabel?: string;
   deleteLabel?: string;
   archiveLabel?: string;
   unarchiveLabel?: string;
+  addClassesLabel?: string;
 }
 
 export const TableRowMenu: React.FC<TableRowMenuProps> = ({
   onEdit,
   onArchiveToggle,
   onDelete,
+  onAddClasses,
   isArchived = false,
   isLoading = false,
   editLabel = 'Edit',
   deleteLabel = 'Delete',
   archiveLabel = 'Archive',
   unarchiveLabel = 'Restore',
+  addClassesLabel = 'Add Classes',
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -60,6 +64,16 @@ export const TableRowMenu: React.FC<TableRowMenuProps> = ({
               disabled={isLoading}
             >
               {editLabel}
+            </Menu.Item>
+          )}
+
+          {onAddClasses && (
+            <Menu.Item
+              leftSection={<Plus className="h-4 w-4" />}
+              onClick={onAddClasses}
+              disabled={isLoading}
+            >
+              {addClassesLabel}
             </Menu.Item>
           )}
 

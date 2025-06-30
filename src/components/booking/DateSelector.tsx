@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button, Card, Stack, Group, Text, Loader, Badge, Alert } from '@mantine/core';
-import { Calendar, AlertTriangle, Info } from 'lucide-react';
+import { Calendar, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 import { useDateSelection } from '@/hooks/useDateSelection';
 import { formatDateInTimezone } from '@/utils/timezoneUtils';
 import { parseISO } from 'date-fns';
@@ -28,6 +28,15 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     isLoading,
     allowFutureBookings
   } = useDateSelection(classScheduleId);
+
+  // Auto-select if only one date available
+  React.useEffect(() => {
+    if (availableDates.length === 1 && !selectedDate && !externalSelectedDate) {
+      const singleDate = availableDates[0].date;
+      setSelectedDate(singleDate);
+      onDateSelect(singleDate);
+    }
+  }, [availableDates, selectedDate, externalSelectedDate, setSelectedDate, onDateSelect]);
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
@@ -85,6 +94,18 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         </Alert>
       ) : (
         <Stack spacing="xs">
+          {availableDates.length === 1 && currentSelected && (
+            <Alert 
+              icon={<CheckCircle className="h-4 w-4" />}
+              color="green"
+              variant="light"
+              radius="md"
+            >
+              <Text className="text-green-800 font-poppins" size="sm">
+                <strong>Date Auto-Selected:</strong> Only one available date found and automatically selected.
+              </Text>
+            </Alert>
+          )}
           {availableDates.map((dateOption) => (
             <Button
               key={dateOption.date}
@@ -103,14 +124,22 @@ const DateSelector: React.FC<DateSelectorProps> = ({
                 }
               }}
             >
-              <Group spacing="sm">
-                <Text className="font-poppins font-medium">
-                  {formatDate(dateOption.date, dateOption.dayName)}
-                </Text>
-                {dateOption.isNextAvailable && (
-                  <Badge color="green" size="sm" variant="light">
-                    Next Available
-                  </Badge>
+              <Group spacing="sm" style={{ width: '100%', justifyContent: 'space-between' }}>
+                <Group spacing="sm">
+                  <Text className="font-poppins font-medium">
+                    {formatDate(dateOption.date, dateOption.dayName)}
+                  </Text>
+                  {dateOption.isNextAvailable && (
+                    <Badge color="green" size="sm" variant="light">
+                      Next Available
+                    </Badge>
+                  )}
+                </Group>
+                {currentSelected === dateOption.date && (
+                  <CheckCircle 
+                    className="h-5 w-5 text-white" 
+                    style={{ flexShrink: 0 }}
+                  />
                 )}
               </Group>
             </Button>

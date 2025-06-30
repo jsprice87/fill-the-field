@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollArea, Switch, Text, rem, Table } from '@mantine/core';
-import { MoreVertical, Edit, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, Archive, ArchiveRestore, Trash2, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/mantine/Table';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
 import { useArchiveLocation, useUnarchiveLocation, useDeleteLocation, useToggleLocationStatus } from '@/hooks/useLocationActions';
@@ -17,6 +18,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   onEdit, 
   hideInactive = false 
 }) => {
+  const navigate = useNavigate();
   const archiveLocation = useArchiveLocation();
   const unarchiveLocation = useUnarchiveLocation();
   const deleteLocation = useDeleteLocation();
@@ -39,6 +41,10 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
 
   const handleStatusToggle = (locationId: string, newStatus: boolean) => {
     toggleStatus.mutate({ locationId, isActive: newStatus });
+  };
+
+  const handleAddClasses = (locationId: string) => {
+    navigate(`classes/add?location=${locationId}`);
   };
 
   if (!locations || locations.length === 0) {
@@ -122,11 +128,13 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                   <TableCell>
                     <TableRowMenu
                       onEdit={() => onEdit(location.id)}
+                      onAddClasses={() => handleAddClasses(location.id)}
                       onArchiveToggle={() => handleArchiveToggle(location.id, isArchived)}
                       onDelete={() => handleDelete(location.id)}
                       isArchived={isArchived}
                       isLoading={archiveLocation.isPending || unarchiveLocation.isPending || deleteLocation.isPending}
                       editLabel="Edit Location"
+                      addClassesLabel="Add Classes"
                       deleteLabel="Delete Location"
                     />
                   </TableCell>

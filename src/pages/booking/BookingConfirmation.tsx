@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Button, Stack, Group, Text, Title, Loader, Anchor } from '@mantine/core';
-import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe } from 'lucide-react';
+import { CheckCircle, Calendar, MapPin, Clock, User, Share2, Phone, Globe, Facebook, Instagram } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -168,9 +168,7 @@ const BookingConfirmation: React.FC = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Soccer Trial Booking',
-          text: message,
-          url: shareUrl,
+          text: message
         });
       } catch (error) {
         console.log('Share cancelled');
@@ -369,28 +367,61 @@ const BookingConfirmation: React.FC = () => {
 
             {/* Social Links */}
             {(franchiseeSettings.facebook_url || franchiseeSettings.instagram_url) && (
-              <Group position="center" spacing="lg" pt="md">
-                {franchiseeSettings.facebook_url && (
-                  <Anchor
-                    href={franchiseeSettings.facebook_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-brand-blue hover:text-brand-blue/80"
-                  >
-                    Follow us on Facebook
-                  </Anchor>
-                )}
-                {franchiseeSettings.instagram_url && (
-                  <Anchor
-                    href={franchiseeSettings.instagram_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-brand-blue hover:text-brand-blue/80"
-                  >
-                    Follow us on Instagram
-                  </Anchor>
-                )}
-              </Group>
+              <div style={{ textAlign: 'center', paddingTop: '16px' }}>
+                <Text size="sm" style={{ color: '#031E4D', fontFamily: 'Poppins, sans-serif', marginBottom: '12px' }}>
+                  Follow us on social media:
+                </Text>
+                <Group position="center" spacing="md">
+                  {franchiseeSettings.facebook_url && (
+                    <Anchor
+                      href={franchiseeSettings.facebook_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        backgroundColor: '#1877F2',
+                        color: 'white',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        transition: 'opacity 0.2s'
+                      }}
+                      className="hover:opacity-90"
+                    >
+                      <Facebook className="h-5 w-5" />
+                      <Text size="sm" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}>
+                        Facebook
+                      </Text>
+                    </Anchor>
+                  )}
+                  {franchiseeSettings.instagram_url && (
+                    <Anchor
+                      href={franchiseeSettings.instagram_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px 16px',
+                        background: 'linear-gradient(45deg, #E4405F, #5851DB, #833AB4)',
+                        color: 'white',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        transition: 'opacity 0.2s'
+                      }}
+                      className="hover:opacity-90"
+                    >
+                      <Instagram className="h-5 w-5" />
+                      <Text size="sm" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}>
+                        Instagram
+                      </Text>
+                    </Anchor>
+                  )}
+                </Group>
+              </div>
             )}
           </Stack>
 

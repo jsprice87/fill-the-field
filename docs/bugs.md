@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 30 Jun 2025  
-> **Active Issues:** 13 | **Resolved:** 16
+> **Active Issues:** 0 | **Resolved:** 28
 
 ---
 
@@ -9,18 +9,6 @@
 
 | ID | Title | Severity | Priority | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------|----------------|---------|
-| #13 | Find-classes page using portal styling instead of Soccer Stars branding | 🟡 Medium | P2 | unassigned | /free-trial/find-classes | 2025-06-28 |
-| #24 | Select Class Date modal needs visual date selection indicator | 🟢 Low | P2 | unassigned | ParticipantModal.tsx | 2025-06-29 |
-| #25 | Share with Friends message contains extra information | 🟢 Low | P2 | unassigned | BookingConfirmation.tsx | 2025-06-29 |
-| #26 | Confirmation page needs Facebook/Instagram icons instead of text | 🟢 Low | P2 | unassigned | BookingConfirmation.tsx | 2025-06-29 |
-| #15 | Duplicate asterisks on lead capture form fields | 🟢 Low | P3 | unassigned | Lead capture form components | 2025-06-28 |
-| #14 | Waiver editor not editable on first profile creation | 🟢 Low | P3 | unassigned | /portal/settings waiver section | 2025-06-28 |
-| #11 | Bulk table actions limited to Archive only | 🟢 Low | P4 | unassigned | LeadsTable.tsx | 2025-06-26 |
-| #16 | Map debug console logs on find-classes page | 🟢 Low | P4 | unassigned | /free-trial/find-classes | 2025-06-28 |
-| #27 | Settings page "How it works" boxes have inconsistent styling | 🟢 Low | P2 | unassigned | /portal/settings | 2025-06-30 |
-| #28 | Class names duplicated in Name column on classes page | 🟡 Medium | P1 | unassigned | /portal/classes | 2025-06-30 |
-| #29 | Asterisk color inconsistency across required fields | 🟢 Low | P2 | unassigned | Form components | 2025-06-30 |
-| #30 | Parent/Guardian form red asterisk on newline instead of inline | 🟢 Low | P2 | unassigned | ParentGuardianForm.tsx | 2025-06-30 |
 
 ---
 
@@ -48,6 +36,18 @@
 | #28 | Class names duplicated in Name column on classes page | Show secondary name only if different from primary name | `1a2cc15` | 2025-06-30 |
 | #30 | Parent/Guardian form red asterisk on newline instead of inline | Fixed inline asterisk positioning with styled spans | `1a2cc15` | 2025-06-30 |
 | #17 | Three broken images on fill-the-field.com home page | Updated image paths to correct /media/ locations | `current` | 2025-06-29 |
+| #13 | Find-classes page using portal styling instead of Soccer Stars branding | Applied Soccer Stars branding with navy header and branded elements | `current` | 2025-06-30 |
+| #27 | Settings page "How it works" boxes have inconsistent styling | Standardized to Mantine Card format with consistent blue styling | `current` | 2025-06-30 |
+| #28 | Class names duplicated in Name column on classes page | Show secondary name only if different from primary name | `current` | 2025-06-30 |
+| #29 | Asterisk color inconsistency across required fields | Standardized all required field asterisks to red color | `current` | 2025-06-30 |
+| #30 | Parent/Guardian form red asterisk on newline instead of inline | Fixed inline asterisk positioning with styled spans | `current` | 2025-06-30 |
+| #24 | Select Class Date modal needs visual date selection indicator | Added CheckCircle icons and auto-selection for single dates | `current` | 2025-06-30 |
+| #25 | Share with Friends message contains extra information | Cleaned up sharing to use only template content without extra URLs | `current` | 2025-06-30 |
+| #26 | Confirmation page needs Facebook/Instagram icons instead of text | Added branded Facebook and Instagram icon buttons | `current` | 2025-06-30 |
+| #15 | Duplicate asterisks on lead capture form fields | Fixed Mantine form validation patterns | `current` | 2025-06-30 |
+| #14 | Waiver editor not editable on first profile creation | Fixed state initialization with useEffect for settings loading | `current` | 2025-06-30 |
+| #11 | Bulk table actions limited to Archive only | Enhanced with complete status updates and bulk operations | `current` | 2025-06-30 |
+| #16 | Map debug console logs on find-classes page | Added environment-based logging (development only) | `current` | 2025-06-30 |
 
 ---
 
@@ -461,7 +461,7 @@ ReferenceError: CardHeader is not defined
 <summary><strong>Bug #13:</strong> Find-classes page using portal styling instead of Soccer Stars branding</summary>
 
 ### Title: Find-classes page using portal styling instead of Soccer Stars branding
-### Status: `OPEN` 🟡
+### Status: `RESOLVED` ✅ 2025-06-30
 ### Priority: P1 High - Public branding consistency
 ### Severity: 🟡 Medium
 
@@ -530,7 +530,7 @@ ReferenceError: CardHeader is not defined
 <summary><strong>Bug #15:</strong> Duplicate asterisks on lead capture form fields</summary>
 
 ### Title: Duplicate asterisks on lead capture form fields
-### Status: `OPEN` 🟢
+### Status: `RESOLVED` 🟢
 ### Priority: P1 High - Form validation UX (per user feedback)
 ### Severity: 🟢 Low
 
@@ -931,7 +931,7 @@ We just signed up for a free trial soccer class with Soccer Stars of South Denve
 <summary><strong>Bug #27:</strong> Settings page "How it works" boxes have inconsistent styling</summary>
 
 ### Title: Settings page "How it works" boxes have inconsistent styling
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-30
 ### Priority: P2 Normal
 ### Severity: 🟢 Low
 
@@ -956,7 +956,7 @@ The "How it works" information boxes across different sections of the `/portal/s
 <summary><strong>Bug #28:</strong> Class names duplicated in Name column on classes page</summary>
 
 ### Title: Class names duplicated in Name column on classes page  
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-30
 ### Priority: P1 High
 ### Severity: 🟡 Medium
 
@@ -980,7 +980,7 @@ The Name column on the `/portal/classes` page shows class names duplicated - one
 <summary><strong>Bug #29:</strong> Asterisk color inconsistency across required fields</summary>
 
 ### Title: Asterisk color inconsistency across required fields
-### Status: `OPEN` 🔴  
+### Status: `RESOLVED` ✅ 2025-06-30  
 ### Priority: P2 Normal
 ### Severity: 🟢 Low
 
@@ -1008,7 +1008,7 @@ Required field indicators (asterisks) appear in different colors across the appl
 <summary><strong>Bug #30:</strong> Parent/Guardian form red asterisk on newline instead of inline</summary>
 
 ### Title: Parent/Guardian form red asterisk on newline instead of inline
-### Status: `OPEN` 🔴
+### Status: `RESOLVED` ✅ 2025-06-30
 ### Priority: P2 Normal  
 ### Severity: 🟢 Low
 

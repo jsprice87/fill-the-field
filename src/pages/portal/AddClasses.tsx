@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Stack, Group, Title } from '@mantine/core';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,7 +12,9 @@ import { useCreateProgramWithClasses } from '@/hooks/useCreateProgramWithClasses
 
 const AddClasses: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: franchiseeData } = useFranchiseeData();
+  const preSelectedLocationId = searchParams.get('location');
   
   const {
     programData,
@@ -29,6 +31,16 @@ const AddClasses: React.FC = () => {
   } = useProgramForm();
 
   const createProgramMutation = useCreateProgramWithClasses();
+
+  // Pre-select location if provided in URL parameters
+  useEffect(() => {
+    if (preSelectedLocationId && !programData.selectedLocationId) {
+      setProgramData({
+        ...programData,
+        selectedLocationId: preSelectedLocationId
+      });
+    }
+  }, [preSelectedLocationId, programData, setProgramData]);
 
   const handleSave = async () => {
     if (!franchiseeData?.id || !isProgramValid || !areClassesValid || !areOverrideDatesValid || classRows.length === 0) {

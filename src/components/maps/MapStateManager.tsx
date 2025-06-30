@@ -33,13 +33,19 @@ export const useMapState = () => {
 
   // Add debug logging function
   const addDebugLog = useCallback((message: string) => {
-    console.log(`🗺️ MAP DEBUG: ${message}`);
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🗺️ MAP DEBUG: ${message}`);
+    }
     setDebugInfo(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${message}`]);
   }, []);
 
   // Add browser info logging
   const addBrowserInfo = useCallback((message: string) => {
-    console.log(`🌐 BROWSER DEBUG: ${message}`);
+    // Only log in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🌐 BROWSER DEBUG: ${message}`);
+    }
     setBrowserInfo(prev => [...prev.slice(-9), message]);
   }, []);
 

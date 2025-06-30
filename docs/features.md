@@ -1,7 +1,7 @@
 # 🚀 Feature Requests & Enhancements
 
 > **Last Updated:** 29 Jun 2025  
-> **Active Features:** 7 | **Completed:** 3 | **Backlog:** 1
+> **Active Features:** 3 | **Completed:** 7 | **Backlog:** 1
 
 ---
 
@@ -9,11 +9,7 @@
 
 | ID | Title | Priority | Complexity | Assignee | Target Version |
 |----|-------|----------|------------|----------|----------------|
-| #9 | Profile password management | 🔴 High | 🟡 Medium | unassigned | v0.9.6 |
-| #11 | Color-coded lead status badges with dropdown functionality | 🟡 Medium | 🟡 Medium | unassigned | v0.9.7 |
 | #6 | Enhanced notification types & end-of-day summaries | 🟡 Medium | 🔴 High | unassigned | v1.0.0 |
-| #2 | "Add Classes" button in Locations table actions | 🟢 Low | 🟢 Low | unassigned | v0.9.3 |
-| #3 | Enhanced Booking Restrictions with radio button logic | 🟢 Low | 🟡 Medium | unassigned | v0.9.4 |
 | #7 | Collapsible portal/admin sidebars | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
 | #10 | Remove redundant business info from profile page | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
 
@@ -34,6 +30,10 @@
 | #1 | Enhanced Lead Details page with editing capabilities | 2025-06-26 | v0.9.3 | Multiple commits |
 | #4 | CC Emails field in notifications section | 2025-06-27 | v0.9.3 | 32d4d2e |
 | #5 | Optional language requirement setting | 2025-06-27 | v0.9.3 | 32d4d2e |
+| #2 | "Add Classes" button in Locations table actions | 2025-06-30 | v0.9.3 | current |
+| #3 | Enhanced Booking Restrictions with radio button logic | 2025-06-30 | v0.9.4 | current |
+| #9 | Profile password management | 2025-06-30 | v0.9.6 | current |
+| #11 | Color-coded lead status badges with dropdown functionality | 2025-06-30 | v0.9.7 | current |
 
 ---
 

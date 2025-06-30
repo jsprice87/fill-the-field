@@ -218,7 +218,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               >
                 liability waiver and agreement
               </Text>
-              .<span className="text-red-500"> *</span>
+              .<span className="text-red-500 ml-1">*</span>
             </Text>
           </Group>
 
@@ -231,7 +231,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
             />
             <MessageSquare className="h-4 w-4" style={{ flexShrink: 0, marginTop: '1px' }} />
             <Text className="font-poppins text-sm" style={{ flex: 1, marginTop: '1px' }}>
-              I agree to receive communication about my child's soccer classes and important updates.<span className="text-red-500"> *</span>
+              I agree to receive communication about my child's soccer classes and important updates.<span className="text-red-500 ml-1">*</span>
             </Text>
           </Group>
 

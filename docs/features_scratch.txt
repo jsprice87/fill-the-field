@@ -12,3 +12,6 @@ Items processed (2025-06-29):
 - Feature #11: Color-coded lead status badges with dropdown functionality
 
 Ready for new feature ideas.
+
+ - Add bulk actions to locations and classes tables
+
