@@ -111,21 +111,13 @@ const Settings: React.FC = () => {
                   </Text>
                   
                   {/* How it works info box */}
-                  <Card bg="blue.0" withBorder style={{ borderColor: '#339af0' }}>
-                    <Stack gap="xs">
-                      <Text fw={500} c="blue.7" size="sm">
-                        💡 How it works
-                      </Text>
-                      <Text size="sm" c="blue.8">
-                        • When <strong>enabled</strong>: Parents see a language question during booking and must answer before proceeding
-                      </Text>
-                      <Text size="sm" c="blue.8">
-                        • When <strong>disabled</strong>: Language question is hidden and parents can complete booking without answering
-                      </Text>
-                      <Text size="sm" c="blue.8">
-                        • This setting helps you understand the language needs of enrolled children for class planning
-                      </Text>
-                    </Stack>
+                  <Card bg="blue.0" p="md">
+                    <Title order={4} c="blue.9" mb="xs">How it works:</Title>
+                    <Text size="sm" c="blue.8">
+                      • When <strong>enabled</strong>: Parents see a language question during booking and must answer before proceeding<br/>
+                      • When <strong>disabled</strong>: Language question is hidden and parents can complete booking without answering<br/>
+                      • This setting helps you understand the language needs of enrolled children for class planning
+                    </Text>
                   </Card>
                 </Stack>
               </Stack>

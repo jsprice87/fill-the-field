@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Select, Text } from '@mantine/core';
+import { Card, Select, Text, Title } from '@mantine/core';
 import { Clock } from 'lucide-react';
 import { useFranchiseeSettings, useUpdateFranchiseeSetting } from '@/hooks/useFranchiseeSettings';
 
@@ -50,14 +50,14 @@ const TimezoneSettingsCard: React.FC = () => {
           </Text>
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">Important:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• All class times will be displayed in this timezone</li>
-            <li>• Booking dates will be calculated using this timezone</li>
-            <li>• Changes affect how customers see available dates and times</li>
-          </ul>
-        </div>
+        <Card bg="blue.0" p="md">
+          <Title order={4} c="blue.9" mb="xs">How it works:</Title>
+          <Text size="sm" c="blue.8">
+            • All class times will be displayed in this timezone<br/>
+            • Booking dates will be calculated using this timezone<br/>
+            • Changes affect how customers see available dates and times
+          </Text>
+        </Card>
       </Card.Section>
     </Card>
   );
