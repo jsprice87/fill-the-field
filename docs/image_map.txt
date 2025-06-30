@@ -1,0 +1,25 @@
+# Map of where images go and their corresponding URLs in plain English.
+
+index page: 
+    Header and footer image (top left and bottom center): https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/fill_the_field.png
+    Main Title (center): https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/Shield%403x.png
+
+/#user slug/free-trial:
+    Top background: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/IMG_1101%20(1).jpg
+    Top Brand badge: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Logos_2021-03.svg    
+    Middle section:
+        Super Soccer Stars: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/Soccerstars-091.jpg
+        Parent & Me: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/Soccerstars-121%20(2).jpg
+    Parent Reviews Section:
+        1: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/Portraits-23%20(1).jpg
+        2: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/Portraits-08%20(1).jpg
+
+/#user slug/free-trial/find_classes:
+    Brand Badge: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Logos_2021-03.svg 
+
+/#user slug/free-trial/classes:
+    Brand Badge: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Logos_2021-03.svg 
+
+/#user slug/free-trial/cofirmation:
+    Brand Badge: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Logos_2021-03.svg
+    Footer banner: https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Soccer%20Ball%20Strip%20(1).svg

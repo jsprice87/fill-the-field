@@ -376,7 +376,7 @@ const ClassBooking: React.FC = () => {
             </Button>
             <div>
               <img 
-                src="/media/SSS Logos_red-white.svg" 
+                src="https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Logos_2021-03.svg" 
                 alt="Soccer Stars" 
                 className="h-16 w-auto"
                 style={{ filter: 'brightness(0) invert(1)' }}

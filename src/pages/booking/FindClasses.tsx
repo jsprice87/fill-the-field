@@ -183,7 +183,7 @@ const FindClasses: React.FC = () => {
       <div style={{ backgroundColor: '#031E4D' }} className="text-white py-8">
         <div className="container mx-auto px-4">
           <img 
-            src="/media/SSS Logos_red-white.svg" 
+            src="https://pub-6d374fd755954f29bcb59d4f2c5c7fe7.r2.dev/media/SS%20Logos_2021-03.svg" 
             alt="Soccer Stars" 
             className="h-16 w-auto mb-2"
             style={{ filter: 'brightness(0) invert(1)' }}
