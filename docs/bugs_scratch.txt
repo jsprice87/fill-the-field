@@ -1,32 +1,8 @@
-✅ PROCESSED - Items moved to bugs.md with proper formatting and tracking IDs
+✅ ALL ITEMS PROCESSED AND MIGRATED TO BUGS.MD
 
-Items processed (2025-06-29):
-- Bug #6: Booking flow Parent Guardian Information panel issues
-- Bug #7: Portal bookings page long load time and missing data  
-- Bug #8: Liability waiver 404 error and opens new page
-- Bug #9: Location selector transparent on program creation page
-- Bug #10: Lead Details booking data combination issue
-- Bug #11: Bulk table actions limited to Archive only
-- Bug #12: URGENT: Booking flow broken due to CardHeader undefined error (RESOLVED)
-- Bug #13: Find-classes page using portal styling instead of Soccer Stars branding
-- Bug #14: Waiver editor not editable on first profile creation
-- Bug #15: Duplicate asterisks on lead capture form fields
-- Bug #16: Map debug console logs on find-classes page
-- Bug #17: Three broken images on fill-the-field.com home page (RESOLVED)
-- Bug #18: Language requirement section needs blue "how it works" section
-- Bug #19: Duplicate asterisk in Parent/Guardian Information booking page
-- Bug #20: Booking page needs Soccer Stars styling
-- Bug #21: Booking confirmation page needs Soccer Stars styling
-- Bug #22: Missing liability waiver link in agreements section + rename section
-- Bug #23: Agreement checkboxes/icons misaligned (poor design)
-- Bug #24: Select Class Date modal needs visual date selection indicator
-- Bug #25: Share with Friends message contains extra information
-- Bug #26: Confirmation page needs Facebook/Instagram icons instead of text
+All bug items (#1-30) have been successfully moved to bugs.md with proper formatting and tracking IDs.
 
 Ready for new scratch notes.
 
-✅ PROCESSED 2025-06-30 - Items #27-30 moved to bugs.md:
-- Bug #27: Settings page "How it works" boxes have inconsistent styling  
-- Bug #28: Class names duplicated in Name column on classes page
-- Bug #29: Asterisk color inconsistency across required fields
-- Bug #30: Parent/Guardian form red asterisk on newline instead of inline
+## New Issues:
+- Bug #31: New location is not showing up at the right location on the map. Lilley Gulch is showing up in a completely different part of town. Make sure you are using zip code correctly.

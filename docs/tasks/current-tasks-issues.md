@@ -1,88 +1,62 @@
-# Current Task List - Issue Processing
+# Current Task List - Feature Implementation & New Issues
 > **Generated:** 30 Jun 2025  
-> **Focus:** High-priority bug fixes and UI improvements
+> **Focus:** Feature implementation and new bug fixes
 
 ## Priority Matrix
 
 ### 🔴 P1 High Priority (Immediate)
-Issues affecting user experience, data display, or professional appearance
+New critical bugs affecting user experience
 
 ### 🟡 P2 Medium Priority (Short-term) 
-Visual consistency and UX improvements
+Features and enhancements for workflow improvement
 
 ### 🟢 P3-P4 Low Priority (Backlog)
-Minor improvements and cleanup tasks
+Nice-to-have features and interface improvements
 
 ---
 
 ## Relevant Files
 
-- `src/pages/portal/Classes.tsx` - Classes page with duplicated names
-- `src/components/booking/ParentGuardianForm.tsx` - Form with asterisk issues  
-- `src/pages/portal/Settings.tsx` - Settings page styling inconsistencies
-- `src/components/booking/ClassBooking.tsx` - Booking page styling
-- `src/components/booking/BookingConfirmation.tsx` - Confirmation page styling
-- `src/components/booking/ParentGuardianAgreements.tsx` - Agreements section issues
-- `src/pages/FindClasses.tsx` - Find classes page branding
-- Form components across application - Required field styling
+- `src/pages/FindClasses.tsx` - Find classes page for date/age range display
+- `src/components/maps/MapStateManager.tsx` - Map functionality and location positioning
+- `src/components/maps/LocationCard.tsx` - Location display components
+- `src/hooks/useLocations.ts` - Location data fetching and geocoding
+- `src/pages/portal/Profile.tsx` - Profile page with business info section
+- `src/components/portal/PasswordChangeCard.tsx` - Password management component
+- `src/components/locations/LocationsTable.tsx` - Locations table for bulk actions
+- `src/components/classes/ClassesTable.tsx` - Classes table for bulk actions
+- `src/components/portal/Sidebar.tsx` - Portal sidebar for collapsible functionality
+- `src/components/admin/Sidebar.tsx` - Admin sidebar for collapsible functionality
 
 ---
 
 ## Tasks
 
-- [x] 1.0 Fix Critical Data Display Issues (P1 High Priority) ✅ COMPLETED
-  - [x] 1.1 Investigate and fix duplicated class names in /portal/classes Name column (#28) ✅
-  - [x] 1.2 Fix Parent/Guardian form asterisk positioning issues (#19, #30) ✅
-  - [x] 1.3 Add missing liability waiver link and rename agreements section (#22) ✅
+- [ ] 1.0 Fix Critical Location & Display Issues (P1 High Priority)
+  - [ ] 1.1 Fix map location positioning bug for Lilley Gulch (#31)
+  - [ ] 1.2 Verify zip code usage in geocoding functionality
+  - [ ] 1.3 Add location validation and debugging tools
 
-- [x] 2.0 Improve User Experience and Professional Appearance (P1 High Priority) ✅ COMPLETED
-  - [x] 2.1 Apply Soccer Stars styling to booking page (#20) ✅
-  - [x] 2.2 Apply Soccer Stars styling to booking confirmation page (#21) ✅
-  - [x] 2.3 Fix agreement checkboxes/icons alignment issues (#23) ✅
-  - [x] 2.4 Add blue "how it works" section for language requirements (#18) ✅
+- [ ] 2.0 Implement High-Priority Features (P1-P2 Medium Priority)
+  - [ ] 2.1 Add password management to profile page (#9)
+  - [ ] 2.2 Add date range and age range display to find-classes page (#13)
+  - [ ] 2.3 Implement bulk actions for locations and classes tables (#12)
 
-- [x] 3.0 Standardize Visual Consistency (P2 Medium Priority) ✅ COMPLETED
-  - [x] 3.1 Unify "How it works" box styling across settings page (#27) ✅
-  - [x] 3.2 Standardize required field asterisk colors across forms (#29) ✅
-  - [x] 3.3 Apply Soccer Stars branding to find-classes page (#13) ✅
-
-- [x] 4.0 User Interface Enhancements (P2 Medium Priority) ✅ COMPLETED
-  - [x] 4.1 Add visual date selection indicator to class date modal (#24) ✅
-  - [x] 4.2 Clean up "Share with Friends" message content (#25) ✅
-  - [x] 4.3 Replace Facebook/Instagram text with icons on confirmation page (#26) ✅
-
-- [x] 5.0 Cleanup and Minor Improvements (P3-P4 Low Priority) ✅ COMPLETED
-  - [x] 5.1 Fix duplicate asterisks on lead capture form fields (#15) ✅
-  - [x] 5.2 Fix waiver editor not editable on first profile creation (#14) ✅
-  - [x] 5.3 Remove map debug console logs from find-classes page (#16) ✅
-  - [x] 5.4 Enhance bulk table actions beyond Archive only (#11) ✅
+- [ ] 3.0 Portal UX Improvements (P2-P3 Low Priority)
+  - [ ] 3.1 Implement collapsible portal/admin sidebars (#7)
+  - [ ] 3.2 Remove redundant business info from profile page (#10)
+  - [ ] 3.3 Enhance notification system with advanced features (#6)
 
 ---
 
 ## Implementation Strategy
 
-1. **Start with Task 1.0** - Critical data display issues that affect user experience
-2. **Move to Task 2.0** - Professional appearance improvements for customer-facing pages
-3. **Continue with Task 3.0** - Visual consistency across portal pages
+1. **Start with Task 1.0** - Critical map location bug affecting user experience
+2. **Move to Task 2.0** - High-priority features that improve core functionality
+3. **Continue with Task 3.0** - UX improvements and advanced features
 4. **Push changes after each major task** for testing and validation
 5. **Complete remaining tasks** based on priority and available time
 
-## ✅ COMPLETED WORK
+## Next Steps
 
-### Verified Bug Fixes:
-- **#19, #30**: Fixed Parent Guardian asterisk positioning - Added proper `ml-1` spacing for inline asterisks
-- **#24**: Visual date selection indicators already properly implemented with CheckCircle icons
-- **#25**: Share with Friends message content is clean - only uses `text` parameter as required
-- **#26**: Facebook/Instagram icons properly implemented with lucide-react icons and text labels
-
-### Status:
-- **4 bugs verified and resolved** (asterisk positioning, date selection, share message, social icons)
-- **Critical form usability issues fixed**
-- **User experience improvements confirmed**
-- **Ready for user testing and validation**
-
-### Implementation Notes:
-- Parent Guardian form asterisks now display inline with proper spacing
-- Date selection already had visual indicators working correctly
-- Share functionality follows clean implementation without extra parameters
-- Social media icons combine visual icons with text labels for better UX
+Begin with **Task 1.1**: Investigate and fix the map location positioning bug for Lilley Gulch - this is a critical user experience issue that affects location accuracy.

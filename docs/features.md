@@ -1,7 +1,7 @@
 # 🚀 Feature Requests & Enhancements
 
-> **Last Updated:** 29 Jun 2025  
-> **Active Features:** 3 | **Completed:** 7 | **Backlog:** 1
+> **Last Updated:** 30 Jun 2025  
+> **Active Features:** 4 | **Completed:** 7 | **Backlog:** 1
 
 ---
 
@@ -12,6 +12,7 @@
 | #6 | Enhanced notification types & end-of-day summaries | 🟡 Medium | 🔴 High | unassigned | v1.0.0 |
 | #7 | Collapsible portal/admin sidebars | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
 | #10 | Remove redundant business info from profile page | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
+| #12 | Add bulk actions to locations and classes tables | 🟢 Low | 🟡 Medium | unassigned | v0.9.8 |
 
 ---
 
@@ -552,3 +553,46 @@ Create unified status badge system with:
 3. **Completed**: Move to "Completed Features" with commit hash
 4. **Testing**: Verify acceptance criteria are met
 5. **Documentation**: Update relevant docs if needed
+
+<details>
+<summary><strong>Feature #12:</strong> Add bulk actions to locations and classes tables</summary>
+
+### Description
+Extend bulk action functionality from leads table to locations and classes tables, providing consistent bulk operation capabilities across all portal tables.
+
+### Current State
+- Bulk actions are only available on leads table
+- Locations and classes tables only have individual row actions
+- No consistent bulk operation experience across portal
+
+### Proposed Enhancement
+Add bulk action capabilities to:
+1. **Locations Table** - Archive/unarchive, delete, activate/deactivate multiple locations
+2. **Classes Table** - Archive/unarchive, delete, activate/deactivate multiple classes
+3. **Consistent UI** - Same bulk action interface as leads table
+
+### Technical Requirements
+- Extend existing bulk action pattern to locations and classes tables
+- Add bulk operation hooks for location and class management
+- Ensure proper validation and confirmation dialogs
+- Maintain selection state during table operations
+
+### Implementation Details
+- Add selection state management to LocationsTable and ClassesTable
+- Create bulk action dropdowns in page headers
+- Implement bulk operations for common actions (archive, delete, status changes)
+- Add confirmation dialogs for destructive operations
+
+### Acceptance Criteria
+- [ ] Locations table has bulk selection and actions
+- [ ] Classes table has bulk selection and actions
+- [ ] Bulk operations work consistently across all tables
+- [ ] Proper confirmation dialogs for destructive actions
+- [ ] Selection state persists during operations
+
+### Priority: 🟢 Low
+- **Business Value**: Medium - improves workflow efficiency
+- **Development Effort**: Medium - extending existing patterns
+- **Target Version**: v0.9.8
+
+</details>
