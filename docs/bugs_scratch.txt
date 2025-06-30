@@ -24,3 +24,11 @@ Items processed (2025-06-29):
 - Bug #26: Confirmation page needs Facebook/Instagram icons instead of text
 
 Ready for new scratch notes.
+
+   - all the "How it works" boxes on the /settings page are styled slightly differently from each other.  Need to unify styling.
+   
+   - Class names are duplicated (one on top of each other) in the Name column on the /classes page
+
+   - Asterisk color consistency. Some asterisks indicating required field are red, some are black.  With TextInput elements, there is a 'required' atribute that adds a red asterisk.  For check boxes, make a similar atribute rather than adding a text '*' (black).
+
+   - Booking: Parent/Guardian Information form: red asterisk on newline.  Put 'required' asterisk on same line as TextInput title.

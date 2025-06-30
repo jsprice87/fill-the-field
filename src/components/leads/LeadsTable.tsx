@@ -13,7 +13,6 @@ import { toast } from 'sonner';
 import LeadContactCell from './LeadContactCell';
 import LeadInfoCell from './LeadInfoCell';
 import StatusBadge from './StatusBadge';
-import StatusSelect from './StatusSelect';
 import LeadsTableEmpty from './LeadsTableEmpty';
 import type { Lead } from '@/types';
 
@@ -318,9 +317,10 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
                 </Text>
               </TableCell>
               <TableCell style={{ padding: '12px 16px' }}>
-                <StatusSelect 
+                <StatusBadge 
                   leadId={lead.id}
                   currentStatus={lead.status as any}
+                  interactive={true}
                 />
               </TableCell>
               <TableCell style={{ padding: '12px 16px' }}>

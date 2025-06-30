@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Text, Badge, Button, Group, Stack, Grid, Select } from '@mantine/core';
+import { Card, Text, Badge, Button, Group, Stack, Grid } from '@mantine/core';
 import { Phone, Mail, User, Calendar, MapPin, Globe, FileCheck, Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import StatusBadge from './StatusBadge';
 
 interface Lead {
   id: string;
@@ -47,46 +48,7 @@ const LeadDetailsHeader: React.FC<LeadDetailsHeaderProps> = ({
   onEmailLead,
   isUpdatingStatus = false
 }) => {
-  const [selectedStatus, setSelectedStatus] = useState(lead.status);
   const leadAge = formatDistanceToNow(new Date(lead.created_at), { addSuffix: true });
-  
-  const statusOptions = [
-    { value: 'new', label: 'New' },
-    { value: 'booked_upcoming', label: 'Booked Upcoming' },
-    { value: 'booked_complete', label: 'Booked Complete' },
-    { value: 'no_show', label: 'No Show' },
-    { value: 'follow_up', label: 'Follow Up' },
-    { value: 'canceled', label: 'Canceled' },
-    { value: 'closed_lost', label: 'Closed Lost' },
-    { value: 'closed_won', label: 'Closed Won' }
-  ];
-
-  const handleStatusChange = (newStatus: string | null) => {
-    if (newStatus && newStatus !== lead.status) {
-      setSelectedStatus(newStatus);
-      onStatusChange(lead.id, newStatus);
-    }
-  };
-  
-  const getStatusColor = (status: string): string => {
-    switch (status.toLowerCase()) {
-      case 'new': return 'blue';
-      case 'booked_upcoming': return 'green';
-      case 'booked_complete': return 'teal';
-      case 'no_show': return 'red';
-      case 'follow_up': return 'orange';
-      case 'canceled': return 'red';
-      case 'closed_lost': return 'gray';
-      case 'closed_won': return 'green';
-      default: return 'gray';
-    }
-  };
-
-  const formatStatus = (status: string): string => {
-    return status.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
 
   return (
     <Card withBorder>
@@ -106,18 +68,12 @@ const LeadDetailsHeader: React.FC<LeadDetailsHeaderProps> = ({
             <Stack gap="sm">
               <Group gap="md" align="center">
                 <Text size="sm" fw={500} c="dimmed">Status:</Text>
-                <Select
-                  value={selectedStatus}
-                  onChange={handleStatusChange}
-                  data={statusOptions}
-                  disabled={isUpdatingStatus}
+                <StatusBadge 
+                  leadId={lead.id}
+                  currentStatus={lead.status as any}
+                  interactive={true}
                   size="sm"
-                  w={180}
-                  comboboxProps={{ withinPortal: true }}
                 />
-                {isUpdatingStatus && (
-                  <Text size="xs" c="dimmed">Updating...</Text>
-                )}
               </Group>
               
               <Group gap="xs">
