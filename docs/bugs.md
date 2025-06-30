@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 30 Jun 2025  
-> **Active Issues:** 17 | **Resolved:** 12
+> **Active Issues:** 13 | **Resolved:** 16
 
 ---
 
@@ -9,12 +9,6 @@
 
 | ID | Title | Severity | Priority | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------|----------------|---------|
-| #18 | Language requirement section needs blue "how it works" section | 🟡 Medium | P1 | unassigned | /portal/settings | 2025-06-29 |
-| #19 | Duplicate asterisk in Parent/Guardian Information booking page | 🟢 Low | P1 | unassigned | ParentGuardianForm.tsx | 2025-06-29 |
-| #20 | Booking page needs Soccer Stars styling | 🟡 Medium | P1 | unassigned | ClassBooking.tsx | 2025-06-29 |
-| #21 | Booking confirmation page needs Soccer Stars styling | 🟡 Medium | P1 | unassigned | BookingConfirmation.tsx | 2025-06-29 |
-| #22 | Missing liability waiver link in agreements section + rename section | 🟡 Medium | P1 | unassigned | ParentGuardianAgreements.tsx | 2025-06-29 |
-| #23 | Agreement checkboxes/icons misaligned (poor design) | 🟢 Low | P1 | unassigned | ParentGuardianAgreements.tsx | 2025-06-29 |
 | #13 | Find-classes page using portal styling instead of Soccer Stars branding | 🟡 Medium | P2 | unassigned | /free-trial/find-classes | 2025-06-28 |
 | #24 | Select Class Date modal needs visual date selection indicator | 🟢 Low | P2 | unassigned | ParticipantModal.tsx | 2025-06-29 |
 | #25 | Share with Friends message contains extra information | 🟢 Low | P2 | unassigned | BookingConfirmation.tsx | 2025-06-29 |
@@ -45,6 +39,14 @@
 | #9 | Location selector transparent on program creation page | Migrated LocationSelector from shadcn/ui to Mantine components | `current` | 2025-06-27 |
 | #10 | Lead Details booking data combination issue | Separated booking and appointment queries to prevent data duplication | `current` | 2025-06-27 |
 | #12 | URGENT: Booking flow broken due to CardHeader undefined error | Fixed shadcn/ui to Mantine migration issues in ClassBooking.tsx | `e7de569` | 2025-06-28 |
+| #18 | Language requirement section needs blue "how it works" section | Added blue informational card with clear explanations | `existing` | 2025-06-30 |
+| #19 | Duplicate asterisk in Parent/Guardian Information booking page | Removed manual asterisks, rely on Mantine's required attribute | `1a2cc15` | 2025-06-30 |
+| #20 | Booking page needs Soccer Stars styling | Applied Soccer Stars branding with navy header and red accents | `587abce` | 2025-06-29 |
+| #21 | Booking confirmation page needs Soccer Stars styling | Applied Soccer Stars branding consistently | `587abce` | 2025-06-29 |
+| #22 | Missing liability waiver link in agreements section + rename section | Renamed section to "Booking Agreements", enhanced waiver link visibility | `bdc119b` | 2025-06-30 |
+| #23 | Agreement checkboxes/icons misaligned (poor design) | Fixed alignment with proper flex layout and spacing | `d7fe61f` | 2025-06-29 |
+| #28 | Class names duplicated in Name column on classes page | Show secondary name only if different from primary name | `1a2cc15` | 2025-06-30 |
+| #30 | Parent/Guardian form red asterisk on newline instead of inline | Fixed inline asterisk positioning with styled spans | `1a2cc15` | 2025-06-30 |
 | #17 | Three broken images on fill-the-field.com home page | Updated image paths to correct /media/ locations | `current` | 2025-06-29 |
 
 ---

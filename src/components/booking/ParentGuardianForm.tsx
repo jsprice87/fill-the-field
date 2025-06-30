@@ -213,7 +213,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
               I agree to the{' '}
               <Text 
                 component="button"
-                className="text-brand-blue hover:text-brand-blue/80 underline cursor-pointer bg-transparent border-none p-0 font-inherit"
+                className="text-blue-600 hover:text-blue-800 underline cursor-pointer bg-transparent border-none p-0 font-inherit font-medium"
                 onClick={() => setWaiverModalOpened(true)}
               >
                 liability waiver and agreement
