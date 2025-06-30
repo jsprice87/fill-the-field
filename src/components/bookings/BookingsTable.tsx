@@ -225,7 +225,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <StatusCell 
-                      leadId={booking.id}
+                      leadId={booking.lead_id}
                       bookingDate={booking.selected_date || ''}
                       fallbackStatus={booking.status}
                     />
