@@ -196,7 +196,7 @@ const ParentGuardianForm: React.FC<ParentGuardianFormProps> = ({ flowData, updat
         <Group gap="xs" mb="lg">
           <FileText className="h-5 w-5" />
           <Title order={3} className="font-agrandir text-xl text-brand-navy">
-            Waiver & Communication
+            Booking Agreements
           </Title>
         </Group>
 
