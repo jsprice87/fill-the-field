@@ -143,6 +143,7 @@ export const navItems = [
       {
         title: "Admin Dashboard",
         to: "dashboard",
+        index: true,
         icon: <BarChart3Icon className="h-4 w-4" />,
         page: <AdminDashboard />,
       },

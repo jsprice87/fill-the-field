@@ -6,16 +6,13 @@ import { navItems } from "./nav-items";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Find the nested portal route
-  const portalRoute = navItems.find(item => item.to === "/:franchiseeSlug/portal");
-  
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
           {navItems.map((item, index) => {
-            // Handle the special nested portal route
-            if (item.to === "/:franchiseeSlug/portal" && item.children) {
+            // Handle nested routes (portal and admin)
+            if (item.children) {
               return (
                 <Route
                   key={index}
