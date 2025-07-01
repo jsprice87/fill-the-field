@@ -9,8 +9,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0", // Allow external access for VS Code port forwarding
     port: 8080,
-    strictPort: true, // Fail if port is already in use
-    open: false, // Don't auto-open browser
+    strictPort: false, // Allow fallback to other ports
+    open: true, // Auto-open browser for easier testing
+    cors: true, // Enable CORS for API calls
+    fs: {
+      strict: false, // Allow serving files from outside root
+    },
   },
   plugins: [
     react(),
@@ -36,6 +40,8 @@ export default defineConfig(({ mode }) => ({
   preview: {
     port: 8080,
     host: "0.0.0.0",
-    strictPort: true,
+    strictPort: false, // Allow fallback ports
+    open: true, // Auto-open browser
+    cors: true, // Enable CORS
   },
 }));

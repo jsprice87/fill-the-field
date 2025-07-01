@@ -19,8 +19,11 @@ const queryClient = new QueryClient();
 
 // Update existing franchisees with slugs if needed
 if (import.meta.env.DEV || window.location.hostname === 'localhost') {
-  // Only run in development mode to avoid production issues
-  updateFranchiseeSlugs().catch(console.error);
+  // Only run in development mode and with proper error handling
+  updateFranchiseeSlugs().catch((error) => {
+    console.warn('Failed to initialize franchisee slugs (this is normal for localhost development):', error.message);
+    // Don't break the app if database is unavailable during local development
+  });
 }
 
 function AppWithColorScheme() {

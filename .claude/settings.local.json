@@ -17,7 +17,11 @@
       "Bash(ls:*)",
       "Bash(pkill:*)",
       "WebFetch(domain:soccerstars.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(./dev-server.sh:*)"
     ],
     "deny": []
   }

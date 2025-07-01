@@ -5,11 +5,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development
-- `npm run dev` - Start development server (configured for port 8080, may use alternative port if busy)
-- `npm run dev -- --port 3000` - Start development server on specific port
+- `npm run dev` - Start development server (auto-opens browser, fallback ports if 8080 busy)
+- `npm run dev:clean` - Clean start (kills existing processes, clears cache)
+- `npm run dev:debug` - Development with detailed logging and debugging
+- `npm run dev:port` - Prompt for custom port number
+- `npm run kill:dev` - Kill all development processes
+- `npm run start` - Alias for `npm run dev`
+- `npm run test:dev` - Test if development server is running
 - `npm run build` - Build for production
 - `npm run build:dev` - Build in development mode
 - `npm run preview` - Preview production build on port 8080
+- `npm run preview:clean` - Build and preview in one command
 - `npm run lint` - Run ESLint
 - `npm run typecheck` - Run TypeScript compiler checks (no emit)
 
@@ -23,9 +29,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### VS Code Development
 - Use VS Code's integrated terminal to run `npm run dev`
-- Access via network URL shown in terminal (e.g., http://192.168.68.84:3000/)
+- Access via network URL shown in terminal (e.g., http://192.168.68.84:8080/)
 - Use VS Code's "Ports" panel to forward local ports
 - Chrome debugger config available in `.vscode/launch.json`
+
+### Local Development Script
+Use the development management script for easier troubleshooting:
+- `./dev-server.sh start` - Start development server with proper cleanup
+- `./dev-server.sh stop` - Stop all development processes
+- `./dev-server.sh restart` - Clean restart of development server
+- `./dev-server.sh status` - Check server status and connectivity
+- `./dev-server.sh debug` - Run comprehensive environment diagnostics
+
+### Local Development Troubleshooting
+**Quick Fixes:**
+1. Use `./dev-server.sh debug` to diagnose issues
+2. Use `./dev-server.sh restart` for clean restart
+3. Try network IP instead of localhost (shown in terminal output)
+
+**White Screen Issues:**
+1. Hard refresh browser (Cmd+Shift+R on Mac)
+2. Clear browser cache and disable cache in dev tools
+3. Run `npm run dev:clean` for fresh start
+4. Check CSS import order in `src/index.css` (imports must come before Tailwind)
+
+**Port Issues:**
+1. Use `npm run kill:dev` to kill all processes
+2. Check what's using port: `lsof -i :8080`
+3. Let Vite auto-select port with `npm run dev`
+4. Use `./dev-server.sh stop` for thorough cleanup
+
+**Connection Refused:**
+1. Try `npm run dev:debug` for detailed logging
+2. Use network IP instead of localhost (shown in terminal)
+3. Check firewall/antivirus blocking connections
+4. Use `./dev-server.sh status` to verify server is responding
+4. Try `npm run preview:clean` as fallback
+
+**Performance Issues:**
+1. Use `npm run dev:clean` to clear cache
+2. Restart VS Code if TypeScript is slow
+3. Check Activity Monitor for high CPU processes
 
 ### Testing
 - Uses Vitest for testing framework

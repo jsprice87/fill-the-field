@@ -5,12 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:clean": "npm run kill:dev && vite --force",
+    "dev:debug": "vite --debug --host 0.0.0.0",
+    "dev:port": "vite --port",
+    "kill:dev": "pkill -f vite || pkill -f 'npm run dev' || true",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
-
+    "preview:clean": "npm run build && vite preview",
+    "typecheck": "tsc --noEmit",
+    "start": "npm run dev",
+    "test:dev": "curl -f http://localhost:8080/ || echo 'Server not running on port 8080'"
   },
   "dependencies": {
     "@emotion/styled": "^11.14.0",

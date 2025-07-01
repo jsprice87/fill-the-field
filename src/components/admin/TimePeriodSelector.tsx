@@ -1,5 +1,6 @@
 import React from 'react';
-import { Select, Group, DateInput } from '@mantine/core';
+import { Select, Group } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { DashboardFilters } from '@/hooks/useAdminDashboard';
 
 interface TimePeriodSelectorProps {
