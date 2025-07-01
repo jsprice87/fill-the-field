@@ -142,8 +142,14 @@ export const navItems = [
     children: [
       {
         title: "Admin Dashboard",
-        to: "dashboard",
+        to: "",
         index: true,
+        icon: <BarChart3Icon className="h-4 w-4" />,
+        page: <AdminDashboard />,
+      },
+      {
+        title: "Admin Dashboard Route",
+        to: "dashboard",
         icon: <BarChart3Icon className="h-4 w-4" />,
         page: <AdminDashboard />,
       },
