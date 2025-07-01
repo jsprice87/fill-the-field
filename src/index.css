@@ -1,8 +1,4 @@
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import './styles/design-tokens.css';
 @import './styles/typography.css';
 @import './styles/layout.css';
@@ -13,6 +9,10 @@
 @import './styles/mantine-globals.css';
 @import './styles/tokens.css';
 @import './styles/tables.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Loading spinner animation */
 .loading-spinner {
