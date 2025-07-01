@@ -1,19 +1,11 @@
-import React, { useEffect } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { AppShell, Burger, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { AppSidebar } from '@/components/AppSidebar';
 
 const AdminLayout = () => {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.pathname === '/admin' || location.pathname === '/admin/') {
-      navigate('/admin/dashboard');
-    }
-  }, [location.pathname, navigate]);
 
   return (
     <AppShell

@@ -5,7 +5,7 @@ Based on PRD: Fill the Field Admin Section Complete Implementation
 ## Relevant Files
 
 - `src/nav-items.tsx` - Add `/admin` redirect route to dashboard (UPDATED - Added admin redirect, switched to AdminLayout)
-- `src/pages/admin/Dashboard.tsx` - Replace placeholder dashboard with real metrics
+- `src/pages/admin/Dashboard.tsx` - Replace placeholder dashboard with real metrics (UPDATED - Now uses real data)
 - `src/pages/admin/UserManagement.tsx` - Enhance existing user management with CRUD operations
 - `src/pages/admin/UserManagement.test.tsx` - Unit tests for user management functionality
 - `src/pages/admin/Transactions.tsx` - Create new transaction management page
@@ -18,9 +18,10 @@ Based on PRD: Fill the Field Admin Section Complete Implementation
 - `src/components/admin/UserEditModal.tsx` - Modal component for editing user details
 - `src/components/admin/UserDeleteConfirmation.tsx` - Confirmation dialog for user deletion
 - `src/components/admin/ImpersonationBanner.tsx` - Banner component for impersonation mode
-- `src/components/admin/DashboardMetrics.tsx` - Dashboard metrics cards component
+- `src/components/admin/DashboardMetrics.tsx` - Dashboard metrics cards component (CREATED)
+- `src/components/admin/TimePeriodSelector.tsx` - Time period selector component (CREATED)
 - `src/components/admin/TransactionTable.tsx` - Transaction listing table component
-- `src/hooks/useAdminDashboard.ts` - Hook for dashboard analytics data
+- `src/hooks/useAdminDashboard.ts` - Hook for dashboard analytics data (CREATED)
 - `src/hooks/useAdminUserActions.ts` - Hook for user management operations
 - `src/hooks/useAdminTransactions.ts` - Hook for transaction data and operations
 - `src/hooks/useInvitations.ts` - Hook for invitation management
@@ -51,15 +52,15 @@ Based on PRD: Fill the Field Admin Section Complete Implementation
   - [x] 1.6 Ensure all admin pages load without 404 errors and display proper content
   - [x] 1.7 Verify admin sidebar navigation highlights active routes correctly
 
-- [ ] 2.0 Implement Real Dashboard Analytics
-  - [ ] 2.1 Create useAdminDashboard hook to fetch real analytics data
-  - [ ] 2.2 Add database queries for total users, leads, bookings across all franchisees
-  - [ ] 2.3 Implement user growth tracking with percentage changes calculation
-  - [ ] 2.4 Create time period selector component (7 days, 30 days, 90 days, custom range)
-  - [ ] 2.5 Build DashboardMetrics component with Mantine cards and loading states
-  - [ ] 2.6 Replace hardcoded dashboard values with real data from useAdminDashboard hook
-  - [ ] 2.7 Add revenue metrics calculation and display
-  - [ ] 2.8 Implement error handling for dashboard data loading failures
+- [x] 2.0 Implement Real Dashboard Analytics
+  - [x] 2.1 Create useAdminDashboard hook to fetch real analytics data
+  - [x] 2.2 Add database queries for total users, leads, bookings across all franchisees
+  - [x] 2.3 Implement user growth tracking with percentage changes calculation
+  - [x] 2.4 Create time period selector component (7 days, 30 days, 90 days, custom range)
+  - [x] 2.5 Build DashboardMetrics component with Mantine cards and loading states
+  - [x] 2.6 Replace hardcoded dashboard values with real data from useAdminDashboard hook
+  - [x] 2.7 Add revenue metrics calculation and display
+  - [x] 2.8 Implement error handling for dashboard data loading failures
 
 - [ ] 3.0 Complete User Management System
   - [ ] 3.1 Create useAdminUserActions hook for user CRUD operations
