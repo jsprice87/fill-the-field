@@ -34,6 +34,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SlugResolver from "./components/auth/SlugResolver";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import AdminLayout from "./layout/AdminLayout";
 import DefaultBookingRedirect from "./pages/booking/DefaultBookingRedirect";
 import PortalRedirect from "./components/auth/PortalRedirect";
 import { Navigate } from "react-router-dom";
@@ -130,54 +131,46 @@ export const navItems = [
   },
   // Admin routes (protected with admin role requirement)
   {
-    title: "Admin Dashboard",
-    to: "/admin/dashboard",
+    title: "Admin Portal",
+    to: "/admin",
     icon: <BarChart3Icon className="h-4 w-4" />,
     page: (
       <ProtectedRoute roleRequired="admin">
-        <DashboardLayout />
+        <AdminLayout />
       </ProtectedRoute>
     ),
-  },
-  {
-    title: "Admin User Management",
-    to: "/admin/user-management",
-    icon: <UsersIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute roleRequired="admin">
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    title: "Admin Transactions",
-    to: "/admin/transactions",
-    icon: <CreditCardIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute roleRequired="admin">
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    title: "Admin Global Settings",
-    to: "/admin/settings/global",
-    icon: <SettingsIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute roleRequired="admin">
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    title: "Admin Settings",
-    to: "/admin/settings",
-    icon: <ShieldIcon className="h-4 w-4" />,
-    page: (
-      <ProtectedRoute roleRequired="admin">
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
+    children: [
+      {
+        title: "Admin Dashboard",
+        to: "dashboard",
+        icon: <BarChart3Icon className="h-4 w-4" />,
+        page: <AdminDashboard />,
+      },
+      {
+        title: "Admin User Management",
+        to: "user-management",
+        icon: <UsersIcon className="h-4 w-4" />,
+        page: <AdminUserManagement />,
+      },
+      {
+        title: "Admin Transactions",
+        to: "transactions",
+        icon: <CreditCardIcon className="h-4 w-4" />,
+        page: <AdminTransactions />,
+      },
+      {
+        title: "Admin Global Settings",
+        to: "settings/global",
+        icon: <SettingsIcon className="h-4 w-4" />,
+        page: <AdminGlobalSettings />,
+      },
+      {
+        title: "Admin Settings",
+        to: "settings",
+        icon: <ShieldIcon className="h-4 w-4" />,
+        page: <AdminSettings />,
+      },
+    ],
   },
   // Add the new default booking redirect route BEFORE the slug-based routes
   {

@@ -6,3 +6,4 @@ Ready for new feature ideas.
 
 ## New Features:
 - Feature #13: Add date range and total age range (total age range of all classes available for a location) to the find-classes page.
+- Feature #14: Priority Critical: There is still no information visible on any of the pages on the Admin section of the webapp.  Prompt

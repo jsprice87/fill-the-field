@@ -7,4 +7,6 @@ Ready for new scratch notes.
 ## New Issues:
 - Bug #31: New location is not showing up at the right location on the map. Lilley Gulch is showing up in a completely different part of town. Make sure you are using zip code correctly.
 - Bug #32: Need error feedback on login screen when credentials are invalid or username not found.  Be specific about what is wrong.
+- Bug #33: Dark Mode button in /portal/ doesn't do anything.
+- Bug #34: large gap of wasted white space after the last entry on any of the tables in /portal/.  Add more entries per table, add a selector to choose how many items appear, also, make the "page selector" at the bottom of each table "float" at the bottom of the window so they can always quickly scroll between pages.
 

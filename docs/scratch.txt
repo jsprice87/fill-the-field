@@ -1,0 +1,342 @@
+  > Next, we need to work on the Admin section.  There is still nothing populating on any of the pages in 
+  /admin. Also, fill-the-field.fun/admin is 'Not Found'  That url should reroute to the /admin/dashboard. 
+  Ask me any questions you need me to answer to help build out the admin section so we don't have to fix a 
+  bunch of initial mistakes.
+
+⏺ I'll help you build out the Admin section properly. Let me first research the current admin
+  implementation and routing to understand what exists and what needs to be built.
+
+⏺ Task(Research admin section implementation)
+  ⎿  User rejected Claude's plan:
+     ╭────────────────────────────────────────────────────────────────────────────────────────────────────╮
+     │ Admin Section Completion Plan                                                                      │
+     │                                                                                                    │
+     │ Phase 1: Fix Critical Routing & Layout Issues                                                      │
+     │                                                                                                    │
+     │ 1. Add /admin redirect route to nav-items.tsx that redirects to /admin/dashboard                   │
+     │ 2. Create proper AdminLayout component to replace DashboardLayout usage for admin routes           │
+     │ 3. Update all admin routes to use AdminLayout instead of DashboardLayout                           │
+     │ 4. Standardize admin pages to use consistent Mantine components                                    │
+     │                                                                                                    │
+     │ Phase 2: Implement Missing Admin Dashboard                                                         │
+     │                                                                                                    │
+     │ 1. Replace placeholder Dashboard with real metrics:                                                │
+     │   - Total franchisees count (from database)                                                        │
+     │   - New signups this month                                                                         │
+     │   - Revenue/billing data                                                                           │
+     │   - System status indicators                                                                       │
+     │ 2. Add admin analytics and key performance indicators                                              │
+     │ 3. Create dashboard cards with proper data loading states                                          │
+     │                                                                                                    │
+     │ Phase 3: Complete User Management                                                                  │
+     │                                                                                                    │
+     │ 1. Implement Edit user functionality (update franchisee details)                                   │
+     │ 2. Implement Delete user functionality with proper confirmation                                    │
+     │ 3. Add user creation interface for creating new franchisees                                        │
+     │ 4. Add role management (promote users to admin, change roles)                                      │
+     │                                                                                                    │
+     │ Phase 4: Build Transactions System                                                                 │
+     │                                                                                                    │
+     │ 1. Design transactions data model (if not exists)                                                  │
+     │ 2. Implement transactions listing with filtering and search                                        │
+     │ 3. Add payment/billing overview across all franchisees                                             │
+     │ 4. Create transaction detail views                                                                 │
+     │                                                                                                    │
+     │ Phase 5: Polish & Testing                                                                          │
+     │                                                                                                    │
+     │ 1. Verify global_settings table exists or create migration                                         │
+     │ 2. Standardize all admin components to use Mantine                                                 │
+     │ 3. Add proper admin theming/branding                                                               │
+     │ 4. Test all admin functionality end-to-end                                                         │
+     │                                                                                                    │
+     │ This plan will transform the partially-implemented admin section into a fully functional platform  │
+     │ administration interface.                                                                          │
+     ╰────────────────────────────────────────────────────────────────────────────────────────────────────╯
+     +23 more tool uses
+  ⎿  No (tell Claude what to do differently)
+
+> Research any existing code and see what has already been developed and just needs hooked up.  Also, while
+   researching all of that, keep an eye out for any shadcn UI so we can migrate them to Mantine v8 while 
+  working through each item.  Phase 3 looks pretty good.  ALso, add an "Invite User" feature so I can email
+   an invitation to new users that want to sign up.  For Phase 4, use the context7 mcp, reasearch the 
+  latest documentation on stripe and implement stripe payments system. Using what you have already planned,
+   and everything we just discussed, please ask any further questions, but once we are ready, use 
+  @docs/create-prd.md to generate a fully detailed PRD for the entire admin section so we have a single 
+  place of truth to return to for future context.
+  ⎿  Read docs/create-prd.md (62 lines)
+
+⏺ I'll research the existing admin implementation and then ask clarifying questions to create a
+  comprehensive PRD for the admin section. Let me start by examining what's already built.
+
+⏺ Read(src/nav-items.tsx)
+  ⎿  Read 50 lines (ctrl+r to expand)
+
+⏺ Search(pattern: "**/admin/*.tsx")
+  ⎿  Found 8 files (ctrl+r to expand)
+
+⏺ Read(src/pages/admin/Dashboard.tsx)
+  ⎿  Read 45 lines (ctrl+r to expand)
+
+⏺ Read(src/pages/admin/UserManagement.tsx)
+  ⎿  Read 319 lines (ctrl+r to expand)
+
+⏺ Search(pattern: "**/useAdmin*.ts")
+  ⎿  Found 1 file (ctrl+r to expand)
+
+⏺ Read(src/hooks/useAdminFranchisees.ts)
+  ⎿  Read 41 lines (ctrl+r to expand)
+
+⏺ Read(src/components/dashboard/DashboardLayout.tsx)
+  ⎿  Read 74 lines (ctrl+r to expand)
+
+⏺ Read(src/components/AppSidebar.tsx)
+  ⎿  Read 100 lines (ctrl+r to expand)
+
+⏺ Search(pattern: "shadcn|ui/.*\.tsx|@/components/ui", include: "**/admin/*.tsx")
+  ⎿  Found 3 files (ctrl+r to expand)
+
+⏺ Read(src/pages/admin/GlobalSettings.tsx)
+  ⎿  Read 214 lines (ctrl+r to expand)
+
+⏺ Search(pattern: "**/AdminShell.tsx")
+  ⎿  Found 1 file (ctrl+r to expand)
+
+⏺ Read(src/layout/AdminShell.tsx)
+  ⎿  Read 13 lines (ctrl+r to expand)
+
+⏺ Search(pattern: "admin/login")
+  ⎿  Found 3 files (ctrl+r to expand)
+
+⏺ Search(pattern: "ProtectedRoute.*admin")
+  ⎿  Found 4 files (ctrl+r to expand)
+
+⏺ Read(src/components/auth/ProtectedRoute.tsx)
+  ⎿  Read 50 lines (ctrl+r to expand)
+
+⏺ Now let me research database schema for admin functionality:
+
+⏺ Search(pattern: "subscription_|payment_|invoice", include: "**/types.ts")
+  ⎿  Found 1 file (ctrl+r to expand)
+
+⏺ Search(pattern: "subscription|payment|admin|global_settings", path: "src/integrations/supabase/types.ts")
+  ⎿  Found 1 file (ctrl+r to expand)
+
+⏺ Based on my research, let me now ask the clarifying questions for the admin section PRD:
+
+  Research Summary & Clarifying Questions for Admin Section PRD
+
+  Current State Analysis:
+
+  I've found that you have a partially implemented admin section with these existing components:
+
+  ✅ What Already Exists:
+  - Admin routing structure with protected routes (roleRequired="admin")
+  - Basic admin sidebar navigation with 5 menu items
+  - Admin Dashboard page (hardcoded with 0 values)
+  - User Management page with franchisee listing, filtering, and export
+  - Global Settings page with Mapbox token, webhook, and support info management
+  - Admin authentication/authorization system
+  - Database queries for franchisees data
+
+  ❌ What's Broken/Missing:
+  - /admin redirect to /admin/dashboard
+  - No actual data populating the dashboard metrics
+  - Empty Transaction page
+  - Incomplete Settings page
+  - Mix of shadcn/ui components (need Mantine migration)
+  - No "Invite User" functionality
+  - No Stripe payments integration
+  - Missing admin analytics/reporting
+  - No user editing/management functionality
+
+  🔧 Shadcn Components Found: GlobalSettings.tsx uses several shadcn components (Label, Input, Textarea,
+  Badge)
+
+  Now I need to ask clarifying questions to create a comprehensive PRD:
+
+  ---
+  Clarifying Questions for Admin Section PRD
+
+  1. Admin User Management & Roles
+
+  - Who should have admin access? Just you, or multiple admin users?
+  - What specific actions should admins be able to perform on franchisees? (Edit details, suspend accounts,
+   view analytics, etc.)
+  - Should there be different admin permission levels (Super Admin, Support Admin, etc.)?
+
+  2. Dashboard Analytics
+
+  - What specific metrics do you want to see on the admin dashboard? (Total revenue, new signups this
+  month, active franchisees, etc.)
+  - What time periods should be available? (Last 30 days, quarter, year, custom range?)
+  - Do you need charts/graphs, or just numerical displays?
+
+  3. Invite User Feature
+
+  - Who can send invites? (Only admins, or franchisees too?)
+  - What information should be collected during invitation signup? (Company name, contact info,
+  subscription tier?)
+  - Should invites have expiration dates or usage limits?
+
+  4. Stripe Integration & Payments
+
+  - What subscription tiers/pricing plans do you want to offer?
+  - Do you need one-time payments, recurring subscriptions, or both?
+  - Should franchisees be able to upgrade/downgrade plans themselves?
+  - Do you need invoice management, payment history, failed payment handling?
+
+  5. Transaction Management
+
+  - What types of transactions should be tracked? (Subscription payments, setup fees, etc.)
+  - Should admins be able to issue refunds, adjust billing, or add manual charges?
+  - Do you need transaction reporting/exports?
+
+  6. Current Admin Scope
+
+  - Should the admin section manage all franchisees globally, or have any geographic/regional filtering?
+  - Do you need system monitoring, error logs, or performance metrics?
+  - Should admins be able to access franchisee portals directly (impersonation)?
+
+  7. Phase Implementation Priority
+
+  - Which features are most critical to launch first?
+  - What's your target timeline for the complete admin system?
+
+  Please answer these questions so I can create a detailed, actionable PRD that perfectly matches your
+  admin section needs!
+  ⎿  User rejected Claude's plan:
+     ╭────────────────────────────────────────────────────────────────────────────────────────────────────╮
+     │ Admin Section Development Plan                                                                     │
+     │                                                                                                    │
+     │ Phase 1: Foundation & Core Fixes (Week 1)                                                          │
+     │                                                                                                    │
+     │ 1. Fix Critical Routing Issues                                                                     │
+     │   - Add /admin → /admin/dashboard redirect                                                         │
+     │   - Ensure all admin routes properly load content                                                  │
+     │ 2. Migrate Shadcn to Mantine v8                                                                    │
+     │   - GlobalSettings.tsx: Replace shadcn Input, Label, Textarea, Badge with Mantine components       │
+     │   - Audit other admin components for shadcn usage                                                  │
+     │ 3. Populate Dashboard with Real Data                                                               │
+     │   - Create admin analytics hooks                                                                   │
+     │   - Add real metrics: total franchisees, revenue, new signups, system status                       │
+     │   - Implement basic charts/graphs                                                                  │
+     │                                                                                                    │
+     │ Phase 2: User Management Enhancement (Week 2)                                                      │
+     │                                                                                                    │
+     │ 4. Complete User Management Features                                                               │
+     │   - Add franchisee editing functionality                                                           │
+     │   - Implement user deletion with proper cascading                                                  │
+     │   - Add bulk actions for user management                                                           │
+     │ 5. Invite User System                                                                              │
+     │   - Email invitation system                                                                        │
+     │   - Registration flow for invited users                                                            │
+     │   - Invitation tracking and management                                                             │
+     │                                                                                                    │
+     │ Phase 3: Transaction System (Week 3)                                                               │
+     │                                                                                                    │
+     │ 6. Build Transaction Management                                                                    │
+     │   - Transaction listing and filtering                                                              │
+     │   - Payment history tracking                                                                       │
+     │   - Export functionality                                                                           │
+     │   - Manual transaction management                                                                  │
+     │                                                                                                    │
+     │ Phase 4: Stripe Integration (Week 4)                                                               │
+     │                                                                                                    │
+     │ 7. Implement Stripe Payments                                                                       │
+     │   - Research latest Stripe documentation via context7 mcp                                          │
+     │   - Subscription management system                                                                 │
+     │   - Payment processing and webhooks                                                                │
+     │   - Billing portal integration                                                                     │
+     │                                                                                                    │
+     │ Technical Approach:                                                                                │
+     │                                                                                                    │
+     │ - Maintain existing authentication/authorization system                                            │
+     │ - Extend current admin hooks pattern                                                               │
+     │ - Use Mantine v8 components exclusively                                                            │
+     │ - Follow established patterns from portal section                                                  │
+     │ - Implement comprehensive error handling and loading states                                        │
+     │                                                                                                    │
+     │ Questions for User: Need answers to specific requirements about metrics, subscription tiers, admin │
+     │ permissions, and feature priorities to create detailed PRD.     
+     
+  Clarifying Questions for Admin Section PRD
+
+  1. Admin User Management & Roles
+
+  - Who should have admin access? Just you, or multiple admin users?
+  Just me for now, but might add other admin users in the future.
+
+  - What specific actions should admins be able to perform on franchisees? (Edit details, suspend accounts,
+   view analytics, etc.)
+  Add and delete user accounts, edit User settings, reset User passwords, view all classes, view all locations, view all leads, view all bookings
+
+  - Should there be different admin permission levels (Super Admin, Support Admin, etc.)?
+   No.  Anyone with admin has all admin rights.
+
+  2. Dashboard Analytics
+
+  - What specific metrics do you want to see on the admin dashboard? (Total revenue, new signups this
+  month, active franchisees, etc.)
+  Total users, user growth, total leads (across all users), total bookings (across all users), revenue metrics
+
+  - What time periods should be available? (Last 30 days, quarter, year, custom range?)
+  Add a selector to pick time range of dashboard data
+
+  - Do you need charts/graphs, or just numerical displays?
+  Keep it simple for now.
+
+  3. Invite User Feature
+
+  - Who can send invites? (Only admins, or franchisees too?)
+  Admins and Users can both send invites.  Users (what you keep calling Franchisees), can send invites with a referral code.  We will hook up referral codes with account credits or other incentives later.
+
+  - What information should be collected during invitation signup? (Company name, contact info,
+  subscription tier?)
+  It should just take them to the account creation page.
+
+  - Should invites have expiration dates or usage limits?
+  N/A
+
+  4. Stripe Integration & Payments
+
+  - What subscription tiers/pricing plans do you want to offer?
+  All Free for now.  Use a 3-tier model for placeholder.  Free, Plus, Pro.  The difference in tiers will be the number of locations and classes they can list, Plus and Pro will come with premium support, Plus and pro will come with simple email automation, Pro comes with advanced Lead communications. 
+
+  - Do you need one-time payments, recurring subscriptions, or both?
+  Mainly recurring
+
+  - Should franchisees be able to upgrade/downgrade plans themselves?
+  Yes
+
+  - Do you need invoice management, payment history, failed payment handling?
+  Yes
+
+  5. Transaction Management
+
+  - What types of transactions should be tracked? (Subscription payments, setup fees, etc.)
+  Yes
+
+  - Should admins be able to issue refunds, adjust billing, or add manual charges?
+  Yes
+
+  - Do you need transaction reporting/exports?
+  Yes
+
+  6. Current Admin Scope
+
+  - Should the admin section manage all franchisees globally, or have any geographic/regional filtering?
+  Globally
+
+  - Do you need system monitoring, error logs, or performance metrics?
+  Yes
+
+  - Should admins be able to access franchisee portals directly (impersonation)?
+  Yes
+
+  7. Phase Implementation Priority
+
+  - Which features are most critical to launch first?
+  in order: Item 1, Item 2, Item 6, Item 3, Item 4, Item 5
+
+  - What's your target timeline for the complete admin system?
+  N/A

@@ -1,15 +1,8 @@
 
 import React, { useState } from 'react';
-import { Title, Text, Stack, Group, Alert } from '@mantine/core';
-import { Button } from '@mantine/core';
-import { Card } from '@mantine/core';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Title, Text, Stack, Group, Alert, Button, Card, TextInput, Textarea, Badge, Loader } from '@mantine/core';
 import { Settings, Key, Webhook, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
 import { useGlobalSettings, useUpdateGlobalSetting } from '@/hooks/useGlobalSettings';
-import { AdminShell } from '@/layout/AdminShell';
 
 const GlobalSettings: React.FC = () => {
   const { data: settings, isLoading, error } = useGlobalSettings();
@@ -50,27 +43,23 @@ const GlobalSettings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <AdminShell>
-        <Stack h="100vh" justify="center" align="center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </Stack>
-      </AdminShell>
+      <Stack h="100vh" justify="center" align="center">
+        <Loader size="lg" />
+        <Text c="dimmed">Loading settings...</Text>
+      </Stack>
     );
   }
 
   if (error) {
     return (
-      <AdminShell>
-        <Alert icon={<AlertTriangle size={16} />} title="Error" color="red" variant="filled">
-          Failed to load global settings. Please try again later.
-        </Alert>
-      </AdminShell>
+      <Alert icon={<AlertTriangle size={16} />} title="Error" color="red" variant="filled">
+        Failed to load global settings. Please try again later.
+      </Alert>
     );
   }
 
   return (
-    <AdminShell>
-      <Stack gap="xl" p="md" style={{ maxWidth: 600 }} mx="auto">
+    <Stack gap="xl" p="md" style={{ maxWidth: 600 }} mx="auto">
         <Title order={2} mb="md" className="flex items-center gap-2">
           <Settings size={24} />
           Global Settings
@@ -82,13 +71,12 @@ const GlobalSettings: React.FC = () => {
             <Text fw={600}>Mapbox Public Token</Text>
           </Card.Section>
           <Card.Section className="p-4 space-y-2">
-            <Label htmlFor="mapbox_public_token">Mapbox Token</Label>
-            <Input
-              id="mapbox_public_token"
-              placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwia..."
+            <TextInput
+              label="Mapbox Token"
+              placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwka..."
               value={formData.mapbox_public_token}
-              onChange={(e) => handleChange('mapbox_public_token', e.target.value)}
-              onBlur={(e) => handleBlur('mapbox_public_token', e.target.value)}
+              onChange={(event) => handleChange('mapbox_public_token', event.currentTarget.value)}
+              onBlur={(event) => handleBlur('mapbox_public_token', event.currentTarget.value)}
               disabled={updateSetting.isLoading}
             />
             <Text size="sm" color="dimmed">
@@ -112,13 +100,12 @@ const GlobalSettings: React.FC = () => {
           </Card.Section>
           <Card.Section className="p-4 space-y-4">
             <div>
-              <Label htmlFor="webhook_url">Webhook URL</Label>
-              <Input
-                id="webhook_url"
+              <TextInput
+                label="Webhook URL"
                 placeholder="https://your-webhook-url.com/endpoint"
                 value={formData.webhook_url}
-                onChange={(e) => handleChange('webhook_url', e.target.value)}
-                onBlur={(e) => handleBlur('webhook_url', e.target.value)}
+                onChange={(event) => handleChange('webhook_url', event.currentTarget.value)}
+                onBlur={(event) => handleBlur('webhook_url', event.currentTarget.value)}
                 disabled={updateSetting.isLoading}
               />
               <Text size="sm" color="dimmed">
@@ -126,13 +113,12 @@ const GlobalSettings: React.FC = () => {
               </Text>
             </div>
             <div>
-              <Label htmlFor="webhook_auth_header">Webhook Auth Header</Label>
-              <Input
-                id="webhook_auth_header"
+              <TextInput
+                label="Webhook Auth Header"
                 placeholder="Authorization: Bearer token"
                 value={formData.webhook_auth_header}
-                onChange={(e) => handleChange('webhook_auth_header', e.target.value)}
-                onBlur={(e) => handleBlur('webhook_auth_header', e.target.value)}
+                onChange={(event) => handleChange('webhook_auth_header', event.currentTarget.value)}
+                onBlur={(event) => handleBlur('webhook_auth_header', event.currentTarget.value)}
                 disabled={updateSetting.isLoading}
               />
               <Text size="sm" color="dimmed">
@@ -149,26 +135,24 @@ const GlobalSettings: React.FC = () => {
           </Card.Section>
           <Card.Section className="p-4 space-y-4">
             <div>
-              <Label htmlFor="support_email">Support Email</Label>
-              <Input
-                id="support_email"
+              <TextInput
+                label="Support Email"
                 type="email"
                 placeholder="support@example.com"
                 value={formData.support_email}
-                onChange={(e) => handleChange('support_email', e.target.value)}
-                onBlur={(e) => handleBlur('support_email', e.target.value)}
+                onChange={(event) => handleChange('support_email', event.currentTarget.value)}
+                onBlur={(event) => handleBlur('support_email', event.currentTarget.value)}
                 disabled={updateSetting.isLoading}
               />
             </div>
             <div>
-              <Label htmlFor="support_phone">Support Phone</Label>
-              <Input
-                id="support_phone"
+              <TextInput
+                label="Support Phone"
                 type="tel"
                 placeholder="(555) 123-4567"
                 value={formData.support_phone}
-                onChange={(e) => handleChange('support_phone', e.target.value)}
-                onBlur={(e) => handleBlur('support_phone', e.target.value)}
+                onChange={(event) => handleChange('support_phone', event.currentTarget.value)}
+                onBlur={(event) => handleBlur('support_phone', event.currentTarget.value)}
                 disabled={updateSetting.isLoading}
               />
             </div>
@@ -205,8 +189,7 @@ const GlobalSettings: React.FC = () => {
             Reset
           </Button>
         </Group>
-      </Stack>
-    </AdminShell>
+    </Stack>
   );
 };
 
