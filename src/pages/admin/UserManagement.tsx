@@ -1,7 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useAdminFranchisees } from '@/hooks/useAdminFranchisees';
+import { useResetUserPassword, useBulkUserActions } from '@/hooks/useAdminUserActions';
 import { UserManagementFilters } from '@/components/admin/UserManagementFilters';
-import { PortalShell } from '@/layout/PortalShell';
+import { UserEditModal } from '@/components/admin/UserEditModal';
+import { UserDeleteConfirmation } from '@/components/admin/UserDeleteConfirmation';
+import { UserCreateModal } from '@/components/admin/UserCreateModal';
 import { 
   Container, 
   Paper, 
@@ -14,12 +17,13 @@ import {
   ActionIcon,
   Menu,
   ScrollArea,
-  Table
+  Table,
+  Checkbox,
+  Select,
+  Loader
 } from '@mantine/core';
 import { TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine/Table';
-import { Modal } from '@/components/mantine/Modal';
-import { ConfirmModal } from '@/components/mantine/ConfirmModal';
-import { MoreVertical, Eye, Edit, Trash2, Download } from 'lucide-react';
+import { MoreVertical, Eye, Edit, Trash2, Download, Plus, Key, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Franchisee {
@@ -41,13 +45,19 @@ interface Franchisee {
 
 const AdminUserManagement: React.FC = () => {
   const { data: franchisees = [], isLoading, error, refetch } = useAdminFranchisees();
+  const resetPassword = useResetUserPassword();
+  const { bulkDelete, bulkUpdateStatus } = useBulkUserActions();
+  
   const [selectedUser, setSelectedUser] = useState<Franchisee | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Franchisee | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [tierFilter, setTierFilter] = useState('all');
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<string>('');
 
   console.log('UserManagement render:', { franchisees, isLoading, error });
 
@@ -66,14 +76,13 @@ const AdminUserManagement: React.FC = () => {
   }, [franchisees, searchTerm, statusFilter, tierFilter]);
 
   const handleViewUser = (franchisee: Franchisee) => {
-    console.log('Viewing user:', franchisee);
     setSelectedUser(franchisee);
-    setIsModalOpen(true);
+    setEditModalOpen(true);
   };
 
   const handleEditUser = (franchisee: Franchisee) => {
-    console.log('Editing user:', franchisee);
-    toast.info('Edit functionality coming soon!');
+    setSelectedUser(franchisee);
+    setEditModalOpen(true);
   };
 
   const handleDeleteUser = (franchisee: Franchisee) => {
@@ -81,12 +90,56 @@ const AdminUserManagement: React.FC = () => {
     setDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (userToDelete) {
-      console.log('Deleting user:', userToDelete);
-      toast.info('Delete functionality coming soon!');
-      setDeleteModalOpen(false);
-      setUserToDelete(null);
+  const handleResetPassword = async (user: Franchisee) => {
+    try {
+      await resetPassword.mutateAsync(user.email);
+    } catch (error) {
+      // Error handling is done in the hook
+    }
+  };
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    const newSelected = new Set(selectedUsers);
+    if (checked) {
+      newSelected.add(userId);
+    } else {
+      newSelected.delete(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.size === filteredFranchisees.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredFranchisees.map(f => f.id)));
+    }
+  };
+
+  const handleBulkAction = async () => {
+    if (!bulkAction || selectedUsers.size === 0) return;
+
+    const userIds = Array.from(selectedUsers);
+
+    try {
+      switch (bulkAction) {
+        case 'delete':
+          await bulkDelete.mutateAsync(userIds);
+          break;
+        case 'activate':
+          await bulkUpdateStatus.mutateAsync({ userIds, status: 'active' });
+          break;
+        case 'deactivate':
+          await bulkUpdateStatus.mutateAsync({ userIds, status: 'inactive' });
+          break;
+        case 'suspend':
+          await bulkUpdateStatus.mutateAsync({ userIds, status: 'suspended' });
+          break;
+      }
+      setSelectedUsers(new Set());
+      setBulkAction('');
+    } catch (error) {
+      // Error handling is done in the hooks
     }
   };
 
@@ -128,33 +181,64 @@ const AdminUserManagement: React.FC = () => {
   if (error) {
     console.error('Error loading franchisees:', error);
     return (
-      <PortalShell>
-        <Container size="xl" py="lg">
-          <Paper p="xl" withBorder>
-            <Text c="red.6">Error loading franchisees: {error.message}</Text>
-          </Paper>
-        </Container>
-      </PortalShell>
+      <Container size="xl" py="lg">
+        <Paper p="xl" withBorder>
+          <Text c="red.6">Error loading franchisees: {error.message}</Text>
+        </Paper>
+      </Container>
     );
   }
 
-  return (
-    <PortalShell>
-      <Container size="xl" py="lg">
-        <Stack gap="lg">
-          <Group justify="space-between">
-            <div>
-              <Title order={1}>User Management</Title>
-              <Text c="dimmed">
-                Manage all franchisees and their accounts
-              </Text>
-            </div>
-          </Group>
+  const bulkActionOptions = [
+    { value: '', label: 'Select bulk action...' },
+    { value: 'activate', label: 'Activate Users' },
+    { value: 'deactivate', label: 'Deactivate Users' },
+    { value: 'suspend', label: 'Suspend Users' },
+    { value: 'delete', label: 'Delete Users' },
+  ];
 
-          <Paper p="xl" withBorder>
-            <Stack gap="lg">
-              <Group justify="space-between">
-                <Title order={2}>Franchisees ({filteredFranchisees.length})</Title>
+  return (
+    <Container size="xl" py="lg">
+      <Stack gap="lg">
+        <Group justify="space-between">
+          <div>
+            <Title order={1}>User Management</Title>
+            <Text c="dimmed">
+              Manage all users and their accounts
+            </Text>
+          </div>
+          <Button 
+            leftSection={<Plus size={16} />}
+            onClick={() => setCreateModalOpen(true)}
+          >
+            Add User
+          </Button>
+        </Group>
+
+        <Paper p="xl" withBorder>
+          <Stack gap="lg">
+            <Group justify="space-between">
+              <Title order={2}>Users ({filteredFranchisees.length})</Title>
+              <Group>
+                {selectedUsers.size > 0 && (
+                  <>
+                    <Select
+                      placeholder="Bulk actions"
+                      data={bulkActionOptions}
+                      value={bulkAction}
+                      onChange={(value) => setBulkAction(value || '')}
+                      w={180}
+                    />
+                    <Button
+                      leftSection={<Users size={16} />}
+                      onClick={handleBulkAction}
+                      disabled={!bulkAction}
+                      loading={bulkDelete.isPending || bulkUpdateStatus.isPending}
+                    >
+                      Apply to {selectedUsers.size} users
+                    </Button>
+                  </>
+                )}
                 <Button 
                   leftSection={<Download size={16} />}
                   variant="outline"
@@ -163,6 +247,7 @@ const AdminUserManagement: React.FC = () => {
                   Export
                 </Button>
               </Group>
+            </Group>
 
               <UserManagementFilters
                 searchTerm={searchTerm}
@@ -175,27 +260,43 @@ const AdminUserManagement: React.FC = () => {
                 onExport={handleExport}
               />
 
-              {isLoading ? (
-                <Text ta="center" py="xl" c="dimmed">Loading franchisees...</Text>
-              ) : (
-                <ScrollArea h="calc(100vh - 240px)">
-                  <Table.ScrollContainer minWidth={900}>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Company</TableHead>
-                          <TableHead>Contact</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Tier</TableHead>
-                          <TableHead>Joined</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredFranchisees.map((franchisee) => (
-                          <TableRow key={franchisee.id}>
-                            <TableCell>
+            {isLoading ? (
+              <Group justify="center" py="xl">
+                <Loader size="md" />
+                <Text c="dimmed">Loading users...</Text>
+              </Group>
+            ) : (
+              <ScrollArea h="calc(100vh - 240px)">
+                <Table.ScrollContainer minWidth={1000}>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          <Checkbox
+                            checked={selectedUsers.size === filteredFranchisees.length && filteredFranchisees.length > 0}
+                            indeterminate={selectedUsers.size > 0 && selectedUsers.size < filteredFranchisees.length}
+                            onChange={handleSelectAll}
+                          />
+                        </TableHead>
+                        <TableHead>Company</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Tier</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredFranchisees.map((franchisee) => (
+                        <TableRow key={franchisee.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedUsers.has(franchisee.id)}
+                              onChange={(event) => handleSelectUser(franchisee.id, event.currentTarget.checked)}
+                            />
+                          </TableCell>
+                          <TableCell>
                               <Text fw={500}>{franchisee.company_name}</Text>
                               {franchisee.city && franchisee.state && (
                                 <Text size="sm" c="dimmed">
@@ -216,36 +317,44 @@ const AdminUserManagement: React.FC = () => {
                             <TableCell>
                               {new Date(franchisee.created_at).toLocaleDateString()}
                             </TableCell>
-                            <TableCell>
-                              <Menu shadow="md" width={200}>
-                                <Menu.Target>
-                                  <ActionIcon variant="subtle" size="sm">
-                                    <MoreVertical size={16} />
-                                  </ActionIcon>
-                                </Menu.Target>
-                                <Menu.Dropdown>
-                                  <Menu.Item
-                                    leftSection={<Eye size={14} />}
-                                    onClick={() => handleViewUser(franchisee)}
-                                  >
-                                    View Details
-                                  </Menu.Item>
-                                  <Menu.Item
-                                    leftSection={<Edit size={14} />}
-                                    onClick={() => handleEditUser(franchisee)}
-                                  >
-                                    Edit
-                                  </Menu.Item>
-                                  <Menu.Item
-                                    leftSection={<Trash2 size={14} />}
-                                    onClick={() => handleDeleteUser(franchisee)}
-                                    color="red"
-                                  >
-                                    Delete
-                                  </Menu.Item>
-                                </Menu.Dropdown>
-                              </Menu>
-                            </TableCell>
+                          <TableCell>
+                            <Menu shadow="md" width={200}>
+                              <Menu.Target>
+                                <ActionIcon variant="subtle" size="sm">
+                                  <MoreVertical size={16} />
+                                </ActionIcon>
+                              </Menu.Target>
+                              <Menu.Dropdown>
+                                <Menu.Item
+                                  leftSection={<Eye size={14} />}
+                                  onClick={() => handleViewUser(franchisee)}
+                                >
+                                  View Details
+                                </Menu.Item>
+                                <Menu.Item
+                                  leftSection={<Edit size={14} />}
+                                  onClick={() => handleEditUser(franchisee)}
+                                >
+                                  Edit
+                                </Menu.Item>
+                                <Menu.Item
+                                  leftSection={<Key size={14} />}
+                                  onClick={() => handleResetPassword(franchisee)}
+                                  disabled={resetPassword.isPending}
+                                >
+                                  Reset Password
+                                </Menu.Item>
+                                <Menu.Divider />
+                                <Menu.Item
+                                  leftSection={<Trash2 size={14} />}
+                                  onClick={() => handleDeleteUser(franchisee)}
+                                  color="red"
+                                >
+                                  Delete
+                                </Menu.Item>
+                              </Menu.Dropdown>
+                            </Menu>
+                          </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -257,62 +366,31 @@ const AdminUserManagement: React.FC = () => {
           </Paper>
         </Stack>
 
-        {/* User Details Modal */}
-        <Modal
-          opened={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title="Franchisee Details"
-          size="lg"
-        >
-          {selectedUser && (
-            <Stack gap="md">
-              <Group>
-                <Text fw={500}>Company:</Text>
-                <Text>{selectedUser.company_name}</Text>
-              </Group>
-              <Group>
-                <Text fw={500}>Contact:</Text>
-                <Text>{selectedUser.contact_name}</Text>
-              </Group>
-              <Group>
-                <Text fw={500}>Email:</Text>
-                <Text>{selectedUser.email}</Text>
-              </Group>
-              <Group>
-                <Text fw={500}>Phone:</Text>
-                <Text>{selectedUser.phone || 'N/A'}</Text>
-              </Group>
-              <Group>
-                <Text fw={500}>Status:</Text>
-                <Badge color={getStatusColor(selectedUser.subscription_status)} variant="light">
-                  {selectedUser.subscription_status || 'Unknown'}
-                </Badge>
-              </Group>
-              <Group>
-                <Text fw={500}>Tier:</Text>
-                <Text>{selectedUser.subscription_tier || 'N/A'}</Text>
-              </Group>
-              <Group>
-                <Text fw={500}>Joined:</Text>
-                <Text>{new Date(selectedUser.created_at).toLocaleDateString()}</Text>
-              </Group>
-            </Stack>
-          )}
-        </Modal>
+        {/* Modals */}
+        <UserEditModal
+          user={selectedUser}
+          opened={editModalOpen}
+          onClose={() => {
+            setEditModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
 
-        {/* Delete Confirmation Modal */}
-        <ConfirmModal
+        <UserDeleteConfirmation
+          user={userToDelete}
           opened={deleteModalOpen}
-          onClose={() => setDeleteModalOpen(false)}
-          onConfirm={confirmDelete}
-          title="Delete Franchisee"
-          message={`Are you sure you want to delete ${userToDelete?.company_name}? This action cannot be undone.`}
-          confirmLabel="Delete"
-          destructive
+          onClose={() => {
+            setDeleteModalOpen(false);
+            setUserToDelete(null);
+          }}
+        />
+
+        <UserCreateModal
+          opened={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
         />
       </Container>
-    </PortalShell>
-  );
+    );
 };
 
 export default AdminUserManagement;
