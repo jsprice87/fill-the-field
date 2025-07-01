@@ -78,10 +78,15 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   };
 
   const handleSelectAll = () => {
-    if (selectedLocations.size === locations.length) {
+    // Only select visible locations (not archived ones when hideInactive is true)
+    const visibleLocations = hideInactive ? 
+      locations.filter(location => location.is_active !== false) : 
+      locations;
+    
+    if (selectedLocations.size === visibleLocations.length) {
       setSelectedLocations(new Set());
     } else {
-      setSelectedLocations(new Set(locations.map(location => location.id)));
+      setSelectedLocations(new Set(visibleLocations.map(location => location.id)));
     }
   };
 
@@ -214,7 +219,12 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                 <TableHead style={{ width: '48px' }}>
                   <input
                     type="checkbox"
-                    checked={selectedLocations.size === locations.length && locations.length > 0}
+                    checked={(() => {
+                      const visibleLocations = hideInactive ? 
+                        locations.filter(location => location.is_active !== false) : 
+                        locations;
+                      return selectedLocations.size === visibleLocations.length && visibleLocations.length > 0;
+                    })()}
                     onChange={handleSelectAll}
                     className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
                   />

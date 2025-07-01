@@ -222,8 +222,10 @@ export const useBulkArchiveLocations = () => {
       if (error) throw error;
       return locationIds;
     },
-    onSuccess: (locationIds) => {
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
+    onSuccess: async (locationIds) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['locations'] });
+      await queryClient.refetchQueries({ queryKey: ['locations'] });
       notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} archived successfully`);
     },
     onError: (error) => {
@@ -246,8 +248,10 @@ export const useBulkUnarchiveLocations = () => {
       if (error) throw error;
       return locationIds;
     },
-    onSuccess: (locationIds) => {
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
+    onSuccess: async (locationIds) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['locations'] });
+      await queryClient.refetchQueries({ queryKey: ['locations'] });
       notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} unarchived successfully`);
     },
     onError: (error) => {
@@ -270,8 +274,10 @@ export const useBulkDeleteLocations = () => {
       if (error) throw error;
       return locationIds;
     },
-    onSuccess: (locationIds) => {
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
+    onSuccess: async (locationIds) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['locations'] });
+      await queryClient.refetchQueries({ queryKey: ['locations'] });
       notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} deleted successfully`);
     },
     onError: (error) => {
@@ -294,8 +300,10 @@ export const useBulkToggleLocationStatus = () => {
       if (error) throw error;
       return { locationIds, isActive };
     },
-    onSuccess: ({ locationIds, isActive }) => {
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
+    onSuccess: async ({ locationIds, isActive }) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['locations'] });
+      await queryClient.refetchQueries({ queryKey: ['locations'] });
       notify('success', `${locationIds.length} location${locationIds.length > 1 ? 's' : ''} ${isActive ? 'activated' : 'deactivated'} successfully`);
     },
     onError: (error) => {

@@ -109,8 +109,10 @@ export const useBulkArchiveClasses = () => {
       if (error) throw error;
       return classIds;
     },
-    onSuccess: (classIds) => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
+    onSuccess: async (classIds) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['classes'] });
+      await queryClient.refetchQueries({ queryKey: ['classes'] });
       showNotification({
         color: 'green',
         title: 'Success',
@@ -140,8 +142,10 @@ export const useBulkUnarchiveClasses = () => {
       if (error) throw error;
       return classIds;
     },
-    onSuccess: (classIds) => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
+    onSuccess: async (classIds) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['classes'] });
+      await queryClient.refetchQueries({ queryKey: ['classes'] });
       showNotification({
         color: 'green',
         title: 'Success',
@@ -171,8 +175,10 @@ export const useBulkDeleteClasses = () => {
       if (error) throw error;
       return classIds;
     },
-    onSuccess: (classIds) => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
+    onSuccess: async (classIds) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['classes'] });
+      await queryClient.refetchQueries({ queryKey: ['classes'] });
       showNotification({
         color: 'green',
         title: 'Success',
@@ -202,8 +208,10 @@ export const useBulkToggleClassStatus = () => {
       if (error) throw error;
       return { classIds, isActive };
     },
-    onSuccess: ({ classIds, isActive }) => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
+    onSuccess: async ({ classIds, isActive }) => {
+      // Force immediate cache refresh
+      await queryClient.invalidateQueries({ queryKey: ['classes'] });
+      await queryClient.refetchQueries({ queryKey: ['classes'] });
       showNotification({
         color: 'green',
         title: 'Success',

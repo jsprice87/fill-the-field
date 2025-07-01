@@ -106,10 +106,15 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   };
 
   const handleSelectAll = () => {
-    if (selectedClasses.size === classes.length) {
+    // Only select visible classes (not archived ones when showArchived is false)
+    const visibleClasses = showArchived ? 
+      classes : 
+      classes.filter(cls => cls.is_active !== false);
+    
+    if (selectedClasses.size === visibleClasses.length) {
       setSelectedClasses(new Set());
     } else {
-      setSelectedClasses(new Set(classes.map(cls => cls.id)));
+      setSelectedClasses(new Set(visibleClasses.map(cls => cls.id)));
     }
   };
 
@@ -265,7 +270,12 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                 <TableHead style={{ width: '48px' }}>
                   <input
                     type="checkbox"
-                    checked={selectedClasses.size === classes.length && classes.length > 0}
+                    checked={(() => {
+                      const visibleClasses = showArchived ? 
+                        classes : 
+                        classes.filter(cls => cls.is_active !== false);
+                      return selectedClasses.size === visibleClasses.length && visibleClasses.length > 0;
+                    })()}
                     onChange={handleSelectAll}
                     className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
                   />
