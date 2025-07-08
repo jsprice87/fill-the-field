@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAdminFranchisees } from '@/hooks/useAdminFranchisees';
 import { useResetUserPassword, useBulkUserActions } from '@/hooks/useAdminUserActions';
+import { useImpersonation } from '@/hooks/useImpersonation';
 import { UserManagementFilters } from '@/components/admin/UserManagementFilters';
 import { UserEditModal } from '@/components/admin/UserEditModal';
 import { UserDeleteConfirmation } from '@/components/admin/UserDeleteConfirmation';
@@ -24,7 +25,7 @@ import {
   Loader
 } from '@mantine/core';
 import { TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine/Table';
-import { MoreVertical, Eye, Edit, Trash2, Download, Plus, Key, Users } from 'lucide-react';
+import { MoreVertical, Eye, Edit, Trash2, Download, Plus, Key, Users, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Franchisee {
@@ -48,6 +49,7 @@ const AdminUserManagement: React.FC = () => {
   const { data: franchisees = [], isLoading, error, refetch } = useAdminFranchisees();
   const resetPassword = useResetUserPassword();
   const { bulkDelete, bulkUpdateStatus } = useBulkUserActions();
+  const { startImpersonation } = useImpersonation();
   
   const [selectedUser, setSelectedUser] = useState<Franchisee | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -104,6 +106,22 @@ const AdminUserManagement: React.FC = () => {
   const handleResetPassword = async (user: Franchisee) => {
     try {
       await resetPassword.mutateAsync(user.email);
+    } catch (error) {
+      // Error handling is done in the hook
+    }
+  };
+
+  const handleImpersonateUser = async (user: Franchisee) => {
+    try {
+      await startImpersonation({
+        id: user.id,
+        name: user.contact_name,
+        email: user.email,
+        company: user.company_name
+      });
+      
+      // Redirect to user's portal
+      window.location.href = `/${user.slug}/portal/dashboard`;
     } catch (error) {
       // Error handling is done in the hook
     }
@@ -363,6 +381,13 @@ const AdminUserManagement: React.FC = () => {
                                   disabled={resetPassword.isPending}
                                 >
                                   Reset Password
+                                </Menu.Item>
+                                <Menu.Item
+                                  leftSection={<UserCheck size={14} />}
+                                  onClick={() => handleImpersonateUser(franchisee)}
+                                  disabled={!franchisee.slug}
+                                >
+                                  Impersonate User
                                 </Menu.Item>
                                 <Menu.Divider />
                                 <Menu.Item

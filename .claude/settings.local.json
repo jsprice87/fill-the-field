@@ -25,7 +25,8 @@
       "Bash(true)",
       "Bash(NODE_ENV=development DEBUG=vite:* npm run dev 2 >& 1)",
       "Bash(timeout 5s npm run dev)",
-      "mcp__supabase__execute_sql"
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__apply_migration"
     ],
     "deny": []
   }

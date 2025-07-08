@@ -12,3 +12,4 @@ Ready for new scratch notes.
 - Bug #35: Menus are transparent in /Admin section.  Use same menu elements as in /portal.  
 
 - Bug #36: New account email confirmation loads a bad page when you click confirm. 
+- Bug #37: Admin/user_management: weird yellow outline on dropdowns.  See: 'docs/screenshots/Screenshot 2025-07-08 at 2.47.59 PM.png'
