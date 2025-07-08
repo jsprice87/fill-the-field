@@ -17,14 +17,14 @@ import { updateFranchiseeSlugs } from './scripts/updateFranchiseeSlugs';
 
 const queryClient = new QueryClient();
 
-// Update existing franchisees with slugs if needed
-if (import.meta.env.DEV || window.location.hostname === 'localhost') {
-  // Only run in development mode and with proper error handling
-  updateFranchiseeSlugs().catch((error) => {
-    console.warn('Failed to initialize franchisee slugs (this is normal for localhost development):', error.message);
-    // Don't break the app if database is unavailable during local development
-  });
-}
+// TEMPORARILY DISABLED FOR DEBUGGING - Update existing franchisees with slugs if needed
+// if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+//   // Only run in development mode and with proper error handling
+//   updateFranchiseeSlugs().catch((error) => {
+//     console.warn('Failed to initialize franchisee slugs (this is normal for localhost development):', error.message);
+//     // Don't break the app if database is unavailable during local development
+//   });
+// }
 
 function AppWithColorScheme() {
   const [colorScheme, setColorScheme] = useLocalStorage<'light' | 'dark'>({
@@ -58,10 +58,15 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
+  // MINIMAL RENDER FOR DEBUGGING
+  <App />
+  
+  /* ORIGINAL RENDER - TEMPORARILY DISABLED
   <React.StrictMode>
     <ColorSchemeScript defaultColorScheme="light" />
     <QueryClientProvider client={queryClient}>
       <AppWithColorScheme />
     </QueryClientProvider>
   </React.StrictMode>
+  */
 );

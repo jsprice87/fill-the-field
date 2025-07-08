@@ -21,7 +21,10 @@
       "Bash(curl:*)",
       "Bash(cat:*)",
       "Bash(npm run build:*)",
-      "Bash(./dev-server.sh:*)"
+      "Bash(./dev-server.sh:*)",
+      "Bash(true)",
+      "Bash(NODE_ENV=development DEBUG=vite:* npm run dev 2 >& 1)",
+      "Bash(timeout 5s npm run dev)"
     ],
     "deny": []
   }

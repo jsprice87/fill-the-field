@@ -29,7 +29,7 @@ export const useUpdateUser = () => {
   return useMutation({
     mutationFn: async ({ userId, userData }: { userId: string; userData: UserUpdateData }) => {
       const { data, error } = await supabase
-        .from('franchisee_profiles')
+        .from('franchisees')
         .update({
           ...userData,
           updated_at: new Date().toISOString(),
@@ -95,7 +95,7 @@ export const useDeleteUser = () => {
 
       // 5. Finally, delete the franchisee profile
       const { error: profileError } = await supabase
-        .from('franchisee_profiles')
+        .from('franchisees')
         .delete()
         .eq('id', userId);
       
@@ -135,7 +135,7 @@ export const useCreateUser = () => {
 
       // Then create the franchisee profile
       const { data: profileData, error: profileError } = await supabase
-        .from('franchisee_profiles')
+        .from('franchisees')
         .insert({
           id: authData.user.id,
           company_name: userData.company_name,
@@ -205,7 +205,7 @@ export const useBulkUserActions = () => {
             await supabase.from('leads').delete().eq('franchisee_id', userId);
             await supabase.from('classes').delete().eq('franchisee_id', userId);
             await supabase.from('locations').delete().eq('franchisee_id', userId);
-            await supabase.from('franchisee_profiles').delete().eq('id', userId);
+            await supabase.from('franchisees').delete().eq('id', userId);
             
             results.push({ userId, success: true });
           } catch (error) {
@@ -237,7 +237,7 @@ export const useBulkUserActions = () => {
     bulkUpdateStatus: useMutation({
       mutationFn: async ({ userIds, status }: { userIds: string[]; status: string }) => {
         const { data, error } = await supabase
-          .from('franchisee_profiles')
+          .from('franchisees')
           .update({ 
             subscription_status: status,
             updated_at: new Date().toISOString(),

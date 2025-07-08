@@ -5,6 +5,7 @@ import { UserManagementFilters } from '@/components/admin/UserManagementFilters'
 import { UserEditModal } from '@/components/admin/UserEditModal';
 import { UserDeleteConfirmation } from '@/components/admin/UserDeleteConfirmation';
 import { UserCreateModal } from '@/components/admin/UserCreateModal';
+import { testAdminPolicies } from '@/utils/debugMigration';
 import { 
   Container, 
   Paper, 
@@ -60,6 +61,16 @@ const AdminUserManagement: React.FC = () => {
   const [bulkAction, setBulkAction] = useState<string>('');
 
   console.log('UserManagement render:', { franchisees, isLoading, error });
+  
+  // Debug function to test admin policies
+  const handleDebugTest = async () => {
+    try {
+      const result = await testAdminPolicies();
+      console.log('Debug test result:', result);
+    } catch (error) {
+      console.error('Debug test error:', error);
+    }
+  };
 
   const filteredFranchisees = useMemo(() => {
     return franchisees.filter((franchisee) => {
@@ -207,12 +218,21 @@ const AdminUserManagement: React.FC = () => {
               Manage all users and their accounts
             </Text>
           </div>
-          <Button 
-            leftSection={<Plus size={16} />}
-            onClick={() => setCreateModalOpen(true)}
-          >
-            Add User
-          </Button>
+          <Group>
+            <Button 
+              variant="outline"
+              onClick={handleDebugTest}
+              color="blue"
+            >
+              Debug Test
+            </Button>
+            <Button 
+              leftSection={<Plus size={16} />}
+              onClick={() => setCreateModalOpen(true)}
+            >
+              Add User
+            </Button>
+          </Group>
         </Group>
 
         <Paper p="xl" withBorder>

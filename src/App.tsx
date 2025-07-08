@@ -1,11 +1,22 @@
 
+// MINIMAL TEST APP FOR DEBUGGING
+const App = () => {
+  return (
+    <div>
+      <h1>Test App - Server Should Stay Alive</h1>
+      <p>If you can see this, the dev server is working!</p>
+    </div>
+  );
+};
+
+/* ORIGINAL APP CODE - TEMPORARILY DISABLED FOR DEBUGGING
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { navItems } from "./nav-items";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const OriginalApp = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

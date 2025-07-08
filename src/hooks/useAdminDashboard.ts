@@ -40,7 +40,7 @@ export const useAdminDashboard = (filters: DashboardFilters = { timeRange: '30d'
       try {
         // Get total users (franchisees)
         const { data: users, error: usersError } = await supabase
-          .from('franchisee_profiles')
+          .from('franchisees')
           .select('id, created_at')
           .order('created_at', { ascending: false });
 

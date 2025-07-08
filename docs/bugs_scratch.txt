@@ -10,3 +10,5 @@ Ready for new scratch notes.
 - Bug #33: Dark Mode button in /portal/ doesn't do anything.
 - Bug #34: large gap of wasted white space after the last entry on any of the tables in /portal/.  Add more entries per table, add a selector to choose how many items appear, also, make the "page selector" at the bottom of each table "float" at the bottom of the window so they can always quickly scroll between pages.
 - Bug #35: Menus are transparent in /Admin section.  Use same menu elements as in /portal.  
+
+- Bug #36: New account email confirmation loads a bad page when you click confirm. 

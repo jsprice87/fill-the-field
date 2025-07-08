@@ -8,6 +8,30 @@ export const useAdminFranchisees = () => {
     queryFn: async () => {
       console.log("Fetching franchisees for admin...");
       
+      // First, let's check the user's auth details
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log("Current user:", user?.email);
+      
+      // Check user's role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user?.id)
+        .single();
+      
+      console.log("User profile role:", profile?.role);
+      
+      // First, let's check the total count
+      const { count: totalCount, error: countError } = await supabase
+        .from("franchisees")
+        .select("*", { count: "exact", head: true });
+      
+      if (countError) {
+        console.error("Error counting franchisees:", countError);
+      } else {
+        console.log("Total franchisees count:", totalCount);
+      }
+      
       const { data, error } = await supabase
         .from("franchisees")
         .select(`
@@ -33,6 +57,7 @@ export const useAdminFranchisees = () => {
         throw error;
       }
 
+      console.log("Fetched franchisees count:", data?.length);
       console.log("Fetched franchisees:", data);
       return data || [];
     },

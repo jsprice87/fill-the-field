@@ -7,19 +7,14 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "0.0.0.0", // Allow external access for VS Code port forwarding
-    port: 8080,
-    strictPort: false, // Allow fallback to other ports
-    open: true, // Auto-open browser for easier testing
-    cors: true, // Enable CORS for API calls
-    fs: {
-      strict: false, // Allow serving files from outside root
-    },
+    port: 3000, // TEST WITH DIFFERENT PORT
+    open: false,
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    // mode === 'development' &&
+    // componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
