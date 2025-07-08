@@ -30,10 +30,6 @@ export interface Transaction {
     email: string;
     slug: string;
   };
-  user?: {
-    id: string;
-    email: string;
-  };
 }
 
 export interface TransactionFilters {
@@ -72,10 +68,6 @@ export const useAdminTransactions = (filters: TransactionFilters = {}) => {
             contact_name,
             email,
             slug
-          ),
-          user:auth.users!inner (
-            id,
-            email
           )
         `)
         .order('created_at', { ascending: false });

@@ -81,11 +81,16 @@ export const useImpersonation = () => {
       setImpersonationSession(null);
       
       toast.success(`Stopped impersonating ${targetName}`);
+      
+      // Redirect to admin portal
+      window.location.href = '/admin/user-management';
     } catch (error) {
       console.error('Error exiting impersonation:', error);
       toast.error('Failed to log impersonation exit');
       // Still exit impersonation even if logging fails
       setImpersonationSession(null);
+      // Still redirect even if logging fails
+      window.location.href = '/admin/user-management';
     }
   };
 

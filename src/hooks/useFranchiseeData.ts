@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/utils/notify';
 import { useFranchiseeProfile } from './useFranchiseeProfile';
+import { getEffectiveUserId } from '@/utils/impersonationHelpers';
 
 export const useFranchiseeData = () => {
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useFranchiseeProfile();
@@ -33,13 +34,13 @@ export const useUpdateFranchiseeData = () => {
       state: string;
       zip: string;
     }>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const effectiveUserId = await getEffectiveUserId();
+      if (!effectiveUserId) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
         .from('franchisees')
         .update(updates)
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .select()
         .single();
 

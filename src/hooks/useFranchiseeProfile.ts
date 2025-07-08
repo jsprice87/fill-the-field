@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/utils/notify';
 import { useEnsureFranchiseeProfile } from './useEnsureFranchiseeProfile';
+import { getEffectiveUserId, isImpersonating } from '@/utils/impersonationHelpers';
 
 // Session storage key for safety net check
 const SAFETY_NET_KEY = 'franchisee_profile_ensured';
@@ -53,21 +54,22 @@ export const useFranchiseeProfile = () => {
   };
 
   return useQuery({
-    queryKey: ['franchisee-profile'],
+    queryKey: ['franchisee-profile', isImpersonating()],
     queryFn: async () => {
       console.log('useFranchiseeProfile: Starting query');
       await checkUserChange(); // Check for user change before proceeding
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const effectiveUserId = await getEffectiveUserId();
+      if (!effectiveUserId) throw new Error('Not authenticated');
       
-      console.log('useFranchiseeProfile: Current user ID:', user.id);
+      console.log('useFranchiseeProfile: Effective user ID:', effectiveUserId);
+      console.log('useFranchiseeProfile: Is impersonating:', isImpersonating());
 
       // Try to get existing franchisee record first
       const { data, error } = await supabase
         .from('franchisees')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .maybeSingle();
 
       if (error) throw error;
@@ -123,13 +125,13 @@ export const useUpdateFranchiseeProfile = () => {
       state: string;
       zip: string;
     }>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const effectiveUserId = await getEffectiveUserId();
+      if (!effectiveUserId) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
         .from('franchisees')
         .update(updates)
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .select()
         .single();
 

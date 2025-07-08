@@ -101,9 +101,9 @@ export const useDeleteUser = () => {
       
       if (profileError) throw new Error(`Failed to delete user profile: ${profileError.message}`);
 
-      // 6. Delete the auth user (this should be done carefully)
-      // Note: This requires admin privileges and should be handled server-side
-      // For now, we'll just mark the profile as deleted
+      // Note: We don't delete the auth user as this requires admin privileges
+      // and should be handled server-side. The franchisee profile deletion
+      // effectively removes the user from the system.
       
       return userId;
     },
