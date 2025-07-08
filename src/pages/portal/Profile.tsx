@@ -3,6 +3,7 @@ import { Card, Button, TextInput, Title, Group, Stack, PasswordInput } from '@ma
 import { User, Mail, Building, Phone, MapPin, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useFranchiseeProfile, useUpdateFranchiseeProfile } from '@/hooks/useFranchiseeProfile';
 
 interface ProfileData {
   company_name: string | null;
@@ -16,7 +17,10 @@ interface ProfileData {
 }
 
 const Profile: React.FC = () => {
-  const [profile, setProfile] = useState<ProfileData>({
+  const { data: profile, isLoading, error } = useFranchiseeProfile();
+  const updateProfile = useUpdateFranchiseeProfile();
+  
+  const [formData, setFormData] = useState<ProfileData>({
     company_name: null,
     contact_name: null,
     email: null,
@@ -26,8 +30,6 @@ const Profile: React.FC = () => {
     state: null,
     zip: null,
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   
   // Password management state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -36,71 +38,31 @@ const Profile: React.FC = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    setIsLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        toast.error("Authentication required");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('franchisees')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        toast.error("Failed to load profile");
-        return;
-      }
-
-      setProfile(data);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      toast.error("Failed to load profile");
-    } finally {
-      setIsLoading(false);
+    if (profile) {
+      setFormData({
+        company_name: profile.company_name || null,
+        contact_name: profile.contact_name || null,
+        email: profile.email || null,
+        phone: profile.phone || null,
+        address: profile.address || null,
+        city: profile.city || null,
+        state: profile.state || null,
+        zip: profile.zip || null,
+      });
     }
-  };
+  }, [profile]);
 
   const handleSave = async () => {
-    setIsSaving(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        toast.error("Authentication required");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('franchisees')
-        .update(profile)
-        .eq('user_id', session.user.id);
-
-      if (error) {
-        console.error("Error updating profile:", error);
-        toast.error("Failed to update profile");
-        return;
-      }
-
-      toast.success("Profile updated successfully");
+      await updateProfile.mutateAsync(formData);
     } catch (error) {
-      console.error("Error saving profile:", error);
-      toast.error("Failed to save profile");
-    } finally {
-      setIsSaving(false);
+      // Error handling is done in the hook
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setProfile(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handlePasswordChange = async () => {
@@ -182,13 +144,13 @@ const Profile: React.FC = () => {
               <TextInput
                 label="Company Name"
                 name="company_name"
-                value={profile.company_name || ''}
+                value={formData.company_name || ''}
                 onChange={(e) => handleChange(e)}
               />
               <TextInput
                 label="Contact Name"
                 name="contact_name"
-                value={profile.contact_name || ''}
+                value={formData.contact_name || ''}
                 onChange={(e) => handleChange(e)}
               />
             </div>
@@ -198,14 +160,14 @@ const Profile: React.FC = () => {
                 label="Email"
                 name="email"
                 type="email"
-                value={profile.email || ''}
+                value={formData.email || ''}
                 onChange={(e) => handleChange(e)}
               />
               <TextInput
                 label="Phone"
                 name="phone"
                 type="tel"
-                value={profile.phone || ''}
+                value={formData.phone || ''}
                 onChange={(e) => handleChange(e)}
               />
             </div>
@@ -213,7 +175,7 @@ const Profile: React.FC = () => {
             <TextInput
               label="Address"
               name="address"
-              value={profile.address || ''}
+              value={formData.address || ''}
               onChange={(e) => handleChange(e)}
             />
 
@@ -221,24 +183,24 @@ const Profile: React.FC = () => {
               <TextInput
                 label="City"
                 name="city"
-                value={profile.city || ''}
+                value={formData.city || ''}
                 onChange={(e) => handleChange(e)}
               />
               <TextInput
                 label="State"
                 name="state"
-                value={profile.state || ''}
+                value={formData.state || ''}
                 onChange={(e) => handleChange(e)}
               />
               <TextInput
                 label="ZIP Code"
                 name="zip"
-                value={profile.zip || ''}
+                value={formData.zip || ''}
                 onChange={(e) => handleChange(e)}
               />
             </div>
 
-            <Button onClick={handleSave} disabled={isSaving} loading={isSaving}>
+            <Button onClick={handleSave} disabled={updateProfile.isPending} loading={updateProfile.isPending}>
               Save Changes
             </Button>
           </Stack>

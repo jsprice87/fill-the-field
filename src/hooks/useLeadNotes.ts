@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getEffectiveUserId } from '@/utils/impersonationHelpers';
 
 export interface LeadNote {
   id: string;
@@ -37,14 +38,14 @@ export const useCreateLeadNote = () => {
 
   return useMutation({
     mutationFn: async ({ leadId, body }: { leadId: string; body: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const effectiveUserId = await getEffectiveUserId();
+      if (!effectiveUserId) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('lead_notes')
         .insert({
           lead_id: leadId,
-          author_id: user.id,
+          author_id: effectiveUserId,
           body: body.trim(),
         })
         .select()

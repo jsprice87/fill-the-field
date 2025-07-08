@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Box } from '@mantine/core';
 import { Plus, MapPin, Building, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -13,48 +13,19 @@ import LocationsTable from '@/components/locations/LocationsTable';
 import LocationForm, { LocationFormData } from '@/components/locations/LocationForm';
 import { useLocations } from '@/hooks/useLocations';
 import { useUpdateLocation } from '@/hooks/useLocationActions';
-import { supabase } from "@/integrations/supabase/client";
+import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 
 const PortalLocations: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationFormData | undefined>();
-  const [franchiseeId, setFranchiseeId] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   
   const hideInactive = searchParams.get('hideInactive') === 'true';
   const updateLocationMutation = useUpdateLocation();
   
-  // Get franchisee ID
-  useEffect(() => {
-    const getFranchiseeId = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          toast.error("Authentication required");
-          return;
-        }
-
-        const { data: franchisee, error: franchiseeError } = await supabase
-          .from('franchisees')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .single();
-        
-        if (franchiseeError || !franchisee) {
-          console.error("Error fetching franchisee:", franchiseeError);
-          toast.error("Unable to find franchisee account. Please contact support.");
-          return;
-        }
-        
-        setFranchiseeId(franchisee.id);
-      } catch (error) {
-        console.error("Error getting franchisee:", error);
-        toast.error("Failed to authenticate. Please try again.");
-      }
-    };
-
-    getFranchiseeId();
-  }, []);
+  // Use impersonation-aware franchisee data
+  const { data: franchiseeData } = useFranchiseeData();
+  const franchiseeId = franchiseeData?.id;
 
   const { data: locations = [], isLoading } = useLocations(franchiseeId || undefined, hideInactive);
 
