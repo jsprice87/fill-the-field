@@ -1,62 +1,70 @@
-# Current Task List - Feature Implementation & New Issues
-> **Generated:** 30 Jun 2025  
-> **Focus:** Feature implementation and new bug fixes
+# Current Task List - Portal & Public-Facing Issues
+> **Generated:** 10 Jul 2025  
+> **Focus:** Portal functionality and public-facing bugs (Admin tracked separately)
 
 ## Priority Matrix
 
-### 🔴 P1 High Priority (Immediate)
-New critical bugs affecting user experience
+### 🔴 P1 Critical (Immediate)
+- **Bug #36**: Email confirmation broken - BLOCKS user registration
 
-### 🟡 P2 Medium Priority (Short-term) 
-Features and enhancements for workflow improvement
+### 🟡 P2 High Priority (Short-term)
+- **Bug #31**: Map location positioning (Lilley Gulch)
+- **Bug #34**: Portal table white space and pagination issues
 
-### 🟢 P3-P4 Low Priority (Backlog)
-Nice-to-have features and interface improvements
+### 🟢 P3 Medium Priority (Next iteration)
+- **Bug #32**: Login error feedback
+- **Bug #33**: Dark mode button non-functional
+
+**Note:** Admin section issues (#35, #37, #38, #43) and Feature #15 are tracked separately in `tasks-prd-admin-section.md`
 
 ---
 
 ## Relevant Files
 
-- `src/pages/FindClasses.tsx` - Find classes page for date/age range display
-- `src/components/maps/MapStateManager.tsx` - Map functionality and location positioning
-- `src/components/maps/LocationCard.tsx` - Location display components
-- `src/hooks/useLocations.ts` - Location data fetching and geocoding
-- `src/pages/portal/Profile.tsx` - Profile page with business info section
-- `src/components/portal/PasswordChangeCard.tsx` - Password management component
-- `src/components/locations/LocationsTable.tsx` - Locations table for bulk actions
-- `src/components/classes/ClassesTable.tsx` - Classes table for bulk actions
-- `src/components/portal/Sidebar.tsx` - Portal sidebar for collapsible functionality
-- `src/components/admin/Sidebar.tsx` - Admin sidebar for collapsible functionality
+- `src/pages/auth/EmailConfirmation.tsx` - Email confirmation flow
+- `src/components/auth/AuthCallback.tsx` - Auth callback handling
+- `src/components/maps/MapStateManager.tsx` - Map location positioning
+- `src/hooks/useGeocoding.ts` - Geocoding functionality
+- `src/components/portal/LeadsTable.tsx` - Portal table pagination
+- `src/components/portal/BookingsTable.tsx` - Portal table pagination
+- `src/components/portal/LocationsTable.tsx` - Portal table pagination
+- `src/components/auth/LoginForm.tsx` - Login error handling
+- `src/components/portal/ThemeToggle.tsx` - Dark mode functionality
+- `src/components/portal/Sidebar.tsx` - Portal theme system
 
 ---
 
 ## Tasks
 
-- [ ] 1.0 Fix Critical Location & Display Issues (P1 High Priority)
-  - [ ] 1.1 Fix map location positioning bug for Lilley Gulch (#31)
-  - [ ] 1.2 Verify zip code usage in geocoding functionality
-  - [ ] 1.3 Add location validation and debugging tools
+- [ ] 1.0 Fix Critical User Registration Flow (P1 Critical)
+  - [ ] 1.1 Investigate email confirmation redirect/loading issues
+  - [ ] 1.2 Check Supabase auth configuration and email templates
+  - [ ] 1.3 Verify auth callback handling and error states
+  - [ ] 1.4 Test complete registration and confirmation flow
+  - [ ] 1.5 Ensure proper success/error messaging
 
-- [ ] 2.0 Implement High-Priority Features (P1-P2 Medium Priority)
-  - [ ] 2.1 Add password management to profile page (#9)
-  - [ ] 2.2 Add date range and age range display to find-classes page (#13)
-  - [ ] 2.3 Implement bulk actions for locations and classes tables (#12)
+- [ ] 2.0 Fix High-Priority UX Issues (P2 High Priority)
+  - [ ] 2.1 Fix map location positioning for Lilley Gulch (verify zip code usage)
+  - [ ] 2.2 Improve portal table pagination and reduce white space
+  - [ ] 2.3 Add configurable rows per page (10, 25, 50, 100)
+  - [ ] 2.4 Implement sticky pagination controls at viewport bottom
 
-- [ ] 3.0 Portal UX Improvements (P2-P3 Low Priority)
-  - [ ] 3.1 Implement collapsible portal/admin sidebars (#7)
-  - [ ] 3.2 Remove redundant business info from profile page (#10)
-  - [ ] 3.3 Enhance notification system with advanced features (#6)
+- [ ] 3.0 Implement Authentication and UI Improvements (P3 Medium Priority)
+  - [ ] 3.1 Add specific error feedback to login screen
+  - [ ] 3.2 Fix dark mode button functionality in portal
+  - [ ] 3.3 Ensure theme persistence across sessions
 
 ---
 
 ## Implementation Strategy
 
-1. **Start with Task 1.0** - Critical map location bug affecting user experience
-2. **Move to Task 2.0** - High-priority features that improve core functionality
-3. **Continue with Task 3.0** - UX improvements and advanced features
+1. **Start with Task 1.0** - Email confirmation is blocking user registration
+2. **Move to Task 2.0** - High-priority UX issues affecting daily operations
+3. **Continue with Task 3.0** - Medium priority improvements for polish
 4. **Push changes after each major task** for testing and validation
-5. **Complete remaining tasks** based on priority and available time
 
 ## Next Steps
 
-Begin with **Task 1.1**: Investigate and fix the map location positioning bug for Lilley Gulch - this is a critical user experience issue that affects location accuracy.
+Begin with **Task 1.1**: Investigate email confirmation redirect/loading issues - this is blocking new user registrations.
+
+**CRITICAL**: Stop and push all progress for testing after completing each major task (1.0, 2.0, 3.0) before proceeding to the next.

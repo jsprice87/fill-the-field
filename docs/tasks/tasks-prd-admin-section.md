@@ -71,8 +71,8 @@ Based on PRD: Fill the Field Admin Section Complete Implementation
   - [x] 3.5 Implement user deletion with cascading cleanup (leads, bookings, etc.)
   - [x] 3.6 Add password reset functionality for user accounts
   - [x] 3.7 Implement bulk actions for user management operations
-  - [x] 3.8 Create user impersonation system with ImpersonationBanner component
-  - [x] 3.9 Add impersonation entry/exit flow with proper session management
+  - [~] 3.8 Create user impersonation system with ImpersonationBanner component (INCOMPLETE - Bug #38)
+  - [~] 3.9 Add impersonation entry/exit flow with proper session management (INCOMPLETE - Bug #38)
   - [x] 3.10 Implement audit logging for all admin user actions
   - [x] 3.11 Add success/error feedback for all user operations
 

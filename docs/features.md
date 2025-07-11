@@ -1,7 +1,7 @@
 # 🚀 Feature Requests & Enhancements
 
 > **Last Updated:** 30 Jun 2025  
-> **Active Features:** 4 | **Completed:** 8 | **Backlog:** 1
+> **Active Features:** 5 | **Completed:** 8 | **Backlog:** 1
 
 ---
 
@@ -14,6 +14,7 @@
 | #10 | Remove redundant business info from profile page | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
 | #12 | Add bulk actions to locations and classes tables | 🟢 Low | 🟡 Medium | unassigned | v0.9.8 |
 | #13 | Add date range and age range display to find-classes page | 🟡 Medium | 🟡 Medium | completed | v0.9.8 |
+| #15 | Admin section data population and functionality | 🔴 Critical | 🟠 High | unassigned | v0.9.9 |
 
 ---
 
@@ -662,5 +663,136 @@ Add bulk action capabilities to:
 - **Business Value**: Medium - improves workflow efficiency
 - **Development Effort**: Medium - extending existing patterns
 - **Target Version**: v0.9.8
+
+</details>
+
+<details>
+<summary><strong>Feature #13:</strong> Enhanced find-classes page with comprehensive class information</summary>
+
+### Description
+Add comprehensive class information display to the find-classes page including date ranges, age ranges, class counts, and schedule previews to help parents make informed booking decisions.
+
+### Current State
+- Find-classes page shows basic location information
+- No class-specific details visible before booking
+- Parents lack essential information for decision-making
+- Limited transparency about available programs
+
+### Proposed Enhancement
+Add comprehensive class information display:
+
+**1. Age Range Information**
+- Display min-max age ranges for classes at each location
+- Smart formatting ("3-7 years", "All ages", "5+ years")
+- Clear age requirement communication
+
+**2. Date Range Display**
+- Show class availability periods
+- Handle ongoing, start-only, and end-only date ranges
+- Clear scheduling transparency
+
+**3. Class Count and Variety**
+- Display total number of available classes
+- Show class variety and options
+- Help parents understand program depth
+
+**4. Schedule Previews**
+- Sample class schedules with time slots
+- Visual schedule badges with overflow indicators
+- Quick schedule overview without drilling down
+
+### Technical Requirements
+- Enhanced location data queries to include class information
+- Age range calculation and formatting functions
+- Date range processing and display logic
+- Schedule aggregation and preview generation
+- Responsive design for class information cards
+
+### Implementation Details
+- Create LocationClassInfo interface for structured data
+- Add getLocationClassInfo function for data aggregation
+- Implement formatAgeRange and formatDateRange helpers
+- Enhance location cards with class information sections
+- Add colored icons and badges for visual hierarchy
+
+### Acceptance Criteria
+- [ ] Age ranges displayed clearly for each location
+- [ ] Date ranges show class availability periods
+- [ ] Class counts provide program variety indication
+- [ ] Schedule previews offer quick timing overview
+- [ ] Information enhances booking decision-making
+- [ ] Responsive design works across devices
+- [ ] Performance maintained with complex data queries
+
+### Priority: 🟡 Medium
+- **Business Value**: High - improves booking conversion rates
+- **UX Impact**: High - reduces uncertainty in booking process
+- **Development Effort**: Medium - data aggregation and UI enhancements
+- **Target Version**: v0.9.9
+
+### Business Impact
+- **Conversion Improvement**: Better information leads to more confident bookings
+- **Customer Experience**: Reduces pre-booking questions and uncertainty
+- **Competitive Advantage**: Transparent information builds trust
+- **Support Reduction**: Self-service information reduces support inquiries
+
+</details>
+
+<details>
+<summary><strong>Feature #14:</strong> Admin section data population and functionality</summary>
+
+### Description
+Resolve critical issue where Admin section pages show no information despite being implemented, ensuring all admin functionality works as designed.
+
+### Priority: 🔴 Critical
+### Status: `ACTIVE ISSUE` - Priority critical
+
+### Current State
+- Admin section pages exist but show no data
+- Dashboard, User Management, Transactions pages appear empty
+- Admin functionality is non-functional despite implementation
+- Critical blocker for admin workflow
+
+### Issue Analysis
+This appears to be a data loading or permissions issue where:
+- Admin pages are implemented but not receiving data
+- Could be authentication/authorization problems
+- May be related to database queries or RLS policies
+- Potential React Query cache or hook issues
+
+### Expected Behavior
+Admin section should display:
+1. **Dashboard** - Real metrics and analytics data
+2. **User Management** - List of all franchisees with management options
+3. **Transactions** - Transaction data with filtering and management
+4. **Global Settings** - System-wide configuration options
+
+### Technical Investigation Required
+- Verify admin user permissions and role assignments
+- Check database RLS policies for admin access
+- Investigate React Query hooks for admin data fetching
+- Test admin authentication and session management
+- Review console errors and network requests
+
+### Critical Business Impact
+- **Admin Workflow Blocked**: Cannot manage users or view system data
+- **Support Limitations**: Cannot assist users effectively
+- **Business Operations**: Platform administration is non-functional
+- **Revenue Impact**: Cannot process refunds or manage transactions
+
+### Resolution Priority
+This should be addressed immediately as it blocks core admin functionality.
+
+### Acceptance Criteria
+- [ ] Admin dashboard shows real metrics and data
+- [ ] User Management displays all franchisees
+- [ ] Transactions page loads and functions properly
+- [ ] All admin CRUD operations work correctly
+- [ ] Admin authentication and permissions work properly
+
+### Target Resolution
+- **Urgency**: Immediate - blocks admin workflow
+- **Complexity**: 🟠 High - requires debugging and investigation
+- **Dependencies**: May require database, auth, or infrastructure fixes
 
 </details>

@@ -2,6 +2,8 @@ import { HomeIcon, UserIcon, SettingsIcon, CalendarIcon, MapPinIcon, BookOpenIco
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import EmailConfirmation from "./pages/auth/EmailConfirmation";
+import AuthCallback from "./pages/auth/AuthCallback";
 import Dashboard from "./pages/dashboard/Dashboard";
 import PortalDashboard from "./pages/portal/Dashboard";
 import PortalLeads from "./pages/portal/Leads";
@@ -57,6 +59,18 @@ export const navItems = [
     to: "/register",
     icon: <UserIcon className="h-4 w-4" />,
     page: <Register />,
+  },
+  {
+    title: "Email Confirmation",
+    to: "/auth/confirm",
+    icon: <UserIcon className="h-4 w-4" />,
+    page: <EmailConfirmation />,
+  },
+  {
+    title: "Auth Callback",
+    to: "/auth/callback",
+    icon: <UserIcon className="h-4 w-4" />,
+    page: <AuthCallback />,
   },
   {
     title: "Dashboard",

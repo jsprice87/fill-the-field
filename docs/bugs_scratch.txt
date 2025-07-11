@@ -1,15 +1,10 @@
 ✅ ALL ITEMS PROCESSED AND MIGRATED TO BUGS.MD
 
-All bug items (#1-30) have been successfully moved to bugs.md with proper formatting and tracking IDs.
+All bug items (#31-37) have been successfully moved to bugs.md with proper formatting and tracking IDs.
 
 Ready for new scratch notes.
 
 ## New Issues:
-- Bug #31: New location is not showing up at the right location on the map. Lilley Gulch is showing up in a completely different part of town. Make sure you are using zip code correctly.
-- Bug #32: Need error feedback on login screen when credentials are invalid or username not found.  Be specific about what is wrong.
-- Bug #33: Dark Mode button in /portal/ doesn't do anything.
-- Bug #34: large gap of wasted white space after the last entry on any of the tables in /portal/.  Add more entries per table, add a selector to choose how many items appear, also, make the "page selector" at the bottom of each table "float" at the bottom of the window so they can always quickly scroll between pages.
-- Bug #35: Menus are transparent in /Admin section.  Use same menu elements as in /portal.  
+✅ All issues migrated to bugs.md (Bug #39-44)
 
-- Bug #36: New account email confirmation loads a bad page when you click confirm. 
-- Bug #37: Admin/user_management: weird yellow outline on dropdowns.  See: 'docs/screenshots/Screenshot 2025-07-08 at 2.47.59 PM.png'
+Ready for new scratch notes.
