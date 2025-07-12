@@ -5,7 +5,6 @@ import { Stack, Switch, Group, Button } from '@mantine/core';
 import { Modal } from '@/components/mantine/Modal';
 import { TextInput } from '@/components/mantine/TextInput';
 import { useZodForm } from '@/hooks/useZodForm';
-import { geocodeAddress } from '@/utils/geocoding';
 import { toast } from 'sonner';
 
 const locationSchema = z.object({
@@ -74,25 +73,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   const handleSubmit = async (data: LocationFormData) => {
     setIsSubmitting(true);
     try {
-      // Build Location object for geocoding - always force fresh lookup
-      const locationData = {
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        zip: data.zip,
-        name: data.name
-      };
-      
-      const coordinates = await geocodeAddress(locationData, true); // Force fresh lookup
-      
-      if (coordinates) {
-        data.latitude = coordinates.latitude;
-        data.longitude = coordinates.longitude;
-      } else {
-        toast.warning('Could not determine coordinates for this address. Location saved without map positioning.');
-      }
-      
-      // Pass the complete data object with all form fields
+      // Pass form data as-is - let the hooks handle geocoding
       await onSubmit(data);
       onClose();
     } catch (error) {
@@ -195,6 +176,14 @@ const LocationForm: React.FC<LocationFormProps> = ({
               loading={isSubmitting}
               disabled={!form.isValid()}
               data-autofocus
+              onClick={() => {
+                console.log('Form validation debug:', {
+                  isValid: form.isValid(),
+                  errors: form.errors,
+                  values: form.values,
+                  isDirty: form.isDirty()
+                });
+              }}
             >
               {initialData?.id ? 'Update Location' : 'Add Location'}
             </Button>
