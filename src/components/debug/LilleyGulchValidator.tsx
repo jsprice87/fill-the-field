@@ -1,55 +1,64 @@
 import React, { useState } from 'react';
 import { Button, Card, Stack, Group, Text, Alert, Loader, Code } from '@mantine/core';
 import { IconMapPin, IconCheck, IconX, IconAlertTriangle } from '@tabler/icons-react';
-import { validateLilleyGulchCoordinates, generateCoordinateUpdateSQL } from '@/utils/coordinateCorrection';
+import { geocodeAddress } from '@/utils/geocoding';
 
-interface CorrectionResult {
+interface GeocodingResult {
   locationName: string;
-  needsCorrection: boolean;
-  currentCoordinates?: { lat: number; lng: number };
-  suggestedCoordinates?: { lat: number; lng: number };
-  distanceDifference?: number;
-  confidence: 'high' | 'medium' | 'low';
+  coordinates?: { lat: number; lng: number };
+  success: boolean;
   message: string;
 }
 
 export const LilleyGulchValidator: React.FC = () => {
-  const [validationResult, setValidationResult] = useState<CorrectionResult | null>(null);
+  const [validationResult, setValidationResult] = useState<GeocodingResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
 
   const handleValidation = async () => {
     setIsValidating(true);
     try {
-      console.log('🔍 Starting Lilley Gulch validation...');
-      const result = await validateLilleyGulchCoordinates();
-      setValidationResult(result);
-      console.log('✅ Validation complete:', result);
+      console.log('🔍 Testing Lilley Gulch geocoding...');
+      const result = await geocodeAddress({
+        address: '6063 S Independence St',
+        city: 'Littleton', 
+        state: 'CO',
+        zip: '80123',
+        name: 'Lilley Gulch Soccer Fields'
+      }, true); // Force fresh lookup
+      
+      if (result) {
+        setValidationResult({
+          locationName: 'Lilley Gulch Soccer Fields',
+          coordinates: { lat: result.latitude, lng: result.longitude },
+          success: true,
+          message: `Geocoding successful! Found coordinates: ${result.latitude.toFixed(6)}, ${result.longitude.toFixed(6)}`
+        });
+      } else {
+        setValidationResult({
+          locationName: 'Lilley Gulch Soccer Fields',
+          success: false,
+          message: 'Geocoding failed - no coordinates found for this address'
+        });
+      }
+      console.log('✅ Geocoding test complete:', result);
     } catch (error) {
-      console.error('❌ Validation error:', error);
+      console.error('❌ Geocoding error:', error);
       setValidationResult({
         locationName: 'Lilley Gulch Soccer Fields',
-        needsCorrection: false,
-        message: `Error during validation: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        confidence: 'low'
+        success: false,
+        message: `Error during geocoding: ${error instanceof Error ? error.message : 'Unknown error'}`
       });
     } finally {
       setIsValidating(false);
     }
   };
 
-  const getAlertColor = (confidence: string) => {
-    switch (confidence) {
-      case 'high': return 'green';
-      case 'medium': return 'yellow';
-      case 'low': return 'red';
-      default: return 'gray';
-    }
+  const getAlertColor = (success: boolean) => {
+    return success ? 'green' : 'red';
   };
 
-  const getAlertIcon = (needsCorrection: boolean, confidence: string) => {
-    if (!needsCorrection) return <IconCheck size={16} />;
-    if (confidence === 'medium') return <IconAlertTriangle size={16} />;
-    return <IconX size={16} />;
+  const getAlertIcon = (success: boolean) => {
+    return success ? <IconCheck size={16} /> : <IconX size={16} />;
   };
 
   return (
@@ -73,87 +82,53 @@ export const LilleyGulchValidator: React.FC = () => {
           leftSection={isValidating ? <Loader size="xs" /> : <IconMapPin size={16} />}
           disabled={isValidating}
         >
-          {isValidating ? 'Validating Location...' : 'Validate Lilley Gulch Coordinates'}
+          {isValidating ? 'Testing Geocoding...' : 'Test Lilley Gulch Geocoding'}
         </Button>
 
         {validationResult && (
           <Alert
-            icon={getAlertIcon(validationResult.needsCorrection, validationResult.confidence)}
-            title={!validationResult.needsCorrection ? 'Coordinates Validated' : 'Coordinate Issues Found'}
-            color={getAlertColor(validationResult.confidence)}
+            icon={getAlertIcon(validationResult.success)}
+            title={validationResult.success ? 'Geocoding Successful' : 'Geocoding Failed'}
+            color={getAlertColor(validationResult.success)}
             radius="md"
           >
             <Stack gap="sm">
               <Text>{validationResult.message}</Text>
               
-              {validationResult.currentCoordinates && (
+              {validationResult.coordinates && (
                 <div>
-                  <Text size="sm" fw={500}>Current Database Coordinates:</Text>
+                  <Text size="sm" fw={500}>Geocoded Coordinates:</Text>
                   <Code>
-                    Lat: {validationResult.currentCoordinates.lat.toFixed(7)}, 
-                    Lng: {validationResult.currentCoordinates.lng.toFixed(7)}
+                    Lat: {validationResult.coordinates.lat.toFixed(7)}, 
+                    Lng: {validationResult.coordinates.lng.toFixed(7)}
                   </Code>
                 </div>
               )}
 
-              {validationResult.suggestedCoordinates && (
-                <div>
-                  <Text size="sm" fw={500}>Suggested (Corrected) Coordinates:</Text>
-                  <Code>
-                    Lat: {validationResult.suggestedCoordinates.lat.toFixed(7)}, 
-                    Lng: {validationResult.suggestedCoordinates.lng.toFixed(7)}
-                  </Code>
-                </div>
-              )}
-
-              {validationResult.distanceDifference && (
-                <div>
-                  <Text size="sm" fw={500}>Distance Difference:</Text>
-                  <Code>{validationResult.distanceDifference.toFixed(3)} miles</Code>
-                </div>
-              )}
-
-              <Text size="sm" c="dimmed">
-                Confidence: {validationResult.confidence.toUpperCase()}
-              </Text>
-              
-              {validationResult.currentCoordinates && validationResult.suggestedCoordinates && (
+              {validationResult.coordinates && (
                 <>
-                  <Text size="sm" fw={500}>Quick Links to Verify:</Text>
+                  <Text size="sm" fw={500}>Verify Location:</Text>
                   <Group gap="xs">
                     <Button
                       size="xs"
                       variant="outline"
                       component="a"
-                      href={`https://www.google.com/maps/@${validationResult.currentCoordinates.lat},${validationResult.currentCoordinates.lng},15z`}
+                      href={`https://www.google.com/maps/@${validationResult.coordinates.lat},${validationResult.coordinates.lng},15z`}
                       target="_blank"
                     >
-                      View Current Location
+                      View on Google Maps
                     </Button>
                     <Button
                       size="xs"
                       variant="outline"
                       component="a"
-                      href={`https://www.google.com/maps/@${validationResult.suggestedCoordinates.lat},${validationResult.suggestedCoordinates.lng},15z`}
+                      href={`https://www.openstreetmap.org/#map=15/${validationResult.coordinates.lat}/${validationResult.coordinates.lng}`}
                       target="_blank"
                     >
-                      View Suggested Location
+                      View on OpenStreetMap
                     </Button>
                   </Group>
                 </>
-              )}
-
-              {validationResult.needsCorrection && validationResult.suggestedCoordinates && (
-                <div>
-                  <Text size="sm" fw={500}>SQL Update Command:</Text>
-                  <Code block>
-                    {generateCoordinateUpdateSQL(
-                      validationResult.locationName,
-                      validationResult.suggestedCoordinates.lat,
-                      validationResult.suggestedCoordinates.lng
-                    )}
-                  </Code>
-                </div>
               )}
             </Stack>
           </Alert>
@@ -161,22 +136,22 @@ export const LilleyGulchValidator: React.FC = () => {
 
         <Alert
           icon={<IconAlertTriangle size={16} />}
-          title="Debug Information"
+          title="Test Information"
           color="blue"
           radius="md"
         >
           <Stack gap="xs">
             <Text size="sm">
-              <strong>Expected Address:</strong> 6063 S Independence St, Littleton, CO 80123
+              <strong>Test Address:</strong> 6063 S Independence St, Littleton, CO 80123
             </Text>
             <Text size="sm">
-              <strong>Current DB Coordinates:</strong> 39.5384674, -105.1058995
+              <strong>Location Name:</strong> Lilley Gulch Soccer Fields
             </Text>
             <Text size="sm">
-              <strong>Issue:</strong> Location showing up in wrong part of town
+              <strong>Purpose:</strong> Test that geocoding returns accurate coordinates for this address
             </Text>
             <Text size="sm" c="dimmed">
-              Check browser console for detailed geocoding logs during validation.
+              Check browser console for detailed geocoding logs during testing.
             </Text>
           </Stack>
         </Alert>

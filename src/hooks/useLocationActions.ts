@@ -106,7 +106,7 @@ export const useUpdateLocation = () => {
         throw new Error('Location ID is required for update');
       }
 
-      // Try to geocode the address with Location object
+      // Try to geocode the address with Location object - force fresh lookup on updates
       let coordinates = null;
       try {
         coordinates = await geocodeAddress({
@@ -115,7 +115,7 @@ export const useUpdateLocation = () => {
           state: data.state,
           zip: data.zip,
           name: data.name
-        });
+        }, true); // Force fresh lookup to recalculate coordinates
       } catch (error) {
         console.warn('Geocoding failed:', error);
       }
@@ -163,7 +163,7 @@ export const useCreateLocation = () => {
         throw new Error('Franchisee profile is required to create locations');
       }
 
-      // Try to geocode the address with Location object
+      // Try to geocode the address with Location object - fresh lookup for new locations
       let coordinates = null;
       try {
         coordinates = await geocodeAddress({
@@ -172,7 +172,7 @@ export const useCreateLocation = () => {
           state: data.state,
           zip: data.zip,
           name: data.name
-        });
+        }, true); // Force fresh lookup for new locations
       } catch (error) {
         console.warn('Geocoding failed:', error);
       }

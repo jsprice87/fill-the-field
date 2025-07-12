@@ -5,7 +5,7 @@ import { Stack, Switch, Group, Button } from '@mantine/core';
 import { Modal } from '@/components/mantine/Modal';
 import { TextInput } from '@/components/mantine/TextInput';
 import { useZodForm } from '@/hooks/useZodForm';
-import { geocodeAddress } from '@/utils/geocoding';
+import { geocodeAddress, clearGeocodeCache } from '@/utils/geocoding';
 import { toast } from 'sonner';
 
 const locationSchema = z.object({
@@ -54,8 +54,10 @@ const LocationForm: React.FC<LocationFormProps> = ({
   useEffect(() => {
     if (open) {
       if (initialData) {
+        console.log('LocationForm: Setting initial data', initialData);
         form.setValues(initialData);
       } else {
+        console.log('LocationForm: Setting empty form values');
         form.setValues({
           name: '',
           address: '',
@@ -69,12 +71,19 @@ const LocationForm: React.FC<LocationFormProps> = ({
       }
       setIsSubmitting(false);
     }
-  }, [initialData, open]);
+  }, [initialData, open, form]);
 
   const handleSubmit = async (data: LocationFormData) => {
+    console.log('LocationForm: Form submission started', data);
+    console.log('LocationForm: Form validation state', {
+      isValid: form.isValid(),
+      errors: form.errors,
+      values: form.values
+    });
+    
     setIsSubmitting(true);
     try {
-      // Build Location object for geocoding
+      // Build Location object for geocoding - always force fresh lookup
       const locationData = {
         address: data.address,
         city: data.city,
@@ -83,11 +92,16 @@ const LocationForm: React.FC<LocationFormProps> = ({
         name: data.name
       };
       
-      const coordinates = await geocodeAddress(locationData);
+      console.log('LocationForm: Geocoding location data', locationData);
+      const coordinates = await geocodeAddress(locationData, true); // Force fresh lookup
       
       if (coordinates) {
+        console.log('LocationForm: Geocoding successful', coordinates);
         data.latitude = coordinates.latitude;
         data.longitude = coordinates.longitude;
+      } else {
+        console.warn('LocationForm: Geocoding failed, proceeding without coordinates');
+        toast.warning('Could not determine coordinates for this address. Location saved without map positioning.');
       }
       
       // Pass the complete data object with all form fields
@@ -99,6 +113,11 @@ const LocationForm: React.FC<LocationFormProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleForceRecalculate = () => {
+    clearGeocodeCache();
+    toast.info('Coordinate cache cleared. Next save will recalculate coordinates.');
   };
 
   const onSubmitHandler = form.onSubmit(handleSubmit);
@@ -179,22 +198,45 @@ const LocationForm: React.FC<LocationFormProps> = ({
             {...form.getInputProps('isActive', { type: 'checkbox' })}
           />
 
-          <Group justify="flex-end" gap="sm" mt="lg">
+          {/* Debug info when form is invalid */}
+          {!form.isValid() && Object.keys(form.errors).length > 0 && (
+            <div style={{ padding: '8px', backgroundColor: '#ffebee', borderRadius: '4px', fontSize: '12px' }}>
+              <strong>Form validation errors:</strong>
+              <ul style={{ margin: '4px 0', paddingLeft: '16px' }}>
+                {Object.entries(form.errors).map(([field, error]) => (
+                  <li key={field}>{field}: {error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <Group justify="space-between" gap="sm" mt="lg">
             <Button
               variant="outline"
-              onClick={onClose}
+              size="sm"
+              onClick={handleForceRecalculate}
               disabled={isSubmitting}
             >
-              Cancel
+              Clear Coordinate Cache
             </Button>
-            <Button
-              type="submit"
-              loading={isSubmitting}
-              disabled={!form.isValid()}
-              data-autofocus
-            >
-              {initialData?.id ? 'Update Location' : 'Add Location'}
-            </Button>
+            
+            <Group gap="sm">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                loading={isSubmitting}
+                disabled={!form.isValid()}
+                data-autofocus
+              >
+                {initialData?.id ? 'Update Location' : 'Add Location'}
+              </Button>
+            </Group>
           </Group>
         </Stack>
       </form>

@@ -9,79 +9,40 @@ interface Location {
   city: string;
   state: string;
   zip: string;
-  name?: string; // Optional location name for better matching
-}
-
-/**
- * Known coordinate corrections for specific problematic locations
- * These are manually verified coordinates for locations with known issues
- */
-const MANUAL_COORDINATE_CORRECTIONS: Record<string, { lat: number; lng: number; reason: string }> = {
-  // Lilley Gulch Soccer Fields - manually verified coordinates
-  'lilley gulch soccer fields': {
-    lat: 39.5385,    // Verified coordinates for 6063 S Independence St, Littleton, CO 80123
-    lng: -105.1059,  
-    reason: 'Manual verification of 6063 S Independence St, Littleton, CO 80123'
-  }
-};
-
-/**
- * Check if a location has manual coordinate corrections
- */
-function getManualCorrection(location: Location): GeocodingResult | null {
-  // Try multiple name variations to find a match
-  const nameVariations = [
-    location.name?.toLowerCase(),
-    `${location.address}`.toLowerCase(),
-    `${location.address}, ${location.city}`.toLowerCase(),
-    // Common variations for business names
-    'lilley gulch soccer fields',
-    'lilley gulch',
-  ].filter(Boolean); // Remove undefined values
-
-  for (const nameVar of nameVariations) {
-    const correction = MANUAL_COORDINATE_CORRECTIONS[nameVar];
-    if (correction) {
-      console.log(`🎯 Using manual coordinate correction for "${nameVar}": ${correction.reason}`);
-      return {
-        latitude: correction.lat,
-        longitude: correction.lng
-      };
-    }
-  }
-  
-  return null;
+  name?: string; // Optional location name for debugging
 }
 
 // Cache for geocoded coordinates to avoid repeated API calls
 const geocodeCache = new Map<string, GeocodingResult>();
 
-export const geocodeAddress = async (location: Location): Promise<GeocodingResult | null> => {
+/**
+ * Clear geocoding cache - useful for forcing fresh coordinate lookups
+ */
+export const clearGeocodeCache = () => {
+  geocodeCache.clear();
+  console.log('Geocoding cache cleared');
+};
+
+export const geocodeAddress = async (location: Location, forceRefresh = false): Promise<GeocodingResult | null> => {
   const fullAddress = `${location.address}, ${location.city}, ${location.state} ${location.zip}`;
   const cacheKey = fullAddress.toLowerCase().trim();
   
-  // Check for manual corrections first (highest priority)
-  const manualCorrection = getManualCorrection(location);
-  if (manualCorrection) {
-    // Cache the manual correction so it's used consistently
-    geocodeCache.set(cacheKey, manualCorrection);
-    return manualCorrection;
-  }
-  
-  // Check cache second
-  if (geocodeCache.has(cacheKey)) {
+  // Check cache first (unless forcing fresh lookup)
+  if (!forceRefresh && geocodeCache.has(cacheKey)) {
     console.log('Using cached coordinates for:', fullAddress);
     return geocodeCache.get(cacheKey)!;
   }
   
   try {
-    console.log('Geocoding address:', fullAddress);
+    console.log(`🗺️ Geocoding address${forceRefresh ? ' (force refresh)' : ''}:`, fullAddress);
     
     // Try multiple address formats for better geocoding success
     const addressFormats = [
       `${location.address}, ${location.city}, ${location.state} ${location.zip}`, // Current format
       `${location.address}, ${location.city}, ${location.state}, ${location.zip}`, // Comma-separated
       `${location.address}, ${location.city}, ${location.state} ${location.zip}, USA`, // With country
+      `${location.address} ${location.city} ${location.state} ${location.zip}`, // Space-separated
+      `${location.address}, ${location.zip}`, // Simplified format
     ];
     
     for (const addressFormat of addressFormats) {
@@ -110,8 +71,9 @@ export const geocodeAddress = async (location: Location): Promise<GeocodingResul
           
           // Cache the result using original format as key
           geocodeCache.set(cacheKey, result);
-          console.log('Geocoded successfully:', addressFormat, '→', result);
-          console.log('Location details:', data[0].display_name);
+          console.log('✅ Geocoded successfully:', addressFormat);
+          console.log('🎯 Coordinates:', result);
+          console.log('📍 Location details:', data[0].display_name);
           
           return result;
         } else {
