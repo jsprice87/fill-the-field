@@ -150,21 +150,13 @@ const PortalBookings: React.FC = () => {
           </Stack>
         </StickyHeader>
 
-        {/* Scrollable Table Area */}
-        <Box w="100%" style={{ overflowX: 'auto' }}>
-          <ScrollArea
-            scrollbarSize={8}
-            offsetScrollbars
-            type="scroll"
-            h={`calc(100vh - ${rem(180)})`}
-            w="100%"
-          >
-            <BookingsTable 
-              bookings={finalBookings} 
-              searchQuery={searchQuery} 
-              showArchived={includeArchived}
-            />
-          </ScrollArea>
+        {/* Flexible Table Area */}
+        <Box w="100%" style={{ overflowX: 'auto', flex: 1 }}>
+          <BookingsTable 
+            bookings={finalBookings} 
+            searchQuery={searchQuery} 
+            showArchived={includeArchived}
+          />
         </Box>
       </Stack>
     </PortalShell>

@@ -14,6 +14,8 @@ import LeadContactCell from './LeadContactCell';
 import LeadInfoCell from './LeadInfoCell';
 import StatusBadge from './StatusBadge';
 import LeadsTableEmpty from './LeadsTableEmpty';
+import { EnhancedPagination } from '@/components/common/EnhancedPagination';
+import { usePagination } from '@/hooks/usePagination';
 import type { Lead } from '@/types';
 
 interface LeadsTableProps {
@@ -33,6 +35,13 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [bulkStatusValue, setBulkStatusValue] = useState<string>('');
 
+  // Add pagination
+  const pagination = usePagination({
+    data: leads,
+    initialPageSize: 50, // Start with more items per page
+    initialPage: 1
+  });
+
   if (!leads || leads.length === 0) {
     return <LeadsTableEmpty searchQuery={searchQuery} showArchived={showArchived} />;
   }
@@ -48,12 +57,21 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
   };
 
   const handleSelectAll = () => {
-    if (selectedLeads.size === leads.length) {
-      setSelectedLeads(new Set());
+    // Select all leads on current page only
+    const currentPageLeadIds = pagination.currentData.map(lead => lead.id);
+    const allCurrentSelected = currentPageLeadIds.every(id => selectedLeads.has(id));
+    
+    const newSelection = new Set(selectedLeads);
+    if (allCurrentSelected) {
+      // Unselect all on current page
+      currentPageLeadIds.forEach(id => newSelection.delete(id));
     } else {
-      setSelectedLeads(new Set(leads.map(lead => lead.id)));
+      // Select all on current page
+      currentPageLeadIds.forEach(id => newSelection.add(id));
     }
+    setSelectedLeads(newSelection);
   };
+
 
   const handleBulkArchive = async () => {
     if (selectedLeads.size === 0) return;
@@ -259,7 +277,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
             <TableHead style={{ width: '48px' }}>
               <input
                 type="checkbox"
-                checked={selectedLeads.size === leads.length && leads.length > 0}
+                checked={pagination.currentData.length > 0 && pagination.currentData.every(lead => selectedLeads.has(lead.id))}
                 onChange={handleSelectAll}
                 className="rounded border-gray-300 text-primary-500 focus:ring-primary-500"
               />
@@ -275,7 +293,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leads.map((lead) => (
+          {pagination.currentData.map((lead) => (
             <TableRow 
               key={lead.id} 
               interactive
@@ -387,6 +405,17 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
           ))}
         </TableBody>
       </Table>
+      
+      {/* Enhanced Pagination */}
+      <EnhancedPagination
+        totalItems={pagination.totalItems}
+        currentPage={pagination.currentPage}
+        pageSize={pagination.pageSize}
+        onPageChange={pagination.setCurrentPage}
+        onPageSizeChange={pagination.setPageSize}
+        itemName="leads"
+        sticky={true}
+      />
     </div>
   );
 };

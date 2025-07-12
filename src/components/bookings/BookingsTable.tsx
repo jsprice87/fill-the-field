@@ -12,6 +12,8 @@ import DateTimeCell from './DateTimeCell';
 import ParticipantCell from './ParticipantCell';
 import StatusCell from './StatusCell';
 import BookingsTableEmpty from './BookingsTableEmpty';
+import { EnhancedPagination } from '@/components/common/EnhancedPagination';
+import { usePagination } from '@/hooks/usePagination';
 import type { Booking } from '@/types';
 
 interface BookingsTableProps {
@@ -27,6 +29,13 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
   const statusMutation = useStatusMutation();
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+
+  // Add pagination
+  const pagination = usePagination({
+    data: bookings,
+    initialPageSize: 50,
+    initialPage: 1
+  });
 
   if (!bookings || bookings.length === 0) {
     return <BookingsTableEmpty searchQuery={searchQuery} showArchived={showArchived} />;
@@ -155,7 +164,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bookings.map((booking) => (
+              {pagination.currentData.map((booking) => (
                 <TableRow 
                   key={booking.id} 
                   interactive
@@ -273,6 +282,17 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
           </Table>
         </Table.ScrollContainer>
       </ScrollArea>
+      
+      {/* Enhanced Pagination */}
+      <EnhancedPagination
+        totalItems={pagination.totalItems}
+        currentPage={pagination.currentPage}
+        pageSize={pagination.pageSize}
+        onPageChange={pagination.setCurrentPage}
+        onPageSizeChange={pagination.setPageSize}
+        itemName="bookings"
+        sticky={true}
+      />
     </div>
   );
 };

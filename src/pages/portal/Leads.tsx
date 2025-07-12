@@ -154,21 +154,13 @@ const PortalLeads: React.FC = () => {
           </Stack>
         </StickyHeader>
 
-        {/* Scrollable Table Area */}
-        <Box w="100%" style={{ overflowX: 'auto' }}>
-          <ScrollArea
-            scrollbarSize={8}
-            offsetScrollbars
-            type="scroll"
-            h={`calc(100vh - ${rem(180)})`}
-            w="100%"
-          >
-            <LeadsTable 
-              leads={finalLeads} 
-              searchQuery={searchQuery} 
-              showArchived={includeArchived}
-            />
-          </ScrollArea>
+        {/* Flexible Table Area */}
+        <Box w="100%" style={{ overflowX: 'auto', flex: 1 }}>
+          <LeadsTable 
+            leads={finalLeads} 
+            searchQuery={searchQuery} 
+            showArchived={includeArchived}
+          />
         </Box>
       </Stack>
     </PortalShell>
