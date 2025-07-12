@@ -56,10 +56,10 @@ const LocationDebugger: React.FC = () => {
   
   const testLilleyGulch = () => {
     setFormData({
-      address: 'Lilley Gulch',
+      address: '6063 S Independence St',
       city: 'Littleton',
       state: 'CO',
-      zip: '80127'
+      zip: '80123'
     });
   };
   
@@ -87,7 +87,7 @@ const LocationDebugger: React.FC = () => {
         
         <Group grow>
           <Button variant="outline" onClick={testLilleyGulch} size="sm">
-            Test Lilley Gulch Issue
+            Test Lilley Gulch (Correct Address)
           </Button>
           <Button variant="outline" onClick={testKnownGood} size="sm">
             Test Known Good Location

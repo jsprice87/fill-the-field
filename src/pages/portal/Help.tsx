@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@mantine/core';
 import { Badge } from '@/components/ui/badge';
 import { HelpCircle, MessageCircle, Phone, Mail, ExternalLink, Video, FileText, Settings, Users, Calendar } from 'lucide-react';
+import { LilleyGulchValidator } from '@/components/debug/LilleyGulchValidator';
 
 const HelpPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -21,6 +22,9 @@ const HelpPage: React.FC = () => {
           Contact Support
         </Button>
       </div>
+
+      {/* Temporary debug component for Lilley Gulch validation */}
+      <LilleyGulchValidator />
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
