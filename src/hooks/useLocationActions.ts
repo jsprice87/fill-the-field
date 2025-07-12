@@ -80,9 +80,41 @@ export const useToggleLocationStatus = () => {
   
   return useMutation({
     mutationFn: async ({ locationId, isActive }: { locationId: string; isActive: boolean }) => {
+      // First, get the current location data
+      const { data: location, error: fetchError } = await supabase
+        .from('locations')
+        .select('name, address, city, state, zip')
+        .eq('id', locationId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Recalculate coordinates with fresh geocoding
+      let updateData: any = { is_active: isActive };
+      
+      if (location) {
+        try {
+          const coordinates = await geocodeAddress({
+            address: location.address,
+            city: location.city,
+            state: location.state,
+            zip: location.zip,
+            name: location.name
+          }, true); // Force fresh lookup
+          
+          if (coordinates) {
+            updateData.latitude = coordinates.latitude;
+            updateData.longitude = coordinates.longitude;
+          }
+        } catch (geocodeError) {
+          console.warn('Geocoding failed during toggle, updating status only:', geocodeError);
+        }
+      }
+      
+      // Update the location with new status and potentially new coordinates
       const { error } = await supabase
         .from('locations')
-        .update({ is_active: isActive })
+        .update(updateData)
         .eq('id', locationId);
       
       if (error) throw error;
