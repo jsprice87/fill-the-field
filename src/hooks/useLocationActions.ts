@@ -94,7 +94,6 @@ export const useToggleLocationStatus = () => {
       
       if (location) {
         try {
-          console.log('🔄 Toggle: Recalculating coordinates for location:', location);
           const coordinates = await geocodeAddress({
             address: location.address,
             city: location.city,
@@ -104,14 +103,11 @@ export const useToggleLocationStatus = () => {
           }, true); // Force fresh lookup
           
           if (coordinates) {
-            console.log('✅ Toggle: Got new coordinates:', coordinates);
             updateData.latitude = coordinates.latitude;
             updateData.longitude = coordinates.longitude;
-          } else {
-            console.warn('❌ Toggle: Geocoding returned no coordinates');
           }
         } catch (geocodeError) {
-          console.warn('💥 Toggle: Geocoding failed, updating status only:', geocodeError);
+          console.warn('Geocoding failed during toggle, updating status only:', geocodeError);
         }
       }
       

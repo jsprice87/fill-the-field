@@ -15,7 +15,9 @@ const locationSchema = z.object({
   state: z.string().min(1, 'State is required'),
   zip: z.string().min(1, 'ZIP code is required'),
   phone: z.string().optional(),
-  email: z.string().email('Invalid email').optional().or(z.literal('')),
+  email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
+    message: 'Invalid email format'
+  }),
   isActive: z.boolean(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
@@ -176,14 +178,6 @@ const LocationForm: React.FC<LocationFormProps> = ({
               loading={isSubmitting}
               disabled={!form.isValid()}
               data-autofocus
-              onClick={() => {
-                console.log('Form validation debug:', {
-                  isValid: form.isValid(),
-                  errors: form.errors,
-                  values: form.values,
-                  isDirty: form.isDirty()
-                });
-              }}
             >
               {initialData?.id ? 'Update Location' : 'Add Location'}
             </Button>
