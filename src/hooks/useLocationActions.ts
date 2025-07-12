@@ -113,7 +113,8 @@ export const useUpdateLocation = () => {
           address: data.address,
           city: data.city,
           state: data.state,
-          zip: data.zip
+          zip: data.zip,
+          name: data.name
         });
       } catch (error) {
         console.warn('Geocoding failed:', error);
@@ -169,7 +170,8 @@ export const useCreateLocation = () => {
           address: data.address,
           city: data.city,
           state: data.state,
-          zip: data.zip
+          zip: data.zip,
+          name: data.name
         });
       } catch (error) {
         console.warn('Geocoding failed:', error);

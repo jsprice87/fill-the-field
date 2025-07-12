@@ -153,7 +153,7 @@ const ClassesList: React.FC = () => {
           </Stack>
         </StickyHeader>
 
-        <Box w="100%" style={{ overflowX: 'auto' }}>
+        <Box w="100%" style={{ overflowX: 'auto', flex: 1 }}>
           <ClassesTable 
             classes={classes} 
             onDelete={handleDeleteClass}

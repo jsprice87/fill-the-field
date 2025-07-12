@@ -8,6 +8,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { Clock, MapPin, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { TableRowMenu } from '@/components/ui/TableRowMenu';
+import { EnhancedPagination } from '@/components/common/EnhancedPagination';
+import { usePagination } from '@/hooks/usePagination';
 import { 
   useDeleteClass, 
   useArchiveClass, 
@@ -58,7 +60,7 @@ interface ClassesTableProps {
   showArchived?: boolean;
 }
 
-const ITEMS_PER_PAGE = 10;
+// Removed ITEMS_PER_PAGE - now using pagination hook
 
 const ClassesTable: React.FC<ClassesTableProps> = ({ 
   classes, 
@@ -69,7 +71,6 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   showArchived = false
 }) => {
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
   
   // Individual action hooks
   const deleteClass = useDeleteClass();
@@ -85,6 +86,13 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   // Selection state
   const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+
+  // Add pagination
+  const pagination = usePagination({
+    data: classes,
+    initialPageSize: 50,
+    initialPage: 1
+  });
 
   // Construct the exact query key as used in useClasses
   const queryKey = ['classes', franchiseeId, locationId ?? 'ALL', search ?? ''] as const;
@@ -203,9 +211,8 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
   };
 
   // Pagination logic
-  const totalPages = Math.ceil(classes.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedClasses = classes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  // Use pagination hook data instead of manual calculations
+  const paginatedClasses = pagination.currentData;
 
   if (classes.length === 0) {
     return (
@@ -262,9 +269,7 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
         </div>
       )}
 
-      <ScrollArea h="calc(100vh - 240px)">
-        <Table.ScrollContainer w="100%" minWidth={900}>
-          <Table>
+      <Table stickyHeader>
             <TableHeader>
               <TableRow>
                 <TableHead style={{ width: '48px' }}>
@@ -386,37 +391,18 @@ const ClassesTable: React.FC<ClassesTableProps> = ({
                 );
               })}
             </TableBody>
-          </Table>
-        </Table.ScrollContainer>
-      </ScrollArea>
+      </Table>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4">
-          <Pagination>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          </Pagination>
-        </div>
-      )}
+      {/* Enhanced Pagination */}
+      <EnhancedPagination
+        totalItems={pagination.totalItems}
+        currentPage={pagination.currentPage}
+        pageSize={pagination.pageSize}
+        onPageChange={pagination.setCurrentPage}
+        onPageSizeChange={pagination.setPageSize}
+        itemName="classes"
+        sticky={true}
+      />
     </div>
   );
 };

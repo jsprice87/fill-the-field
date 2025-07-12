@@ -9,6 +9,48 @@ interface Location {
   city: string;
   state: string;
   zip: string;
+  name?: string; // Optional location name for better matching
+}
+
+/**
+ * Known coordinate corrections for specific problematic locations
+ * These are manually verified coordinates for locations with known issues
+ */
+const MANUAL_COORDINATE_CORRECTIONS: Record<string, { lat: number; lng: number; reason: string }> = {
+  // Lilley Gulch Soccer Fields - manually verified coordinates
+  'lilley gulch soccer fields': {
+    lat: 39.5385,    // Verified coordinates for 6063 S Independence St, Littleton, CO 80123
+    lng: -105.1059,  
+    reason: 'Manual verification of 6063 S Independence St, Littleton, CO 80123'
+  }
+};
+
+/**
+ * Check if a location has manual coordinate corrections
+ */
+function getManualCorrection(location: Location): GeocodingResult | null {
+  // Try multiple name variations to find a match
+  const nameVariations = [
+    location.name?.toLowerCase(),
+    `${location.address}`.toLowerCase(),
+    `${location.address}, ${location.city}`.toLowerCase(),
+    // Common variations for business names
+    'lilley gulch soccer fields',
+    'lilley gulch',
+  ].filter(Boolean); // Remove undefined values
+
+  for (const nameVar of nameVariations) {
+    const correction = MANUAL_COORDINATE_CORRECTIONS[nameVar];
+    if (correction) {
+      console.log(`🎯 Using manual coordinate correction for "${nameVar}": ${correction.reason}`);
+      return {
+        latitude: correction.lat,
+        longitude: correction.lng
+      };
+    }
+  }
+  
+  return null;
 }
 
 // Cache for geocoded coordinates to avoid repeated API calls
@@ -18,7 +60,15 @@ export const geocodeAddress = async (location: Location): Promise<GeocodingResul
   const fullAddress = `${location.address}, ${location.city}, ${location.state} ${location.zip}`;
   const cacheKey = fullAddress.toLowerCase().trim();
   
-  // Check cache first
+  // Check for manual corrections first (highest priority)
+  const manualCorrection = getManualCorrection(location);
+  if (manualCorrection) {
+    // Cache the manual correction so it's used consistently
+    geocodeCache.set(cacheKey, manualCorrection);
+    return manualCorrection;
+  }
+  
+  // Check cache second
   if (geocodeCache.has(cacheKey)) {
     console.log('Using cached coordinates for:', fullAddress);
     return geocodeCache.get(cacheKey)!;

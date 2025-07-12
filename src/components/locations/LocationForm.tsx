@@ -79,7 +79,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
         address: data.address,
         city: data.city,
         state: data.state,
-        zip: data.zip
+        zip: data.zip,
+        name: data.name
       };
       
       const coordinates = await geocodeAddress(locationData);
