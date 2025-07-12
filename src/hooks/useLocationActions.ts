@@ -139,6 +139,14 @@ export const useUpdateLocation = () => {
       }
 
       // Try to geocode the address with Location object - force fresh lookup on updates
+      console.log('🔄 UPDATE: Starting geocoding for location update:', {
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zip: data.zip,
+        name: data.name
+      });
+      
       let coordinates = null;
       try {
         coordinates = await geocodeAddress({
@@ -148,8 +156,14 @@ export const useUpdateLocation = () => {
           zip: data.zip,
           name: data.name
         }, true); // Force fresh lookup to recalculate coordinates
+        
+        if (coordinates) {
+          console.log('✅ UPDATE: Geocoding successful:', coordinates);
+        } else {
+          console.warn('⚠️ UPDATE: Geocoding returned null - no coordinates found');
+        }
       } catch (error) {
-        console.warn('Geocoding failed:', error);
+        console.error('❌ UPDATE: Geocoding failed with exception:', error);
       }
 
       const updateData = {
@@ -167,16 +181,34 @@ export const useUpdateLocation = () => {
         })
       };
 
+      console.log('💾 UPDATE: Database update data:', updateData);
+      console.log('🎯 UPDATE: Coordinates included in update:', coordinates ? 'YES' : 'NO');
+
       const { error } = await supabase
         .from('locations')
         .update(updateData)
         .eq('id', data.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('💥 UPDATE: Database update failed:', error);
+        throw error;
+      }
+      
+      console.log('✅ UPDATE: Database update completed successfully');
+      
+      // Return coordinates for user feedback
+      return { coordinates };
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
       notify('success', 'Location updated successfully');
+      
+      // Show coordinate feedback to user
+      if (result.coordinates) {
+        notify('success', `New coordinates: ${result.coordinates.latitude.toFixed(6)}, ${result.coordinates.longitude.toFixed(6)}`);
+      } else {
+        notify('warning', 'Coordinates unchanged (geocoding failed)');
+      }
     },
     onError: (error) => {
       console.error('Error updating location:', error);
