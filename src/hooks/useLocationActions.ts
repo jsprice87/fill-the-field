@@ -138,32 +138,48 @@ export const useUpdateLocation = () => {
         throw new Error('Location ID is required for update');
       }
 
-      // Try to geocode the address with Location object - force fresh lookup on updates
-      console.log('🔄 UPDATE: Starting geocoding for location update:', {
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        zip: data.zip,
-        name: data.name
-      });
-      
       let coordinates = null;
-      try {
-        coordinates = await geocodeAddress({
+      
+      // Only geocode if auto-calculate is enabled
+      if (data.autoCalculateCoordinates) {
+        console.log('🔄 UPDATE: Starting geocoding for location update:', {
           address: data.address,
           city: data.city,
           state: data.state,
           zip: data.zip,
           name: data.name
-        }, true); // Force fresh lookup to recalculate coordinates
+        });
         
-        if (coordinates) {
-          console.log('✅ UPDATE: Geocoding successful:', coordinates);
-        } else {
-          console.warn('⚠️ UPDATE: Geocoding returned null - no coordinates found');
+        try {
+          coordinates = await geocodeAddress({
+            address: data.address,
+            city: data.city,
+            state: data.state,
+            zip: data.zip,
+            name: data.name
+          }, true); // Force fresh lookup to recalculate coordinates
+          
+          if (coordinates) {
+            console.log('✅ UPDATE: Geocoding successful:', coordinates);
+          } else {
+            console.warn('⚠️ UPDATE: Geocoding returned null - no coordinates found');
+          }
+        } catch (error) {
+          console.error('❌ UPDATE: Geocoding failed with exception:', error);
         }
-      } catch (error) {
-        console.error('❌ UPDATE: Geocoding failed with exception:', error);
+      } else {
+        console.log('🎯 UPDATE: Auto-calculate disabled, using manual coordinates:', {
+          latitude: data.latitude,
+          longitude: data.longitude
+        });
+        
+        // Use manual coordinates if provided
+        if (data.latitude !== undefined && data.longitude !== undefined) {
+          coordinates = {
+            latitude: data.latitude,
+            longitude: data.longitude
+          };
+        }
       }
 
       const updateData = {
@@ -227,18 +243,48 @@ export const useCreateLocation = () => {
         throw new Error('Franchisee profile is required to create locations');
       }
 
-      // Try to geocode the address with Location object - fresh lookup for new locations
       let coordinates = null;
-      try {
-        coordinates = await geocodeAddress({
+      
+      // Only geocode if auto-calculate is enabled
+      if (data.autoCalculateCoordinates) {
+        console.log('🔄 CREATE: Starting geocoding for new location:', {
           address: data.address,
           city: data.city,
           state: data.state,
           zip: data.zip,
           name: data.name
-        }, true); // Force fresh lookup for new locations
-      } catch (error) {
-        console.warn('Geocoding failed:', error);
+        });
+        
+        try {
+          coordinates = await geocodeAddress({
+            address: data.address,
+            city: data.city,
+            state: data.state,
+            zip: data.zip,
+            name: data.name
+          }, true); // Force fresh lookup for new locations
+          
+          if (coordinates) {
+            console.log('✅ CREATE: Geocoding successful:', coordinates);
+          } else {
+            console.warn('⚠️ CREATE: Geocoding returned null - no coordinates found');
+          }
+        } catch (error) {
+          console.error('❌ CREATE: Geocoding failed with exception:', error);
+        }
+      } else {
+        console.log('🎯 CREATE: Auto-calculate disabled, using manual coordinates:', {
+          latitude: data.latitude,
+          longitude: data.longitude
+        });
+        
+        // Use manual coordinates if provided
+        if (data.latitude !== undefined && data.longitude !== undefined) {
+          coordinates = {
+            latitude: data.latitude,
+            longitude: data.longitude
+          };
+        }
       }
 
       const insertData = {
@@ -257,11 +303,19 @@ export const useCreateLocation = () => {
         })
       };
 
+      console.log('💾 CREATE: Database insert data:', insertData);
+      console.log('🎯 CREATE: Coordinates included in insert:', coordinates ? 'YES' : 'NO');
+
       const { error } = await supabase
         .from('locations')
         .insert(insertData);
       
-      if (error) throw error;
+      if (error) {
+        console.error('💥 CREATE: Database insert failed:', error);
+        throw error;
+      }
+      
+      console.log('✅ CREATE: Database insert completed successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });

@@ -12,7 +12,7 @@ import ArchiveToggle from '@/components/shared/ArchiveToggle';
 import LocationsTable from '@/components/locations/LocationsTable';
 import LocationForm, { LocationFormData } from '@/components/locations/LocationForm';
 import { useLocations } from '@/hooks/useLocations';
-import { useUpdateLocation } from '@/hooks/useLocationActions';
+import { useUpdateLocation, useCreateLocation } from '@/hooks/useLocationActions';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 
 const PortalLocations: React.FC = () => {
@@ -22,6 +22,7 @@ const PortalLocations: React.FC = () => {
   
   const hideInactive = searchParams.get('hideInactive') === 'true';
   const updateLocationMutation = useUpdateLocation();
+  const createLocationMutation = useCreateLocation();
   
   // Use impersonation-aware franchisee data
   const { data: franchiseeData } = useFranchiseeData();
@@ -42,7 +43,8 @@ const PortalLocations: React.FC = () => {
     if (locationToEdit) {
       setCurrentLocation({
         ...locationToEdit,
-        isActive: locationToEdit.is_active ?? true
+        isActive: locationToEdit.is_active ?? true,
+        autoCalculateCoordinates: true // Default to auto-calculate for editing
       });
       setIsFormOpen(true);
     }
@@ -59,30 +61,8 @@ const PortalLocations: React.FC = () => {
         // Update existing location using the mutation hook
         await updateLocationMutation.mutateAsync(data);
       } else {
-        // Add new location
-        const insertData = {
-          name: data.name,
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zip: data.zip,
-          phone: data.phone || null,
-          email: data.email || null,
-          is_active: data.isActive,
-          franchisee_id: franchiseeId,
-          ...(data.latitude && data.longitude && {
-            latitude: data.latitude,
-            longitude: data.longitude
-          })
-        };
-
-        const { data: newLocation, error } = await supabase
-          .from('locations')
-          .insert(insertData)
-          .select();
-        
-        if (error) throw error;
-        toast.success('Location added successfully');
+        // Create new location using the mutation hook
+        await createLocationMutation.mutateAsync(data);
       }
       
       setIsFormOpen(false);

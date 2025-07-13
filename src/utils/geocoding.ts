@@ -23,6 +23,135 @@ export const clearGeocodeCache = () => {
   console.log('Geocoding cache cleared');
 };
 
+/**
+ * Try Google Geocoding API first (most accurate), fallback to OpenStreetMap
+ */
+const tryGoogleGeocoding = async (location: Location): Promise<GeocodingResult | null> => {
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  
+  if (!apiKey) {
+    console.log('🔄 Google API key not found, skipping Google geocoding');
+    return null;
+  }
+
+  const fullAddress = `${location.address}, ${location.city}, ${location.state} ${location.zip}`;
+  
+  try {
+    console.log('🌐 Trying Google Geocoding API for:', fullAddress);
+    
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${apiKey}`
+    );
+    
+    if (!response.ok) {
+      console.warn('Google API error:', response.status, response.statusText);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const result = data.results[0];
+      const coordinates = {
+        latitude: result.geometry.location.lat,
+        longitude: result.geometry.location.lng
+      };
+      
+      console.log('✅ Google geocoding successful:', coordinates);
+      console.log('📍 Google result:', result.formatted_address);
+      
+      return coordinates;
+    } else {
+      console.warn('Google API returned no results:', data.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Google geocoding error:', error);
+    return null;
+  }
+};
+
+/**
+ * Try OpenStreetMap Nominatim API (fallback)
+ */
+const tryOpenStreetMapGeocoding = async (location: Location): Promise<GeocodingResult | null> => {
+  const fullAddress = `${location.address}, ${location.city}, ${location.state} ${location.zip}`;
+  
+  console.log('🗺️ Trying OpenStreetMap geocoding for:', fullAddress);
+    
+  // Try multiple address formats for better geocoding success
+  const addressFormats = [
+    `${location.address}, ${location.city}, ${location.state} ${location.zip}`, // Current format
+    `${location.address}, ${location.city}, ${location.state}, ${location.zip}`, // Comma-separated
+    `${location.address}, ${location.city}, ${location.state} ${location.zip}, USA`, // With country
+    `${location.address}, ${location.zip}, USA`, // ZIP + country for precision
+    `${location.address} ${location.city} ${location.state} ${location.zip}`, // Space-separated
+    `${location.name}, ${location.address}, ${location.city}, ${location.state} ${location.zip}`, // With location name
+    `${location.address}, ${location.zip}`, // Simplified format
+  ];
+  
+  for (const addressFormat of addressFormats) {
+    const encodedAddress = encodeURIComponent(addressFormat);
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&countrycodes=us&addressdetails=1`
+    );
+    
+    if (!response.ok) {
+      console.warn(`OpenStreetMap API error for "${addressFormat}":`, response.status, response.statusText);
+      continue; // Try next format
+    }
+    
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      
+      // Validate coordinates are reasonable for US locations
+      if (isValidUSCoordinates(lat, lon)) {
+        const result: GeocodingResult = {
+          latitude: lat,
+          longitude: lon
+        };
+        
+        // Additional validation: Check if the returned location makes sense
+        const displayName = data[0].display_name || '';
+        const addressDetails = data[0].address || {};
+        
+        console.log('🔍 Validating OpenStreetMap result:');
+        console.log('📍 Display name:', displayName);
+        console.log('🏠 Address details:', addressDetails);
+        console.log('🎯 Coordinates:', result);
+        
+        // Check if the result seems to match our input (basic validation)
+        const inputZip = location.zip;
+        const resultZip = addressDetails.postcode;
+        
+        if (resultZip && inputZip && resultZip !== inputZip) {
+          console.warn(`⚠️ ZIP code mismatch: input=${inputZip}, result=${resultZip}. Trying next format.`);
+          continue; // Try next address format
+        }
+        
+        console.log('✅ OpenStreetMap geocoding successful:', addressFormat);
+        console.log('🎯 Final coordinates:', result);
+        
+        return result;
+      } else {
+        console.warn(`Invalid coordinates for "${addressFormat}":`, lat, lon, '- outside US bounds');
+        continue; // Try next format
+      }
+    }
+    
+    // Add small delay between API calls to be respectful
+    if (addressFormats.indexOf(addressFormat) < addressFormats.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  }
+  
+  console.warn('No valid OpenStreetMap results found for:', fullAddress);
+  return null;
+};
+
 export const geocodeAddress = async (location: Location, forceRefresh = false): Promise<GeocodingResult | null> => {
   const fullAddress = `${location.address}, ${location.city}, ${location.state} ${location.zip}`;
   const cacheKey = fullAddress.toLowerCase().trim();
@@ -36,78 +165,22 @@ export const geocodeAddress = async (location: Location, forceRefresh = false): 
   try {
     console.log(`🗺️ Geocoding address${forceRefresh ? ' (force refresh)' : ''}:`, fullAddress);
     
-    // Try multiple address formats for better geocoding success
-    const addressFormats = [
-      `${location.address}, ${location.city}, ${location.state} ${location.zip}`, // Current format
-      `${location.address}, ${location.city}, ${location.state}, ${location.zip}`, // Comma-separated
-      `${location.address}, ${location.city}, ${location.state} ${location.zip}, USA`, // With country
-      `${location.address}, ${location.zip}, USA`, // ZIP + country for precision
-      `${location.address} ${location.city} ${location.state} ${location.zip}`, // Space-separated
-      `${location.name}, ${location.address}, ${location.city}, ${location.state} ${location.zip}`, // With location name
-      `${location.address}, ${location.zip}`, // Simplified format
-    ];
+    // Try Google Geocoding API first (most accurate)
+    let coordinates = await tryGoogleGeocoding(location);
     
-    for (const addressFormat of addressFormats) {
-      const encodedAddress = encodeURIComponent(addressFormat);
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&countrycodes=us&addressdetails=1`
-      );
-      
-      if (!response.ok) {
-        console.warn(`Geocoding API error for "${addressFormat}":`, response.status, response.statusText);
-        continue; // Try next format
-      }
-      
-      const data = await response.json();
-      
-      if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        
-        // Validate coordinates are reasonable for US locations
-        if (isValidUSCoordinates(lat, lon)) {
-          const result: GeocodingResult = {
-            latitude: lat,
-            longitude: lon
-          };
-          
-          // Additional validation: Check if the returned location makes sense
-          const displayName = data[0].display_name || '';
-          const addressDetails = data[0].address || {};
-          
-          console.log('🔍 Validating geocoding result:');
-          console.log('📍 Display name:', displayName);
-          console.log('🏠 Address details:', addressDetails);
-          console.log('🎯 Coordinates:', result);
-          
-          // Check if the result seems to match our input (basic validation)
-          const inputZip = location.zip;
-          const resultZip = addressDetails.postcode;
-          
-          if (resultZip && inputZip && resultZip !== inputZip) {
-            console.warn(`⚠️ ZIP code mismatch: input=${inputZip}, result=${resultZip}. Trying next format.`);
-            continue; // Try next address format
-          }
-          
-          // Cache the result using original format as key
-          geocodeCache.set(cacheKey, result);
-          console.log('✅ Geocoded successfully:', addressFormat);
-          console.log('🎯 Final coordinates:', result);
-          
-          return result;
-        } else {
-          console.warn(`Invalid coordinates for "${addressFormat}":`, lat, lon, '- outside US bounds');
-          continue; // Try next format
-        }
-      }
-      
-      // Add small delay between API calls to be respectful
-      if (addressFormats.indexOf(addressFormat) < addressFormats.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
+    // Fallback to OpenStreetMap if Google fails
+    if (!coordinates) {
+      console.log('🔄 Google geocoding failed, trying OpenStreetMap...');
+      coordinates = await tryOpenStreetMapGeocoding(location);
     }
     
-    console.warn('No valid geocoding results found for any format of:', fullAddress);
+    if (coordinates) {
+      // Cache the successful result
+      geocodeCache.set(cacheKey, coordinates);
+      return coordinates;
+    }
+    
+    console.warn('❌ All geocoding methods failed for:', fullAddress);
     return null;
     
   } catch (error) {

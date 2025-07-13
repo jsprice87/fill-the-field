@@ -19,8 +19,18 @@ const locationSchema = z.object({
     message: 'Invalid email format'
   }),
   isActive: z.boolean(),
+  autoCalculateCoordinates: z.boolean().default(true),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
+}).refine((data) => {
+  // If auto-calculate is disabled, require manual coordinates
+  if (!data.autoCalculateCoordinates) {
+    return data.latitude !== undefined && data.longitude !== undefined;
+  }
+  return true;
+}, {
+  message: 'Latitude and longitude are required when auto-calculate is disabled',
+  path: ['latitude'] // Show error on latitude field
 });
 
 export type LocationFormData = z.infer<typeof locationSchema>;
@@ -49,6 +59,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
     phone: '',
     email: '',
     isActive: true,
+    autoCalculateCoordinates: true,
     ...initialData,
   });
 
@@ -66,6 +77,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
           phone: '',
           email: '',
           isActive: true,
+          autoCalculateCoordinates: true,
         });
       }
       setIsSubmitting(false);
@@ -164,6 +176,36 @@ const LocationForm: React.FC<LocationFormProps> = ({
             disabled={isSubmitting}
             {...form.getInputProps('isActive', { type: 'checkbox' })}
           />
+
+          <Switch
+            label="Auto-calculate Coordinates"
+            description="Automatically geocode address to get latitude/longitude"
+            color="blue"
+            size="md"
+            disabled={isSubmitting}
+            {...form.getInputProps('autoCalculateCoordinates', { type: 'checkbox' })}
+          />
+
+          {!form.values.autoCalculateCoordinates && (
+            <Stack gap="sm">
+              <TextInput
+                label="Latitude"
+                placeholder="Enter latitude (e.g., 39.7392)"
+                type="number"
+                step="any"
+                disabled={isSubmitting}
+                {...form.getInputProps('latitude')}
+              />
+              <TextInput
+                label="Longitude"
+                placeholder="Enter longitude (e.g., -104.9903)"
+                type="number"
+                step="any"
+                disabled={isSubmitting}
+                {...form.getInputProps('longitude')}
+              />
+            </Stack>
+          )}
 
           <Group justify="flex-end" gap="sm" mt="lg">
             <Button
