@@ -41,7 +41,9 @@ export const geocodeAddress = async (location: Location, forceRefresh = false): 
       `${location.address}, ${location.city}, ${location.state} ${location.zip}`, // Current format
       `${location.address}, ${location.city}, ${location.state}, ${location.zip}`, // Comma-separated
       `${location.address}, ${location.city}, ${location.state} ${location.zip}, USA`, // With country
+      `${location.address}, ${location.zip}, USA`, // ZIP + country for precision
       `${location.address} ${location.city} ${location.state} ${location.zip}`, // Space-separated
+      `${location.name}, ${location.address}, ${location.city}, ${location.state} ${location.zip}`, // With location name
       `${location.address}, ${location.zip}`, // Simplified format
     ];
     
@@ -69,11 +71,28 @@ export const geocodeAddress = async (location: Location, forceRefresh = false): 
             longitude: lon
           };
           
+          // Additional validation: Check if the returned location makes sense
+          const displayName = data[0].display_name || '';
+          const addressDetails = data[0].address || {};
+          
+          console.log('🔍 Validating geocoding result:');
+          console.log('📍 Display name:', displayName);
+          console.log('🏠 Address details:', addressDetails);
+          console.log('🎯 Coordinates:', result);
+          
+          // Check if the result seems to match our input (basic validation)
+          const inputZip = location.zip;
+          const resultZip = addressDetails.postcode;
+          
+          if (resultZip && inputZip && resultZip !== inputZip) {
+            console.warn(`⚠️ ZIP code mismatch: input=${inputZip}, result=${resultZip}. Trying next format.`);
+            continue; // Try next address format
+          }
+          
           // Cache the result using original format as key
           geocodeCache.set(cacheKey, result);
           console.log('✅ Geocoded successfully:', addressFormat);
-          console.log('🎯 Coordinates:', result);
-          console.log('📍 Location details:', data[0].display_name);
+          console.log('🎯 Final coordinates:', result);
           
           return result;
         } else {
