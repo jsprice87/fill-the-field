@@ -18,13 +18,11 @@ import { LocationProps } from './LocationCard';
 
 interface LocationsTableProps {
   locations: LocationProps[];
-  onEdit: (locationId: string) => void;
   hideInactive?: boolean;
 }
 
 const LocationsTable: React.FC<LocationsTableProps> = ({ 
   locations, 
-  onEdit, 
   hideInactive = false 
 }) => {
   const navigate = useNavigate();
@@ -305,13 +303,13 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                   
                   <TableCell>
                     <TableRowMenu
-                      onEdit={() => onEdit(location.id)}
+                      onEdit={() => navigate(`locations/${location.id}`)}
                       onAddClasses={() => handleAddClasses(location.id)}
                       onArchiveToggle={() => handleArchiveToggle(location.id, isArchived)}
                       onDelete={() => handleDelete(location.id)}
                       isArchived={isArchived}
                       isLoading={archiveLocation.isPending || unarchiveLocation.isPending || deleteLocation.isPending}
-                      editLabel="Edit Location"
+                      editLabel="View Details"
                       addClassesLabel="Add Classes"
                       deleteLabel="Delete Location"
                     />

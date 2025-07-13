@@ -17,7 +17,6 @@ import { useFranchiseeData } from '@/hooks/useFranchiseeData';
 
 const PortalLocations: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<LocationFormData | undefined>();
   const [searchParams] = useSearchParams();
   
   const hideInactive = searchParams.get('hideInactive') === 'true';
@@ -34,20 +33,7 @@ const PortalLocations: React.FC = () => {
   const { data: allLocations = [] } = useLocations(franchiseeId || undefined, false);
 
   const handleAddLocation = () => {
-    setCurrentLocation(undefined);
     setIsFormOpen(true);
-  };
-
-  const handleEditLocation = (id: string) => {
-    const locationToEdit = allLocations.find(loc => loc.id === id);
-    if (locationToEdit) {
-      setCurrentLocation({
-        ...locationToEdit,
-        isActive: locationToEdit.is_active ?? true,
-        autoCalculateCoordinates: true // Default to auto-calculate for editing
-      });
-      setIsFormOpen(true);
-    }
   };
 
   const handleFormSubmit = async (data: LocationFormData) => {
@@ -57,14 +43,8 @@ const PortalLocations: React.FC = () => {
     }
 
     try {
-      if (data.id) {
-        // Update existing location using the mutation hook
-        await updateLocationMutation.mutateAsync(data);
-      } else {
-        // Create new location using the mutation hook
-        await createLocationMutation.mutateAsync(data);
-      }
-      
+      // Only create new locations from this page now
+      await createLocationMutation.mutateAsync(data);
       setIsFormOpen(false);
     } catch (error) {
       console.error("Error saving location:", error);
@@ -139,7 +119,6 @@ const PortalLocations: React.FC = () => {
         <Box w="100%" style={{ overflowX: 'auto' }}>
           <LocationsTable 
             locations={locations}
-            onEdit={handleEditLocation}
             hideInactive={hideInactive}
           />
         </Box>
@@ -147,7 +126,6 @@ const PortalLocations: React.FC = () => {
 
       <LocationForm 
         open={isFormOpen}
-        initialData={currentLocation}
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleFormSubmit}
       />

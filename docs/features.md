@@ -15,6 +15,8 @@
 | #12 | Add bulk actions to locations and classes tables | 🟢 Low | 🟡 Medium | unassigned | v0.9.8 |
 | #13 | Add date range and age range display to find-classes page | 🟡 Medium | 🟡 Medium | completed | v0.9.8 |
 | #15 | Admin section data population and functionality | 🔴 Critical | 🟠 High | unassigned | v0.9.9 |
+| #16 | Location Details mini-map integration | 🟡 Medium | 🟡 Medium | completed | v0.9.9 |
+| #17 | Location-specific class management interface | 🟡 Medium | 🟡 Medium | completed | v0.9.9 |
 
 ---
 
@@ -794,5 +796,94 @@ This should be addressed immediately as it blocks core admin functionality.
 - **Urgency**: Immediate - blocks admin workflow
 - **Complexity**: 🟠 High - requires debugging and investigation
 - **Dependencies**: May require database, auth, or infrastructure fixes
+
+</details>
+
+<details>
+<summary><strong>Feature #16:</strong> Location Details mini-map integration</summary>
+
+### Description
+Integrate a mini-map component into the Location Details page to provide visual location context and quick access to external mapping services.
+
+### Status: ✅ COMPLETED (2025-07-13)
+
+### Implementation Summary
+Successfully implemented mini-map functionality within the Location Details page:
+1. **LocationMap Component** - Interactive mini-map placeholder with external map integration
+2. **Multiple Map Services** - Quick access to Google Maps and Apple Maps
+3. **Directions Integration** - One-click directions using location coordinates or address
+4. **Coordinate Display** - Visual display of latitude/longitude when available
+5. **Responsive Design** - Proper layout for different screen sizes
+
+### Technical Implementation
+- **External Map Links** - Generates proper URLs for Google Maps and Apple Maps
+- **Coordinate Precision** - Uses exact coordinates when available, falls back to address
+- **User Experience** - Clear calls-to-action for viewing in external applications
+- **Error Handling** - Graceful handling of missing coordinate data
+- **Future-Ready** - Placeholder design ready for full interactive map integration
+
+### Key Features Added
+1. **Map Placeholder**: Visual representation with clear next steps
+2. **External Map Buttons**: Direct links to Google Maps and Apple Maps
+3. **Get Directions**: One-click directions functionality
+4. **Coordinate Display**: Technical details for precise location data
+5. **Address Fallback**: Works with or without coordinate data
+
+### Files Created
+- `src/components/locations/LocationMap.tsx` - Mini-map component with external integrations
+
+### Business Value
+- **Medium**: Improves location visualization and accessibility
+- **User Experience**: Quick access to mapping and directions
+- **Workflow Enhancement**: Reduces friction for location-based tasks
+
+</details>
+
+<details>
+<summary><strong>Feature #17:</strong> Location-specific class management interface</summary>
+
+### Description
+Provide a dedicated interface within Location Details page for viewing and managing classes specific to that location, streamlining class administration workflow.
+
+### Status: ✅ COMPLETED (2025-07-13)
+
+### Implementation Summary
+Successfully implemented location-specific class management:
+1. **LocationClasses Component** - Comprehensive class listing for specific location
+2. **Class Overview Table** - Detailed view of all classes with key metrics
+3. **Quick Actions** - Direct access to add/edit classes from location context
+4. **Empty State Handling** - User-friendly interface when no classes exist
+5. **Data Integration** - Real-time class and schedule information
+
+### Technical Implementation
+- **Database Queries** - Efficient fetching of location-specific class data
+- **Schedule Counting** - Aggregated schedule information per class
+- **Navigation Integration** - Seamless routing to class management pages
+- **Performance Optimization** - Minimized queries with proper data structuring
+- **Error Handling** - Graceful handling of data loading failures
+
+### Key Features Added
+1. **Class Table View**: Comprehensive listing with age range, duration, capacity
+2. **Schedule Information**: Visual indication of class scheduling completeness
+3. **Status Indicators**: Clear active/inactive badges for each class
+4. **Quick Navigation**: Direct edit links and add class functionality
+5. **Empty State Design**: Encouraging interface for adding first classes
+
+### Data Displayed
+- **Class Name & Description**: Primary class information
+- **Age Range**: Formatted age requirements (e.g., "3-7 years", "All ages")
+- **Duration**: Class length in minutes
+- **Capacity**: Maximum number of children per class
+- **Schedule Count**: Number of scheduled sessions
+- **Status**: Active/inactive with visual indicators
+
+### Files Created
+- `src/components/locations/LocationClasses.tsx` - Location-specific class management interface
+
+### Business Value
+- **High**: Streamlines class management workflow from location context
+- **Efficiency**: Reduces navigation between location and class management
+- **Data Visibility**: Immediate overview of class offerings per location
+- **Workflow Optimization**: Contextual access to class creation and editing
 
 </details>

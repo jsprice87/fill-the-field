@@ -8,6 +8,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import PortalDashboard from "./pages/portal/Dashboard";
 import PortalLeads from "./pages/portal/Leads";
 import LeadDetail from "./pages/portal/LeadDetail";
+import LocationDetail from "./pages/portal/LocationDetail";
 import PortalBookings from "./pages/portal/Bookings";
 import PortalLocations from "./pages/portal/Locations";
 import PortalClasses from "./pages/portal/Classes";
@@ -244,6 +245,12 @@ export const navItems = [
         to: "locations",
         icon: <MapPinIcon className="h-4 w-4" />,
         page: <PortalLocations />,
+      },
+      {
+        title: "Location Detail",
+        to: "locations/:locationId",
+        icon: <MapPinIcon className="h-4 w-4" />,
+        page: <LocationDetail />,
       },
       {
         title: "Portal Classes",
