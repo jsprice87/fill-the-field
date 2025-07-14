@@ -14,10 +14,6 @@ const locationSchema = z.object({
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),
   zip: z.string().min(1, 'ZIP code is required'),
-  phone: z.string().optional(),
-  email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
-    message: 'Invalid email format'
-  }),
   contact_name: z.string().optional(),
   contact_email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
     message: 'Invalid contact email format'
@@ -60,8 +56,6 @@ const LocationForm: React.FC<LocationFormProps> = ({
     city: '',
     state: '',
     zip: '',
-    phone: '',
-    email: '',
     contact_name: '',
     contact_email: '',
     isActive: true,
@@ -80,8 +74,6 @@ const LocationForm: React.FC<LocationFormProps> = ({
           city: '',
           state: '',
           zip: '',
-          phone: '',
-          email: '',
           contact_name: '',
           contact_email: '',
           isActive: true,
@@ -161,22 +153,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             />
           </Stack>
 
-          <TextInput
-            label="Phone"
-            placeholder="Enter phone number (optional)"
-            disabled={isSubmitting}
-            {...form.getInputProps('phone')}
-          />
-
-          <TextInput
-            label="Email"
-            placeholder="Enter email address (optional)"
-            type="email"
-            disabled={isSubmitting}
-            {...form.getInputProps('email')}
-          />
-
-          {/* Contact fields for Bug #40 */}
+          {/* Contact fields for Bug #40 - only contact fields, no duplicate email/phone */}
           <div className="border-t pt-4">
             <h4 className="text-md font-medium mb-3">Location Contact Person</h4>
             <Group grow>

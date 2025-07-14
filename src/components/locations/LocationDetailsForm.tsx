@@ -1,45 +1,25 @@
 import React, { useState } from 'react';
-import { z } from 'zod';
 import { Stack, Switch, Group, Button, Grid } from '@mantine/core';
 import { TextInput } from '@/components/mantine/TextInput';
-import { useZodForm } from '@/hooks/useZodForm';
 import { toast } from 'sonner';
 import { useUpdateLocation } from '@/hooks/useLocationActions';
-import { Edit, Save, X } from 'lucide-react';
+import { Save } from 'lucide-react';
 
-// Extended schema with contact fields for Bug #40
-const locationDetailsSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, 'Location name is required'),
-  address: z.string().min(1, 'Address is required'),
-  city: z.string().min(1, 'City is required'),
-  state: z.string().min(1, 'State is required'),
-  zip: z.string().min(1, 'ZIP code is required'),
-  phone: z.string().optional(),
-  email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
-    message: 'Invalid email format'
-  }),
-  // Contact fields for Bug #40 - will be added to database later
-  contact_name: z.string().optional(),
-  contact_email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
-    message: 'Invalid contact email format'
-  }),
-  isActive: z.boolean(),
-  autoCalculateCoordinates: z.boolean().default(true),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-}).refine((data) => {
-  // If auto-calculate is disabled, require manual coordinates
-  if (!data.autoCalculateCoordinates) {
-    return data.latitude !== undefined && data.longitude !== undefined;
-  }
-  return true;
-}, {
-  message: 'Latitude and longitude are required when auto-calculate is disabled',
-  path: ['latitude']
-});
-
-export type LocationDetailsData = z.infer<typeof locationDetailsSchema>;
+// Simple interface without validation
+export interface LocationDetailsData {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  contact_name: string;
+  contact_email: string;
+  isActive: boolean;
+  autoCalculateCoordinates: boolean;
+  latitude?: number;
+  longitude?: number;
+}
 
 interface LocationDetailsFormProps {
   location: {
@@ -57,27 +37,24 @@ interface LocationDetailsFormProps {
     latitude: number | null;
     longitude: number | null;
   };
-  onLocationUpdated: (updatedLocation: any) => void;
+  onLocationUpdated: (updatedLocation: LocationDetailsFormProps['location']) => void;
 }
 
 const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
   location,
   onLocationUpdated,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateLocationMutation = useUpdateLocation();
   
-  const form = useZodForm(locationDetailsSchema, {
+  // Simple state management - no validation
+  const [formData, setFormData] = useState({
     id: location.id,
     name: location.name,
     address: location.address,
     city: location.city,
     state: location.state,
     zip: location.zip,
-    phone: location.phone || '',
-    email: location.email || '',
-    // Contact fields from Bug #40
     contact_name: location.contact_name || '',
     contact_email: location.contact_email || '',
     isActive: location.is_active,
@@ -85,51 +62,30 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
     latitude: location.latitude || undefined,
     longitude: location.longitude || undefined,
   });
-
-  const handleEdit = () => {
-    setIsEditing(true);
+  
+  const handleInputChange = (field: keyof typeof formData, value: string | number | boolean | undefined) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleCancel = () => {
-    // Reset form to original values
-    form.setValues({
-      id: location.id,
-      name: location.name,
-      address: location.address,
-      city: location.city,
-      state: location.state,
-      zip: location.zip,
-      phone: location.phone || '',
-      email: location.email || '',
-      contact_name: location.contact_name || '',
-      contact_email: location.contact_email || '',
-      isActive: location.is_active,
-      autoCalculateCoordinates: true,
-      latitude: location.latitude || undefined,
-      longitude: location.longitude || undefined,
-    });
-    setIsEditing(false);
-  };
-
-  const handleSubmit = async (data: LocationDetailsData) => {
+  const handleSave = async () => {
     setIsSubmitting(true);
     try {
-      // Include contact fields for Bug #40
+      // Always save - no validation blocking
       const updateData = {
-        id: data.id,
-        name: data.name,
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        zip: data.zip,
-        phone: data.phone || null,
-        email: data.email || null,
-        contact_name: data.contact_name || null,
-        contact_email: data.contact_email || null,
-        isActive: data.isActive,
-        autoCalculateCoordinates: data.autoCalculateCoordinates,
-        latitude: data.latitude,
-        longitude: data.longitude,
+        id: formData.id,
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        phone: null, // Remove phone field entirely
+        email: null, // Remove email field entirely
+        contact_name: formData.contact_name || null,
+        contact_email: formData.contact_email || null,
+        isActive: formData.isActive,
+        autoCalculateCoordinates: formData.autoCalculateCoordinates,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
       };
 
       await updateLocationMutation.mutateAsync(updateData);
@@ -137,21 +93,20 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
       // Update the parent component with new data
       onLocationUpdated({
         ...location,
-        name: data.name,
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        zip: data.zip,
-        phone: data.phone || null,
-        email: data.email || null,
-        contact_name: data.contact_name || null,
-        contact_email: data.contact_email || null,
-        is_active: data.isActive,
-        latitude: data.latitude || null,
-        longitude: data.longitude || null,
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        phone: null,
+        email: null,
+        contact_name: formData.contact_name || null,
+        contact_email: formData.contact_email || null,
+        is_active: formData.isActive,
+        latitude: formData.latitude || null,
+        longitude: formData.longitude || null,
       });
       
-      setIsEditing(false);
       toast.success('Location updated successfully');
     } catch (error) {
       console.error('Error updating location:', error);
@@ -161,240 +116,148 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
     }
   };
 
-  const onSubmitHandler = form.onSubmit(handleSubmit);
-
-  if (!isEditing) {
-    return (
-      <div className="bg-white rounded-lg border p-6">
-        <Group justify="space-between" align="flex-start" mb="md">
-          <div className="flex-1">
-            <Stack gap="md">
-              <Grid>
-                <Grid.Col span={6}>
-                  <div>
-                    <div className="text-sm font-medium text-gray-500 mb-1">Location Name</div>
-                    <div className="text-base">{location.name}</div>
-                  </div>
-                </Grid.Col>
-                <Grid.Col span={6}>
-                  <div>
-                    <div className="text-sm font-medium text-gray-500 mb-1">Status</div>
-                    <div className={`text-base ${location.is_active ? 'text-green-600' : 'text-red-600'}`}>
-                      {location.is_active ? 'Active' : 'Inactive'}
-                    </div>
-                  </div>
-                </Grid.Col>
-              </Grid>
-              
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">Address</div>
-                <div className="text-base">{location.address}</div>
-                <div className="text-base">{location.city}, {location.state} {location.zip}</div>
-              </div>
-              
-              <Grid>
-                <Grid.Col span={6}>
-                  <div>
-                    <div className="text-sm font-medium text-gray-500 mb-1">Phone</div>
-                    <div className="text-base">{location.phone || 'Not provided'}</div>
-                  </div>
-                </Grid.Col>
-                <Grid.Col span={6}>
-                  <div>
-                    <div className="text-sm font-medium text-gray-500 mb-1">Email</div>
-                    <div className="text-base">{location.email || 'Not provided'}</div>
-                  </div>
-                </Grid.Col>
-              </Grid>
-              
-              {(location.latitude && location.longitude) && (
-                <div>
-                  <div className="text-sm font-medium text-gray-500 mb-1">Coordinates</div>
-                  <div className="text-sm font-mono">
-                    {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-                  </div>
-                </div>
-              )}
-            </Stack>
-          </div>
-          <Button variant="outline" onClick={handleEdit} size="sm">
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Location
-          </Button>
-        </Group>
-      </div>
-    );
-  }
-
+  // Always show editable form - no more modal-like behavior
   return (
     <div className="bg-white rounded-lg border p-6">
-      <form onSubmit={onSubmitHandler}>
-        <Stack gap="md">
-          <Group justify="space-between" align="center" mb="md">
-            <h3 className="text-lg font-medium">Edit Location Details</h3>
-            <Group gap="sm">
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                size="sm"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                loading={isSubmitting}
-                disabled={!form.isValid()}
-                size="sm"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
-            </Group>
-          </Group>
+      <Stack gap="md">
+        <Group justify="space-between" align="center" mb="md">
+          <h3 className="text-lg font-medium">Location Details</h3>
+          <Button
+            onClick={handleSave}
+            loading={isSubmitting}
+            size="sm"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save Changes
+          </Button>
+        </Group>
 
+        <Grid>
+          <Grid.Col span={6}>
+            <TextInput
+              label="Location Name"
+              placeholder="Enter location name"
+              disabled={isSubmitting}
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+            />
+          </Grid.Col>
+          <Grid.Col span={6}>
+            <Switch
+              label="Active Location"
+              description="Location is available for booking"
+              color="soccerGreen"
+              size="md"
+              disabled={isSubmitting}
+              checked={formData.isActive}
+              onChange={(e) => handleInputChange('isActive', e.target.checked)}
+            />
+          </Grid.Col>
+        </Grid>
+
+        <TextInput
+          label="Address"
+          placeholder="Enter street address"
+          disabled={isSubmitting}
+          value={formData.address}
+          onChange={(e) => handleInputChange('address', e.target.value)}
+        />
+
+        <Grid>
+          <Grid.Col span={4}>
+            <TextInput
+              label="City"
+              placeholder="Enter city"
+              disabled={isSubmitting}
+              value={formData.city}
+              onChange={(e) => handleInputChange('city', e.target.value)}
+            />
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <TextInput
+              label="State"
+              placeholder="Enter state"
+              disabled={isSubmitting}
+              value={formData.state}
+              onChange={(e) => handleInputChange('state', e.target.value)}
+            />
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <TextInput
+              label="ZIP Code"
+              placeholder="Enter ZIP code"
+              disabled={isSubmitting}
+              value={formData.zip}
+              onChange={(e) => handleInputChange('zip', e.target.value)}
+            />
+          </Grid.Col>
+        </Grid>
+
+        {/* Only Contact fields - no duplicate email/phone */}
+        <div className="border-t pt-4">
+          <h4 className="text-md font-medium mb-3">Location Contact Person</h4>
           <Grid>
             <Grid.Col span={6}>
               <TextInput
-                label="Location Name"
-                placeholder="Enter location name"
-                withAsterisk
+                label="Contact Name"
+                placeholder="Primary contact person name (optional)"
                 disabled={isSubmitting}
-                {...form.getInputProps('name')}
-              />
-            </Grid.Col>
-            <Grid.Col span={6}>
-              <Switch
-                label="Active Location"
-                description="Location is available for booking"
-                color="soccerGreen"
-                size="md"
-                disabled={isSubmitting}
-                {...form.getInputProps('isActive', { type: 'checkbox' })}
-              />
-            </Grid.Col>
-          </Grid>
-
-          <TextInput
-            label="Address"
-            placeholder="Enter street address"
-            withAsterisk
-            disabled={isSubmitting}
-            {...form.getInputProps('address')}
-          />
-
-          <Grid>
-            <Grid.Col span={4}>
-              <TextInput
-                label="City"
-                placeholder="Enter city"
-                withAsterisk
-                disabled={isSubmitting}
-                {...form.getInputProps('city')}
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <TextInput
-                label="State"
-                placeholder="Enter state"
-                withAsterisk
-                disabled={isSubmitting}
-                {...form.getInputProps('state')}
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
-              <TextInput
-                label="ZIP Code"
-                placeholder="Enter ZIP code"
-                withAsterisk
-                disabled={isSubmitting}
-                {...form.getInputProps('zip')}
-              />
-            </Grid.Col>
-          </Grid>
-
-          <Grid>
-            <Grid.Col span={6}>
-              <TextInput
-                label="Phone"
-                placeholder="Enter phone number (optional)"
-                disabled={isSubmitting}
-                {...form.getInputProps('phone')}
+                value={formData.contact_name}
+                onChange={(e) => handleInputChange('contact_name', e.target.value)}
               />
             </Grid.Col>
             <Grid.Col span={6}>
               <TextInput
-                label="Email"
-                placeholder="Enter email address (optional)"
+                label="Contact Email"
+                placeholder="Primary contact email (optional)"
                 type="email"
                 disabled={isSubmitting}
-                {...form.getInputProps('email')}
+                value={formData.contact_email}
+                onChange={(e) => handleInputChange('contact_email', e.target.value)}
               />
             </Grid.Col>
           </Grid>
+        </div>
 
-          {/* Contact fields for Bug #40 - now enabled with database support */}
-          <div className="border-t pt-4">
-            <h4 className="text-md font-medium mb-3">Location Contact Person</h4>
-            <Grid>
+        <div className="border-t pt-4">
+          <Switch
+            label="Auto-calculate Coordinates"
+            description="Automatically geocode address to get latitude/longitude"
+            color="blue"
+            size="md"
+            disabled={isSubmitting}
+            checked={formData.autoCalculateCoordinates}
+            onChange={(e) => handleInputChange('autoCalculateCoordinates', e.target.checked)}
+          />
+
+          {!formData.autoCalculateCoordinates && (
+            <Grid mt="md">
               <Grid.Col span={6}>
                 <TextInput
-                  label="Contact Name"
-                  placeholder="Primary contact person name (optional)"
+                  label="Latitude"
+                  placeholder="Enter latitude (e.g., 39.7392)"
+                  type="number"
+                  step="any"
                   disabled={isSubmitting}
-                  {...form.getInputProps('contact_name')}
+                  value={formData.latitude || ''}
+                  onChange={(e) => handleInputChange('latitude', e.target.value ? parseFloat(e.target.value) : undefined)}
                 />
               </Grid.Col>
               <Grid.Col span={6}>
                 <TextInput
-                  label="Contact Email"
-                  placeholder="Primary contact email (optional)"
-                  type="email"
+                  label="Longitude"
+                  placeholder="Enter longitude (e.g., -104.9903)"
+                  type="number"
+                  step="any"
                   disabled={isSubmitting}
-                  {...form.getInputProps('contact_email')}
+                  value={formData.longitude || ''}
+                  onChange={(e) => handleInputChange('longitude', e.target.value ? parseFloat(e.target.value) : undefined)}
                 />
               </Grid.Col>
             </Grid>
-          </div>
-
-          <div className="border-t pt-4">
-            <Switch
-              label="Auto-calculate Coordinates"
-              description="Automatically geocode address to get latitude/longitude"
-              color="blue"
-              size="md"
-              disabled={isSubmitting}
-              {...form.getInputProps('autoCalculateCoordinates', { type: 'checkbox' })}
-            />
-
-            {!form.values.autoCalculateCoordinates && (
-              <Grid mt="md">
-                <Grid.Col span={6}>
-                  <TextInput
-                    label="Latitude"
-                    placeholder="Enter latitude (e.g., 39.7392)"
-                    type="number"
-                    step="any"
-                    disabled={isSubmitting}
-                    {...form.getInputProps('latitude')}
-                  />
-                </Grid.Col>
-                <Grid.Col span={6}>
-                  <TextInput
-                    label="Longitude"
-                    placeholder="Enter longitude (e.g., -104.9903)"
-                    type="number"
-                    step="any"
-                    disabled={isSubmitting}
-                    {...form.getInputProps('longitude')}
-                  />
-                </Grid.Col>
-              </Grid>
-            )}
-          </div>
-        </Stack>
-      </form>
+          )}
+        </div>
+      </Stack>
     </div>
   );
 };

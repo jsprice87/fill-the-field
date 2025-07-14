@@ -188,8 +188,8 @@ export const useUpdateLocation = () => {
         city: data.city,
         state: data.state,
         zip: data.zip,
-        phone: data.phone || null,
-        email: data.email || null,
+        phone: null, // Remove phone field - using contact fields only
+        email: null, // Remove email field - using contact fields only
         contact_name: data.contact_name || null,
         contact_email: data.contact_email || null,
         is_active: data.isActive,
@@ -296,8 +296,8 @@ export const useCreateLocation = () => {
         city: data.city,
         state: data.state,
         zip: data.zip,
-        phone: data.phone || null,
-        email: data.email || null,
+        phone: null, // Remove phone field - using contact fields only
+        email: null, // Remove email field - using contact fields only
         contact_name: data.contact_name || null,
         contact_email: data.contact_email || null,
         is_active: data.isActive,

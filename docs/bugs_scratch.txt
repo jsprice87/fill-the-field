@@ -14,8 +14,9 @@ Bug 38 - There is no error feedback on the login screen when incorrect credentia
 ✅ RESOLVED: Bug 39 - Update Location button on Edit Location modal not active when fields change making it impossible to update the location. 
 RESOLUTION: Replaced modal with Location Details page (/portal/locations/:id) with inline editing form. No more modal validation issues.
 
+✅ RESOLVED:
 Bug 40 - Add a "Location Contact" name and email address to each location entry. Add data collection fields during location creation and edit location.
-STATUS: Form infrastructure ready, awaiting database schema update for contact_name and contact_email fields.
+RESOLUTION: Complete implementation with database migration, TypeScript types, forms, and hooks updated. Contact fields now available in both create/edit location workflows.
 
 ✅ RESOLVED:
 Bug 41 - If I switch tabs away from the Locations page when I have the Edit Location modal open, and return to the page (example, switch to google maps to copy an address), the modal is no longer up and all changes are lost.
