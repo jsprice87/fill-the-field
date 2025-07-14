@@ -19,6 +19,8 @@ interface Location {
   zip: string;
   phone: string | null;
   email: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
   is_active: boolean;
   latitude: number | null;
   longitude: number | null;

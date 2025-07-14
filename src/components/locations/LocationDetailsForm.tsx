@@ -51,6 +51,8 @@ interface LocationDetailsFormProps {
     zip: string;
     phone: string | null;
     email: string | null;
+    contact_name: string | null;
+    contact_email: string | null;
     is_active: boolean;
     latitude: number | null;
     longitude: number | null;
@@ -75,9 +77,9 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
     zip: location.zip,
     phone: location.phone || '',
     email: location.email || '',
-    // Default empty values for new contact fields
-    contact_name: '',
-    contact_email: '',
+    // Contact fields from Bug #40
+    contact_name: location.contact_name || '',
+    contact_email: location.contact_email || '',
     isActive: location.is_active,
     autoCalculateCoordinates: true,
     latitude: location.latitude || undefined,
@@ -99,8 +101,8 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
       zip: location.zip,
       phone: location.phone || '',
       email: location.email || '',
-      contact_name: '',
-      contact_email: '',
+      contact_name: location.contact_name || '',
+      contact_email: location.contact_email || '',
       isActive: location.is_active,
       autoCalculateCoordinates: true,
       latitude: location.latitude || undefined,
@@ -112,7 +114,7 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
   const handleSubmit = async (data: LocationDetailsData) => {
     setIsSubmitting(true);
     try {
-      // For now, only use existing database fields until we add contact fields
+      // Include contact fields for Bug #40
       const updateData = {
         id: data.id,
         name: data.name,
@@ -122,6 +124,8 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
         zip: data.zip,
         phone: data.phone || null,
         email: data.email || null,
+        contact_name: data.contact_name || null,
+        contact_email: data.contact_email || null,
         isActive: data.isActive,
         autoCalculateCoordinates: data.autoCalculateCoordinates,
         latitude: data.latitude,
@@ -140,6 +144,8 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
         zip: data.zip,
         phone: data.phone || null,
         email: data.email || null,
+        contact_name: data.contact_name || null,
+        contact_email: data.contact_email || null,
         is_active: data.isActive,
         latitude: data.latitude || null,
         longitude: data.longitude || null,
@@ -328,8 +334,7 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
             </Grid.Col>
           </Grid>
 
-          {/* Contact fields for Bug #40 - commented out until database is updated */}
-          {/* 
+          {/* Contact fields for Bug #40 - now enabled with database support */}
           <div className="border-t pt-4">
             <h4 className="text-md font-medium mb-3">Location Contact Person</h4>
             <Grid>
@@ -352,7 +357,6 @@ const LocationDetailsForm: React.FC<LocationDetailsFormProps> = ({
               </Grid.Col>
             </Grid>
           </div>
-          */}
 
           <div className="border-t pt-4">
             <Switch

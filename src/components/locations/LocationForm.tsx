@@ -18,6 +18,10 @@ const locationSchema = z.object({
   email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
     message: 'Invalid email format'
   }),
+  contact_name: z.string().optional(),
+  contact_email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
+    message: 'Invalid contact email format'
+  }),
   isActive: z.boolean(),
   autoCalculateCoordinates: z.boolean().default(true),
   latitude: z.number().optional(),
@@ -58,6 +62,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
     zip: '',
     phone: '',
     email: '',
+    contact_name: '',
+    contact_email: '',
     isActive: true,
     autoCalculateCoordinates: true,
     ...initialData,
@@ -76,6 +82,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
           zip: '',
           phone: '',
           email: '',
+          contact_name: '',
+          contact_email: '',
           isActive: true,
           autoCalculateCoordinates: true,
         });
@@ -167,6 +175,26 @@ const LocationForm: React.FC<LocationFormProps> = ({
             disabled={isSubmitting}
             {...form.getInputProps('email')}
           />
+
+          {/* Contact fields for Bug #40 */}
+          <div className="border-t pt-4">
+            <h4 className="text-md font-medium mb-3">Location Contact Person</h4>
+            <Group grow>
+              <TextInput
+                label="Contact Name"
+                placeholder="Primary contact person name (optional)"
+                disabled={isSubmitting}
+                {...form.getInputProps('contact_name')}
+              />
+              <TextInput
+                label="Contact Email"
+                placeholder="Primary contact email (optional)"
+                type="email"
+                disabled={isSubmitting}
+                {...form.getInputProps('contact_email')}
+              />
+            </Group>
+          </div>
 
           <Switch
             label="Active Location"

@@ -190,6 +190,8 @@ export const useUpdateLocation = () => {
         zip: data.zip,
         phone: data.phone || null,
         email: data.email || null,
+        contact_name: data.contact_name || null,
+        contact_email: data.contact_email || null,
         is_active: data.isActive,
         ...(coordinates && {
           latitude: coordinates.latitude,
@@ -296,6 +298,8 @@ export const useCreateLocation = () => {
         zip: data.zip,
         phone: data.phone || null,
         email: data.email || null,
+        contact_name: data.contact_name || null,
+        contact_email: data.contact_email || null,
         is_active: data.isActive,
         ...(coordinates && {
           latitude: coordinates.latitude,

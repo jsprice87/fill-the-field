@@ -303,7 +303,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                   
                   <TableCell>
                     <TableRowMenu
-                      onEdit={() => navigate(`locations/${location.id}`)}
+                      onEdit={() => navigate(`${location.id}`)}
                       onAddClasses={() => handleAddClasses(location.id)}
                       onArchiveToggle={() => handleArchiveToggle(location.id, isArchived)}
                       onDelete={() => handleDelete(location.id)}
