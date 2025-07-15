@@ -14,6 +14,8 @@ const locationSchema = z.object({
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),
   zip: z.string().min(1, 'ZIP code is required'),
+  phone: z.string().optional(), // Keep for compatibility but not shown in UI
+  email: z.string().optional(), // Keep for compatibility but not shown in UI
   contact_name: z.string().optional(),
   contact_email: z.string().optional().refine((val) => !val || val === '' || z.string().email().safeParse(val).success, {
     message: 'Invalid contact email format'
@@ -56,6 +58,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
     city: '',
     state: '',
     zip: '',
+    phone: '', // Hidden field for compatibility
+    email: '', // Hidden field for compatibility
     contact_name: '',
     contact_email: '',
     isActive: true,
@@ -74,6 +78,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
           city: '',
           state: '',
           zip: '',
+          phone: '', // Hidden field for compatibility
+          email: '', // Hidden field for compatibility
           contact_name: '',
           contact_email: '',
           isActive: true,
