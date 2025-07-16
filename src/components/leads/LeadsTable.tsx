@@ -38,7 +38,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, searchQuery, showArchive
   // Add pagination
   const pagination = usePagination({
     data: leads,
-    initialPageSize: 50, // Start with more items per page
+    initialPageSize: 25, // Reduce initial page size to minimize whitespace
     initialPage: 1
   });
 

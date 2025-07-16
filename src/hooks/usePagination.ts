@@ -33,7 +33,7 @@ interface UsePaginationResult<T> {
 
 export function usePagination<T>({
   data,
-  initialPageSize = 25,
+  initialPageSize = 10, // Smaller default to reduce whitespace
   initialPage = 1
 }: UsePaginationProps<T>): UsePaginationResult<T> {
   const [currentPage, setCurrentPage] = useState(initialPage);

@@ -33,7 +33,7 @@ const BookingsTable: React.FC<BookingsTableProps> = ({ bookings, searchQuery, sh
   // Add pagination
   const pagination = usePagination({
     data: bookings,
-    initialPageSize: 50,
+    initialPageSize: 25, // Reduce initial page size to minimize whitespace
     initialPage: 1
   });
 

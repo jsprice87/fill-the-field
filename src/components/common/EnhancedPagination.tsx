@@ -14,7 +14,7 @@ interface EnhancedPaginationProps {
   itemName?: string; // e.g., "leads", "bookings", "locations"
 }
 
-const DEFAULT_PAGE_SIZE_OPTIONS = [25, 50, 100];
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export const EnhancedPagination: React.FC<EnhancedPaginationProps> = ({
   totalItems,

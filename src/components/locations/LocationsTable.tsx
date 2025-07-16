@@ -15,6 +15,8 @@ import {
   useBulkToggleLocationStatus
 } from '@/hooks/useLocationActions';
 import { LocationProps } from './LocationCard';
+import { EnhancedPagination } from '@/components/common/EnhancedPagination';
+import { usePagination } from '@/hooks/usePagination';
 
 interface LocationsTableProps {
   locations: LocationProps[];
@@ -40,6 +42,13 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   // Selection state
   const [selectedLocations, setSelectedLocations] = useState<Set<string>>(new Set());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  
+  // Add pagination
+  const pagination = usePagination({
+    data: locations,
+    initialPageSize: 25, // Start with 25 items per page for locations
+    initialPage: 1
+  });
 
   const handleArchiveToggle = async (locationId: string, isArchived: boolean) => {
     if (isArchived) {
@@ -236,7 +245,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
               </TableRow>
             </TableHeader>
           <TableBody>
-            {locations.map((location) => {
+            {pagination.currentData.map((location) => {
               const isArchived = location.is_active === false;
               
               return (
@@ -321,6 +330,18 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
         </Table>
       </Table.ScrollContainer>
     </ScrollArea>
+    
+    {/* Enhanced Pagination */}
+    <EnhancedPagination
+      totalItems={pagination.totalItems}
+      currentPage={pagination.currentPage}
+      pageSize={pagination.pageSize}
+      onPageChange={pagination.setCurrentPage}
+      onPageSizeChange={pagination.setPageSize}
+      pageSizeOptions={[10, 25, 50, 100]}
+      itemName="locations"
+      sticky={true}
+    />
     </div>
   );
 };
