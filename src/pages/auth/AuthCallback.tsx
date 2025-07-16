@@ -67,7 +67,7 @@ export default function AuthCallback() {
             if (type === 'recovery') {
               navigate('/portal/profile'); // Redirect to profile to change password
             } else {
-              navigate('/dashboard');
+              navigate('/portal/'); // Redirect to portal, not dashboard
             }
           }, 2000);
         } else {

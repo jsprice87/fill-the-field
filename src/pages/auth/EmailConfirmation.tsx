@@ -32,16 +32,27 @@ export default function EmailConfirmation() {
         if (error) {
           console.error('Email confirmation error:', error);
           setStatus('error');
-          setErrorMessage(error.message || 'Failed to confirm email. The link may have expired.');
+          
+          // Provide more specific error messages based on error type
+          if (error.message.includes('expired')) {
+            setErrorMessage('This confirmation link has expired. Please request a new confirmation email.');
+          } else if (error.message.includes('already_confirmed')) {
+            setErrorMessage('This email has already been confirmed. You can now log in to your account.');
+          } else if (error.message.includes('invalid')) {
+            setErrorMessage('This confirmation link is invalid. Please check your email and try again.');
+          } else {
+            setErrorMessage(error.message || 'Failed to confirm email. The link may have expired.');
+          }
           return;
         }
 
         if (data.user && data.session) {
           setStatus('success');
           
-          // Redirect to dashboard after successful confirmation
+          // Redirect to portal after successful confirmation
+          // The portal redirect will handle routing to the correct slug-based URL
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/portal/');
           }, 3000);
         } else {
           setStatus('error');
@@ -108,10 +119,10 @@ export default function EmailConfirmation() {
                 color="green"
                 radius="md"
               >
-                Your email has been successfully confirmed. You are now logged in and will be redirected to your dashboard shortly.
+                Your email has been successfully confirmed. You are now logged in and will be redirected to your portal shortly.
               </Alert>
               <Text ta="center" c="dimmed">
-                Redirecting you to your dashboard...
+                Redirecting you to your portal...
               </Text>
             </>
           )}
@@ -139,6 +150,12 @@ export default function EmailConfirmation() {
                   onClick={() => navigate('/login')}
                 >
                   Go to Login
+                </Button>
+                <Button
+                  variant="subtle"
+                  onClick={() => navigate('/register')}
+                >
+                  Register New Account
                 </Button>
               </Group>
             </>
