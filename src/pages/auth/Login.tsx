@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, TextInput, PasswordInput, Stack, Text, Group, Box, Anchor } from '@mantine/core';
+import { Button, TextInput, PasswordInput, Stack, Text, Group, Box, Anchor, Alert } from '@mantine/core';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ interface LoginProps {
 const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,13 +25,19 @@ const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
       ...prev,
       [field]: value,
     }));
+    // Clear error message when user starts typing
+    if (errorMessage) {
+      setErrorMessage("");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
-      toast.error("Please enter both email and password");
+      const errorMsg = "Please enter both email and password";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
       return;
     }
     
@@ -43,8 +50,8 @@ const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
       });
       
       if (error) {
+        // Provide specific error feedback based on error type
         if (error.message.includes("Email not confirmed")) {
-          // Handle unconfirmed email case for better UX
           toast.error("Your email is not confirmed. Resending confirmation email...");
           
           // Resend confirmation email
@@ -54,10 +61,36 @@ const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
           });
           
           toast.info("Confirmation email resent. Please check your inbox.");
+        } else if (error.message.includes("Invalid login credentials")) {
+          const errorMsg = "Invalid email or password. Please check your credentials and try again.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
+        } else if (error.message.includes("Email not found")) {
+          const errorMsg = "No account found with this email address. Please check your email or create a new account.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
+        } else if (error.message.includes("Too many requests")) {
+          const errorMsg = "Too many login attempts. Please wait a few minutes before trying again.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
+        } else if (error.message.includes("Invalid email")) {
+          const errorMsg = "Please enter a valid email address.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
+        } else if (error.message.includes("Network error")) {
+          const errorMsg = "Network error. Please check your connection and try again.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
         } else {
-          throw error;
+          // Fallback for other errors
+          const errorMsg = error.message || "Login failed. Please check your credentials and try again.";
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
         }
+        setIsLoading(false);
+        return;
       } else if (data.user) {
+        setErrorMessage(""); // Clear any previous error messages
         toast.success("Login successful");
         
         // Determine redirect path based on redirectAfter prop
@@ -95,8 +128,14 @@ const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error(error.message || "Login failed. Please check your credentials.");
-    } finally {
+      // More specific error handling for unexpected errors
+      if (error.name === 'AbortError') {
+        toast.error("Login request was cancelled. Please try again.");
+      } else if (error.message.includes('fetch')) {
+        toast.error("Unable to connect to the server. Please check your internet connection.");
+      } else {
+        toast.error(error.message || "An unexpected error occurred. Please try again.");
+      }
       setIsLoading(false);
     }
   };
@@ -108,6 +147,12 @@ const Login = ({ redirectAfter = 'portal' }: LoginProps) => {
     >
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
+          {errorMessage && (
+            <Alert color="red" title="Login Error">
+              {errorMessage}
+            </Alert>
+          )}
+          
           <TextInput
             label="Email"
             placeholder="name@example.com"
