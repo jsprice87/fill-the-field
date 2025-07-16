@@ -152,9 +152,49 @@ const tryOpenStreetMapGeocoding = async (location: Location): Promise<GeocodingR
   return null;
 };
 
+// Known coordinate corrections for specific problematic locations
+// These are manually verified coordinates for locations with known issues
+const MANUAL_COORDINATE_CORRECTIONS: Record<string, { lat: number; lng: number; reason: string }> = {
+  // Lilley Gulch Soccer Fields - manually verified coordinates
+  'lilley gulch soccer fields': {
+    lat: 39.5385,    // Verified coordinates for 6063 S Independence St, Littleton, CO 80123
+    lng: -105.1059,  
+    reason: 'Manual verification of 6063 S Independence St, Littleton, CO 80123'
+  }
+};
+
+/**
+ * Add or update a manual coordinate correction
+ * Useful for fixing specific location positioning issues
+ */
+export const addManualCoordinateCorrection = (
+  locationName: string, 
+  lat: number, 
+  lng: number, 
+  reason: string
+) => {
+  const key = locationName.toLowerCase().trim();
+  MANUAL_COORDINATE_CORRECTIONS[key] = { lat, lng, reason };
+  console.log(`Added manual coordinate correction for "${locationName}":`, { lat, lng, reason });
+};
+
 export const geocodeAddress = async (location: Location, forceRefresh = false): Promise<GeocodingResult | null> => {
   const fullAddress = `${location.address}, ${location.city}, ${location.state} ${location.zip}`;
   const cacheKey = fullAddress.toLowerCase().trim();
+  
+  // Check for manual coordinate corrections first
+  const locationKey = location.name?.toLowerCase().trim();
+  if (locationKey && MANUAL_COORDINATE_CORRECTIONS[locationKey]) {
+    const correction = MANUAL_COORDINATE_CORRECTIONS[locationKey];
+    console.log(`🔧 Using manual coordinate correction for "${location.name}":`, correction);
+    const correctedCoordinates = {
+      latitude: correction.lat,
+      longitude: correction.lng
+    };
+    // Cache the manual correction
+    geocodeCache.set(cacheKey, correctedCoordinates);
+    return correctedCoordinates;
+  }
   
   // Check cache first (unless forcing fresh lookup)
   if (!forceRefresh && geocodeCache.has(cacheKey)) {
