@@ -22,6 +22,41 @@ export const useAdminDashboard = (filters: DashboardFilters = { timeRange: '30d'
   return useQuery({
     queryKey: ['admin-dashboard', filters],
     queryFn: async (): Promise<AdminDashboardData> => {
+      console.log("Fetching admin dashboard data...");
+      
+      // First, let's check the user's auth details
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error("Error getting user:", userError);
+        throw userError;
+      }
+      
+      if (!user) {
+        console.error("No authenticated user found");
+        throw new Error("No authenticated user");
+      }
+      
+      console.log("Current user:", user?.email);
+      
+      // Check user's role
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user?.id)
+        .single();
+      
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        throw profileError;
+      }
+      
+      console.log("User profile role:", profile?.role);
+      
+      if (profile?.role !== 'admin') {
+        console.error("User is not an admin, role:", profile?.role);
+        throw new Error("Insufficient permissions: User is not an admin");
+      }
       const now = new Date();
       let startDate: Date;
       let endDate = now;
@@ -102,6 +137,8 @@ export const useAdminDashboard = (filters: DashboardFilters = { timeRange: '30d'
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
+    retryDelay: 1000,
   });
 };
 

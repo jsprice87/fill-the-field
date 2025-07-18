@@ -32,7 +32,9 @@
       "mcp__supabase__search_docs",
       "mcp__supabase__generate_typescript_types",
       "Bash(npm run preview:*)",
-      "Bash(.claude/commands/process-issues.md)"
+      "Bash(.claude/commands/process-issues.md)",
+      "Bash(node:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
