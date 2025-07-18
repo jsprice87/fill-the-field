@@ -62,12 +62,34 @@ export default function AuthCallback() {
         if (data.user && data.session) {
           setStatus('success');
           
-          // Redirect based on auth type
-          setTimeout(() => {
+          // Handle redirects based on auth type
+          setTimeout(async () => {
             if (type === 'recovery') {
-              navigate('/portal/profile'); // Redirect to profile to change password
+              // For password recovery, use portal redirect
+              navigate('/portal/profile');
             } else {
-              navigate('/portal/'); // Redirect to portal, not dashboard
+              // For email confirmation, wait for franchisee record and redirect properly
+              try {
+                const { data: franchisee, error: franchiseeError } = await supabase
+                  .from("franchisees")
+                  .select("slug")
+                  .eq("user_id", data.user.id)
+                  .single();
+                  
+                if (franchiseeError || !franchisee) {
+                  console.error("Error fetching franchisee:", franchiseeError);
+                  // Fallback to portal redirect
+                  navigate('/portal/', { replace: true });
+                  return;
+                }
+                
+                // Navigate directly to the slug-based portal URL
+                navigate(`/${franchisee.slug}/portal/dashboard`, { replace: true });
+              } catch (error) {
+                console.error("Error during post-auth setup:", error);
+                // Fallback to portal redirect
+                navigate('/portal/', { replace: true });
+              }
             }
           }, 2000);
         } else {
@@ -141,7 +163,7 @@ export default function AuthCallback() {
                 {getSuccessMessage()}
               </Alert>
               <Text ta="center" c="dimmed">
-                Redirecting you...
+                {searchParams.get('type') === 'recovery' ? 'Redirecting you...' : 'Setting up your account and redirecting...'}
               </Text>
             </>
           )}

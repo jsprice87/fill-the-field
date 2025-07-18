@@ -49,11 +49,31 @@ export default function EmailConfirmation() {
         if (data.user && data.session) {
           setStatus('success');
           
-          // Redirect to portal after successful confirmation
-          // The portal redirect will handle routing to the correct slug-based URL
-          setTimeout(() => {
-            navigate('/portal/');
-          }, 3000);
+          // Wait for franchisee record to be created by trigger, then redirect
+          setTimeout(async () => {
+            try {
+              // Fetch the franchisee record to get the slug
+              const { data: franchisee, error: franchiseeError } = await supabase
+                .from("franchisees")
+                .select("slug")
+                .eq("user_id", data.user.id)
+                .single();
+                
+              if (franchiseeError || !franchisee) {
+                console.error("Error fetching franchisee:", franchiseeError);
+                // Fallback to portal redirect which will handle the lookup
+                navigate('/portal/', { replace: true });
+                return;
+              }
+              
+              // Navigate directly to the slug-based portal URL
+              navigate(`/${franchisee.slug}/portal/dashboard`, { replace: true });
+            } catch (error) {
+              console.error("Error during post-confirmation setup:", error);
+              // Fallback to portal redirect
+              navigate('/portal/', { replace: true });
+            }
+          }, 2000);
         } else {
           setStatus('error');
           setErrorMessage('Email confirmation failed. Please try again.');
@@ -122,7 +142,7 @@ export default function EmailConfirmation() {
                 Your email has been successfully confirmed. You are now logged in and will be redirected to your portal shortly.
               </Alert>
               <Text ta="center" c="dimmed">
-                Redirecting you to your portal...
+                Setting up your account and redirecting...
               </Text>
             </>
           )}

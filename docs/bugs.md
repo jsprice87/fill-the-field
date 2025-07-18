@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 10 Jul 2025  
-> **Active Issues:** 8 | **Resolved:** 22
+> **Active Issues:** 7 | **Resolved:** 23
 
 ---
 
@@ -9,7 +9,6 @@
 
 | ID | Title | Severity | Priority | Assignee | Files Affected | Created |
 |----|-------|----------|----------|----------|----------------|---------|
-| #31 | Map location positioning incorrect for Lilley Gulch | 🟡 Medium | P2 | unassigned | Map components, geocoding | 2025-07-10 |
 | #32 | Login screen needs specific error feedback for invalid credentials | 🟢 Low | P2 | unassigned | Login components | 2025-07-10 |
 | #33 | Dark Mode button in portal doesn't function | 🟢 Low | P3 | unassigned | Portal theme components | 2025-07-10 |
 | #34 | Portal tables have excessive white space and pagination issues | 🟡 Medium | P2 | unassigned | Portal table components | 2025-07-10 |
@@ -40,6 +39,7 @@
 | #24 | Select Class Date modal needs visual date selection indicator | Added CheckCircle icons and auto-selection for single dates | `current` | 2025-06-30 |
 | #25 | Share with Friends message contains extra information | Cleaned up sharing to use only template content without extra URLs | `current` | 2025-06-30 |
 | #26 | Confirmation page needs Facebook/Instagram icons instead of text | Added branded Facebook and Instagram icon buttons | `current` | 2025-06-30 |
+| #31 | Map location positioning incorrect for Lilley Gulch | Integrated manual coordinate corrections into geocoding system | `current` | 2025-07-18 |
 | #15 | Duplicate asterisks on lead capture form fields | Fixed Mantine form validation patterns | `current` | 2025-06-30 |
 | #14 | Waiver editor not editable on first profile creation | Fixed state initialization with useEffect for settings loading | `current` | 2025-06-30 |
 | #11 | Bulk table actions limited to Archive only | Enhanced with complete status updates and bulk operations | `current` | 2025-06-30 |

@@ -9,7 +9,8 @@ Ready for new scratch notes.
 
 Ready for new scratch notes.
 
-Bug 38 - There is no error feedback on the login screen when incorrect credentials are used.  There is no indication to the user that an attempt was made to sign in.
+✅ PROCESSED: Bug 38 - There is no error feedback on the login screen when incorrect credentials are used.  There is no indication to the user that an attempt was made to sign in.
+RESOLUTION: Duplicate of Bug #32 - already tracked in bugs.md
 
 ✅ RESOLVED: Bug 39 - Update Location button on Edit Location modal not active when fields change making it impossible to update the location. 
 RESOLUTION: Replaced modal with Location Details page (/portal/locations/:id) with inline editing form. No more modal validation issues.
