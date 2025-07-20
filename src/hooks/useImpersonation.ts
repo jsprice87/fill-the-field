@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -18,6 +19,7 @@ interface ImpersonationSession {
 }
 
 export const useImpersonation = () => {
+  const queryClient = useQueryClient();
   const [impersonationSession, setImpersonationSession] = useLocalStorage<ImpersonationSession | null>({
     key: 'impersonation-session',
     defaultValue: null
@@ -59,6 +61,9 @@ export const useImpersonation = () => {
       // Log the impersonation action
       await logImpersonationAction('start', session);
 
+      // Clear all query caches when starting impersonation to ensure fresh data
+      queryClient.clear();
+      
       setImpersonationSession(session);
       toast.success(`Started impersonating ${targetUser.name}`);
       
@@ -78,6 +83,10 @@ export const useImpersonation = () => {
       await logImpersonationAction('end', impersonationSession);
 
       const targetName = impersonationSession.targetUser.name;
+      
+      // Clear all query caches when ending impersonation to ensure fresh data
+      queryClient.clear();
+      
       setImpersonationSession(null);
       
       toast.success(`Stopped impersonating ${targetName}`);
@@ -88,6 +97,7 @@ export const useImpersonation = () => {
       console.error('Error exiting impersonation:', error);
       toast.error('Failed to log impersonation exit');
       // Still exit impersonation even if logging fails
+      queryClient.clear();
       setImpersonationSession(null);
       // Still redirect even if logging fails
       window.location.href = '/admin/user-management';

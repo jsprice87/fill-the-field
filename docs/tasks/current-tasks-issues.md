@@ -43,8 +43,10 @@
 - `src/components/portal/LocationsTable.tsx` - Portal table pagination
 - `src/layout/AdminLayout.tsx` - Admin layout and menu styling (UPDATED - fixed transparency)
 - `src/components/AppSidebar.tsx` - Admin and portal sidebar styling (UPDATED - fixed transparency)
-- `src/hooks/useImpersonation.ts` - Admin impersonation system
+- `src/hooks/useImpersonation.ts` - Admin impersonation system (UPDATED - improved cache invalidation)
 - `src/utils/impersonationHelpers.ts` - Impersonation context helpers
+- `src/hooks/useFranchiseeProfile.ts` - Franchisee profile data (UPDATED - impersonation-aware query keys)
+- `src/hooks/useFranchiseeData.ts` - Franchisee data management (UPDATED - impersonation-aware query keys)
 
 ### Medium Priority Issues (P3)
 - `src/components/auth/LoginForm.tsx` - Login error handling
@@ -73,15 +75,15 @@
   - [x] 1.7 Test admin authentication and permissions
   - [x] 1.8 Verify admin CRUD operations work correctly
 
-- [ ] 2.0 Resolve High-Priority Admin and Portal Issues (P2 High Priority)
+- [x] 2.0 Resolve High-Priority Admin and Portal Issues (P2 High Priority)
   - [x] 2.1 Fix portal table pagination and reduce excessive white space
   - [x] 2.2 Add configurable rows per page (10, 25, 50, 100)
   - [x] 2.3 Implement sticky pagination controls at viewport bottom
   - [x] 2.4 Fix admin section menu transparency issues
   - [x] 2.5 Apply proper styling and z-index to admin menus
-  - [ ] 2.6 Debug and fix admin user impersonation data context
-  - [ ] 2.7 Ensure impersonated sessions show correct user data
-  - [ ] 2.8 Test impersonation across all portal components
+  - [x] 2.6 Debug and fix admin user impersonation data context
+  - [x] 2.7 Ensure impersonated sessions show correct user data
+  - [x] 2.8 Test impersonation across all portal components
 
 - [ ] 3.0 Implement UX Improvements and Polish (P3 Medium Priority)
   - [x] 3.1 Add specific error feedback to login screen for invalid credentials

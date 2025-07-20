@@ -54,7 +54,7 @@ export const useFranchiseeProfile = () => {
   };
 
   return useQuery({
-    queryKey: ['franchisee-profile', isImpersonating()],
+    queryKey: ['franchisee-profile', isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async () => {
       console.log('useFranchiseeProfile: Starting query');
       await checkUserChange(); // Check for user change before proceeding

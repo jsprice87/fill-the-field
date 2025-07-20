@@ -3,13 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { notify } from '@/utils/notify';
 import { useFranchiseeProfile } from './useFranchiseeProfile';
-import { getEffectiveUserId } from '@/utils/impersonationHelpers';
+import { getEffectiveUserId, isImpersonating } from '@/utils/impersonationHelpers';
 
 export const useFranchiseeData = () => {
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useFranchiseeProfile();
 
   return useQuery({
-    queryKey: ['franchisee-data'],
+    queryKey: ['franchisee-data', isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async () => {
       if (!profile) throw new Error('No franchisee profile found');
       return profile; // Return the same data from the profile hook

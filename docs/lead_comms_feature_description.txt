@@ -3,6 +3,32 @@ New MAJOR feature set.
 High level description:
 Customizable lead communications platform for Users.
 
+Lead communications pane:
+ - 
 
 Needed components/pages:
- - email 
+ - email template editor
+ -- should feel and function similarly to other email editors.
+ - SMS template editor
+ - Automation scheduler screen
+ -- User chooses template, and creates rule using system variables and logical operators and date time functions.
+ --- Example: Type=SCHEDULE, Template='Free-trial-is-tomorrow-Westlands-Park', Recipient= (NEWBOOKINGS && Location=Westlands-Park), SendTime= 'Booking-ClassDateTime minus 24 hours'  
+ --- Example: Type=SEND, Template='Welcome-Email', Recipient=NEWBOOKINGS, SendTime='Now'.
+ -- Ability to view/edit existing automations
+
+
+ Functional capabilities needed:
+  - Ability to generate rich text emails with images, links, etc.
+  - Ability to send emails
+  -- Ability to schedule emails.
+  --- Ability to automate email sends based on relative dates and times. (Ex: 24 hours before booking start)
+  --- Ability to schedule individual emails to individual leads.
+  -- Ability to generate and save email templates.
+  --- Ability to use Lead fields (First Name, Last Name) as placeholders in templates.
+  - Ability to send SMS text messages.
+  -- Ability to generate and save sms templates.
+  -- Ability to schedule SMS messages.
+  --- Ability to automate SMS sends based on relateive dates and times.
+  --- Ability to schedule individual SMS messages for individual leads.
+  - Receive emails routed directly to User-designated email.
+  - Receive emails routed directly to user's phone (need your help determining how to do this)
