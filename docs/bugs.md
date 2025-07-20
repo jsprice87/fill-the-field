@@ -1,7 +1,7 @@
 # 🐞 Bug Tracker
 
 > **Last Updated:** 10 Jul 2025  
-> **Active Issues:** 7 | **Resolved:** 23
+> **Active Issues:** 6 | **Resolved:** 24
 
 ---
 
@@ -13,7 +13,6 @@
 | #33 | Dark Mode button in portal doesn't function | 🟢 Low | P3 | unassigned | Portal theme components | 2025-07-10 |
 | #34 | Portal tables have excessive white space and pagination issues | 🟡 Medium | P2 | unassigned | Portal table components | 2025-07-10 |
 | #35 | Admin section menus are transparent | 🟡 Medium | P2 | tracked separately | Admin layout, menu components | 2025-07-10 |
-| #36 | Email confirmation loads broken page | 🟠 High | P1 | unassigned | Auth confirmation flow | 2025-07-10 |
 | #37 | Admin user management dropdowns have yellow outline | 🟢 Low | P3 | tracked separately | Admin dropdown styling | 2025-07-10 |
 | #38 | Admin user impersonation shows incorrect data context | 🟠 High | P2 | tracked separately | Admin impersonation, portal hooks | 2025-07-10 |
 
@@ -40,6 +39,7 @@
 | #25 | Share with Friends message contains extra information | Cleaned up sharing to use only template content without extra URLs | `current` | 2025-06-30 |
 | #26 | Confirmation page needs Facebook/Instagram icons instead of text | Added branded Facebook and Instagram icon buttons | `current` | 2025-06-30 |
 | #31 | Map location positioning incorrect for Lilley Gulch | Integrated manual coordinate corrections into geocoding system | `current` | 2025-07-18 |
+| #36 | Email confirmation loads broken page | Fixed redirect to wait for franchisee record creation and proper slug-based routing | `1890a62` | 2025-07-18 |
 | #15 | Duplicate asterisks on lead capture form fields | Fixed Mantine form validation patterns | `current` | 2025-06-30 |
 | #14 | Waiver editor not editable on first profile creation | Fixed state initialization with useEffect for settings loading | `current` | 2025-06-30 |
 | #11 | Bulk table actions limited to Archive only | Enhanced with complete status updates and bulk operations | `current` | 2025-06-30 |

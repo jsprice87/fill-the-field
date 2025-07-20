@@ -1,0 +1,8 @@
+New MAJOR feature set.
+
+High level description:
+Customizable lead communications platform for Users.
+
+
+Needed components/pages:
+ - email 

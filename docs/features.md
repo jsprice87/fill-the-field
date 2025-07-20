@@ -1,7 +1,7 @@
 # 🚀 Feature Requests & Enhancements
 
 > **Last Updated:** 30 Jun 2025  
-> **Active Features:** 5 | **Completed:** 8 | **Backlog:** 1
+> **Active Features:** 4 | **Completed:** 9 | **Backlog:** 1
 
 ---
 
@@ -14,7 +14,6 @@
 | #10 | Remove redundant business info from profile page | 🟢 Low | 🟡 Medium | unassigned | v0.9.5 |
 | #12 | Add bulk actions to locations and classes tables | 🟢 Low | 🟡 Medium | unassigned | v0.9.8 |
 | #13 | Add date range and age range display to find-classes page | 🟡 Medium | 🟡 Medium | completed | v0.9.8 |
-| #15 | Admin section data population and functionality | 🔴 Critical | 🟠 High | unassigned | v0.9.9 |
 | #16 | Location Details mini-map integration | 🟡 Medium | 🟡 Medium | completed | v0.9.9 |
 | #17 | Location-specific class management interface | 🟡 Medium | 🟡 Medium | completed | v0.9.9 |
 
@@ -40,6 +39,7 @@
 | #9 | Profile password management | 2025-06-30 | v0.9.6 | current |
 | #11 | Color-coded lead status badges with dropdown functionality | 2025-06-30 | v0.9.7 | current |
 | #13 | Add date range and age range display to find-classes page | 2025-06-30 | v0.9.8 | current |
+| #15 | Admin section data population and functionality | 2025-07-18 | v0.9.9 | 1890a62 |
 
 ---
 

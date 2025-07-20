@@ -34,7 +34,9 @@
       "Bash(npm run preview:*)",
       "Bash(.claude/commands/process-issues.md)",
       "Bash(node:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "WebFetch(domain:docs.n8n.io)",
+      "Bash(git log:*)"
     ],
     "deny": []
   }

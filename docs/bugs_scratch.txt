@@ -1,24 +1,6 @@
-✅ ALL ITEMS PROCESSED AND MIGRATED TO BUGS.MD
 
-All bug items (#31-37) have been successfully moved to bugs.md with proper formatting and tracking IDs.
+New bugs:
 
-Ready for new scratch notes.
-
-## New Issues:
-✅ All issues migrated to bugs.md (Bug #39-44)
-
-Ready for new scratch notes.
-
-✅ PROCESSED: Bug 38 - There is no error feedback on the login screen when incorrect credentials are used.  There is no indication to the user that an attempt was made to sign in.
-RESOLUTION: Duplicate of Bug #32 - already tracked in bugs.md
-
-✅ RESOLVED: Bug 39 - Update Location button on Edit Location modal not active when fields change making it impossible to update the location. 
-RESOLUTION: Replaced modal with Location Details page (/portal/locations/:id) with inline editing form. No more modal validation issues.
-
-✅ RESOLVED:
-Bug 40 - Add a "Location Contact" name and email address to each location entry. Add data collection fields during location creation and edit location.
-RESOLUTION: Complete implementation with database migration, TypeScript types, forms, and hooks updated. Contact fields now available in both create/edit location workflows.
-
-✅ RESOLVED:
-Bug 41 - If I switch tabs away from the Locations page when I have the Edit Location modal open, and return to the page (example, switch to google maps to copy an address), the modal is no longer up and all changes are lost.
-RESOLUTION: Page-based editing eliminates modal state loss issues entirely.
+ - Admin > User Management page shows two export buttons. Only one is needed.
+ - All tables throughout system: actions in the Actions Menu (far right menu button) do not take effect until the page is refreshed.
+ 

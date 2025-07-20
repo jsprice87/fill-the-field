@@ -96,7 +96,16 @@ export function AppSidebar() {
   // Show different sidebar content based on section
   if (isAdminSection) {
     return (
-      <div style={{ width: 260, padding: 16, borderRight: '1px solid var(--mantine-color-gray-3)', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ 
+        width: 260, 
+        padding: 16, 
+        borderRight: '1px solid var(--mantine-color-gray-3)', 
+        height: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: 'var(--mantine-color-body)',
+        zIndex: 10
+      }}>
         {/* Header */}
         <Group mb="md">
           <div style={{ 
@@ -157,7 +166,16 @@ export function AppSidebar() {
   }
 
   return (
-    <div style={{ width: 260, padding: 16, borderRight: '1px solid var(--mantine-color-gray-3)', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ 
+      width: 260, 
+      padding: 16, 
+      borderRight: '1px solid var(--mantine-color-gray-3)', 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      backgroundColor: 'var(--mantine-color-body)',
+      zIndex: 10
+    }}>
       {/* Header */}
       <Group mb="md">
         <div style={{ 

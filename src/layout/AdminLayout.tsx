@@ -19,6 +19,18 @@ const AdminLayout = () => {
       withBorder={false}
       className="admin-layout"
       data-section="admin"
+      styles={{
+        navbar: {
+          backgroundColor: 'var(--mantine-color-body)',
+          borderRight: '1px solid var(--mantine-color-gray-3)',
+          zIndex: 10
+        },
+        header: {
+          backgroundColor: 'var(--mantine-color-body)',
+          borderBottom: '1px solid var(--mantine-color-gray-3)',
+          zIndex: 10
+        }
+      }}
     >
       <AppShell.Header>
         <div className="flex items-center h-full px-4">
