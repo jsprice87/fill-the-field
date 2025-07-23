@@ -4,7 +4,7 @@ import { useResetUserPassword, useBulkUserActions } from '@/hooks/useAdminUserAc
 import { useImpersonation } from '@/hooks/useImpersonation';
 import { UserManagementFilters } from '@/components/admin/UserManagementFilters';
 import { UserEditModal } from '@/components/admin/UserEditModal';
-import { UserDetailsModal } from '@/components/admin/UserDetailsModal';
+import UserDetailsModal from '@/components/admin/UserDetailsModal';
 import { UserDeleteConfirmation } from '@/components/admin/UserDeleteConfirmation';
 import { UserCreateModal } from '@/components/admin/UserCreateModal';
 import { testAdminPolicies } from '@/utils/debugMigration';
@@ -415,8 +415,8 @@ const AdminUserManagement: React.FC = () => {
 
         {/* Modals */}
         <UserDetailsModal
-          user={selectedUser}
-          opened={detailsModalOpen}
+          franchisee={selectedUser}
+          isOpen={detailsModalOpen}
           onClose={() => {
             setDetailsModalOpen(false);
             setSelectedUser(null);
