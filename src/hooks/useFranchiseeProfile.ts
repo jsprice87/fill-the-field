@@ -59,11 +59,31 @@ export const useFranchiseeProfile = () => {
       console.log('useFranchiseeProfile: Starting query');
       await checkUserChange(); // Check for user change before proceeding
       
+      // Check if we're impersonating first
+      if (isImpersonating()) {
+        const effectiveFranchiseeId = await getEffectiveFranchiseeId();
+        if (!effectiveFranchiseeId) throw new Error('No franchisee ID found during impersonation');
+        
+        console.log('useFranchiseeProfile: Impersonating, fetching franchisee by ID:', effectiveFranchiseeId);
+        
+        // During impersonation, fetch franchisee record directly by ID
+        const { data, error } = await supabase
+          .from('franchisees')
+          .select('*')
+          .eq('id', effectiveFranchiseeId)
+          .single();
+
+        if (error) throw error;
+        
+        console.log('useFranchiseeProfile: Found impersonated franchisee record');
+        return data;
+      }
+      
+      // Normal flow - get franchisee by user_id
       const effectiveUserId = await getEffectiveUserId();
       if (!effectiveUserId) throw new Error('Not authenticated');
       
       console.log('useFranchiseeProfile: Effective user ID:', effectiveUserId);
-      console.log('useFranchiseeProfile: Is impersonating:', isImpersonating());
 
       // Try to get existing franchisee record first
       const { data, error } = await supabase

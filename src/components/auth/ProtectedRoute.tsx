@@ -20,7 +20,18 @@ const ProtectedRoute = ({ children, roleRequired = 'user' }: ProtectedRouteProps
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        
+        // Handle auth errors by clearing corrupted tokens
+        if (error && error.message.includes('refresh_token_not_found')) {
+          console.log('Refresh token error detected, clearing auth state');
+          await supabase.auth.signOut();
+          queryClient.clear();
+          clearFranchiseeProfileCache();
+          setIsAuthenticated(false);
+          return;
+        }
+        
         setIsAuthenticated(!!data.session);
       } catch (error) {
         console.error("Error checking authentication:", error);
@@ -40,12 +51,17 @@ const ProtectedRoute = ({ children, roleRequired = 'user' }: ProtectedRouteProps
           queryClient.clear(); // Clear all React Query cache
           sessionStorage.clear(); // Clear session storage
           localStorage.removeItem('franchisee_profile_ensured');
+          localStorage.removeItem('impersonation-session'); // Clear impersonation
         }
         
         if (event === "SIGNED_IN") {
           console.log("User signed in, clearing caches to prevent data contamination");
           queryClient.clear(); // Clear all React Query cache on sign in too
           clearFranchiseeProfileCache();
+        }
+        
+        if (event === "TOKEN_REFRESHED") {
+          console.log("Token refreshed successfully");
         }
       }
     );

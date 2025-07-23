@@ -21,6 +21,21 @@ export const getEffectiveUserId = async (): Promise<string | null> => {
 };
 
 export const getEffectiveFranchiseeId = async (): Promise<string | null> => {
+  // Check if we're in impersonation mode first
+  try {
+    const impersonationSession = localStorage.getItem('impersonation-session');
+    
+    if (impersonationSession) {
+      const session = JSON.parse(impersonationSession);
+      if (session && session.targetUser && session.targetUser.franchiseeId) {
+        return session.targetUser.franchiseeId;
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing impersonation session:', error);
+  }
+  
+  // Default to current user's franchisee ID
   const userId = await getEffectiveUserId();
   if (!userId) return null;
   

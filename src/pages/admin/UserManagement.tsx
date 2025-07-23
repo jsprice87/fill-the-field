@@ -116,7 +116,8 @@ const AdminUserManagement: React.FC = () => {
   const handleImpersonateUser = async (user: Franchisee) => {
     try {
       await startImpersonation({
-        id: user.id,
+        id: user.user_id,        // The auth user ID
+        franchiseeId: user.id,   // The franchisee business ID
         name: user.contact_name,
         email: user.email,
         company: user.company_name

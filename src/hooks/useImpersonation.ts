@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface ImpersonationTarget {
-  id: string;
+  id: string;            // This should be the user_id from auth.users
+  franchiseeId: string;  // This is the franchisee.id for the business data
   name: string;
   email: string;
   company?: string;
