@@ -25,20 +25,11 @@ export const useUserRole = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const [effectiveUserId, setEffectiveUserId] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    const fetchEffectiveUserId = async () => {
-      const userId = await getEffectiveUserId();
-      setEffectiveUserId(userId);
-    };
-
-    fetchEffectiveUserId();
-  }, [session]);
-
   const { data, isLoading } = useQuery({
-    queryKey: ['user-role', effectiveUserId, isImpersonating() ? localStorage.getItem('impersonation-session') : null],
+    queryKey: ['user-role', session?.user?.id, isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async () => {
+      // Get effective user ID directly in the query function
+      const effectiveUserId = await getEffectiveUserId();
       if (!effectiveUserId) return 'unknown';
       
       // Query role from profiles table using effective user ID
@@ -55,7 +46,7 @@ export const useUserRole = () => {
       
       return (profile?.role || 'user') as UserRole;
     },
-    enabled: !!effectiveUserId,
+    enabled: !!session?.user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
