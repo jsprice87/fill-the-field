@@ -50,8 +50,8 @@
 
 ### Medium Priority Issues (P3)
 - `src/components/auth/LoginForm.tsx` - Login error handling
-- `src/components/portal/ThemeToggle.tsx` - Dark mode functionality
-- `src/components/portal/Sidebar.tsx` - Portal theme system
+- `src/main.tsx` - Application color scheme management (UPDATED - fixed dark mode)
+- `src/components/AppSidebar.tsx` - Theme toggle functionality (UPDATED - added keyboard shortcut)
 - `src/components/admin/AdminDropdown.tsx` - Admin dropdown styling
 - `src/components/notifications/NotificationSystem.tsx` - Enhanced notifications
 
@@ -87,8 +87,8 @@
 
 - [ ] 3.0 Implement UX Improvements and Polish (P3 Medium Priority)
   - [x] 3.1 Add specific error feedback to login screen for invalid credentials
-  - [ ] 3.2 Fix dark mode button functionality in portal
-  - [ ] 3.3 Ensure theme persistence across sessions
+  - [x] 3.2 Fix dark mode button functionality in portal
+  - [x] 3.3 Ensure theme persistence across sessions
   - [ ] 3.4 Fix yellow outline on admin user management dropdowns
   - [ ] 3.5 Research and plan enhanced notification system architecture
   - [ ] 3.6 Design end-of-day summary email templates

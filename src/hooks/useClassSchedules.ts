@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getEffectiveFranchiseeId, isImpersonating } from '@/utils/impersonationHelpers';
 
 export interface ClassSchedule {
   id: string;
@@ -40,13 +41,14 @@ export interface ClassSchedule {
 
 export const useClassSchedules = (franchiseeId?: string) => {
   return useQuery({
-    queryKey: ['class-schedules', franchiseeId],
+    queryKey: ['class-schedules', franchiseeId, isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async (): Promise<ClassSchedule[]> => {
-      if (!franchiseeId) {
+      const effectiveFranchiseeId = franchiseeId || await getEffectiveFranchiseeId();
+      if (!effectiveFranchiseeId) {
         return [];
       }
 
-      console.log('Fetching class schedules for franchisee:', franchiseeId);
+      console.log('Fetching class schedules for franchisee:', effectiveFranchiseeId);
 
       const { data, error } = await supabase
         .from('class_schedules')
@@ -85,7 +87,7 @@ export const useClassSchedules = (franchiseeId?: string) => {
             )
           )
         `)
-        .eq('classes.locations.franchisee_id', franchiseeId)
+        .eq('classes.locations.franchisee_id', effectiveFranchiseeId)
         .eq('is_active', true)
         .order('day_of_week')
         .order('start_time');
@@ -98,7 +100,7 @@ export const useClassSchedules = (franchiseeId?: string) => {
       console.log('Class schedules data:', data);
       return data || [];
     },
-    enabled: !!franchiseeId,
+    enabled: !!franchiseeId || isImpersonating(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

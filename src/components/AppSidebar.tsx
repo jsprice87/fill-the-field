@@ -2,6 +2,7 @@
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMantineColorScheme } from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
 import { ScrollArea, Stack, Group, Text, NavLink } from '@mantine/core';
 import { IconHome, IconUsers, IconCalendar, IconMapPin, IconBook, IconUser, IconSettings, IconHelp, IconWorld, IconMoon, IconSun, IconLogout, IconChartBar, IconCreditCard, IconShield } from '@tabler/icons-react';
 import { useFranchiseeData } from '@/hooks/useFranchiseeData';
@@ -39,6 +40,9 @@ export function AppSidebar() {
   const { franchiseeSlug } = useParams<{ franchiseeSlug: string }>();
   const { data: franchiseeData } = useFranchiseeData();
   const { role } = useUserRole();
+
+  // Add keyboard shortcut for theme toggle
+  useHotkeys([['mod+J', () => toggleColorScheme()]]);
 
   const isPortalSection = location.pathname.startsWith('/portal') || location.pathname.includes('/portal');
   const isAdminSection = location.pathname.startsWith('/admin');

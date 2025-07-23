@@ -1,13 +1,15 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getEffectiveFranchiseeId, isImpersonating } from '@/utils/impersonationHelpers';
 import type { Booking } from '@/types';
 
 export const useBookings = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
-    queryKey: ['bookings', franchiseeId, includeArchived],
+    queryKey: ['bookings', franchiseeId, includeArchived, isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async (): Promise<Booking[]> => {
-      if (!franchiseeId) return [];
+      const effectiveFranchiseeId = franchiseeId || await getEffectiveFranchiseeId();
+      if (!effectiveFranchiseeId) return [];
       
       // Use left joins instead of inner joins to avoid missing data
       // Simplified query with better performance
@@ -62,7 +64,7 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
           )
         `)
         .not('bookings', 'is', null)
-        .eq('bookings.leads.franchisee_id', franchiseeId)
+        .eq('bookings.leads.franchisee_id', effectiveFranchiseeId)
         .order('selected_date', { ascending: false }); // Show newest first
 
       // Apply archive filtering at database level for better performance
@@ -147,7 +149,7 @@ export const useBookings = (franchiseeId?: string, includeArchived: boolean = fa
 
       return transformedData;
     },
-    enabled: !!franchiseeId,
+    enabled: !!franchiseeId || isImpersonating(),
     staleTime: 30000, // Cache for 30 seconds to reduce re-fetches
     gcTime: 300000, // Keep in cache for 5 minutes
   });

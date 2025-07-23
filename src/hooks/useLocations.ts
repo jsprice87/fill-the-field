@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getEffectiveFranchiseeId, isImpersonating } from '@/utils/impersonationHelpers';
 
 export interface Location {
   id: string;
@@ -19,15 +20,16 @@ export interface Location {
 
 export const useLocations = (franchiseeId?: string, hideInactive: boolean = false) => {
   return useQuery({
-    queryKey: ['locations', franchiseeId, hideInactive],
+    queryKey: ['locations', franchiseeId, hideInactive, isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async () => {
-      if (!franchiseeId) return [];
+      const effectiveFranchiseeId = franchiseeId || await getEffectiveFranchiseeId();
+      if (!effectiveFranchiseeId) return [];
       
       // First get all locations for this franchisee
       let locationsQuery = supabase
         .from('locations')
         .select('*')
-        .eq('franchisee_id', franchiseeId)
+        .eq('franchisee_id', effectiveFranchiseeId)
         .order('name');
 
       // Filter by active status if hideInactive is true
@@ -76,6 +78,6 @@ export const useLocations = (franchiseeId?: string, hideInactive: boolean = fals
 
       return locationsWithCounts;
     },
-    enabled: !!franchiseeId,
+    enabled: !!franchiseeId || isImpersonating(),
   });
 };

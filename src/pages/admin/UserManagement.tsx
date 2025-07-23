@@ -4,6 +4,7 @@ import { useResetUserPassword, useBulkUserActions } from '@/hooks/useAdminUserAc
 import { useImpersonation } from '@/hooks/useImpersonation';
 import { UserManagementFilters } from '@/components/admin/UserManagementFilters';
 import { UserEditModal } from '@/components/admin/UserEditModal';
+import { UserDetailsModal } from '@/components/admin/UserDetailsModal';
 import { UserDeleteConfirmation } from '@/components/admin/UserDeleteConfirmation';
 import { UserCreateModal } from '@/components/admin/UserCreateModal';
 import { testAdminPolicies } from '@/utils/debugMigration';
@@ -53,6 +54,7 @@ const AdminUserManagement: React.FC = () => {
   
   const [selectedUser, setSelectedUser] = useState<Franchisee | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Franchisee | null>(null);
@@ -90,7 +92,7 @@ const AdminUserManagement: React.FC = () => {
 
   const handleViewUser = (franchisee: Franchisee) => {
     setSelectedUser(franchisee);
-    setEditModalOpen(true);
+    setDetailsModalOpen(true);
   };
 
   const handleEditUser = (franchisee: Franchisee) => {
@@ -412,6 +414,15 @@ const AdminUserManagement: React.FC = () => {
         </Stack>
 
         {/* Modals */}
+        <UserDetailsModal
+          user={selectedUser}
+          opened={detailsModalOpen}
+          onClose={() => {
+            setDetailsModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+
         <UserEditModal
           user={selectedUser}
           opened={editModalOpen}

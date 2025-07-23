@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getEffectiveFranchiseeId, isImpersonating } from '@/utils/impersonationHelpers';
 
 interface ClassData {
   id: string;
@@ -40,9 +41,10 @@ export const useClasses = (
   search?: string
 ) => {
   return useQuery({
-    queryKey: ['classes', franchiseeId, locationId ?? 'ALL', search ?? ''],
+    queryKey: ['classes', franchiseeId, locationId ?? 'ALL', search ?? '', isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async () => {
-      if (!franchiseeId) throw new Error('Franchisee ID is required');
+      const effectiveFranchiseeId = franchiseeId || await getEffectiveFranchiseeId();
+      if (!effectiveFranchiseeId) throw new Error('Franchisee ID is required');
 
       let query = supabase
         .from('classes')
@@ -77,7 +79,7 @@ export const useClasses = (
             is_active
           )
         `)
-        .eq('locations.franchisee_id', franchiseeId);
+        .eq('locations.franchisee_id', effectiveFranchiseeId);
 
       // Filter by location if specified (and not 'ALL')
       if (locationId && locationId !== 'ALL') {
@@ -95,12 +97,12 @@ export const useClasses = (
       console.log('useClasses after rewrite', { 
         locationId, 
         rows: data?.length || 0,
-        franchiseeId
+        effectiveFranchiseeId
       });
       
       if (error) throw error;
       return data as ClassData[];
     },
-    enabled: !!franchiseeId
+    enabled: !!franchiseeId || isImpersonating()
   });
 };

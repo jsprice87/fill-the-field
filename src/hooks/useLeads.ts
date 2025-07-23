@@ -1,13 +1,15 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { getEffectiveFranchiseeId, isImpersonating } from '@/utils/impersonationHelpers';
 import type { Lead } from '@/types';
 
 export const useLeads = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
-    queryKey: ['leads', franchiseeId, includeArchived],
+    queryKey: ['leads', franchiseeId, includeArchived, isImpersonating() ? localStorage.getItem('impersonation-session') : null],
     queryFn: async (): Promise<Lead[]> => {
-      if (!franchiseeId) return [];
+      const effectiveFranchiseeId = franchiseeId || await getEffectiveFranchiseeId();
+      if (!effectiveFranchiseeId) return [];
       
       let query = supabase
         .from('leads')
@@ -15,7 +17,7 @@ export const useLeads = (franchiseeId?: string, includeArchived: boolean = false
           *,
           locations:selected_location_id(name)
         `)
-        .eq('franchisee_id', franchiseeId)
+        .eq('franchisee_id', effectiveFranchiseeId)
         .order('created_at', { ascending: false });
 
       // Filter by archive status
@@ -32,16 +34,26 @@ export const useLeads = (franchiseeId?: string, includeArchived: boolean = false
 
       return data || [];
     },
-    enabled: !!franchiseeId,
+    enabled: !!franchiseeId || isImpersonating(),
   });
 };
 
 // Separate function to fetch lead stats to avoid deep type inference
 const fetchLeadStats = async (franchiseeId: string, includeArchived: boolean = false) => {
+  const effectiveFranchiseeId = franchiseeId || await getEffectiveFranchiseeId();
+  if (!effectiveFranchiseeId) {
+    return {
+      totalLeads: 0,
+      newLeads: 0,
+      conversionRate: 0,
+      monthlyGrowth: 0
+    };
+  }
+
   let query = supabase
     .from('leads')
     .select('status, created_at')
-    .eq('franchisee_id', franchiseeId);
+    .eq('franchisee_id', effectiveFranchiseeId);
 
   // Exclude archived leads from stats by default
   if (!includeArchived) {
@@ -94,9 +106,9 @@ const fetchLeadStats = async (franchiseeId: string, includeArchived: boolean = f
 
 export const useLeadStats = (franchiseeId?: string, includeArchived: boolean = false) => {
   return useQuery({
-    queryKey: ['lead-stats', franchiseeId, includeArchived],
-    queryFn: () => {
-      if (!franchiseeId) {
+    queryKey: ['lead-stats', franchiseeId, includeArchived, isImpersonating() ? localStorage.getItem('impersonation-session') : null],
+    queryFn: async () => {
+      if (!franchiseeId && !isImpersonating()) {
         return {
           totalLeads: 0,
           newLeads: 0,
@@ -104,8 +116,8 @@ export const useLeadStats = (franchiseeId?: string, includeArchived: boolean = f
           monthlyGrowth: 0
         };
       }
-      return fetchLeadStats(franchiseeId, includeArchived);
+      return await fetchLeadStats(franchiseeId || '', includeArchived);
     },
-    enabled: !!franchiseeId,
+    enabled: !!franchiseeId || isImpersonating(),
   });
 };

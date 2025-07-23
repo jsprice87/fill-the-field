@@ -8,7 +8,7 @@ export const useFranchiseeSettings = () => {
   const { data: profile, isLoading: isProfileLoading } = useFranchiseeProfile();
 
   return useQuery({
-    queryKey: ['franchisee-settings'],
+    queryKey: ['franchisee-settings', profile?.id],
     queryFn: async () => {
       if (!profile?.id) throw new Error('No franchisee profile found');
 
