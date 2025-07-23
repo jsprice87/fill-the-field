@@ -19,6 +19,7 @@ import PortalSettings from "./pages/portal/Settings";
 import PortalHelp from "./pages/portal/Help";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUserManagement from "./pages/admin/UserManagement";
+import AdminUserDetails from "./pages/admin/UserDetails";
 import AdminTransactions from "./pages/admin/Transactions";
 import AdminGlobalSettings from "./pages/admin/GlobalSettings";
 import AdminSettings from "./pages/admin/Settings";
@@ -173,6 +174,12 @@ export const navItems = [
         to: "user-management",
         icon: <UsersIcon className="h-4 w-4" />,
         page: <AdminUserManagement />,
+      },
+      {
+        title: "Admin User Details",
+        to: "users/:userId",
+        icon: <UsersIcon className="h-4 w-4" />,
+        page: <AdminUserDetails />,
       },
       {
         title: "Admin Transactions",

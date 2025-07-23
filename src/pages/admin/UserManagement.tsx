@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAdminFranchisees } from '@/hooks/useAdminFranchisees';
 import { useResetUserPassword, useBulkUserActions } from '@/hooks/useAdminUserActions';
 import { useImpersonation } from '@/hooks/useImpersonation';
@@ -26,7 +27,7 @@ import {
   Loader
 } from '@mantine/core';
 import { TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/mantine/Table';
-import { MoreVertical, Eye, Edit, Trash2, Download, Plus, Key, Users, UserCheck } from 'lucide-react';
+import { MoreVertical, Eye, Edit, Trash2, Download, Plus, Key, Users, UserCheck, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Franchisee {
@@ -47,6 +48,7 @@ interface Franchisee {
 }
 
 const AdminUserManagement: React.FC = () => {
+  const navigate = useNavigate();
   const { data: franchisees = [], isLoading, error, refetch } = useAdminFranchisees();
   const resetPassword = useResetUserPassword();
   const { bulkDelete, bulkUpdateStatus } = useBulkUserActions();
@@ -93,6 +95,10 @@ const AdminUserManagement: React.FC = () => {
   const handleViewUser = (franchisee: Franchisee) => {
     setSelectedUser(franchisee);
     setDetailsModalOpen(true);
+  };
+
+  const handleViewUserDetails = (franchisee: Franchisee) => {
+    navigate(`/admin/users/${franchisee.id}`);
   };
 
   const handleEditUser = (franchisee: Franchisee) => {
@@ -367,10 +373,16 @@ const AdminUserManagement: React.FC = () => {
                               </Menu.Target>
                               <Menu.Dropdown>
                                 <Menu.Item
+                                  leftSection={<FileText size={14} />}
+                                  onClick={() => handleViewUserDetails(franchisee)}
+                                >
+                                  View User Details
+                                </Menu.Item>
+                                <Menu.Item
                                   leftSection={<Eye size={14} />}
                                   onClick={() => handleViewUser(franchisee)}
                                 >
-                                  View Details
+                                  Quick View
                                 </Menu.Item>
                                 <Menu.Item
                                   leftSection={<Edit size={14} />}
